@@ -1,0 +1,8 @@
+tinymce
+
+move files
+resize
+crop
+rotate
+download zip
+ext 4.2

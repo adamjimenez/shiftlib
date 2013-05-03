@@ -1,0 +1,341 @@
+<html>
+
+<head>
+<title>Esendex PHP SDK Documentation</title>
+<style TYPE="text/css">
+body
+{
+	font:8pt Verdana,Arial,Helvetica, sans-serif;
+	margin:0px 10px 0px 10px;
+	line-height:11pt;
+	color: #590075;
+}
+
+p, td
+{
+	font:8pt Verdana,Arial,Helvetica, sans-serif;
+	line-height:11pt;
+}
+
+a
+{
+	text-decoration: none;
+	font-weight: bold;
+	color: #590075;
+}
+
+h1, h2, h3
+{
+	font-weight: normal;
+	color: #590075;
+}
+
+h1
+{
+	width: 105%;
+	margin-left: -30px;
+	padding-left: 30px;
+	font-size: 16pt;
+	line-height:20pt;
+	color: #ffffff;
+	background-color: #590075;
+}
+
+h2
+{
+	font-size: 12pt;
+	font-weight: bold;
+	line-height: 19pt;
+	border-bottom: 1px solid #590075;
+}
+
+h3
+{
+	font-size: 10pt;
+	line-height: 14pt;
+	font-weight: bold;
+}
+
+img
+{
+	border-width:0;
+}
+
+ul
+{
+	list-style-image: url(purple-bullet-point.gif);
+	padding: 0px;
+	margin-left: 16pt;
+}
+
+q
+{
+	font-style: italic;
+}
+
+blockquote
+{
+	font-style: italic;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+table
+{
+   border-collapse: collapse;
+}
+
+th
+{
+	font-weight:bold;
+	font-size:10pt;
+	background-color: #D3E599;
+	padding: 4px 4px 4px 8px;
+	text-align: left;
+}
+
+td
+{
+	background-color: #E9F2CC;
+	padding: 4px 4px 4px 8px;
+	text-align: left;
+}
+
+th.col0
+{
+	background-color: #E9F2CC;
+}
+
+td.col0
+{
+	font-weight:bold;
+	background-color: #D3E599;
+}
+
+code
+{
+	background-color: #DFCDE4;
+	display: block;
+	width: 95%;
+	padding: 5px;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<h1>Esendex PHP SDK</h1>
+
+<P>The PHP SDK uses a HTTP form post with cURL and OpenSSL to allow customers to access the Esendex services. This provides reliable communications over both secure and non-secure connections. Last updated 15/07/2008</P>
+<p>&nbsp;</p>
+<H2>Setup</H2>
+<P>The following applications are required to use the Esendex PHP SDK: </P>
+<UL>
+<LI>PHP</LI>
+<LI>OpenSSL (supplied as an extension module in the PHP download) </LI>
+<LI>cURL&nbsp;(supplied as an extension module in the PHP download) </LI></UL>
+<OL>
+<LI>Install PHP. You can either install manually or, for windows, use the windows installer (although the manually installation is recommended as no external extensions are included in the windows installer). Downloads and instructions for each method can be found from <A href="http://www.php.net/downloads.php"><STRONG>http://www.php.net/downloads.php</STRONG></A> </LI>
+<LI>Source download the latest version of OpenSSL from <A href="http://www.openssl.org/source/"><STRONG>http://www.openssl.org/source/</STRONG></A> - not required if using the supplied extension module in the PHP download. </LI>
+<LI>Source download the latest version of cURL from <A href="http://curl.haxx.se/dlwiz/"><STRONG>http://curl.haxx.se/dlwiz/</STRONG></A> - not required if using the supplied extension module in the PHP download. </LI></OL>
+<P>The PHP install will have the dll files in the extensions directory: </P><PRE>        php_curl.dll
+        php_openSSL.dll</PRE>
+<P>And the certificate file (for secure communications) is located in the Curl download: </P><PRE>        Curl_ca_bundle.crt</PRE>
+<P>These files will either need to be copied to a folder specified on the system path ( e.g. C:\Windows\ ), or the system path will have to be amended with the path to these files. We recommend that you add the php install directory to the system path as this makes it easier for you to update your PHP install when the new release is made available. For PHP to be configured to use OpenSSL and cURL on Windows we must uncomment the appropriate lines in the file ‘PHP.ini’ file being used to enable the Windows extensions. </P><PRE>        ;extension=php_curl.dll           becomes        extension=php_curl.dll
+        ;extension=php_openssl.dll        becomes        extension=php_openssl.dll</PRE>
+<P>Restarting your machine should implement these changes. </P>
+<P>At this point it is useful to create a PHP file ‘phpinfo.php’ just containing the PHP code: </P><CODE>&lt;?php<BR>phpinfo();<BR>?&gt;<BR></CODE>
+<P>This will provide information on the system setup with respect to PHP. Setup your 'Test Web server' and open this PHP code file in your browser to confirm PHP is working on your system and the extension modules are recognised. Provided below is additional help in setting up your 'Test Web Server' on the two most popular servers used to test server side scripts locally.</P>
+<P>&nbsp;</P>
+<H3>IIS</H3>
+<P>To use the Esendex PHP SDK with IIS, carry out the following steps: </P>
+<OL>
+<LI>Either copy the SDK directory structure to a folder in the IIS Default Web Site’s home directory or create a Virtual Directory under the IIS Default WebSite which points to the downloaded files ( localhost ). </LI>
+<LI>As a check copy the ‘phpinfo.php’ file to the directory and, using an internet browser open this file via its URL (e.g. http://localhost/phpinfo.php). The resultant page should contain PHP system info, including the versions of OpenSSL and cURL being used. If cURL and OpenSSL do not show in the page ensure that the prerequisites have been followed and restart the IIS service.</LI></OL>
+<p>&nbsp;</p>
+<H3>Apache 2</H3>
+<P>To use the Esendex PHP SDK with Apache, carry out the following steps: </P>
+<OL>
+<LI>Download the Apache server installer from <A href="http://httpd.apache.org/download.cgi"><STRONG>http://httpd.apache.org/download.cgi</STRONG></A> </LI>
+<LI>Either copy the PHP5Apache2.dll to a folder on the system path or amend the path to include the folder containing the PHP5Apache2.dll. </LI>
+<LI>Edit the ‘HTTPD.conf’ file adding the lines: <PRE>    LoadModule php5_module “PATH TO php5apache.dll”
+    AddType application/x-httpd-php .php</PRE></LI>
+<LI>Port 80 may not be available. This will be evident when starting the Apache server from an error message. If this is the case change all instances of 80 in the .conf file to 8080. Apache should now be listening on port 8080.<BR><BR>Add a Virtual Host by including the lines: <PRE>    &lt;VirtualHost *&gt;
+        DocumentRoot PATH_TO_DIRECTORY_CONTAINING_PHP_FILES
+        ServerName localhost
+    &lt;VirtualHost&gt;</PRE></LI>
+<LI>This will direct the Apache server to the directory which we will put the Esendex PHP SDK files into. </LI>
+<LI>Restart the machine and copy the ‘phpinfo.php’ file to the DocumentRoot folder. Accessing this file using an internet browser, via it’s URL (e.g. http://localhost/phpinfo.php) should display system information for PHP. Included in this information should be the versions of cURL and OpenSSL being used. </LI>
+<LI>Copy the Esendex PHP SDK directory structure to the DocumentRoot folder. </LI></OL>
+<p>&nbsp;</p>
+<H3>Changes to the PHP SDK</H3>
+<P>The main change to the PHP SDK is that instead of using nusoap to communicate with webservices, HTTP form post is now used via cURL an OpenSSL. This provides reliable communications over both secure and non-secure services. </P>
+<P>Functionality to enable a user to obtain the account message limits and other Account Services has been removed. A superior method for retrieving inbox messages has been added to the EsendexInboxservice class file. </P>
+<P>The 5.1.1 PHP release required a change in the Esendex PHP SDK files so that the SDK worked with the latest most secure version of PHP. Although the updated SDK should work with older versions of PHP, we strongly recommend that you update to the versions specified in this document. </P>
+<P>The Esendex scheduled send service has been added to allow customers to send messages at a specified date/time or by specifying a time period in days, hours and minutes. </P>
+<P>The Esendex contact and subscription services have also been added to allow customers to manage their contacts/groups and subscriptions.</P>
+<P>Now this SDK supports encoding in UTF-8 so that characters in the GSM character set can be used. 15/07/2008<P>
+<P>&nbsp;</P>
+<H2>EsendexSendService</H2>
+<P>The parameters for the EsendexSendService constructor include optional arguments for a security certificate: </P><CODE>EsendexSendService( $username, $password, $account, $isSecure = false, $certificate = '' )</CODE> 
+<P>To send via HTTPS, use the following arguements: </P><CODE>$isSecure = true<BR>$certificate = "PATH TO CERTIFICATE FILE" ( e.g. C:\Windows\curl_ca_bundle.crt )</CODE> 
+<P>To send via HTTP these arguments can be ignored. </P>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    MessageID=value</PRE>where MessageID value is the ID that Esendex assigned to the message. <BR><BR>For an unsuccessful request, results are in the format: <PRE>    Result=Error
+    Message=value</PRE>where Message value is a URL encoded description of the error. 
+<P>&nbsp;</P>
+<H2>EsendexSendContentService</H2>
+<P>The parameters for the EsendexSendContentService constructor include optional arguments for a security certificate: </P><CODE>EsendexSendContentService( $username, $password, $account, $isSecure = false, $certificate = '' )</CODE> 
+<P>To send via HTTPS, use the following arguements: </P><CODE>$isSecure = true<BR>$certificate = "PATH TO CERTIFICATE FILE" ( e.g. C:\Windows\curl_ca_bundle.crt )</CODE> 
+<P>To send via HTTP these arguments can be ignored. </P>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    MessageID=value</PRE>where MessageID value is the ID that Esendex assigned to the message. 
+<P>For an unsuccessful request, results are in the format: </P><PRE>    Result=Error
+    Message=value</PRE>where Message value is a URL encoded description of the error. 
+<P>&nbsp;</P>
+<H2>EsendexScheduledSendService</H2>
+<P>The parameters for the EsendexScheduledSendService constructor include optional arguments for a security certificate: </P><CODE>EsendexScheduledSendService( $username, $password, $account, $isSecure = false, $certificate = '' ) </CODE>
+<P>To send via HTTPS, use the following arguements: </P><CODE>$isSecure = true<BR>$certificate = "PATH TO CERTIFICATE FILE" ( e.g. C:\Windows\curl_ca_bundle.crt )</CODE> 
+<P>To send via HTTP these arguments can be ignored. </P>
+<P>The date and time value you wish to schedule the message to be sent at can be set in two ways. You can either by specifying a specific date time the message should be sent at (by supplying a SubmitAt form post value), or by specifying a time interval in days, hours and minutes that the message should be sent in (by supplying the Days, Hours and Minutes form post values).</P>
+<H3><BR>ScheduledSendMessageAt and ScheduledSendMessageAtFull</H3>
+<P>These methods use the same structure as the the EsendexSendService class methods, and additionally require a SubmitAt parameter also to be set. The format of this value should be CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by a leading "-" sign to indicate a negative number. The letter "T" is the date/time separator and "hh", "mm" represent hour and minute respectively. </P>
+<H3><BR>ScheduledSendMessageIn and ScheduledSendMessageInFull</H3>
+<P>Once again these methods use the same structure as the the EsendexSendService class methods, but additionally take 3 extra parameters. These parameters are days (the days component of the time interval), hours (the hours component of the time interval) and minutes (the minutes component of the time interval). </P>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    MessageID=value
+</PRE>where MessageID value is the ID that Esendex assigned to the message. 
+<P>For an unsuccessful request, results are in the format: </P><PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<P>&nbsp;</P>
+<H2>EsendexInboxService</H2>
+<P>The parameters for the EsendexInboxService constructor include optional arguments for a security certificate: </P><CODE>EsendexInboxService( $username, $password, $accountReference, $isSecure = false, $certificate = '' )</CODE> 
+<P>To send via HTTPS, use the following arguements: </P><CODE>$isSecure = true<BR>$certificate = "PATH TO CERTIFICATE FILE" ( e.g. C:\Windows\curl_ca_bundle.crt ). </CODE>
+<P>To send via HTTP these arguments can be ignored. </P>
+<H3><BR>GetMessages</H3>
+<P>The EsendexInboxService class allows you to retrieve your inbox messages in two ways. The GetMessages method can be used to retrieve small inboxes, the maximum number of messages that will be returned with this method is 100. </P>
+<H3><BR>GetLatestMessages</H3>
+<P>Inboxes holding more than 100 messages should use the GetLatestMessages method. This method takes two parameters, LastMessageID (this is the message IndexID) and MaxMessages. If LastMessageID is blank the latest number of messages (defined by MaxMessages), will be returned. Specify an IndexID to retrieve the messages that were received after it. MaxMessages is simply the Maximum number of messages to retrieve. This method allows you to retrieve your inbox messages in batches (an ideal batch size is around 50), which is more efficient than trying to recieve them all at once. </P>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    Messages
+</PRE>where Messages value is an array containing message arrays in the format: <PRE>    [ID] - identifier assigned to the message by Esendex.
+    [Originator] - mobile number of the message sender.
+    [Recipient] - recipient of the message.
+    [Body] - message content.
+    [RecievedAt] - time Esendex took delivery of the message.
+    [Type] - type contained in the body: Text, Binary, SmartMessage or Unicode.
+    [IndexID] - identifier for the message correlating to the date/time of the inbound message.
+</PRE>For an unsuccessful request, results are in the format:<PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<P>&nbsp;</P>
+<H2>EsendexContactService</H2>
+<P>The parameters for the EsendexContactService constructor include optional arguments for a security certificate: </P>
+<P><CODE>EsendexContactService( $username, $password, $account, $isSecure = false, $certificate = '' ) </CODE></P>
+<P>To send via HTTPS, use the following arguements: </P>
+<P><CODE>$isSecure = true<BR>$certificate = "PATH TO CERTIFICATE FILE" ( e.g. C:\Windows\curl_ca_bundle.crt )</CODE> </P>
+<P>To send via HTTP these arguments can be ignored.</P>
+<H3><BR>AddContact</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    ContactID=value</PRE>where ContactID value is the ID that Esendex assigned to the contact. 
+<P>For an unsuccessful request, results are in the format:</P><PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<H3><BR>GetContact</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    Messages=value</PRE>where Message value is an array containing contact arrays in the format: <PRE>    [ID] - ID that Esendex assigned to the contact
+    [QuickName] - reference that can be used as a recipient
+    [FirstName]
+    [LastName]
+    [TelephoneNumber]
+    [MobileNumber]
+    [StreetAddress1]
+    [StreetAddress2]
+    [Town]
+    [County]
+    [Postcode]
+    [Country]
+    [EmailAddress]
+    [ContactType] - type of contact (e.g. Contact)
+</PRE>For an unsuccessful request, results are in the format:<PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<H3><BR>AddGroup</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    GroupID=value</PRE>where GroupID value is the ID that Esendex assigned to the group. 
+<P>For an unsuccessful request, results are in the format:</P><PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<H3><BR>GetGroup</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    Messages=value</PRE>where Message value is an array containing group arrays in the format: <PRE>    [ID]
+    [Name]
+    [Description ]
+    [GroupType]
+</PRE>For an unsuccessful request, results are in the format:<PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<H3><BR>GetGroupMembers</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    Messages=value</PRE>where Message value is an array containing contact arrays in the format: <PRE>    [ID] - ID that Esendex assigned to the contact
+    [QuickName] - reference that can be used as a recipient
+    [FirstName]
+    [LastName]
+    [TelephoneNumber]
+    [MobileNumber]
+    [StreetAddress1]
+    [StreetAddress2]
+    [Town]
+    [County]
+    [Postcode]
+    [Country]
+    [EmailAddress]
+    [ContactType] - type of contact (e.g. Contact)
+</PRE>For an unsuccessful request, results are in the format:<PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<H3><BR>UpdateContact, DeleteContact, UpgradeGroup and DeleteGroup</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+</PRE>For an unsuccessful request, results are in the format:<PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<P>&nbsp;</P>
+<H2>EsendexSubscriptionService</H2>
+<P>The parameters for the EsendexSubscriptionService constructor include optional arguments for a security certificate: </P>
+<P><CODE>EsendexSubscriptionService( $username, $password, $account, $isSecure = false, $certificate = '' ) </CODE></P>
+<P>To send via HTTPS, use the following arguements:</P>
+<P><CODE>$isSecure = true<BR>$certificate = "PATH TO CERTIFICATE FILE" ( e.g. C:\Windows\curl_ca_bundle.crt )</CODE> </P>
+<P>To send via HTTP, these arguments can be ignored.</P>
+<H3><BR>StopSubscription</H3>
+<P>For a successful request, results are in the format: </P><PRE>    Result=OK
+    ContactID=value</PRE>where value is the the contact ID for the contact related to the subscription. If the subscription relates to a non-contact for the account, an empty Guid is returned. 
+<P>For an unsuccessful request, results are in the format:</P><PRE>    Result=Error
+    Message=value
+</PRE>where Message value is a URL encoded description of the error. 
+<P>&nbsp;</P>
+<H2>Example Files</H2>
+<P>Supplied in this PHP SDK are a number of simple example files that can be used as a starting point for using the Esendex services. These files can be found in the 'Example Files' directory also located in this SDK download. </P>
+<UL>
+<LI>EsendexSendServiceExample - provides examples for sending messages and querying the status of sent messages. </LI>
+<LI>EsendexInboxServiceExample - provides examples for retrieving and deleting messages from your inbox. </LI>
+<LI>EsendexSendContentServiceExample - provides examples&nbsp;for sending WAP Push messages. </LI>
+<LI>EsendexScheduledSendServiceExample - provides examples&nbsp;for sending messages to be sent at a specified time and querying the status of sent messages.</LI>
+<LI>EsendexContactServiceExample - provides&nbsp;examples of editing your contacts and groups.</LI>
+<LI>EsendexSubscriptionServiceExample - provides&nbsp;examples of managing subscriptions.&nbsp;</LI></UL>
+<H3>&nbsp;</H3>
+<h2>Further Information</h2>
+<H3>Timeout Period</H3>
+<P>The timeout period for all requests is set to 30 seconds and this should not need to be amended for all normal use of the Esendex services. If you wish to shorten or extend the time period, amend the line in the EsendexFormPostUtilities.php file to the value you require.<BR>If a timeout period is reached then the procedure returns with nothing. </P>
+<p>&nbsp;</p>
+<h2>Support</h2>
+<p>
+Any questions regarding this SDK can be sent to <a href="mailto:support@esendex.com">support@esendex.com</a>
+or alternatively, you can visit the <a href="http://www.esendex.com/support/">Esendex website</a>.
+</p>
+
+</body>
+
+</html>

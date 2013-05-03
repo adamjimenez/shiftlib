@@ -1,0 +1,25 @@
+input:focus, textarea:focus{
+	border-color:#000000;
+	background:#CCCCCC;
+}
+
+.draggable{
+	background-color:#E5E5E5;
+}
+
+.draggableOn{
+	background-color:#CCCCCC;
+}
+
+#sidelinks{
+	background:#fff;
+	border-color:#000;
+}
+#sidelinks li a, #sidelinks li strong{
+	color:#000;
+}
+#sidelinks li a:hover{
+	color:#000;
+}
+#sidelinks #current, #sidelinks #current a, #sidelinks #current a:hover{
+}

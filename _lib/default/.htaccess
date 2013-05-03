@@ -1,0 +1,10 @@
+RewriteEngine on
+RewriteBase /
+
+#redirect aliases to main domain
+#RewriteCond %{HTTP_HOST} !^www.domain.com$ [NC]
+#RewriteRule ^(.*)$ http://www.domain.com/$1 [L,R=301]
+
+#tpl system
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule (.*) _lib/default.php [L,QSA]

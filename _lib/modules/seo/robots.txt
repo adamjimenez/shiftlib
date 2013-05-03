@@ -1,0 +1,9 @@
+Sitemap: /sitemap.xml
+
+User-agent: *
+Disallow: /admin
+Disallow: /_inc
+Disallow: /_tpl
+Disallow: /_cron
+Disallow: /_lib
+Disallow: /old

@@ -1,0 +1,69 @@
+body {
+	background:#fff;
+}
+
+a{
+	color:#FC7215;
+}
+
+legend{
+	background:#000;
+	color:#fff;
+}
+
+fieldset{
+	border-color:#000000;
+	background:#fff;
+}
+
+input:focus, textarea:focus{
+	border-color:#000000;
+	background:#F7941E;
+}
+
+#menu ul #current a{
+	background:#F7941E;
+	color:#fff;
+}
+
+#content .inner{
+	background:#F7941E;
+}
+
+#content .inner a{
+	color:#fff;
+}
+
+.tabs .current{
+	background:#F5F5F5;
+}
+
+.handle{
+	border:1px solid #000000;
+	background:#ccc;
+}
+
+.files li{
+	border: 1px solid #ccc;
+}
+
+tr.result_selected td{
+	background:#FFFF99;
+}
+
+.box td{
+	background:#FFFFFF;
+}
+
+.box th, .table-heading td, .table-heading td a, .box th a{
+	color:#000;
+	background:#F5F5F5;
+}
+
+.box th, .box td{
+	border-bottom:1px solid #F7941E;
+}
+
+#content .inner .box a, #content .inner .tabs .current{
+	color:#FC7215;
+}

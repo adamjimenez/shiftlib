@@ -1,0 +1,11 @@
+FIXES
+======
+Db image resize
+Db image rotate
+Db edit text
+
+Features
+========
+directories
+drag drop
+icon view

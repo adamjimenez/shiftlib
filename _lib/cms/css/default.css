@@ -1,0 +1,50 @@
+body {
+	font-family: Verdana, Geneva, Arial, sans-serif;
+	font-size: small;
+	color: #333333;
+	text-align:left;
+	margin: 0 0 1em 0;
+	padding: 0; /* need for Opera */
+	background: #fff;
+	color: #333;
+	min-width: 610px;
+}
+
+img { border: 0; }
+
+h1 { font-size: 220%; font-weight: normal; }
+h2 { font-size: 150%; font-weight: normal; }
+h3 { font-size: 120%; }
+h4 { font-size: 100%; }
+h5 { font-size: 90%; }
+h6 { font-size: 90%; border: 0; }
+
+/* forms */
+form { margin: 0; }
+
+fieldset
+{
+	border: 1px solid #cccccc;
+	display:inline;
+}
+
+legend
+{
+	border: 1px solid #cccccc;
+	padding: 1px 6px;
+	text-align:left;
+}
+
+button{
+	background-color: #E9E9E9;
+	border: 1px solid #999999;
+	padding: 0px 2px;
+	margin:0px; 
+	overflow: visible;
+}
+
+/* misc */
+address{
+	font-style:normal;
+	text-align:right;
+}
