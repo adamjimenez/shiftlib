@@ -218,6 +218,11 @@ class cms{
 			$section = $sections;
 			$table = underscored($sections);
 
+            //set a default prefix to prevent pagination clashing
+            if( !$prefix ){
+                $prefix = $table;
+            }
+
 			$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
 
 			if( $id ){
@@ -998,10 +1003,6 @@ class cms{
 		<?php
 			break;
 			case 'phpuploads':
-
-				if( $value ){
-					$value=explode("\n",$value);
-				}
 		?>
             <textarea name="<?=$field_name;?>" class="upload"><?=$value;?></textarea>
 		<?php
@@ -1373,7 +1374,13 @@ class cms{
 			$auth->check_admin();
 		}
 
-		if( $auth->user['admin']==2 and $_GET['option'] and $_GET['option']!='preferences' and $_GET['option']!='logout' and !array_key_exists($_GET['option'],$auth->user['privileges'])  ){
+		if(
+            $auth->user['admin']==2 and
+            $_GET['option'] and $_GET['option']!='preferences' and
+            $_GET['option']!='logout' and
+            $_GET['option']!='login' and
+            !array_key_exists($_GET['option'],$auth->user['privileges'])
+        ){
 			die('access denied');
 		}
 
@@ -1825,9 +1832,10 @@ class cms{
 					") or trigger_error("SQL", E_USER_ERROR);
 				}
 			}else{
-				mysql_query("INSERT INTO `".$this->table."` SET
+				mysql_query("INSERT IGNORE INTO `".$this->table."` SET
 					".$this->query."
-				") or trigger_error("SQL", E_USER_ERROR);
+
+") or trigger_error("SQL", E_USER_ERROR);
 
 				if( $language=='en' ){
 					$this->id=mysql_insert_id();

@@ -17,7 +17,7 @@ class shiftmail extends mailer
 			'body' => $msg,
 		);
 
-		$ch = curl_init('http://mail.shiftcreate.com/rpc/send_email.php');
+		$ch = curl_init('http://shiftmail.shiftcreate.com/rpc/send_email.php');
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -31,7 +31,7 @@ class shiftmail extends mailer
 	{
 		// Prepare data for POST request
 		$data = "user=".$this->username."&password=".$this->password; // Send the POST request with cURL
-		$ch = curl_init('http://mail.shiftcreate.com/rpc/quota.php');
+		$ch = curl_init('http://shiftmail.shiftcreate.com/rpc/quota.php');
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -52,7 +52,7 @@ class shiftmail extends mailer
 		);
 
 		// Prepare data for POST request
-		$ch = curl_init('http://mail.shiftcreate.com/rpc/add_subscriber.php');
+		$ch = curl_init('http://shiftmail.shiftcreate.com/rpc/add_subscriber.php');
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

@@ -1,3 +1,7 @@
+form{
+    z-index: 1000;
+}
+
 .icon-default
 {
 	background: transparent no-repeat;

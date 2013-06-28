@@ -173,18 +173,7 @@ window.onload=init;
 		<?
 		foreach( $cms_buttons as $k=>$button ){
 			if( $this->section==$button['section'] and $button['page']=='view' ){
-    		    if( $button['submit']===false ){
-            	?>
-        		<button type="button" onclick="<?=$button['handler'];?>"><?=$button['label'];?></button>
-        		<?
-    		    }else{
-        		?>
-        		<form method="post" style="display:inline">
-        		<input type="hidden" name="custom_button" value="<?=$k;?>">
-        			<button type="submit"><?=$button['label'];?></button>
-        		</form>
-        		<?
-			    }
+                require('includes/button.php');
 			}
 		}
 		?>

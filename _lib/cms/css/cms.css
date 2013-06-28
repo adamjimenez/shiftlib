@@ -64,6 +64,10 @@ button{
 	overflow:visible;
 }
 
+img{
+    border: 0;
+}
+
 #menu{
 	padding:10px;
 }

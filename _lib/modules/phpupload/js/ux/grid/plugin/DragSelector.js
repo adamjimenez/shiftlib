@@ -55,7 +55,7 @@ Ext.define('Ext.ux.grid.plugin.DragSelector', {
         var me = this;
 
         me.tracker = new Ext.dd.DragTracker({
-            el: me.view.el, // new
+            el: me.view.el // new
         });
 
     },

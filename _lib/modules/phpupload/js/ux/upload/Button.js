@@ -1,7 +1,7 @@
 /**
  * @class Ext.ux.upload.Button
  * @extends Ext.button.Button
- * 
+ *
  * @author Harald Hanek (c) 2011-2012
  * @license http://harrydeluxe.mit-license.org
  */
@@ -10,7 +10,7 @@ Ext.define('Ext.ux.upload.Button', {
     alias: 'widget.uploadbutton',
     requires: ['Ext.ux.upload.Basic'],
     disabled: true,
-    
+
     constructor: function(config)
     {
         var me = this;
@@ -20,14 +20,14 @@ Ext.define('Ext.ux.upload.Button', {
         });
         me.callParent([config]);
     },
-    
+
     initComponent: function()
     {
         var me = this,
             e;
         me.callParent();
         me.uploader = me.createUploader();
-        
+
         if(me.uploader.drop_element && (e = Ext.getCmp(me.uploader.drop_element)))
         {
             e.addListener('afterRender', function()
@@ -52,7 +52,7 @@ Ext.define('Ext.ux.upload.Button', {
                 }
             };
         }
-        
+
         me.relayEvents(me.uploader, ['beforestart',
                 'uploadready',
                 'uploadstarted',
@@ -65,7 +65,7 @@ Ext.define('Ext.ux.upload.Button', {
                 'uploadprogress',
                 'storeempty']);
     },
-    
+
     /**
      * @private
      */

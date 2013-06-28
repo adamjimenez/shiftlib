@@ -5,6 +5,7 @@ function debug(log_txt) {
 }
 
 (function($) {
+    //needed to include input file
     $.fn.serializeAll = function() {
 		var rselectTextarea = /^(?:select|textarea)/i;
 		var rinput = /^(?:color|date|datetime|datetime-local|email|file|hidden|month|number|password|range|search|tel|text|time|url|week)$/i;
@@ -37,22 +38,18 @@ function debug(log_txt) {
 function remove_options(select)
 {
 	jQuery('option:not(:first-child)', select).remove();
-
 	select.disabled=true;
-
 	return true;
 }
 
 function add_options(result,target_option, value)
 {
-	models=eval('('+result+')');
+	models = eval('('+result+')');
 
 	var mod=target_option;
-
 	var selectedIndex=0;
 
-	if( !models )
-	{
+	if( !models ){
 		optval="";
 		opttext="Not Applicable"
 		mod.options[0]=new Option(opttext,optval, true,true);
@@ -206,7 +203,6 @@ function initForms()
 
 						if( tab && set_tab ){
 							debug('switch tab: '+tab);
-
 							set_tab(tab);
 						}
 
@@ -221,13 +217,10 @@ function initForms()
 				}else{
 					//submit form
 					window.onbeforeunload = null;
-
 					this.submit();
 				}
 			},this)
 		});
-
-		//show progress
 	});
 
 	//textarea
@@ -290,23 +283,6 @@ function initForms()
     		maxDate: '-1d'
     	});
     }
-
-	//timefields
-    /*
-	if( jQuery('input.time').length ){
-		jQuery("head").append("<link>");
-		var css = jQuery("head").children(":last");
-		css.attr({
-			rel:  "stylesheet",
-			type: "text/css",
-			href: "/_lib/js/jquery.ui.timepicker/jquery.ui.timepicker.css"
-		});
-
-		jQuery.getScript("/_lib/js/jquery.ui.timepicker/jquery.ui.timepicker.js").done(function(){
-			jQuery('input.time').timepicker();
-		});
-	}
-    */
 
 	//maps
 	if( jQuery('input.map').length ){
@@ -375,13 +351,6 @@ function initForms()
 			jQuery('select.rating').parent().stars({
 				inputType: "select"
 			});
-		});
-	}
-
-	//xinhas
-	if( jQuery('textarea.xinha').length ){
-		jQuery.getScript("/_lib/js/xinha-0.96.1/XinhaCore.js").done(function(){
-			xinha_init();
 		});
 	}
 
@@ -466,59 +435,6 @@ function myFileBrowser (field_name, url, type, win) {
     return false;
 }
 
-var maps={};
-var _editor_lang = "en";
-var _editor_url = "_lib/js/xinha-0.96.1/";
-var xinha_editors=[];
-
-var xinha_init = function(){
-	var i=1;
-	jQuery('textarea.xinha').each(function() {
-		this.id='xinha'+i;
-		xinha_editors.push(this.id);
-
-		i++;
-	});
-
-	var xinha_plugins =  [
-		'Phpupload',
-		'PasteText',
-		'Linker',
-		'Stylist',
-		'TableOperations',
-		'InsertAnchor'
-	];
-
-	// THIS BIT OF JAVASCRIPT LOADS THE PLUGINS, NO TOUCHING  :)
-	if(!Xinha.loadPlugins(xinha_plugins, xinha_init)) return;
-
-	var xinha_config = new Xinha.Config();
-
-	xinha_config.toolbar = [
-		["popupeditor"],
-		[ "formatblock", "space",
-		  "bold", "italic", "underline" ],
-
-		[ "justifyleft", "justifycenter", "justifyright", "justifyfull", "separator",
-		  "insertorderedlist", "insertunorderedlist","outdent","indent", "separator",
-		  "forecolor", "hilitecolor", "separator",
-		  'inserthorizontalrule', "createlink", 'insertimage', "killword", "htmlmode"
-		   ]
-	];
-
-	xinha_config.stripBaseHref=false;
-	xinha_config.stripScripts=false;
-	xinha_config.killWordOnPaste=true; //not supported by FF
-
-	/*
-	if( custom_css ){
-		xinha_config.stylistLoadStylesheet('/css/cms.css');
-	}*/
-
-	xinha_editors = Xinha.makeEditors(xinha_editors, xinha_config, xinha_plugins);
-	Xinha.startEditors(xinha_editors);
-}
-
 function numbersonly(e){
 	var unicode=e.charCode? e.charCode : e.keyCode
 
@@ -583,6 +499,7 @@ function selectNone(field){
 	});
 }
 
+/*
 function addRowrelated(aTable) {
 	rows++;
 
@@ -594,6 +511,7 @@ function addRowrelated(aTable) {
 	aCell = aRow.insertCell(1);
 	aCell.innerHTML= '<a href="javascript:;" onClick="delRow(this)">Delete</a>';
 }
+*/
 
 function delRow(row) {
 	rows--;

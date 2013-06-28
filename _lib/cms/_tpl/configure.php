@@ -382,6 +382,11 @@ if( $_POST['save'] ){
 		}
 	}
 
+    //default upload size
+    if(!$_POST['upload_config']['max_file_size']){
+        $_POST['upload_config']['max_file_size'] = 1000000;
+    }
+
 	$config='<?php
 #GENERAL SETTINGS
 $db_config["host"]="'.$_POST['db_config']['host'].'";

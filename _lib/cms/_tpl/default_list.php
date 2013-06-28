@@ -481,12 +481,12 @@ jQuery(document).ready(function() {
 </div>
 </form>
 
+<div id="progress" title="Importing"></div>
+
 <div id="csv" style="display:none; margin:0 auto; text-align:center;">
 	<fieldset>
 	<legend>Import</legend>
 	<form method="post" id="importForm" enctype="multipart/form-data" onSubmit="checkForm(); return false;">
-	<input type="hidden" name="UPLOAD_IDENTIFIER" id="uniq" value="<?=uniqid();?>"/>
-	<input type="hidden" name="MAX_FILE_SIZE" value="8000000" />
 	<input type="hidden" name="section" value="<?=$this->section;?>" />
 	Upload a <strong>comma delimited csv</strong> file.<br />
 	<br />
@@ -527,7 +527,10 @@ jQuery(document).ready(function() {
 		</table>
 		<br />
 		<p>
-			<label><input type="checkbox" name="filter_dupes" value="1" checked="checked" /> filter dupes?</label>
+			<label><input type="checkbox" name="update" value="1" /> update existing?</label>
+		</p>
+    	<p>
+			<label><input type="checkbox" name="validate" value="1" /> validate?</label>
 		</p>
 		<br />
 		<p>
@@ -584,15 +587,10 @@ jQuery(document).ready(function() {
 		<?
 		foreach( $cms_buttons as $k=>$button ){
 			if( $this->section==$button['section'] and $button['page']=='list' ){
-		?>
-		<form method="post" style="display:inline">
-		<input type="hidden" name="custom_button" value="<?=$k;?>">
-			<button type="submit"><?=$button['label'];?></button>
-		</form>
-	<?
-		}
-	}
-	?>
+                require('includes/button.php');
+    		}
+    	}
+    	?>
 	</fieldset>
 </div>
 

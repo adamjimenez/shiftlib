@@ -27,12 +27,12 @@ class paging {
 
 		//querystring
 		$qs=$_GET;
-		unset($qs[$this->prefix.'int_cur_position']);
+		unset($qs[$this->prefix.'page']);
 
 		$str_ext_argv=http_build_query($qs);
 
 		$this->int_num_result = (is_numeric($int_num_result)) ? $int_num_result : NULL;
-		$this->int_cur_position = (int) $_GET[$this->prefix.'int_cur_position'];
+		$this->page = (int) $_GET[$this->prefix.'page'];
 
 		if( is_numeric( $_GET[$this->prefix.'limit'] ) ){
 			$this->int_num_result = $_GET[$this->prefix.'limit'];
@@ -40,8 +40,8 @@ class paging {
 			$this->int_num_result = NULL;
 		}
 
-		if( $this->int_cur_position<0 ){
-			$this->int_cur_position=0;
+		if( $this->page<0 ){
+			$this->page=0;
 		}
 
 		$this->str_ext_argv = $str_ext_argv;
@@ -71,7 +71,7 @@ class paging {
 		}
 
 		if( $this->int_num_result and is_string($query) ){
-			$this->query .= " LIMIT ".$this->int_cur_position.", ".$this->int_num_result;
+			$this->query .= " LIMIT ".$this->page.", ".$this->int_num_result;
 		}
 
 		if(  is_string($query) ){
@@ -98,39 +98,39 @@ class paging {
 
 	function getCurrentPage()
 	{
-		$int_cur_page = ( $this->int_cur_position * $this->getNumberOfPage() ) / $this->total;
+		$int_cur_page = ( $this->page * $this->getNumberOfPage() ) / $this->total;
 		return number_format( $int_cur_page, 0 );
 	}
 
 	function getPagingArray()
 	{
-		$array_paging['lower'] = ( $this->int_cur_position + 1 );
+		$array_paging['lower'] = ( $this->page + 1 );
 
-		if( $this->int_cur_position + $this->int_num_result >= $this->total ){
+		if( $this->page + $this->int_num_result >= $this->total ){
 			$array_paging['upper'] = $this->total;
 		}elseif( $this->int_num_result ){
-			$array_paging['upper'] = ( $this->int_cur_position + $this->int_num_result );
+			$array_paging['upper'] = ( $this->page + $this->int_num_result );
 		}else{
 			$array_paging['upper'] = $this->total;
 		}
 
 		$array_paging['total'] = $this->total;
 
-		if ( $this->int_cur_position != 0 ){
-			$array_paging['previous_link'] = "<a href=\"?".$this->prefix."int_cur_position=".( $this->int_cur_position - $this->int_num_result ).'&'.$this->str_ext_argv ."\">";
-			$array_paging['start_link'] = "<a href=\"?".$this->prefix."int_cur_position=0".'&'.$this->str_ext_argv ."\">";
+		if ( $this->page != 0 ){
+			$array_paging['previous_link'] = "<a href=\"?".$this->prefix."page=".( $this->page - $this->int_num_result ).'&'.$this->str_ext_argv ."\">";
+			$array_paging['start_link'] = "<a href=\"?".$this->prefix."page=0".'&'.$this->str_ext_argv ."\">";
 		}else{
 			$array_paging['previous_link'] = '';
 			$array_paging['start_link'] = '';
 		}
 
-		if( $this->int_num_result and (($this->total - $this->int_cur_position) > $this->int_num_result) ){
-			$int_new_position = $this->int_cur_position + $this->int_num_result;
+		if( $this->int_num_result and (($this->total - $this->page) > $this->int_num_result) ){
+			$int_new_position = $this->page + $this->int_num_result;
 			$int_end=floor( ($this->total/10) );
 			$int_end*=10;
 
-			$array_paging['next_link'] = "<a href=\"?".$this->prefix."int_cur_position=$int_new_position&". $this->str_ext_argv ."\">";
-			$array_paging['end_link'] = "<a href=\"?".$this->prefix."int_cur_position=".$int_end."&". $this->str_ext_argv ."\">";
+			$array_paging['next_link'] = "<a href=\"?".$this->prefix."page=$int_new_position&". $this->str_ext_argv ."\">";
+			$array_paging['end_link'] = "<a href=\"?".$this->prefix."page=".$int_end."&". $this->str_ext_argv ."\">";
 		}else{
 			$array_paging['next_link'] = '';
 			$array_paging['end_link'] = '';
@@ -141,12 +141,13 @@ class paging {
 	function getPagingRowArray()
 	{
 		if($this->getNumberOfPage()>0){
-			$start=$this->getCurrentPage()-$this->num_pages;
-			$end=$this->getCurrentPage()+$this->num_pages;
+			$start = $this->getCurrentPage() - floor($this->num_pages/2);
 
 			if($start<0){
 				$start=0;
 			}
+
+    		$end = $start + $this->num_pages;
 
 			if($end>$this->getNumberOfPage()){
 				$end=$this->getNumberOfPage();
@@ -164,7 +165,7 @@ class paging {
 				$array_all_page[$j] = "<b>". ($i+1) ."</b>";
 			}else{
 				$int_new_position = ( $i * $this->int_num_result );
-				$array_all_page[$j] = "<a href=\"?".$this->prefix."int_cur_position=$int_new_position&$this->str_ext_argv\">". ($i+1) ."</a>";
+				$array_all_page[$j] = "<a href=\"?".$this->prefix."page=$int_new_position&$this->str_ext_argv\">". ($i+1) ."</a>";
 			}
 			$j++;
 		}
@@ -256,7 +257,7 @@ class paging {
 	function get_rows()
 	{
 		if( is_array($this->query) ){
-			return array_slice($this->query,$this->int_cur_position,$this->int_num_result);
+			return array_slice($this->query,$this->page,$this->int_num_result);
 		}
 	}
 

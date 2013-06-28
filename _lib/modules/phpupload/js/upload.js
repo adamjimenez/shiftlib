@@ -4,7 +4,7 @@ Ext.Loader.setConfig({
     enabled: true,
     paths: {
         'Ext.ux.DataView': '../ux/DataView/',
-        'Ext.ux': 'http://extjs.cachefly.net/extjs-4.1.1-gpl/examples/ux',
+        'Ext.ux': 'https://extjs.cachefly.net/extjs-4.1.1-gpl/examples/ux',
         'Ext.ux.upload': 'js/ux/upload',
         'Ext.ux.grid': 'js/ux/grid',
         'Ext.ux.container': 'js/ux/container'
@@ -136,10 +136,12 @@ Ext.onReady(function(){
 
     //plupload
     var uploadOptions = {
-        url: 'index.php?upload=1',
-        uploadpath: '/uploads/',
+        url: location.href,
+        headers: {
+            path: path
+        },
         autoStart: false,
-        chunk_size: '1mb',
+        //chunk_size: '8mb',
         max_file_size : '10mb',
         drop_element: 'dragload',
         statusQueuedText: 'Ready to upload',
@@ -155,7 +157,6 @@ Ext.onReady(function(){
     }
 
     var uploadButton = Ext.create('Ext.ux.upload.Button', {
-        renderTo: Ext.getBody(),
 		text: 'Upload files',
 		//singleFile: true,
 		plugins: [{
@@ -175,12 +176,18 @@ Ext.onReady(function(){
 
 			beforeupload: function(uploader, file)
 			{
-				console.log('beforeupload');
+                uploader.uploader.settings.multipart_params = {
+                    filename: file.files[0].name
+                };
+
+                uploader.uploader.settings.headers.path = location.hash.substr(1);
+
+				//console.log('beforeupload');
 			},
 
 			fileuploaded: function(uploader, file)
 			{
-				console.log('fileuploaded');
+				//console.log('fileuploaded');
 			},
 
 			uploadcomplete: function(uploader, success, failed)

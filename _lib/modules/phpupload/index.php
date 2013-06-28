@@ -1,4 +1,7 @@
 <?php
+$ext_version = '4.1.1';
+//$ext_version = '4.2.0';
+
 require(dirname(__FILE__).'/../../../_lib/base.php');
 
 //check user permissions
@@ -23,6 +26,11 @@ if( $_GET["path"] ){
     $path .= $_GET["path"].'/';
 }
 
+$request = getallheaders();
+if( $request["path"] ){
+    $path .= $request["path"];
+}
+
 if( $_GET["func"] == 'preview' ){
 	$image = image($_GET["file"], $_GET["w"], $_GET["h"], false);
     if( $image ){
@@ -32,7 +40,7 @@ if( $_GET["func"] == 'preview' ){
     exit;
 }
 
-if( $_GET["upload"] ){
+if( $_POST["filename"] ){
     // Make sure file is not cached (as it happens for example on iOS devices)
     header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
     header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -57,7 +65,7 @@ if( $_GET["upload"] ){
 
     //$fileName = isset($_REQUEST["name"]) ? $_REQUEST["name"] : uniqid("file_");
 
-    $fileName = $_FILES["file"]['name'];
+    $fileName = $_POST['filename'] ?: $_FILES["file"]['name'];
     $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
     $chunking = isset($_REQUEST["offset"]) && isset($_REQUEST["total"]);
 
@@ -85,7 +93,7 @@ if( $_GET["upload"] ){
 
     // Open temp file
     if (!$out = fopen("{$filePath}.part", $chunking ? "cb" : "wb")) {
-    	die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
+    	die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream. '.$filePath.'.part"}, "id" : "id"}');
     }
 
     if (!empty($_FILES)) {
@@ -261,8 +269,8 @@ if( $_GET["cmd"] ){
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.flash.js"></script>
 
     <!--ext start -->
-    <link rel="stylesheet" type="text/css" href="https://extjs.cachefly.net/ext-4.1.1-gpl/resources/css/ext-all-gray.css" />
-    <script type="text/javascript" src="https://extjs.cachefly.net/ext-4.1.1-gpl/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/resources/css/ext-all-gray.css" />
+    <script type="text/javascript" src="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/bootstrap.js"></script>
     <!--ext end -->
 
     <link rel="stylesheet" type="text/css" href="js/ux/container/ButtonSegment.css" />

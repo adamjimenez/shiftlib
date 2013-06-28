@@ -135,9 +135,6 @@ function changeFile()
     if(file.name.length < 1) {
 
     }
-    else if(file.size > 1000000) {
-        alert("File is too big");
-    }
     else {
         var data = new FormData();
         jQuery.each(this.files, function(i, file) {
@@ -244,4 +241,39 @@ function set_language()
 	for( var i in xinha_editors ){
 		xinha_editors[i].sizeEditor("100%");
 	}
+}
+
+//import csv
+function checkForm()
+{
+    var pars = $('#importForm').serialize();
+
+    console.log(pars);
+
+    var source = new EventSource('/_lib/cms/_ajax/import.php?'+pars);
+
+    $( "#progress" ).dialog({modal:true});
+
+    var results = {
+        0: 0,
+        1: 0,
+        2: 0
+    };
+	source.addEventListener('message', function(event) {
+		var data = JSON.parse(event.data);
+        console.log(data);
+        results[data.msg]++;
+
+        $('#progress').html('invalid: '+results[0]+'<br>imported: '+results[1]+'<br>duplicate: '+results[2]+'<br><br>');
+	}, false);
+
+	source.addEventListener('error', function(event) {
+		if (event.eventPhase == 2) { //EventSource.CLOSED
+			source.close();
+
+			$('#progress').append('Finished importing<br><a href="#" onclick="location.reload();">Return to list</a>');
+		}
+	}, false);
+
+	return false;
 }

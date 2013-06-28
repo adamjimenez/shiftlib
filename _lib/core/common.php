@@ -417,7 +417,13 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 				}
 			}
 
-			echo "<h2>This system is temporarily unavailable</h2>\n";
+    		echo '
+            <div style="text-align: center;">
+            <h2>Something went wrong</h2>
+            <p>The webmaster has been notified.</p>
+            <p><img src="http://cdn.grumpycats.com/wp-content/uploads/2012/09/GC-Gravatar-copy.png"></p>
+            </div>
+            ';
 
 			global $debug_ip, $auth;
 
@@ -888,7 +894,7 @@ function load_js($libs)
 	//load the js and css in the right order
 	if( $deps['google'] ){
 	?>
-	<script type="text/javascript" src="http<?=$_SERVER['HTTPS'] ? 's' : '' ;?>://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="//www.google.com/jsapi"></script>
 	<?php
 	}
 
@@ -896,9 +902,9 @@ function load_js($libs)
 		$ext_version='3.4.0'; //3.2.1
 	?>
 		<!--ext start -->
-		<link rel="stylesheet" type="text/css" href="http<?=($ssl) ? 's' : '' ;?>://extjs.cachefly.net/ext-<?=$ext_version;?>/resources/css/ext-all.css" />
-		<script type="text/javascript" src="http<?=($ssl) ? 's' : '' ;?>://extjs.cachefly.net/ext-<?=$ext_version;?>/adapter/ext/ext-base.js"></script>
-		<script type="text/javascript" src="http<?=($ssl) ? 's' : '' ;?>://extjs.cachefly.net/ext-<?=$ext_version;?>/ext-all.js"></script>
+		<link rel="stylesheet" type="text/css" href="//extjs.cachefly.net/ext-<?=$ext_version;?>/resources/css/ext-all.css" />
+		<script type="text/javascript" src="//extjs.cachefly.net/ext-<?=$ext_version;?>/adapter/ext/ext-base.js"></script>
+		<script type="text/javascript" src="//extjs.cachefly.net/ext-<?=$ext_version;?>/ext-all.js"></script>
 		<!--ext end -->
 	<?
 	}
@@ -906,19 +912,19 @@ function load_js($libs)
 	if( $deps['prototype'] ){
         //deprecated
 	?>
-		<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js" type="text/javascript"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js" type="text/javascript"></script>
 	<?php
 	}
 
 	if( $deps['scriptaculous'] ){
 	?>
-		<script src="https://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js" type="text/javascript"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js" type="text/javascript"></script>
 	<?php
 	}
 
 	if( $deps['jquery'] ){
 	?>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<?php
 		if( $deps['prototype'] ){
 		?>
@@ -938,21 +944,21 @@ function load_js($libs)
 	if( $deps['jqueryui'] ){
 		$jqueryui_version='1.8.18'; //3.2.1
 	?>
-		<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/jquery-ui.min.js"></script>
+		<link href="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/jquery-ui.min.js"></script>
 	<?php
 	}
 
 	if( $deps['lightbox'] ){
 	?>
-		<link rel="stylesheet" href="/_lib/js/lightbox/css/lightbox.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="//cdn.jsdelivr.net/lightbox2/2.51/css/lightbox.css" type="text/css" media="screen" />
 		<script src="/_lib/js/lightbox/js/lightbox.js" type="text/javascript"></script>
 	<?php
 	}
 
 	if( $deps['cycle'] ){
 	?>
-		<script src="/_lib/js/jquery.cycle.all.js" type="text/javascript"></script>
+		<script src="//cdn.jsdelivr.net/cycle/3.0.2/jquery.cycle.all.js" type="text/javascript"></script>
 	<?php
 	}
 
@@ -965,30 +971,25 @@ function load_js($libs)
 
 	if( $deps['mootools'] ){
 	?>
-		<script src="https://ajax.googleapis.com/ajax/libs/mootools/1.4.1/mootools-yui-compressed.js" type="text/javascript"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.1/mootools-yui-compressed.js" type="text/javascript"></script>
 	<?php
 	}
 
 	if( $deps['placeholder'] ){
 	?>
-		<script src="/_lib/js/jquery.placeholder.js" type="text/javascript"></script>
-		<script>
-		jQuery(document).ready(function() {
-			jQuery('input[placeholder], textarea[placeholder]').placeholder();
-		});
-		</script>
+		<script src="//cdn.jsdelivr.net/placeholder-shiv/0.2/placeholder-shiv.jquery.js" type="text/javascript"></script>
 	<?php
 	}
 
 	if( $deps['equalheights'] ){
 	?>
-		<script src="/_lib/js/jquery.equalheights.js" type="text/javascript"></script>
+		<script src="//cdn.jsdelivr.net/jquery.equalheights/1.3/jquery.equalheights.min.js" type="text/javascript"></script>
 	<?php
 	}
 
 	if( $deps['swfobject'] ){
 	?>
-		<script src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js" type="text/javascript"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js" type="text/javascript"></script>
 	<?php
 	}
 }
@@ -1229,6 +1230,8 @@ function thumb($file,$max_width=200,$max_height=200,$default=NULL,$save=NULL,$ou
 
 function truncate($string, $max = 50, $rep = '..')
 {
+    $string = strip_tags($string);
+
 	if(  strlen($string)>$max ){
 		$leave = $max - strlen ($rep);
 		return substr_replace($string, $rep, $leave);
@@ -1265,7 +1268,7 @@ function url_grab_title($url)
 	return null;
 }
 
-function validate($fields,$required,$array=false)
+function validate($fields, $required, $array=true)
 {
 	$errors=array();
 	foreach( $required as $v ){

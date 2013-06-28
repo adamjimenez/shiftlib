@@ -6,6 +6,9 @@ ini_set('auto_detect_line_endings', '1');
 $i=0;
 
 $handle = fopen(dirname(__FILE__).'/../tmp/'.$_SERVER['HTTP_HOST'].'.csv', "r");
+if( $handle=== false){
+    die('error opening '.$_SERVER['HTTP_HOST'].'.csv' );
+}
 while (($data = fgetcsv($handle, 1000, ",")) !== FALSE and $i<3 ) {
 	for ($j=0; $j < count($data); $j++) {
 		if($i==0){
@@ -18,7 +21,7 @@ while (($data = fgetcsv($handle, 1000, ",")) !== FALSE and $i<3 ) {
 			$rows[$i][]=$data[$j];
 		}
 	}
-	$i++;	
+	$i++;
 }
 
 ?>
@@ -43,7 +46,7 @@ foreach( $rows as $row ){
 		<? } ?>
 	</tr>
 <?
-	}			
+	}
 	$i++;
 }
 ?>
