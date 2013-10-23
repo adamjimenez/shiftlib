@@ -16,9 +16,9 @@ admin
 default password:
 123
 
-You can create new section from the configure area.
-The configude area also contains website code to place on your frontend.
+You can create new website sections from the configure area.
+The configure area also contains website code to place on your frontend.
 
-Your website pages will go in _tpl folder.
+Your HTML pages will go in _tpl folder.
 For a rundown on how the tpl system works, see:
 See: http://lib.shiftcreate.com/tpl-format
