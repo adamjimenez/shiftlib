@@ -265,8 +265,8 @@ class auth{
 		$errors=$cms->validate();
 
 		if( $errors ){
-			$this->show_error('Check the following fields:\n'.implode("\n",$errors));
-			return false;
+            print json_encode($errors);
+            exit;
 		}
 
 		if( $this->generate_password ){
@@ -737,6 +737,31 @@ class auth{
 				}
 			}
 		}
+	}
+
+	function get_formkey()
+	{
+		$token = dechex($this->user['id']).'.'.dechex(mt_rand());
+		$hash = sha1($this->form_secret.'-'.$token);
+		return htmlspecialchars($token.'-'.$hash);
+	}
+
+	function check_formkey($formkey)
+	{
+		$parts = explode('-', $formkey);
+
+		if (count($parts)==2) {
+			list($token, $hash) = $parts;
+
+			$arr=explode('.', $token);
+			$userid = hexdec($arr[0]);
+
+			if($userid==$this->user['id'] and $hash==sha1($this->form_secret.'-'.$token)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
 ?>

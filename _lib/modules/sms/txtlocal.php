@@ -14,7 +14,7 @@ class txtlocal extends sms
 		// Configuration variables
 		$info = "1";
 		$test = "0";
-		
+
 		// Data for text message
 		$from = $this->originator;
 		$selectednums = $recipients; //comma separated list e.g.: 447xxxxxxxxx,447xxxxxxxxx
@@ -29,21 +29,21 @@ class txtlocal extends sms
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$raw = curl_exec($ch); //This is the result from Txtlocal
 		curl_close($ch);
-		
+
 		$arr=explode('<br>',$raw);
-		
+
 		foreach($arr as $k=>$v){
 			$pair=explode('=',$v);
 			$results[$pair[0]]=$pair[1];
 		}
-		
+
 		if( !$result['Error'] ){
 			return true;
 		}else{
 			return $result['Error'];
 		}
 	}
-	
+
 	function quota()
 	{
 		// Prepare data for POST request
@@ -54,7 +54,7 @@ class txtlocal extends sms
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$credits = curl_exec($ch); //This is the number of credits you have left
 		curl_close($ch);
-	
+
 		return $credits;
 	}
 }

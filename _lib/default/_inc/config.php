@@ -68,6 +68,7 @@ $upload_config["allowed_exts"]=array(
 	'xls',
 	'ppt',
 	'zip',
+	'mp4',
 );
 
 #ADMIN AREA

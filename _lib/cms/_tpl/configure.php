@@ -90,7 +90,6 @@ foreach( $themes as $v ){
 	$theme_opts[]=str_replace('.css','',basename($v));
 }
 
-
 function array_to_csv($array)
 {
 	foreach( $array as $k=>$v ){
@@ -173,6 +172,7 @@ $field_opts=array(
 	'tel',
 	'mobile',
 	'url',
+	'ip',
 	'page-name',
 	'approve',
 	'language',
@@ -272,7 +272,6 @@ function loop_fields($field_arr) // should be anonymous function
 			}
 		}
 	}
-
 }
 
 if( $_POST['save'] ){
@@ -398,7 +397,6 @@ $db_config["dev_host"]="'.$_POST['db_config']['dev_host'].'";
 $db_config["dev_user"]="'.$_POST['db_config']['dev_user'].'";
 $db_config["dev_pass"]="'.$_POST['db_config']['dev_pass'].'";
 $db_config["dev_name"]="'.$_POST['db_config']['dev_name'].'";
-
 
 $live_site='.str_to_bool($_POST['live_site']).';
 $admin_config["theme"]="'.$_POST['admin_config']['theme'].'";
@@ -618,7 +616,6 @@ $vars["twitter"]["consumer_key"]="'.$_POST['vars']['twitter']['consumer_key'].'"
 $vars["twitter"]["consumer_secret"]="'.$_POST['vars']['twitter']['consumer_secret'].'";
 $vars["twitter"]["oauth_token"]="'.$_POST['vars']['twitter']['oauth_token'].'";
 $vars["twitter"]["oauth_secret"]="'.$_POST['vars']['twitter']['oauth_secret'].'";
-
 
 #OPTIONS
 ';
@@ -899,7 +896,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 </table>
 <!-- end of hidden tables -->
 
-
 <form method="post" id="form">
 <input type="hidden" name="save" value="1" />
 
@@ -1065,9 +1061,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         </tbody>
         </table>
         </div>
-
         <br>
-
 
         <h2>Drop-down options</h2>
 
@@ -1085,7 +1079,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <? if(is_array($val)){ ?>checked="checked"<? } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
         				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <? if(!is_array($val)){ ?>checked="checked"<? } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
         			</th>
-        			<td>
+        			<td valign="top">
         				<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <? if(!is_array($val)){ ?>style="display:none;"<? } ?>><?
         					if( is_assoc_array($val) ){
         						$options='';
@@ -1115,9 +1109,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</table>
         	</div>
         </div>
-
-        <br />
-
+        <br>
 
         <h2>Website code</h2>
         <ul style="list-style:inside; margin-left:20px;">
@@ -1234,11 +1226,11 @@ var section_templates=<?=json_encode($section_templates);?>;
         			<td><input type="text" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>"></td>
         		</tr>
             	<tr>
-        			<th>gc_merchant_id</th>
+        			<th>gc merchant id</th>
         			<td><input type="text" name="shop_config[gc_merchant_id]" value="<?=$shop_config['gc_merchant_id'];?>"></td>
         		</tr>
                 <tr>
-        			<th>gc_merchant_key</th>
+        			<th>gc merchant key</th>
         			<td><input type="text" name="shop_config[gc_merchant_key]" value="<?=$shop_config['gc_merchant_key'];?>"></td>
         		</tr>
         		<tr>
@@ -1395,35 +1387,35 @@ var section_templates=<?=json_encode($section_templates);?>;
         			<td><input type="text" name="auth_config[login]" value="<?=$auth_config['login'];?>"></td>
         		</tr>
         		<tr>
-        			<th>register_success</th>
+        			<th>register success</th>
         			<td><input type="text" name="auth_config[register_success]" value="<?=$auth_config['register_success'];?>"></td>
         		</tr>
         		<tr>
-        			<th>forgot_success</th>
+        			<th>forgot success</th>
         			<td><input type="text" name="auth_config[forgot_success]" value="<?=$auth_config['forgot_success'];?>"></td>
         		</tr>
         		<tr>
-        			<th>generate_password</th>
+        			<th>generate password</th>
         			<td><input type="checkbox" name="auth_config[generate_password]" value="1" <? if( $auth_config['generate_password'] ){ ?> checked<? } ?>></td>
         		</tr>
         		<tr>
-        			<th>secret_phrase</th>
+        			<th>secret phrase</th>
         			<td><input type="text" name="auth_config[secret_phrase]" value="<?=$auth_config['secret_phrase'];?>"></td>
         		</tr>
         		<tr>
-        			<th>cookie_prefix</th>
+        			<th>cookie prefix</th>
         			<td><input type="text" name="auth_config[cookie_prefix]" value="<?=$auth_config['cookie_prefix'];?>"></td>
         		</tr>
         		<tr>
-        			<th>registration_notification</th>
+        			<th>registration notification</th>
         			<td><input type="checkbox" name="auth_config[registration_notification]" value="1" <? if( $auth_config['registration_notification'] ){ ?> checked<? } ?>></td>
         		</tr>
         		<tr>
-        			<th>facebook_appId</th>
+        			<th>facebook appId</th>
         			<td><input type="text" name="auth_config[facebook_appId]" value="<?=$auth_config['facebook_appId'];?>"></td>
         		</tr>
         		<tr>
-        			<th>facebook_secret</th>
+        			<th>facebook secret</th>
         			<td><input type="text" name="auth_config[facebook_secret]" value="<?=$auth_config['facebook_secret'];?>"></td>
         		</tr>
         		<tr>
@@ -1441,15 +1433,15 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<div>
         			<table>
         			<tr>
-        				<th>upload_dir</th>
+        				<th>upload dir</th>
         				<td><input type="text" name="upload_config[upload_dir]" value="<?=$upload_config['upload_dir'];?>"></td>
         			</tr>
         			<tr>
-        				<th>web_path</th>
+        				<th>web path</th>
         				<td><input type="text" name="upload_config[web_path]" value="<?=$upload_config['web_path'];?>"></td>
         			</tr>
         			<tr>
-        				<th>max_file_size</th>
+        				<th>max file size</th>
         				<td><input type="text" name="upload_config[max_file_size]" value="<?=$upload_config['max_file_size'];?>"></td>
         			</tr>
         			<tr>
@@ -1461,47 +1453,39 @@ var section_templates=<?=json_encode($section_templates);?>;
         				</td>
         			</tr>
         			<tr>
-        				<th>mysql_table</th>
+        				<th>mysql table</th>
         				<td><input type="text" name="upload_config[mysql_table]" value="<?=$upload_config['mysql_table'];?>"></td>
         			</tr>
         			<tr>
-        				<th>overwrite_files</th>
+        				<th>overwrite files</th>
         				<td><input type="checkbox" name="upload_config[overwrite_files]" value="1" <? if( $upload_config['overwrite_files'] ){ ?> checked<? } ?>></td>
         			</tr>
         			<tr>
-        				<th>resize_images</th>
+        				<th>resize images</th>
         				<td><input type="checkbox" name="upload_config[resize_images]" value="1" <? if( $upload_config['resize_images'] ){ ?> checked<? } ?>></td>
         			</tr>
         			<tr>
-        				<th>resize_dimensions</th>
+        				<th>resize dimensions</th>
         				<td><input type="text" name="upload_config[resize_dimensions]" value="<?=implode('x',$upload_config['resize_dimensions']);?>"></td>
         			</tr>
         			<tr>
-        				<th>allowed_exts</th>
+        				<th>allowed exts</th>
         				<td><textarea type="text" name="upload_config[allowed_exts]" class="autogrow"><?=implode("\n",$upload_config['allowed_exts']);?></textarea></td>
         			</tr>
         			</table>
         		</div>
         	</div>
-
         </div>
     </div>
-
 </div>
 
-<br />
-
-
-
-	<p>
+<br>
+    <p>
 		<button type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
 		<button type="button" onclick="location.href='?option=configure'">Cancel</button>
 	</p>
 </div>
-
 <br>
-
-
 
 </form>
 

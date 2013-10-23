@@ -1,5 +1,5 @@
 function debug(log_txt) {
-    if (window.console != undefined) {
+    if (window.console !== undefined) {
         console.log(log_txt);
     }
 }
@@ -22,7 +22,7 @@ function debug(log_txt) {
 		.map(function( i, elem ){
 			var val = jQuery( this ).val();
 
-			return val == null ?
+			return val === null ?
 				null :
 				jQuery.isArray( val ) ?
 					jQuery.map( val, function( val, i ){
@@ -115,7 +115,7 @@ function initForms()
 		jQuery.ajax( url, {
 			dataType: 'json',
 			type: 'post',
-			data: jQuery(this).serializeAll()+'&validate=1',
+			data: jQuery(this).serializeAll()+'&validate=1&nospam=1',
 			success: jQuery.proxy(function(returned){
 				var errorMethod=jQuery(this).attr('errorMethod')=='alert' ? 'alert' : 'inline';
 
@@ -217,6 +217,10 @@ function initForms()
 				}else{
 					//submit form
 					window.onbeforeunload = null;
+
+                    //nospam
+                    $(this).append('<input type="hidden" name="nospam" value="1">');
+
 					this.submit();
 				}
 			},this)
@@ -337,24 +341,99 @@ function initForms()
 		});
 	}
 
-	//ratings
+    //ratings
 	if( jQuery('select.rating').length ){
 		jQuery("head").append("<link>");
 		var css = jQuery("head").children(":last");
 		css.attr({
 			rel:  "stylesheet",
 			type: "text/css",
-			href: "/_lib/js/jquery.ui.stars/jquery.ui.stars.css"
+			href: "/_lib/js/rateit/rateit.css"
 		});
 
-		jQuery.getScript("/_lib/js/jquery.ui.stars/jquery.ui.stars.js").done(function(){
-			jQuery('select.rating').parent().stars({
-				inputType: "select"
-			});
+		jQuery.getScript("/_lib/js/rateit/jquery.rateit.js").done(function(){
+            $( "select.rating" ).each(function( index ) {
+                var field = $(this);
+
+                field.after('<div></div>').next().rateit({
+                    backingfld: field,
+                    resetable: false,
+                    ispreset: true
+                }).bind('rated', function (event, value) {
+                    var field = $(this).prev();
+
+                    if( field.attr('section') ){
+                        jQuery.ajax( '/_lib/cms/_ajax/rating.php', {
+                            dataType: 'json',
+                			type: 'post',
+                			data: {
+                                section: field.attr('section'),
+                                field: field.attr('name'),
+                                item: field.attr('item'),
+                                value: value
+                			}
+                        });
+                    }
+                });
+            });
 		});
 	}
 
+	//tinymce4
+    var tinymce_url = '//tinymce.cachefly.net/4.0/';
+
+    jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
+        $('textarea.tinymce').tinymce({
+            script_url: tinymce_url+'tinymce.min.js',
+            plugins: [
+                "advlist autolink lists link image charmap print preview anchor",
+                "searchreplace visualblocks code fullscreen",
+                "insertdatetime media table contextmenu paste textcolor"
+            ],
+            toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
+
+            //content_css: "css/style.css",
+
+            /*
+            style_formats: [
+                {title: 'Bold text', inline: 'b'},
+                {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
+                {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
+                {title: 'Example 1', inline: 'span', classes: 'example1'},
+                {title: 'Example 2', inline: 'span', classes: 'example2'},
+                {title: 'Table styles'},
+                {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
+            ],
+            */
+
+            relative_urls : false,
+            remove_script_host : false,
+
+			// Drop lists for link/image/media/template dialogs
+			template_external_list_url : "lists/template_list.js",
+			external_link_list_url : "/_lib/js/tinymce.lists/links.php",
+			external_image_list_url : "/_lib/js/tinymce.lists/images.php",
+			media_external_list_url : "lists/media_list.js",
+
+            file_browser_callback :  function(field_name, url, type, win) {
+                tinymce.activeEditor.windowManager.open({
+                    title: "File browser",
+                    url: "/_lib/modules/phpupload/?field=field_name&file=url",
+                    width: 800,
+                    height: 600
+                }, {
+                    oninsert: function(url) {
+                        win.document.getElementById(field_name).value = url;
+                    }
+                });
+            },
+    		accessibility_warnings : false,
+            popup_css: false
+        });
+    });
+
 	//tinymce
+	/*
 	if( jQuery('textarea.tinymce').length ){
 		jQuery.getScript("/_lib/js/tinymce/jquery.tinymce.js").done(function(){
         	jQuery('textarea.tinymce').tinymce({
@@ -393,6 +472,7 @@ function initForms()
     		});
 		});
 	}
+    */
 
 	//files
 	if( jQuery('ul.files').length ){
@@ -407,8 +487,70 @@ function initForms()
 			});
 		});
 	}
+
+	//video files
+	if( jQuery('input[type="file"]').length ){
+		jQuery('input[type="file"]').change(function(evt) {
+            var input = this;
+            var files = evt.target.files; // FileList object
+
+            // Loop through the FileList and render image files as thumbnails.
+            for (var i = 0, f; f = files[i]; i++) {
+              // Only process image files.
+              if (!f.type.match('video.*')) {
+                continue;
+              }
+
+              var reader = new FileReader();
+
+              // Closure to capture the file information.
+              reader.onload = (function(theFile) {
+                return function(e) {
+                    // Render thumbnail.
+                    var video = document.createElement('video');
+                    video.style.display = 'none';
+                    video.src = e.target.result;
+
+                    input.parentNode.insertBefore(video, input.nextSibling);
+
+                    video.addEventListener('canplay', function() {
+                        this.currentTime = this.duration / 2;
+                    }, false);
+
+                    video.addEventListener('seeked', function() {
+                        var filename = 'thumb';
+                        var w = video.videoWidth;//video.videoWidth * scaleFactor;
+                        var h = video.videoHeight;//video.videoHeight * scaleFactor;
+                        var canvas = document.createElement('canvas');
+
+                        canvas.width = w;
+                        canvas.height = h;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0, w, h);
+
+                        //document.body.appendChild(canvas);
+                        var data = canvas.toDataURL("image/jpg");
+
+                        var thumbInput = document.createElement('textarea');
+                        thumbInput.style.display = 'none';
+
+                        input.parentNode.insertBefore(thumbInput, input.nextSibling);
+                        thumbInput.name = 'file_thumb';
+                        thumbInput.value = data;
+
+                        video.parentNode.removeChild(video);
+                    }, false);
+                };
+              })(f);
+
+              // Read in the image file as a data URL.
+              reader.readAsDataURL(f);
+            }
+		});
+	}
 }
 
+/*
 function myFileBrowser (field_name, url, type, win) {
     var cmsURL = '/_lib/modules/phpupload/?field=field_name&file=url';    // script URL - use an absolute path!
     if (cmsURL.indexOf("?") < 0) {
@@ -434,6 +576,7 @@ function myFileBrowser (field_name, url, type, win) {
     });
     return false;
 }
+*/
 
 function numbersonly(e){
 	var unicode=e.charCode? e.charCode : e.keyCode
@@ -499,19 +642,22 @@ function selectNone(field){
 	});
 }
 
-/*
-function addRowrelated(aTable) {
-	rows++;
+function clearFile(field)
+{
+    var inputHidden = document.getElementById(field);
+	inputFile = document.createElement("input");
+	inputFile.setAttribute('name', field);
+	inputFile.setAttribute('type', 'file');
 
-	aRow = aTable.insertRow(aTable.rows.length);
+	var cell=inputHidden.parentNode;
 
-	aCell = aRow.insertCell(0);
-	aCell.innerHTML= '<select name="related[]" id="related'+rows+'"></select>';
+    while ( cell.childNodes.length >= 1 )
+    {
+        cell.removeChild( cell.firstChild );
+    }
 
-	aCell = aRow.insertCell(1);
-	aCell.innerHTML= '<a href="javascript:;" onClick="delRow(this)">Delete</a>';
+	cell.appendChild(inputFile);
 }
-*/
 
 function delRow(row) {
 	rows--;

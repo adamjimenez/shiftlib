@@ -32,7 +32,6 @@ if( count($languages) ){
 }
 
 if( isset($_POST['save']) ){
-
 	$errors=$this->validate();
 
 	if( count( $errors ) ){
@@ -69,9 +68,19 @@ if( isset($_POST['save']) ){
 }
 
 //label
-$label=$this->get_label();
+$label = $this->get_label();
 
 $title=ucfirst($this->section).' | '.($label ? $label : '&lt;blank&gt; | Edit');
+
+//increment value
+if( $_GET["id"] ){
+    $id = $_GET["id"];
+}else{
+    $result = mysql_query("SHOW TABLE STATUS LIKE '".underscored($this->section)."'");
+    $row = mysql_fetch_array($result);
+    $id = $row['Auto_increment'];
+    mysql_free_result($result);
+}
 ?>
 
 <script type="text/javascript">
@@ -82,7 +91,9 @@ $(function() {
 
 	init_tabs();
 
-    $('form input:visible:first').focus()
+    $('form input:visible:first').focus();
+
+    var phpupload_defaut_dir = '<?=$_GET["option"];?>/<?=$id;?>';
 });
 </script>
 
@@ -139,7 +150,7 @@ foreach( $languages as $language ){
 		<table border="1" cellspacing="0" cellpadding="5" width="100%">
 		<?
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
-			if( in_array($type,array('id','position','timestamp','language','translated-from','hidden')) ){
+			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','hidden')) ){
 				continue;
 			}
 

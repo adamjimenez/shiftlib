@@ -1,51 +1,64 @@
 <?
+if( !$shop_enabled ){
+    die('shop is not enabled');
+}
+
 $cust=sql_query("SELECT * FROM users WHERE id='".escape($_GET['cust'])."'");
 
-$orders=sql_query("SELECT *,UNIX_TIMESTAMP(date) as 'date' FROM orders WHERE 
-	status!='pending' AND status!='deleted' 
-	ORDER BY date DESC");
+$query = "SELECT *,UNIX_TIMESTAMP(date) as 'date' FROM orders
+    WHERE
+    	status!='pending' AND
+    	status!='deleted'
+";
+
+$p = new paging( $query, 20, 'date', false);
+
+$paging = $p->get_paging();
+$orders = sql_query($p->query);
 ?>
 <div id="container">
-<h1>Previous orders <span style="color:red"><?=$cust[0]['name'];?> <?=$cust[0]['surname'];?></span></h1>
-<div align="center">
+    <h1>Previous orders <span style="color:red"><?=$cust[0]['name'];?> <?=$cust[0]['surname'];?></span></h1>
 
-<form method="get">
-<input type="hidden" name="option" value="order">
-<input type="text" name="id">
-<button type="submit">Lookup order</button>
-</form>
+    <div align="center">
+        <form method="get">
+        <input type="hidden" name="option" value="order">
+        <input type="text" name="id">
+        <button type="submit">Lookup order</button>
+        </form>
 
-<table width="420" border="1" cellspacing="0" cellpadding="4" align="center" style="margin:5px" class="box">
-<tr>
-	<th>Date</th>
-	<th>Name</th>
-	<th>Ref</th>
-	<th>Amount</th>
-	<th>Status</th>
-</tr>
-<?
-if( count($orders) ){
-	foreach( $orders as $k=>$v ){
-?>
-<tr>
-	<td><?=date('d-m-Y',$v['date']);?></td>
-	<td><?=$v['name'];?></td>
-	<td><a href="?option=order&id=<?=$v['id'];?>"><?=$v['id'];?></a></td>
-	<td>&pound;<?=number_format(($v['total']),2);?></td>
-	<td><?=$v['status'];?></td>
-</tr>
-<?
-	}
-}else{
-?>
-<tr>
-	<td colspan="5">No previous orders</td>
-</tr>
-<?
-}
-?>
-</table>
+        <table width="420" border="1" cellspacing="0" cellpadding="4" align="center" style="margin:5px" class="box">
+        <tr>
+        	<th>Date</th>
+        	<th>Name</th>
+        	<th>Ref</th>
+        	<th>Amount</th>
+        	<th>Status</th>
+        </tr>
+        <?
+        if( count($orders) ){
+        	foreach( $orders as $k=>$v ){
+        ?>
+        <tr>
+        	<td><?=date('d-m-Y',$v['date']);?></td>
+        	<td><?=$v['name'];?></td>
+        	<td><a href="?option=order&id=<?=$v['id'];?>"><?=$v['id'];?></a></td>
+        	<td>&pound;<?=number_format(($v['total']),2);?></td>
+        	<td><?=$v['status'];?></td>
+        </tr>
+        <?
+        	}
+        }else{
+        ?>
+        <tr>
+        	<td colspan="5">No previous orders</td>
+        </tr>
+        <?
+        }
+        ?>
+        </table>
 
-</div>
-
+        <p>
+            <?=$paging;?>
+        </p>
+    </div>
 </div>

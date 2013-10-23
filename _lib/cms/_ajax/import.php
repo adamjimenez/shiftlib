@@ -12,8 +12,8 @@ header('Cache-Control: no-cache');
 function send_msg($id , $msg) {
     echo "id: $id" . PHP_EOL;
     echo "data: {\n";
-	echo "data: \"msg\": \"$msg\", \n";
-	echo "data: \"id\": $id\n";
+    echo "data: \"msg\": \"$msg\", \n";
+    echo "data: \"id\": $id\n";
 	echo "data: }\n";
 	echo PHP_EOL;
 	ob_flush();
@@ -82,7 +82,7 @@ if( !$errors ){
         						//CMS SAVE
         						$cms->set_section($vars['options'][$k]);
 
-        						$data=array(
+        						$data = array(
         							key($vars['fields'][$vars['options'][$k]])=>trim($v)
         						);
 
@@ -122,13 +122,20 @@ if( !$errors ){
         		}
 
         		if( $vars['fields'][$_POST['section']][$k]=='select-multiple' or $vars['fields'][$_POST['section']][$k]=='checkboxes' ){
+            	    $data[$field_name] = explode("\n", $v);
+
+                    //trim data
+                    foreach( $data[$field_name] as $key=>$val ){
+                        $data[$field_name][$key] = trim($val);
+                    }
+
         			continue;
         		}
 
-        		$v=trim($v);
+        		$v = trim($v);
 
         		if( $v ){
-        			$data[$field_name]=$v;
+        			$data[$field_name] = $v;
         			$query.="`$field_name`='".escape($v)."',\n";
         			$where.="`$field_name`='".escape($v)."' AND\n";
         		}

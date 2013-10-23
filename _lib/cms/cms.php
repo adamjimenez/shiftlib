@@ -388,6 +388,7 @@ class cms{
 								}
 							break;
 							case 'int':
+							case 'decimal':
         					case 'position':
 								if( $conditions['func'][$field_name] ){
 									$where[]="T_$table.".$field_name." ".escape($conditions['func'][$field_name])." '".escape($value)."'";
@@ -743,7 +744,7 @@ class cms{
 			break;
 			case 'url':
 		?>
-			<input type="text" name="<?=$field_name;?>" value="<?=$value ? htmlspecialchars($value) : 'http://';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
+			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'postcode':
@@ -921,23 +922,20 @@ class cms{
 		?>
 				<? /*
                 Select <a href="javascript:;" onclick="selectAll('<?=$field_name;?>');">All</a>, <a href="javascript:;" onclick="selectNone('<?=$field_name;?>');">None</a><br />
-                */ ?>
+                */
 
-				<? if( is_assoc_array($vars['options'][$name]) ){ ?>
-					<? foreach( $vars['options'][$name] as  $k=>$v ){ ?>
-					<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$k;?>" <? if( $readonly ){ ?>readonly<? } ?> <? if( in_array($k,$value) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><?=$separator ? $separator : '<br>';?>
-					<? } ?>
-				<? }else{ ?>
-					<? foreach( $vars['options'][$name] as  $k=>$v ){ ?>
-					<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$v;?>" <? if( $readonly ){ ?>readonly<? } ?> <? if( in_array($v,$value) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><?=$separator ? $separator : '<br>';?>
-					<? } ?>
-				<? } ?>
-			<? } ?>
-		<?php
+                $is_assoc = is_assoc_array($vars['options'][$name]);
+
+                foreach( $vars['options'][$name] as  $k=>$v ){
+                    $val = $is_assoc ? $k : $v;
+                ?>
+    			    <label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( $readonly ){ ?>readonly<? } ?> <? if( in_array($val, $value) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><?=$separator ? $separator : '<br>';?>
+				<?
+                }
+            }
+
 			break;
 			case 'parent':
-		?>
-		<?php
 				$parent_field=array_search('parent',$vars['fields'][$this->section]);
 
 				reset($vars['fields'][$this->section]);
@@ -1039,6 +1037,7 @@ class cms{
 			break;
 			case 'rating':
 				$opts['rating']=array(
+        			0=>'No Rating',
 					1=>'Very Poor',
 					2=>'Poor',
 					3=>'Average',
@@ -1664,7 +1663,24 @@ class cms{
 								id='".escape($data[$name])."'
 							") or trigger_error("SQL", E_USER_ERROR);
 						}
+
+						//thumb
+						if( $_POST[$name.'_thumb'] ){
+                            // Grab the MIME type and the data with a regex for convenience
+                            if ( preg_match('/data:([^;]*);base64,(.*)/', $_POST[$name.'_thumb'], $matches) ) {
+                                // Decode the data
+                                $thumb = $matches[2];
+                                $thumb = str_replace(' ','+',$thumb);
+                                $thumb = base64_decode($thumb);
+
+                                $file_name = $vars['files']['dir'].$data[$name].'_thumb';
+                                file_put_contents($file_name, $thumb);
+                            }else{
+                                die('no mime type');
+                            }
+						}
 					}elseif( !$data[$name] and $row[$name] ){
+
 						mysql_query("DELETE FROM files
 							WHERE
 							id='".escape($row[$name])."'
@@ -1738,7 +1754,14 @@ class cms{
 				}elseif( $v=='mobile' ){
 					if( $data[$name] ){
 						$data[$name]=format_mobile($data[$name]);
+
 					}
+				}elseif( $v=='ip' ){
+				    if( $this->id ){
+				        continue;
+				    }
+
+					$data[$name] = $_SERVER["REMOTE_ADDR"];
 				}elseif( $v=='page-name' ){
 					$data[$name] = strtolower(str_replace(' ','-',$data[$name]));
                     $data[$name] = preg_replace("/[^A-Za-z0-9\-]/", '', $data[$name]);
@@ -1764,11 +1787,11 @@ class cms{
 	{
 		global $vars,$languages,$auth;
 
+		$this->trigger_event('beforeSave');
+
 		if( !isset($data) ){
 			$data=$_POST;
 		}
-
-		$this->trigger_event('beforeSave');
 
 		if( count($languages) and !in_array('en',$languages) ){
 			$languages=array_merge(array('en'),$languages);
@@ -1995,9 +2018,18 @@ class cms{
 
 		if( $vars['fields'][$this->section] ){
 			check_table($this->table, $vars['fields'][$this->section]);
+
+			//check files table
+			if(
+			    in_array('file', $vars['fields'][$this->section]) or
+			    in_array('files', $vars['fields'][$this->section])
+			){
+			    check_table('files', $this->file_fields);
+			}
 		}else{
 			die('no fields');
 		}
+
 
 		if($_GET['edit']){
 			$this->template('default_edit.php',true);

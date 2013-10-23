@@ -380,15 +380,14 @@ jQuery(document).ready(function() {
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
-					<? if( is_assoc_array($vars['options'][$name]) ){ ?>
-						<? foreach( $vars['options'][$name] as  $k=>$v ){ ?>
-						<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$k;?>" <? if( in_array($k,$_GET[$field_name]) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><br />
-						<? } ?>
-					<? }else{ ?>
-						<? foreach( $vars['options'][$name] as  $k=>$v ){ ?>
-						<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$v;?>" <? if( in_array($v,$_GET[$field_name]) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><br />
-						<? } ?>
+                    <div style="max-height: 200px; width: 200px; overflow: scroll">
+    				<?
+                    foreach( $vars['options'][$name] as  $k=>$v ){
+                        $val = $is_assoc ? $k : $v;
+                    ?>
+					<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( in_array($k,$_GET[$field_name]) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><br />
 					<? } ?>
+                    </div>
 				</td>
 			</tr>
 			<? }elseif( $type == 'checkbox' ){ ?>
@@ -449,7 +448,7 @@ jQuery(document).ready(function() {
 					<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="7">
 				</td>
 			</tr>
-			<? }elseif( $type == 'int' ){ ?>
+			<? }elseif( $type == 'int' or $type=='decimal' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>

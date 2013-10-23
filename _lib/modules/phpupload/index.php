@@ -4,6 +4,19 @@ $ext_version = '4.1.1';
 
 require(dirname(__FILE__).'/../../../_lib/base.php');
 
+function get_all_headers()
+{
+    $headers = '';
+   foreach ($_SERVER as $name => $value)
+   {
+       if (substr($name, 0, 5) == 'HTTP_')
+       {
+           $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
+       }
+   }
+   return $headers;
+}
+
 //check user permissions
 $auth->check_login();
 
@@ -20,13 +33,20 @@ if( substr($root, -1)!=='/' ){
     $root .= '/';
 }
 
+$upload_config['root'] = '/'.$root;
+
 $path = $root;
 
 if( $_GET["path"] ){
     $path .= $_GET["path"].'/';
+
+    if( !file_exists($path) ){
+        mkdir($path);
+    }
 }
 
-$request = getallheaders();
+$request = get_all_headers();
+
 if( $request["path"] ){
     $path .= $request["path"];
 }
@@ -65,7 +85,7 @@ if( $_POST["filename"] ){
 
     //$fileName = isset($_REQUEST["name"]) ? $_REQUEST["name"] : uniqid("file_");
 
-    $fileName = $_POST['filename'] ?: $_FILES["file"]['name'];
+    $fileName = $_FILES["file"]['name'] ?: $_POST['filename'];
     $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
     $chunking = isset($_REQUEST["offset"]) && isset($_REQUEST["total"]);
 
@@ -140,13 +160,10 @@ if($_GET["download"]){
 }
 
 if( $_GET["cmd"] ){
-    $request = file_get_contents('php://input');
-    $data = json_decode($request, true);
+    $file = json_decode(file_get_contents('php://input'), true);
 
-    $file = $data;
-
-    switch($_SERVER['REQUEST_METHOD']){
-        case 'GET':
+    switch($_GET["cmd"]){
+        case 'get':
             $files = array();
 
             foreach (glob($path.'*') as $pathname) {
@@ -185,23 +202,85 @@ if( $_GET["cmd"] ){
             $result['files'] = $files;
         break;
 
-        case 'DELETE':
+        case 'delete':
             if( $file['id'] ){
                 $files = array($file);
             }
 
             foreach( $files as $file ){
                 if( $file['leaf'] ){
-                    unlink($path.$file['id']);
+                    if( unlink($path.$file['id']) ){
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'success'=>true
+                        );
+                    }else{
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'message'=>'delete failed',
+                            'success'=>false
+                        );
+                    }
                 }else{
-                    rmdir($path.$file['id']);
+                    if( rmdir($path.$file['id']) ){
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'success'=>true
+                        );
+                    }else{
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'message'=>'delete failed',
+                            'success'=>false
+                        );
+                    }
                 }
             }
         break;
 
-        case 'PUT':
+        case 'create':
+            //new folder
+            if( $file["id"]==null and $file["name"] ){
+                if( mkdir($path.$file["name"]) ){
+                    $result = array(
+                        'data'=>array(
+                            'id'=>$file["name"],
+                            'name'=>$file["name"]
+                        ),
+                        'message'=>'created folder',
+                        'success'=>true
+                    );
+                }else{
+                    $result = array(
+                        'data'=>array(
+                            'id'=>$file["name"],
+                            'name'=>$file["name"]
+                        ),
+                        'message'=>'couldn\'t create folder',
+                        'success'=>false
+                    );
+                }
+            }
+        break;
+
+        case 'update':
             //rename
-            if( $file['name'] and $file['id'] ){
+            if( $request["name"] and $request['id'] ){
+                //rename
+                $file = $request;
+
                 if( rename($path.$file['id'], $path.$file['name']) ){
                     $result[] = array(
                         'data'=>array(
@@ -224,21 +303,6 @@ if( $_GET["cmd"] ){
             }
         break;
 
-        case 'POST':
-            //new folder
-            if( $file["id"]==null and $file["name"] ){
-                mkdir($path.$file["name"]);
-                $result = array(
-                    'data'=>array(
-                        'id'=>$file["name"],
-                        'name'=>$file["name"]
-                    ),
-                    'message'=>'created folder',
-                    'success'=>true
-                );
-            }
-        break;
-
         default:
             print $_SERVER['REQUEST_METHOD'];
         break;
@@ -258,9 +322,6 @@ if( $_GET["cmd"] ){
     <script>
     var config = <?=json_encode($upload_config);?>;
     </script>
-
-    <!-- tinymce -->
-    <script type="text/javascript" src="/_lib/js/tinymce/tiny_mce_popup.js"></script>
 
     <!-- plupload -->
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.js"></script>

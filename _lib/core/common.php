@@ -17,8 +17,25 @@ register_shutdown_function('shutdown');
 
 ini_set('include_path', '.:/usr/share/pear/:');
 
+if (get_magic_quotes_gpc()) {
+    function stripslashes_gpc(&$value)
+    {
+        $value = stripslashes($value);
+    }
+    array_walk_recursive($_GET, 'stripslashes_gpc');
+    array_walk_recursive($_POST, 'stripslashes_gpc');
+    array_walk_recursive($_COOKIE, 'stripslashes_gpc');
+    array_walk_recursive($_REQUEST, 'stripslashes_gpc');
+}
+
 function image($file, $w, $h, $attribs=true, $crop=false)
 {
+    $file = trim($file);
+
+    if( !$file ){
+        return false;
+    }
+
     //$file=urldecode($file);
 	if( substr($file,0,7)=='http://' ){
 		$path = $file;
@@ -30,10 +47,6 @@ function image($file, $w, $h, $attribs=true, $crop=false)
     }
 
 	if( !$path ){
-		if( !preg_match("/(gif|png|jpg|jpeg)/",strtolower(file_ext($file))) or !file_exists('uploads/'.$file) ){
-			return false;
-		}
-
 		$cached = 'uploads/cache/'.dirname($file).'/'.$w.'x'.$h.($crop ? '(1)': '').'-'.basename($file);
 
 		if( !file_exists($cached) or filemtime($cached)<filemtime('uploads/'.$file) ){
@@ -41,7 +54,12 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			ignore_user_abort();
 
 			// configure these
-			$upload_path = 'uploads/';
+			if( is_numeric($file) ){
+			    $upload_path = $vars['files']['dir'];
+			}else{
+			    $upload_path = 'uploads/';
+			}
+
 			$quality = 90;
 			$cache_dir = 'uploads/cache/';
 
@@ -49,6 +67,10 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			$max_width = isset($w) ? $w : null;
 			$max_height = isset($h) ? $h : null;
 			$image_path = $upload_path.$file;
+
+    		if( !file_exists($image_path) ){
+    			return false;
+    		}
 
 			// Load image
 			$img = null;
@@ -65,6 +87,9 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 				case 'gif':
 					$img = @imagecreatefromgif($image_path);
 				break;
+				default:
+					$img = @imagecreatefromstring(file_get_contents($image_path));
+			    break;
 			}
 
 			// If an image was successfully loaded, test the image for size
@@ -265,7 +290,7 @@ function current_tab( $tab, $index=0 )
 	global $sections;
 
 	if( $sections[$index]==$tab ){
-		echo ' class="current over"';
+		echo ' class="current active"';
 	}
 }
 
@@ -355,6 +380,14 @@ function email_template($email,$subject,$reps,$headers,$language='en')
 	}
 
 	mail($email,$template['subject'],$body,$headers);
+}
+
+function starts_with($haystack, $needle){
+    return $needle === "" || strpos($haystack, $needle) === 0;
+}
+
+function ends_with($haystack, $needle){
+    return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
 }
 
 function error($error){
@@ -488,6 +521,7 @@ function form_to_db($type)
 		case 'textarea':
 		case 'editor':
 		case 'files':
+		case 'phpuploads':
 			return 'TEXT';
 		break;
 		case 'checkbox':
@@ -824,7 +858,7 @@ function is_email($email)
 		return false;
 	}
 
-	preg_match_all("^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^",$email,$matches);
+	preg_match_all("^([a-zA-Z0-9_\-\.\+]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^",$email,$matches);
 
 	if($matches[0][0]!=$email){
 		return false;
@@ -875,6 +909,7 @@ function load_js($libs)
 			break;
 			case 'jqueryui':
 			case 'cycle':
+			case 'cycle2':
 			case 'colorbox':
 			case 'lightbox':
 				$deps['jquery']=true;
@@ -962,6 +997,13 @@ function load_js($libs)
 	<?php
 	}
 
+	if( $deps['cycle2'] ){
+	?>
+		<? /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js" type="text/javascript"></script>*/ ?>
+		<script src="/_lib/js/jquery.cycle2.js" type="text/javascript"></script>
+	<?php
+	}
+
 	if( $deps['colorbox'] ){
 	?>
 		<link rel="stylesheet" href="/_lib/js/jquery.colorbox/colorbox.css" type="text/css" media="screen" />
@@ -987,10 +1029,30 @@ function load_js($libs)
 	<?php
 	}
 
+	if( $deps['responsive-nav'] ){
+	?>
+		<link rel="stylesheet" href="//cdn.jsdelivr.net/responsive-nav/1.0.15/responsive-nav.css" type="text/css" />
+		<script src="//cdn.jsdelivr.net/responsive-nav/1.0.15/responsive-nav.js"></script>
+	<?php
+	}
+
 	if( $deps['swfobject'] ){
 	?>
 		<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js" type="text/javascript"></script>
 	<?php
+	}
+
+	if( $deps['bootstrap'] ){
+	?>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <?php
 	}
 }
 

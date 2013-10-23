@@ -27,15 +27,19 @@ Ext.require([
 
 var path = location.hash.substr(1);
 var callback = function(files){
-    console.log(files);
+    //console.log(files);
 
-    var URL = '/uploads/'+files[0];
-    var win = tinyMCEPopup.getWindowArg("window");
+    var URL = config.root+files[0];
+    //var win = tinyMCEPopup.getWindowArg("window");
 
     // insert information now
-    win.document.getElementById(tinyMCEPopup.getWindowArg("input")).value = URL;
+    //win.document.getElementById(tinyMCEPopup.getWindowArg("input")).value = URL;
+
+    top.tinymce.activeEditor.windowManager.getParams().oninsert(URL);
+    top.tinymce.activeEditor.windowManager.close();
 
     // are we an image browser
+    /*
     if (typeof(win.ImageDialog) != "undefined") {
         // we are, so update image dimensions...
         if (win.ImageDialog.getImageData)
@@ -44,10 +48,10 @@ var callback = function(files){
         // ... and preview if necessary
         if (win.ImageDialog.showPreviewImage)
             win.ImageDialog.showPreviewImage(URL);
-    }
+    }*/
 
     // close popup window
-    tinyMCEPopup.close();
+    //tinyMCEPopup.close();
     return;
 };
 
@@ -85,8 +89,14 @@ Ext.onReady(function(){
         autoLoad: true,
         model: 'fileModel',
         proxy: {
-            type: 'rest',
-            url: 'index.php',
+            type: 'ajax',
+            api: {
+                create: 'index.php?cmd=create',
+                read: 'index.php?cmd=get',
+                update: 'index.php?cmd=update',
+                destroy: 'index.php?cmd=delete'
+            },
+            //url: 'index.php',
             reader: {
                 type: 'json',
                 root: 'files'
@@ -96,8 +106,7 @@ Ext.onReady(function(){
                 //allowSingle :false      //always wrap in an array
             },
             extraParams: {
-                path: path,
-                cmd: 'get'
+                path: path
             }
         },
         listeners: {
@@ -196,6 +205,9 @@ Ext.onReady(function(){
 
 				//reload
                 store.load({
+                    params: {
+                        path: path
+                    },
                     scope: this,
                     callback: function() {
                         //select files
@@ -207,8 +219,6 @@ Ext.onReady(function(){
                         view.getSelectionModel().select(records);
                     }
                 });
-
-
 			},
 			scope: this
 		}

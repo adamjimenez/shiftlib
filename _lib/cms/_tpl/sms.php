@@ -13,7 +13,7 @@ foreach( $users as $user ){
 
 $sms = new $sms_config['provider']($sms_config['username'], $sms_config['password'], $sms_config['originator'], $sms_config['account'], underscored($this->section));
 
-$credits=$sms->quota(); //we need to obtain this somehow
+$credits = $sms->quota(); //we need to obtain this somehow
 
 //sms templates
 $select=mysql_query("SELECT * FROM sms_templates ORDER BY subject");

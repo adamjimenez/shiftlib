@@ -4,16 +4,14 @@ if( $_GET['section'] ){
 }else{
 	die('no section');
 }
-?>
 
-<?
 if( $_GET['choose_filter'] ){
 	$qs=$_GET;
 	unset($qs['page']);
 	unset($qs['option']);
 	unset($qs['section']);
 	unset($qs['choose_filter']);
-	
+
 	foreach( $qs as $k=>$v ){
 		if( $v==='' ){
 			unset($qs[$k]);
@@ -44,9 +42,9 @@ window.close();
 			if( in_array($name,$vars["non_searchable"][$this->section]) ){
 				continue;
 			}
-			
+
 			$field_name=underscored($name);
-		
+
 			$label=ucfirst(spaced($name));
 		?>
 			<? if( $type == 'file' ){ ?>
@@ -56,27 +54,27 @@ window.close();
 					<input type="checkbox" name="<?=$field_name;?>" value="1" <? if( $_GET[$field_name] ){ ?>checked<? } ?> />
 				</td>
 			</tr>
-			<? 
-			}elseif( $type == 'select' or $type=='radio' ){ 
+			<?
+			}elseif( $type == 'select' or $type=='radio' ){
 				$options=$vars['options'][$name];
 				if( !is_array($vars['options'][$name]) ){
 					$table=underscored($vars['options'][$name]);
-					
+
 					reset($vars['fields'][$vars['options'][$name]]);
-					
+
 					foreach( $vars['fields'][$vars['options'][$name]] as $k=>$v ){
 						if( $v!='separator' ){
 							$field=$k;
 							break;
 						}
 					}
-					
+
 					$db_field_name=$this->db_field_name($vars['options'][$name],$field);
-					
+
 					$cols="".$db_field_name." AS `".underscored($field)."`"."\n";
-					
-					$select=mysql_query("SELECT id,$cols FROM $table ORDER BY `$db_field_name`") or trigger_error("SQL", E_USER_ERROR); 
-					
+
+					$select=mysql_query("SELECT id,$cols FROM $table ORDER BY `$db_field_name`") or trigger_error("SQL", E_USER_ERROR);
+
 					$options=array();
 					while( $row=@mysql_fetch_array($select) ){
 						$options[$row['id']]=$row[$field];
@@ -98,11 +96,11 @@ window.close();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
 					$rows=sql_query("SELECT T1.value FROM cms_multiple_select T1
 						INNER JOIN `".escape($vars['options'][$name])."` T2 ON T1.value=T2.$field_id
-						WHERE 
+						WHERE
 							field='".escape($name)."' AND
 							item='".$id."'
 					");
-					
+
 					$vars['options'][$name]=get_options($vars['options'][$name],key($vars['fields'][$vars['options'][$name]]));
 				}else{
 					$rows=sql_query("SELECT value FROM cms_multiple_select
@@ -110,7 +108,7 @@ window.close();
 							field='".escape($name)."' AND
 							item='".$id."'
 					");
-				}		
+				}
 			?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
@@ -126,11 +124,11 @@ window.close();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
 					$rows=sql_query("SELECT T1.value FROM cms_multiple_select T1
 						INNER JOIN `".escape($vars['options'][$name])."` T2 ON T1.value=T2.$field_id
-						WHERE 
+						WHERE
 							field='".escape($name)."' AND
 							item='".$id."'
 					");
-					
+
 					$vars['options'][$name]=get_options($vars['options'][$name],key($vars['fields'][$vars['options'][$name]]));
 				}else{
 					$rows=sql_query("SELECT value FROM cms_multiple_select
@@ -138,7 +136,7 @@ window.close();
 							field='".escape($name)."' AND
 							item='".$id."'
 					");
-				}		
+				}
 			?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
@@ -188,7 +186,7 @@ window.close();
 					<option value=""></option>
 						<?=html_options($opts['distance'],$_GET['func'][$field_name]);?>
 					</select>
-					of	
+					of
 					<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="7">
 				</td>
 			</tr>

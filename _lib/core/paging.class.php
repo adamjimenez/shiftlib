@@ -284,10 +284,10 @@ class paging {
 		if( $this->order==$col ){
 			if( !$this->asc ){
 				$html='<a href="?'.$query.'&'.$this->prefix.'order='.$col.'&'.$this->prefix.'asc=1&'.$this->prefix.'hash='.$hash.'">'.($label).'</a>';
-				$html.=' <img src="'.$images_dir.'sort_up.gif" vspace="2" />';
+				$html.=' <img src="'.$images_dir.'sort_up.gif" vspace="2">';
 			}else{
 				$html='<a href="?'.$query.'&'.$this->prefix.'order='.$col.'&'.$this->prefix.'asc=0&'.$this->prefix.'hash='.$hash.'">'.($label).'</a>';
-				$html.=' <img src="'.$images_dir.'sort_down.gif" vspace="2" />';
+				$html.=' <img src="'.$images_dir.'sort_down.gif" vspace="2">';
 			}
 		}else{
 			$html='<a href="?'.$query.'&'.$this->prefix.'order='.$col.'&'.$this->prefix.'asc=1&'.$this->prefix.'hash='.$hash.'">'.($label).'</a>';

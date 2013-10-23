@@ -5,9 +5,11 @@ class blog{
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog',$sections);
 
+		$this->table_categories = $options['table_categories'] ?: 'categories';
+
 		//categories
-		if( count($vars["fields"]["categories"]) ){
-			$this->categories=sql_query("SELECT * FROM categories
+		if( count($vars["fields"][$this->table_categories]) ){
+			$this->categories=sql_query("SELECT * FROM ".underscored($this->table_categories)."
 				ORDER BY category
 			");
 		}
@@ -63,7 +65,9 @@ class blog{
             $conditions['func']['date'] = '<';
     		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
 
-			$category=sql_query("SELECT * FROM categories WHERE page_name='".escape($sections[($this->blog_index+2)])."'",1);
+			$category=sql_query("SELECT * FROM ".underscored($this->table_categories)." WHERE
+			    page_name='".escape($sections[($this->blog_index+2)])."'
+			",1);
 
 			if($category['id']){
 				$conditions['category'][]=$category['id'];

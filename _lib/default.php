@@ -157,6 +157,10 @@ $time_start = microtime(true);
 //check for predefined pages
 switch( $request ){
 	case 'admin':
+	    if(!$cms){
+	        die('Error: db is not configured');
+	    }
+
 		$cms->admin();
 		exit;
 	break;

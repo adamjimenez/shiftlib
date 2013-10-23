@@ -1,4 +1,12 @@
 // upload
+function file_ext( filename ){
+    if( filename.length === 0 ) return "";
+    var dot = filename.lastIndexOf(".");
+	if( dot == -1 ) return "";
+	var extension = filename.substr(dot+1,filename.length);
+	return extension;
+}
+
 (function( $ ){
     var launch = function(field){
         var file = '';
@@ -27,7 +35,19 @@
 
         var uploadContainer = $('#uploadContainer');
 
-        $('iframe#uploadFrame').attr('src', '_lib/modules/phpupload/?file='+file+'&date='+(new Date()).getTime());
+        var url = '_lib/modules/phpupload/';
+
+        url += '?date='+(new Date()).getTime();
+
+        if( file ){
+            url += '&file='+file;
+        }
+
+        if( !file && typeof phpupload_defaut_dir !== 'undefined' ){
+            url += '#'+phpupload_defaut_dir;
+        }
+
+        $('iframe#uploadFrame').attr('src', url);
 
         $('iframe#uploadFrame').load(function(){
             //set callback in iframe
@@ -67,16 +87,26 @@
         updateValue(field);
     };
 
-    var addFiles = function(files, list){
+    var addFiles = function(files, list, readonly){
         for( var i in files ){
             if( files[i] ){
-                list.append('\
-                    <li>\
-                        <img src="/_lib/modules/phpupload/?func=preview&file='+files[i]+'&w=320&h=240" class="thumb" /><br />\
-                        <label class="label">'+files[i]+'</label>\
-                		<a href="javascript:;" class="clear">Delete</a>\
-                    </li>\
-                ');
+                var html = '<li>';
+
+                    if( ['jpg', 'jpeg', 'gif', 'png'].indexOf(file_ext(files[i].toLowerCase()))!==-1  ){
+                        html += '<img src="/_lib/modules/phpupload/?func=preview&file='+files[i]+'&w=320&h=240" class="thumb"><br>';
+                    }else if( ['f4v', 'mp4'].indexOf(file_ext(files[i]))!==-1 ){
+                        html += '<video width="320" height="240" src="/uploads/'+files[i]+'" controls="controls" preload="none"></video><br>';
+                    }
+
+                    html += '<label class="label">'+files[i]+'</label>';
+
+                    if( !readonly ){
+                        html += '<a href="javascript:;" class="clear">Delete</a>';
+                    }
+
+                    html += '</li>';
+
+                list.append(html);
             }
         }
 
@@ -100,14 +130,17 @@
                     var files = $(this).val().split("\n");
 
                     //add image
-                    $(this).after('\
-                        <div class="upload">\
-                            <ul></ul>\
-                    		<a href="javascript:;" class="choose">Add</a>\
-                        </div>\
-                    ');
+                    var html = '<div class="upload"><ul></ul>';
 
-                    addFiles(files, $(this).next().find('ul'));
+                    if( !$(this).prop('readonly') ){
+                        html += '<a href="javascript:;" class="choose">Add</a>';
+                    }
+
+                    html += '</div>';
+
+                    $(this).after(html);
+
+                    addFiles(files, $(this).next().find('ul'), $(this).prop('readonly'));
 
                     //sortable
                     if( $(this).prop("tagName")==='TEXTAREA' ){

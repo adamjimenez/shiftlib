@@ -16,12 +16,12 @@ $id = $content['id'];
 if( isset($_POST['custom_button']) ){
     $cms_buttons[$_POST['custom_button']]['handler']($_GET['id']);
 
-	$content = $this->get($this->section,$_GET['id']);
+    $content = $this->get($this->section,$_GET['id']);
 }
 
 //subsections delete
 if( $_POST['action']=='delete' ){
-	$this->delete_items($_POST['section'],$_POST['items']);
+    $this->delete_items($_POST['section'],$_POST['items']);
 }
 
 //subsections delete all
@@ -297,7 +297,7 @@ foreach( $languages as $language ){
 			<th align="left" valign="top" width="20%"><?=$label;?></th>
 			<td>
 		<?
-		if( in_array($type,array('text','float','decimal','int','id','page-name','hidden')) ){
+		if( in_array($type,array('text','float','decimal','int','id','page-name','hidden','ip')) ){
 			if( is_numeric($value) and $value==0 ){
 				continue;
 			}
@@ -341,11 +341,7 @@ foreach( $languages as $language ){
 				<a href="http://docs.google.com/viewer?url=<?=rawurlencode('http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'&auth_user='.$_SESSION[$auth->cookie_prefix.'_email'].'&auth_pw='.md5($auth->secret_phrase.$_SESSION[$auth->cookie_prefix.'_password']));?>" target="_blank">(view)</a>
 				<? } ?>
 		<? }elseif( $type == 'phpupload' ){ ?>
-            <a href="/uploads/<?=$value;?>" rel="lightbox">
-			    <img src="_lib/modules/phpupload/?func=preview&file=<?=$value;?>&w=320&h=240" id="<?=$name;?>_thumb" />
-            </a>
-            <br />
-			<label id="<?=$name;?>_label"><?=$value;?></label>
+            <input type="text" name="<?=$name;?>" class="upload" value="<?=$value;?>" readonly="true">
 		<?
 		}elseif( $type == 'select' or $type == 'combo' or $type == 'radio' or $type == 'select-distance' ){
 
@@ -406,31 +402,8 @@ foreach( $languages as $language ){
 				}
 				?>
 				</ul>
-		<? }elseif( $type == 'phpuploads' ){
-
-		if( $value ){
-			$value=explode("\n",$value);
-		}
-		?>
-				<ul id="<?=$name;?>_files">
-				<?
-				$count=0;
-
-				if( is_array($value) ){
-					foreach( $value as $key=>$val ){
-						$count++;
-				?>
-				<li id="item_<?=$name;?>_<?=$count;?>">
-                    <a href="/uploads/<?=$val;?>" rel="lightbox">
-					    <img src="_lib/modules/phpupload/?func=preview&file=<?=$val;?>" id="file_<?=$name;?>_<?=$count;?>_thumb" /><br />
-                    </a>
-					<label id="file_<?=$name;?>_<?=$count;?>_label"><?=$val;?></label>
-				</li>
-				<?
-					}
-				}
-				?>
-				</ul>
+		<? }elseif( $type == 'phpuploads' ){ ?>
+            <textarea name="<?=$field_name;?>" class="upload" readonly="true"><?=$value;?></textarea>
 		<?
 		}elseif( $type == 'date' ){
 			if( $value!='0000-00-00' and $value!='' ){

@@ -57,7 +57,7 @@ Ext.define('Ext.ux.DataView.LabelEditor', {
             e.stopEvent();
             item = me.view.findItemByChild(target);
             record = me.view.store.getAt(me.view.indexOf(item));
-            me.startEdit(target, record.data[me.dataIndex]);
+            //me.startEdit(target, record.data[me.dataIndex]);
             me.activeRecord = record;
         } else if (me.editing) {
             me.field.blur();

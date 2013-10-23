@@ -59,7 +59,7 @@ class shop{
 		check_table('order_items', $order_items_fields);
 
 		if( $_SESSION['guest'] ){
-			$this->guest=$_SESSION['guest'];
+			$this->guest = $_SESSION['guest'];
 		}
 
 		if( $_POST['update_guest'] ){
@@ -75,10 +75,12 @@ class shop{
 			$_SESSION['guest']=$this->guest;
 		}
 
-		if( $auth->user ){
-			$this->cust=$auth->user;
+		if( $this->guest ){
+			$this->cust = $this->guest;
+		}elseif( $auth->user ){
+			$this->cust = $auth->user;
 		}else{
-			$this->cust=$this->guest;
+		    $this->cust = array();
 		}
 
         if( $_GET['add_to_basket'] ){
@@ -131,6 +133,8 @@ class shop{
 			$this->update_basket();
 		}
 
+
+		$this->delivery=0;
 		$this->get_basket();
 
 		if( $_SESSION['code'] ){
@@ -147,8 +151,7 @@ class shop{
 				}
 			}
 		}
-
-		$this->delivery=0;
+		$this->update_total();
 	}
 
 	function remove($product)
@@ -214,6 +217,10 @@ class shop{
 			$this->subtotal+=$v['quantity']*$this->basket[$k]['cost'];
 
 			$this->item_count+=$v['quantity'];
+
+			if( $v['delivery'] ){
+			    $this->delivery += $v['delivery'];
+			}
 		}
 
 		$this->vat=$this->subtotal*$this->vat_rate;
@@ -343,6 +350,14 @@ class shop{
 		}
 	}
 
+	function empty_basket()
+	{
+		mysql_query("DELETE FROM basket
+		    WHERE
+		        session='".session_id()."' OR user='".$auth->user['id']."'
+		") or trigger_error("SQL", E_USER_ERROR);
+	}
+
 	function set_delivery($price)
 	{
 		$this->delivery=$price;
@@ -363,8 +378,11 @@ class shop{
 
 	function update_total()
 	{
+		$this->total = $this->subtotal-$this->discount;
 
-		$this->total=$this->subtotal-$this->discount;
+        if( $this->total<0 ){
+            $this->total = 0;
+        }
 
 		if( $this->include_vat ){
 			$this->total+=($this->total*$this->vat_rate);
@@ -377,7 +395,7 @@ class shop{
 	{
 		global $auth;
 
-		$this->total=$this->subtotal-$this->discount+$this->delivery;
+		$this->update_total();
 
 		mysql_query("INSERT INTO orders SET
 			date=NOW(),
@@ -397,6 +415,14 @@ class shop{
 		") or trigger_error("SQL", E_USER_ERROR);
 
 		$this->oid=mysql_insert_id();
+
+		if( $this->cust['comments'] ){
+		    mysql_query("UPDATE orders SET
+		        comments = '".escape($_POST["comments"])."'
+		        WHERE
+		            id = '".$this->oid."'
+		    ");
+		}
 
 		if( $this->include_vat ){
 			mysql_query("UPDATE orders SET
@@ -807,6 +833,10 @@ class shop{
 			$error='checksum failed';
 		}
 
+		if( $_POST['StatusCode'] != 0 ){
+			$error='Transaction error:'. $_POST["Message"];
+		}
+
 		if( $error ){
 			$_POST['error']=$error;
 
@@ -816,7 +846,8 @@ class shop{
 
 			mail($admin_email,'Order not verified',$msg,$this->headers);
 
-			die('order not verified');
+			//die('order not verified');
+			return false;
 		}
 
 		foreach($_POST as $k=>$v){
@@ -955,6 +986,12 @@ class shop{
 				$msg.='========'."\n";
 				$msg.=$order['address']."\n";
 				$msg.=$order['postcode']."\n\n";
+
+				if( $order['comments'] ){
+					$msg.='Comments'."\n";
+			    	$msg.='========'."\n";
+					$msg.=$order['comments']."\n\n";
+				}
 
 				$msg.='Items'."\n";
 				$msg.='======'."\n";
