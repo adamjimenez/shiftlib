@@ -116,9 +116,11 @@ class paging {
 
 		$array_paging['total'] = $this->total;
 
+		$qs = $this->str_ext_argv ? '&'.$this->str_ext_argv : '';
+
 		if ( $this->page != 0 ){
-			$array_paging['previous_link'] = "<a href=\"?".$this->prefix."page=".( $this->page - $this->int_num_result ).'&'.$this->str_ext_argv ."\">";
-			$array_paging['start_link'] = "<a href=\"?".$this->prefix."page=0".'&'.$this->str_ext_argv ."\">";
+			$array_paging['previous_link'] = '<a class="prev" href="?'.$this->prefix.'page='.( $this->page - $this->int_num_result ).$qs.'">';
+			$array_paging['start_link'] = '<a class="prev" href="?'.$this->prefix.'page=0'.$qs.'">';
 		}else{
 			$array_paging['previous_link'] = '';
 			$array_paging['start_link'] = '';
@@ -129,8 +131,8 @@ class paging {
 			$int_end=floor( ($this->total/10) );
 			$int_end*=10;
 
-			$array_paging['next_link'] = "<a href=\"?".$this->prefix."page=$int_new_position&". $this->str_ext_argv ."\">";
-			$array_paging['end_link'] = "<a href=\"?".$this->prefix."page=".$int_end."&". $this->str_ext_argv ."\">";
+			$array_paging['next_link'] = '<a class="next" href="?'.$this->prefix.'page='.$int_new_position.$qs.'">';
+			$array_paging['end_link'] = '<a class="next" href="?'.$this->prefix.'page='.$int_end.$qs.'">';
 		}else{
 			$array_paging['next_link'] = '';
 			$array_paging['end_link'] = '';

@@ -189,7 +189,8 @@ foreach( $vars['fields'] as $section=>$fields ){
 }
 
 //check config file
-$config_file='_inc/config.php';
+global $root_folder;
+$config_file = $root_folder.'/_inc/config.php';
 
 if( !file_exists($config_file) ){
 	die('Error: config file does not exist: '.$config_file);
@@ -921,9 +922,12 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<td style="height:100%"><div class="handle" style="height:100%;">&nbsp;</div></td>
         		<td>
         			<h3>
-        			<input type="text" name="sections[<?=$count['sections'];?>]" value="<?=$section;?>" />
-        			<a href="javascript:;" onclick="jQuery('#div_<?=$count['sections'];?>').slideToggle(); return false;">toggle</a> &nbsp;&nbsp;
-        			<a href="javascript:;" onclick="delTR(this)">delete</a></h3>
+            			<input type="text" name="sections[<?=$count['sections'];?>]" value="<?=$section;?>" <? if( $section=='users' ){ ?> readonly <? } ?> />
+            			<a href="javascript:;" onclick="jQuery('#div_<?=$count['sections'];?>').slideToggle(); return false;">toggle</a> &nbsp;&nbsp;
+            			<? if( $section!='users' ){ ?>
+            			    <a href="javascript:;" onclick="delTR(this)">delete</a>
+            			<? } ?>
+        			</h3>
 
         			<div id="div_<?=$count['sections'];?>" style="display:none;">
         				<table cellspacing="0">
@@ -1120,9 +1124,11 @@ var section_templates=<?=json_encode($section_templates);?>;
 
         	<div id="code_<?=underscored($section);?>" style="display:none;">
         		<div style="padding:5px 10px; background:#fff;">
+        		    <pre>
 
         <?
-        $source='<?
+        $source='
+        <?
         $'.underscored($section).'=$cms->get(\''.$section.'\'';
 
         if( in_array('id',$fields) ){
@@ -1135,7 +1141,8 @@ var section_templates=<?=json_encode($section_templates);?>;
         if( in_array('id',$fields) ){
         	$source.='$'.underscored($section).'_items=$cms->get(\''.$section.'\');'."\n";
         }
-        $source.= '?>
+        $source.= '
+        ?>
         ';
 
         if( in_array('id',$fields) ){
@@ -1153,17 +1160,13 @@ var section_templates=<?=json_encode($section_templates);?>;
         foreach( $fields as $k=>$v ){
         	$source.="\t".$k.': <?=$'.underscored($section).'[\''.$k.'\'];?><br>'."\n";
         }
-        $source.='</div>
+        $source.='
+        </div>
         ';
 
-        if( class_exists('GeSHi') ){
-        	$geshi = new GeSHi($source, 'php');
-        	print $geshi->parse_code();
-        }else{
         	print htmlentities($source);
-        }
-
         ?>
+                    </pre>
         		</div>
         	</div>
         <?

@@ -3,9 +3,9 @@ if( !$shop_enabled ){
     die('shop is not enabled');
 }
 
-$cust=sql_query("SELECT * FROM users WHERE id='".escape($_GET['cust'])."'");
+$cust = sql_query("SELECT * FROM users WHERE id='".escape($_GET['cust'])."'", 1);
 
-$query = "SELECT *,UNIX_TIMESTAMP(date) as 'date' FROM orders
+$query = "SELECT * FROM orders
     WHERE
     	status!='pending' AND
     	status!='deleted'
@@ -17,7 +17,7 @@ $paging = $p->get_paging();
 $orders = sql_query($p->query);
 ?>
 <div id="container">
-    <h1>Previous orders <span style="color:red"><?=$cust[0]['name'];?> <?=$cust[0]['surname'];?></span></h1>
+    <h1>Previous orders <span style="color:red"><?=$cust['name'];?> <?=$cust['surname'];?></span></h1>
 
     <div align="center">
         <form method="get">
@@ -39,7 +39,7 @@ $orders = sql_query($p->query);
         	foreach( $orders as $k=>$v ){
         ?>
         <tr>
-        	<td><?=date('d-m-Y',$v['date']);?></td>
+        	<td><?=dateformat('d-m-Y',$v['date']);?></td>
         	<td><?=$v['name'];?></td>
         	<td><a href="?option=order&id=<?=$v['id'];?>"><?=$v['id'];?></a></td>
         	<td>&pound;<?=number_format(($v['total']),2);?></td>

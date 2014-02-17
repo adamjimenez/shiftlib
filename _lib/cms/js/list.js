@@ -4,7 +4,7 @@ $(function() {
 
         this.select_all_row = $(this).find('tr.select_all_row');
         this.clear_all_row = $(this).find('tr.clear_all_row');
-    	this.select_all_pages = $(this).find('input[name="select_all_pages"]');
+    	this.select_all_pages_el = $(this).find('input[name="select_all_pages"]');
 
         // toggle select all
     	$(this).find('input.toggle_select').bind('change', function(e) {
@@ -13,7 +13,7 @@ $(function() {
                 $(_this).find('tr.select_all_row').show();
     		}else{
                 $(_this).find('input[name="items[]"]:checked').trigger('click');
-                _this.select_all_pages.value = 0;
+                _this.select_all_pages_el.value = 0;
             	$(_this).find('tr.select_all_row').hide();
             	$(_this).find('tr.clear_all_row').hide();
     		}
@@ -21,7 +21,7 @@ $(function() {
 
         //select all pages
     	$(this).find('a.select_all_pages').bind('click', function() {
-        	_this.select_all_pages.value = 1;
+        	_this.select_all_pages_el.value = 1;
         	$(_this).find('tr.select_all_row').hide();
             $(_this).find('tr.clear_all_row').show();
     	});
@@ -48,7 +48,7 @@ $(function() {
 
         //sortables
     	if ($(this).find('input[name="sortable"]')) {
-    		this.sortable = true;
+    		this.isSortable = true;
 
     		var name = $(this).find('input[name="section"]').val();
 

@@ -35,19 +35,19 @@ class blog{
 		");
 
 		//tags
-		/*
-		$tags=sql_query("SELECT * FROM tags ORDER BY count DESC");
+		if( table_exists('blog_tags') ){
+    		$tags = sql_query("SELECT * FROM blog_tags ORDER BY count DESC");
 
-		foreach( $tags as $v ){
-			$tag_total+=$v['count'];
+    		foreach( $tags as $v ){
+    			$tag_total += $v['count'];
+    		}
+
+    		foreach( $tags as $k=>$v ){
+    			$tags[$k]['size'] = floor( ($v['count']/$tag_total)*30 ) +10;
+    		}
+
+    		$this->tags = $this->subval_sort($tags,'tag');
 		}
-
-		foreach( $tags as $k=>$v ){
-			$tags[$k]['size']=floor( ($v['count']/$tag_total)*30 ) +10;
-		}
-
-		$tags=subval_sort($tags,'tag');
-		*/
 
 		$limit=NULL;
 
@@ -252,4 +252,109 @@ class blog{
 		");
 	}
 }
+
+function blog_save_handler()
+{
+    global $vars;
+
+    if( !$vars['fields']['blog']['tags'] ){
+        return;
+    }
+
+    $table_tags = 'blog_tags';
+
+	$fields = array(
+		'tag'=>'text',
+		'count'=>'int',
+		'id'=>'id',
+	);
+	check_table($table_tags, $fields);
+
+	//update tag cloud
+	$blogs=sql_query("SELECT tags FROM blog");
+
+	foreach( $blogs as $blog ){
+		$content.=$blog['tags'].',';
+	}
+	$content=strtolower($content);
+
+	$words=explode(',',$content);
+
+	$stop_words=array(
+		'a',
+		'and',
+		'are',
+		'as',
+		'at',
+		'be',
+		'for',
+		'has',
+		'i',
+		'in',
+		'is',
+		'it',
+		'not',
+		'of',
+		'off',
+		'on',
+		'only',
+		'so',
+		'the',
+		'that',
+		'their',
+		'there',
+		'this',
+		'to',
+		'with',
+		'you',
+	);
+
+	foreach( $words as $word ){
+		$word=preg_replace("/[^A-Za-z0-9'\-\s]/",'',$word);
+		$word=trim($word);
+		if( !$word or strlen($word)==1 or in_array($word,$stop_words) or is_numeric($word) ){
+			continue;
+		}
+
+		$tags[$word]++;
+	}
+
+	mysql_query("DELETE FROM $table_tags") or trigger_error("SQL", E_USER_ERROR);
+
+	foreach( $tags as $tag=>$count ){
+		mysql_query("INSERT INTO $table_tags SET
+			tag='".escape($tag)."',
+			count='".$count."'
+		") or trigger_error("SQL", E_USER_ERROR);
+	}
+
+	// email subscribers
+	$blog=sql_query("SELECT * FROM blog WHERE id='".escape($_GET['id'])."'");
+
+	if( $_POST['display'] and !$blog[0]['display'] and $vars['fields']['newsletter'] ){
+		$users=sql_query("SELECT * FROM newsletter");
+
+		$valid_users=array();
+		foreach( $users as $user ){
+			if( is_email($user['email']) ){
+				$valid_users[]=$user;
+			}
+		}
+
+		foreach( $valid_users as $user ){
+			$reps=array();
+			$reps['link']='http://'.$_SERVER['HTTP_HOST'].'/blog/'.strtolower(str_replace(' ','-',$_POST['page_name']));
+			$reps['unsubscribe_link']='http://'.$_SERVER['HTTP_HOST'].'/newsletter-unsubscribe?email='.$user['email'];
+
+			email_template( $user['email'],'New Blog Entry', $reps );
+		}
+	}
+}
+
+global $cms_handlers;
+$cms_handlers[] = array(
+	'section'=>'blog',
+	'event'=>'beforeSave',
+	'handler'=>'blog_save_handler'
+);
 ?>

@@ -32,14 +32,10 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 {
     $file = trim($file);
 
-    if( !$file ){
-        return false;
+    if( starts_with($file, '//') ){
+        $file = 'http:'.$file;
+        die($file);
     }
-
-    //$file=urldecode($file);
-	if( substr($file,0,7)=='http://' ){
-		$path = $file;
-	}
 
     //no resize
     if( !$w and !$h ){
@@ -47,48 +43,56 @@ function image($file, $w, $h, $attribs=true, $crop=false)
     }
 
 	if( !$path ){
-		$cached = 'uploads/cache/'.dirname($file).'/'.$w.'x'.$h.($crop ? '(1)': '').'-'.basename($file);
+		if(
+	        !file_exists('uploads/'.$file) and
+	        !starts_with($file, 'http')
+		){
+			return false;
+		}
+
+		$cached = 'uploads/cache/';
+
+		$dirname = dirname(urlencode($file));
+		if( $dirname and !starts_with($file, 'http') ){
+		    $cached .= $dirname.'/';
+		}
+
+		$cache_name = preg_replace("/[^A-Za-z0-9\-\.\/]/", '', basename(urldecode($file)));
+
+		$cached .= $w.'x'.$h.($crop ? '(1)': '').'-'.$cache_name;
 
 		if( !file_exists($cached) or filemtime($cached)<filemtime('uploads/'.$file) ){
 			ini_set('gd.jpeg_ignore_warning', 1); // fixes an issue when previewing corrupt jpegs
 			ignore_user_abort();
 
 			// configure these
-			if( is_numeric($file) ){
-			    $upload_path = $vars['files']['dir'];
-			}else{
-			    $upload_path = 'uploads/';
-			}
-
+			$upload_path = 'uploads/';
 			$quality = 90;
 			$cache_dir = 'uploads/cache/';
 
 			// end configure
 			$max_width = isset($w) ? $w : null;
 			$max_height = isset($h) ? $h : null;
-			$image_path = $upload_path.$file;
 
-    		if( !file_exists($image_path) ){
-    			return false;
-    		}
+			$image_path = starts_with($file, 'http') ? $file : $upload_path.$file;
 
 			// Load image
 			$img = null;
-			$ext = file_ext($file);
+			$ext = $image_path;
 
 			switch( $ext ){
 				case 'jpg':
 				case 'jpeg':
-					$img = @imagecreatefromjpeg($image_path);
+					$img = imagecreatefromjpeg($image_path);
 				break;
 				case 'png':
-					$img = @imagecreatefrompng($image_path);
+					$img = imagecreatefrompng($image_path);
 				break;
 				case 'gif':
-					$img = @imagecreatefromgif($image_path);
+					$img = imagecreatefromgif($image_path);
 				break;
 				default:
-					$img = @imagecreatefromstring(file_get_contents($image_path));
+					$img = imagecreatefromstring(file_get_contents($image_path));
 			    break;
 			}
 
@@ -170,11 +174,11 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 
 				// Display the image
 				if( $ext=='gif' ){
-					$result = imagegif($img,$cached);
+					$result = imagegif($img, $cached);
 				}elseif( $ext=='png' ){
-					$result = imagepng($img,$cached);
+					$result = imagepng($img, $cached);
 				}else{
-					$result = imagejpeg($img,$cached,$quality);
+					$result = imagejpeg($img, $cached, $quality);
 				}
 
                 if( !$result ){
@@ -287,9 +291,9 @@ function clean($string)
 
 function current_tab( $tab, $index=0 )
 {
-	global $sections;
+	global $sections, $request;
 
-	if( $sections[$index]==$tab ){
+	if( $sections[$index]==$tab or $tab == $request ){
 		echo ' class="current active"';
 	}
 }
@@ -317,16 +321,18 @@ function dateformat( $format, $date, $uk=true )
 	return date( $format, make_timestamp($date) );
 }
 
-function debug($var,$die)
+function debug($var, $die)
 {
-	global $debug_ip;
+	global $auth;
 
-	if( $_SERVER['REMOTE_ADDR']==$debug_ip ){
+	if( $auth->user['admin'] ){
+	    print '<hr><pre>';
 		print_r($var);
-	}
+	    print '</pre>';
 
-	if( $die ){
-		exit;
+    	if( $die ){
+    		exit;
+    	}
 	}
 }
 
@@ -450,11 +456,13 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 				}
 			}
 
+			$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : 'http://cdn.grumpycats.com/wp-content/uploads/2012/09/GC-Gravatar-copy.png';
+
     		echo '
             <div style="text-align: center;">
             <h2>Something went wrong</h2>
             <p>The webmaster has been notified.</p>
-            <p><img src="http://cdn.grumpycats.com/wp-content/uploads/2012/09/GC-Gravatar-copy.png"></p>
+            <p><img src="'.$image.'"></p>
             </div>
             ';
 
@@ -898,15 +906,12 @@ function load_js($libs)
 		$ssl=true;
 	}
 
-	// extjs prototype scriptaculous jquery lightbox swfobject validation cms
+	// prototype jquery lightbox swfobject cms
 
 	//work out dependencies
 	$deps=array();
 	foreach( $libs as $lib ){
 		switch( $lib ){
-			case 'scriptaculous':
-				$deps['prototype']=true;
-			break;
 			case 'jqueryui':
 			case 'cycle':
 			case 'cycle2':
@@ -933,33 +938,15 @@ function load_js($libs)
 	<?php
 	}
 
-	if( $deps['extjs'] ){
-		$ext_version='3.4.0'; //3.2.1
-	?>
-		<!--ext start -->
-		<link rel="stylesheet" type="text/css" href="//extjs.cachefly.net/ext-<?=$ext_version;?>/resources/css/ext-all.css" />
-		<script type="text/javascript" src="//extjs.cachefly.net/ext-<?=$ext_version;?>/adapter/ext/ext-base.js"></script>
-		<script type="text/javascript" src="//extjs.cachefly.net/ext-<?=$ext_version;?>/ext-all.js"></script>
-		<!--ext end -->
-	<?
-	}
-
 	if( $deps['prototype'] ){
-        //deprecated
 	?>
 		<script src="//ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js" type="text/javascript"></script>
 	<?php
 	}
 
-	if( $deps['scriptaculous'] ){
-	?>
-		<script src="//ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js" type="text/javascript"></script>
-	<?php
-	}
-
 	if( $deps['jquery'] ){
 	?>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<?php
 		if( $deps['prototype'] ){
 		?>
@@ -977,7 +964,7 @@ function load_js($libs)
 	}
 
 	if( $deps['jqueryui'] ){
-		$jqueryui_version='1.8.18'; //3.2.1
+		$jqueryui_version='1.9.2';
 	?>
 		<link href="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/jquery-ui.min.js"></script>
@@ -986,8 +973,8 @@ function load_js($libs)
 
 	if( $deps['lightbox'] ){
 	?>
-		<link rel="stylesheet" href="//cdn.jsdelivr.net/lightbox2/2.51/css/lightbox.css" type="text/css" media="screen" />
-		<script src="/_lib/js/lightbox/js/lightbox.js" type="text/javascript"></script>
+		<link rel="stylesheet" href="//cdn.jsdelivr.net/lightbox2/2.6/css/lightbox.css" type="text/css" media="screen" />
+		<script src="//cdn.jsdelivr.net/lightbox2/2.6/js/lightbox-2.6.min.js" type="text/javascript"></script>
 	<?php
 	}
 
@@ -1001,6 +988,7 @@ function load_js($libs)
 	?>
 		<? /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js" type="text/javascript"></script>*/ ?>
 		<script src="/_lib/js/jquery.cycle2.js" type="text/javascript"></script>
+		<script src="/_lib/js/jquery.cycle2.carousel.js" type="text/javascript"></script>
 	<?php
 	}
 
@@ -1008,12 +996,6 @@ function load_js($libs)
 	?>
 		<link rel="stylesheet" href="/_lib/js/jquery.colorbox/colorbox.css" type="text/css" media="screen" />
 		<script src="/_lib/js/jquery.colorbox/jquery.colorbox.js" type="text/javascript"></script>
-	<?php
-	}
-
-	if( $deps['mootools'] ){
-	?>
-		<script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.1/mootools-yui-compressed.js" type="text/javascript"></script>
 	<?php
 	}
 
@@ -1219,6 +1201,11 @@ function sql_query($query,$single=false)
 	}else{
 		return $return_array;
 	}
+}
+
+function str_to_pagename($str){
+	$str = strtolower(str_replace(' ','-', $str));
+    return preg_replace("/[^A-Za-z0-9\-\/]/", '', $str);
 }
 
 function table_exists($table)

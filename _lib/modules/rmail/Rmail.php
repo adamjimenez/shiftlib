@@ -9,7 +9,7 @@
     * |                  http://www.phpguru.org/static/license.html                  |
     * o------------------------------------------------------------------------------o
     *
-    * © Copyright 2008,2009 Richard Heyes
+    * ï¿½ Copyright 2008,2009 Richard Heyes
     */
 
 require_once(dirname(__FILE__) . '/mimePart.php');
@@ -63,14 +63,14 @@ class Rmail
     * @private array
     */
     private $headers;
-    
+
     /**
     * The return path address. If not set the From:
     * address is used instead
     * @private string
     */
     private $return_path;
-    
+
     /**
     * Array of information needed for smtp sending
     * @private array
@@ -130,7 +130,7 @@ class Rmail
 
         } elseif (!empty($_SERVER['SERVER_NAME'])) {
             $helo = $_SERVER['SERVER_NAME'];
-        
+
         } else {
             $helo = 'localhost';
         }
@@ -151,7 +151,7 @@ class Rmail
 
     /**
     * Accessor to set the CRLF style
-    * 
+    *
     * @param string $crlf CRLF style to use.
     *                     Use \r\n for SMTP, and \n
     *                     for normal.
@@ -169,7 +169,7 @@ class Rmail
 
     /**
     * Accessor to set the SMTP parameters
-    * 
+    *
     * @param string $host Hostname
     * @param string $port Port
     * @param string $helo HELO string to use
@@ -189,7 +189,7 @@ class Rmail
 
     /**
     * Sets sendmail path and options (optionally) (when directly piping to sendmail)
-    * 
+    *
     * @param string $path Path and options for sendmail command
     */
     public function setSendmailPath($path)
@@ -199,7 +199,7 @@ class Rmail
 
     /**
     * Accessor function to set the text encoding
-    * 
+    *
     * @param object $encoding Text encoding to use
     */
     public function setTextEncoding(iEncoding $encoding)
@@ -209,17 +209,17 @@ class Rmail
 
     /**
     * Accessor function to set the HTML encoding
-    * 
+    *
     * @param object $encoding HTML encoding to use
     */
     public function setHTMLEncoding(iEncoding $encoding)
     {
         $this->build_params['html_encoding'] = $encoding;
     }
-    
+
     /**
     * Accessor function to set the text charset
-    * 
+    *
     * @param string $charset Character set to use
     */
     public function setTextCharset($charset = 'ISO-8859-1')
@@ -229,7 +229,7 @@ class Rmail
 
     /**
     * Accessor function to set the HTML charset
-    * 
+    *
     * @param string $charset Character set to use
     */
     public function setHTMLCharset($charset = 'ISO-8859-1')
@@ -239,7 +239,7 @@ class Rmail
 
     /**
     * Accessor function to set the header encoding charset
-    * 
+    *
     * @param string $charset Character set to use
     */
     public function setHeadCharset($charset = 'ISO-8859-1')
@@ -249,7 +249,7 @@ class Rmail
 
     /**
     * Accessor function to set the text wrap count
-    * 
+    *
     * @param integer $count Point at which to wrap text
     */
     public function setTextWrap($count = 998)
@@ -259,7 +259,7 @@ class Rmail
 
     /**
     * Accessor to set a header
-    * 
+    *
     * @param string $name  Name of header
     * @param string $value Value of header
     */
@@ -267,10 +267,10 @@ class Rmail
     {
         $this->headers[$name] = $value;
     }
-    
+
     /**
     * Sets the delivery reciept address
-    * 
+    *
     * @param string $email The address you want the delivery reciept
     *                      sent to. Note that this is sent at the
     *                      discretion of the recipient
@@ -282,7 +282,7 @@ class Rmail
 
     /**
     * Accessor to add a Subject: header
-    * 
+    *
     * @param string $subject Subject to set
     */
     public function setSubject($subject)
@@ -292,19 +292,19 @@ class Rmail
 
     /**
     * Accessor to add a From: header
-    * 
+    *
     * @param string $from From address
     */
     public function setFrom($from)
     {
         $this->headers['From'] = $from;
     }
-    
+
     /**
     * Accessor to set priority. Priority given should be either
-    * high, normal or low. Can also be specified numerically, 
+    * high, normal or low. Can also be specified numerically,
     * being 1, 3 or 5 (respectively).
-    * 
+    *
     * @param mixed $priority The priority to use.
     */
     public function setPriority($priority = 'normal')
@@ -332,7 +332,7 @@ class Rmail
 
     /**
     * Accessor to set the return path
-    * 
+    *
     * @param string $return_path Return path to use
     */
     public function setReturnPath($return_path)
@@ -342,7 +342,7 @@ class Rmail
 
     /**
     * Accessor to add a Cc: header
-    * 
+    *
     * @param string $cc Carbon Copy address
     */
     public function setCc($cc)
@@ -352,7 +352,7 @@ class Rmail
 
     /**
     * Accessor to add a Bcc: header
-    * 
+    *
     * @param string $bcc Blind Carbon Copy address
     */
     public function setBcc($bcc)
@@ -363,7 +363,7 @@ class Rmail
     /**
     * Adds plain text. Use this function
     * when NOT sending html email
-    * 
+    *
     * @param string $text Plain text of email
     */
     public function setText($text)
@@ -375,7 +375,7 @@ class Rmail
     * Adds HTML to the emails, with an associated text part.
     * If third part is given, images in the email will be loaded
     * from this directory.
-    * 
+    *
     * @param string $html       HTML part of email
     * @param string $images_dir Images directory
     */
@@ -396,7 +396,7 @@ class Rmail
     * extensions defined in $obj->image_types.
     * If the file exists it will read it in and
     * embed it, (not an attachment).
-    * 
+    *
     * @param string $images_dir Images directory to look in
     */
     private function findHtmlImages($images_dir)
@@ -435,7 +435,7 @@ class Rmail
     /**
     * Adds an image to the list of embedded
     * images.
-    * 
+    *
     * @param string $object Embedded image object
     */
     public function addEmbeddedImage($embeddedImage)
@@ -448,7 +448,7 @@ class Rmail
 
     /**
     * Adds a file to the list of attachments.
-    * 
+    *
     * @param string $attachment Attachment object
     */
     public function addAttachment($attachment)
@@ -458,8 +458,8 @@ class Rmail
 
     /**
     * Adds a text subpart to a mime_part object
-    * 
-    * @param  object $obj 
+    *
+    * @param  object $obj
     * @return object      Mime part object
     */
     private function addTextPart(&$message)
@@ -477,7 +477,7 @@ class Rmail
 
     /**
     * Adds a html subpart to a mime_part object
-    * 
+    *
     * @param object $obj
     * @return object     Mime part object
     */
@@ -496,19 +496,19 @@ class Rmail
 
     /**
     * Starts a message with a mixed part
-    * 
+    *
     * @return object Mime part object
     */
     private function addMixedPart(&$message)
     {
         $params['content_type'] = 'multipart/mixed';
-        
+
         $message = new Mail_mimePart('', $params);
     }
 
     /**
     * Adds an alternative part to a mime_part object
-    * 
+    *
     * @param  object $obj
     * @return object      Mime part object
     */
@@ -525,7 +525,7 @@ class Rmail
 
     /**
     * Adds a html subpart to a mime_part object
-    * 
+    *
     * @param  object $obj
     * @return object      Mime part object
     */
@@ -542,7 +542,7 @@ class Rmail
 
     /**
     * Adds all html images to a mime_part object
-    * 
+    *
     * @param  object $obj Message object
     */
     private function addHtmlImageParts(&$message)
@@ -553,14 +553,14 @@ class Rmail
             $params['disposition']  = 'inline';
             $params['dfilename']    = $value->name;
             $params['cid']          = $value->cid;
-    
+
             $message->addSubpart($value->data, $params);
         }
     }
 
     /**
     * Adds all attachments to a mime_part object
-    * 
+    *
     * @param object $obj Message object
     */
     private function addAttachmentParts(&$message)
@@ -570,7 +570,7 @@ class Rmail
             $params['encoding']     = $value->encoding->getType();
             $params['disposition']  = 'attachment';
             $params['dfilename']    = $value->name;
-        
+
             $message->addSubpart($value->data, $params);
         }
     }
@@ -622,7 +622,7 @@ class Rmail
 
                 $this->addTextPart($alt);
                 $this->addHtmlPart($alt);
-                
+
                 // HTML images
                 $this->addHtmlImageParts($message);
                 break;
@@ -633,7 +633,7 @@ class Rmail
 
                 $this->addTextPart($alt);
                 $this->addHtmlPart($alt);
-                
+
                 // Attachments
                 $this->addAttachmentParts($message);
                 break;
@@ -642,13 +642,13 @@ class Rmail
                 $this->addMixedPart($message);
                 $rel = $this->addRelatedPart($message);
                 $alt = $this->addAlternativePart($rel);
-                
+
                 $this->addTextPart($alt);
                 $this->addHtmlPart($alt);
-                
+
                 // HTML images
                 $this->addHtmlImageParts($rel);
-                
+
                 // Attachments
                 $this->addAttachmentParts($message);
                 break;
@@ -663,17 +663,17 @@ class Rmail
             // Figure out hostname
             if (!empty($_SERVER['HTTP_HOST'])) {
                 $hostname = $_SERVER['HTTP_HOST'];
-            
+
             } else if (!empty($_SERVER['SERVER_NAME'])) {
                 $hostname = $_SERVER['SERVER_NAME'];
-            
+
             } else if (!empty($_ENV['HOSTNAME'])) {
                 $hostname = $_ENV['HOSTNAME'];
-            
+
             } else {
                 $hostname = 'localhost';
             }
-            
+
             $message_id = sprintf('<%s.%s@%s>', base_convert(time(), 10, 36), base_convert(rand(), 10, 36), $hostname);
             $this->headers['Message-ID'] = $message_id;
 
@@ -686,7 +686,7 @@ class Rmail
     /**
     * Function to encode a header if necessary
     * according to RFC2047
-    * 
+    *
     * @param  string $input   Value to encode
     * @param  string $charset Character set to use
     * @return string          Encoded value
@@ -698,7 +698,7 @@ class Rmail
             $replacement = preg_replace('/([\x80-\xFF])/e', '"=" . strtoupper(dechex(ord("\1")))', $value);
             $input = str_replace($value, '=?' . $charset . '?Q?' . $replacement . '?=', $input);
         }
-        
+
         return $input;
     }
 
@@ -774,7 +774,7 @@ class Rmail
                 require_once(dirname(__FILE__) . '/smtp.php');
                 require_once(dirname(__FILE__) . '/RFC822.php');
                 $smtp = &smtp::connect($this->smtp_params);
-                
+
                 // Parse recipients argument for internet addresses
                 foreach ($recipients as $recipient) {
                     $addresses = Mail_RFC822::parseAddressList($recipient, $this->smtp_params['helo'], null, false);
@@ -832,8 +832,8 @@ class Rmail
     * in message/rfc822 format. Useful for
     * adding an email to another email as
     * an attachment.
-    * 
-    * @param array  $recipients Array of recipients 
+    *
+    * @param array  $recipients Array of recipients
     * @param string $type       Method to be used to send the mail.
     *                           Used to determine the line ending type.
     */
@@ -874,28 +874,28 @@ class attachment
     * @var string
     */
     public $data;
-    
+
     /**
     * Name of attachment (filename)
     * @var string
     */
     public $name;
-    
+
     /**
     * Content type of attachment
     * @var string
     */
     public $contentType;
-    
+
     /**
     * Encoding type of attachment
     * @var object
     */
     public $encoding;
-    
+
     /**
     * Constructor
-    * 
+    *
     * @param string $data        File data
     * @param string $name        Name of attachment (filename)
     * @param string $contentType Content type of attachment
@@ -918,7 +918,7 @@ class fileAttachment extends attachment
 {
     /**
     * Constructor
-    * 
+    *
     * @param string $filename    Name of file
     * @param string $contentType Content type of file
     * @param string $encoding    What encoding to use
@@ -940,7 +940,7 @@ class stringAttachment extends attachment
 {
     /**
     * Constructor
-    * 
+    *
     * @param string $data        File data
     * @param string $name        Name of attachment (filename)
     * @param string $contentType Content type of file
@@ -949,7 +949,7 @@ class stringAttachment extends attachment
     public function __construct($data, $name = '', $contentType = 'application/octet-stream', $encoding = null)
     {
         $encoding = is_null($encoding) ? new Base64Encoding() : $encoding;
-        
+
         parent::__construct($data, $name, $contentType, $encoding);
     }
 }
@@ -972,7 +972,7 @@ class stringEmbeddedImage extends stringAttachment
 
 
 /**
-* 
+*
 */
 /**
 * Encoding interface
@@ -992,14 +992,14 @@ class Base64Encoding implements iEncoding
     /*
     * Function to encode data using
     * base64 encoding.
-    * 
+    *
     * @param string $input Data to encode
     */
     public function encode($input)
     {
         return rtrim(chunk_split(base64_encode($input), 76, defined('MAIL_MIME_PART_CRLF') ? MAIL_MIME_PART_CRLF : "\r\n"));
     }
-    
+
     /**
     * Returns type
     */
@@ -1018,7 +1018,7 @@ class QPrintEncoding implements iEncoding
     /*
     * Function to encode data using
     * quoted-printable encoding.
-    * 
+    *
     * @param string $input Data to encode
     */
     public function encode($input)
@@ -1030,7 +1030,7 @@ class QPrintEncoding implements iEncoding
         $output   = '';
 
         $lines = preg_split('/\r?\n/', $input);
-        
+
         // Walk through each line
         for ($i=0; $i<count($lines); $i++) {
             // Is line too long ?
@@ -1042,13 +1042,13 @@ class QPrintEncoding implements iEncoding
                 $outLines[] = $lines[$i];
             }
         }
-        
-        // Convert trailing whitespace		
+
+        // Convert trailing whitespace
         $output = preg_replace('/(\x20+)$/me', 'str_replace(" ", "=20", "\1")', $outLines);
 
         return implode("\r\n", $output);
     }
-    
+
     /**
     * Returns type
     */
@@ -1067,14 +1067,14 @@ class SevenBitEncoding implements iEncoding
     /*
     * Function to "encode" data using
     * 7bit encoding.
-    * 
+    *
     * @param string $input Data to encode
     */
     public function encode($input)
     {
         return $input;
     }
-    
+
     /**
     * Returns type
     */
@@ -1093,14 +1093,14 @@ class EightBitEncoding implements iEncoding
     /*
     * Function to "encode" data using
     * 8bit encoding.
-    * 
+    *
     * @param string $input Data to encode
     */
     public function encode($input)
     {
         return $input;
     }
-    
+
     /**
     * Returns type
     */

@@ -1,4 +1,35 @@
 // upload
+
+//ie doesn't support indexof https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf?redirectlocale=en-US&redirectslug=JavaScript%2FReference%2FGlobal_Objects%2FArray%2FindexOf
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function (searchElement , fromIndex) {
+    var i,
+        pivot = (fromIndex) ? fromIndex : 0,
+        length;
+
+    if (!this) {
+      throw new TypeError();
+    }
+
+    length = this.length;
+
+    if (length === 0 || pivot >= length) {
+      return -1;
+    }
+
+    if (pivot < 0) {
+      pivot = length - Math.abs(pivot);
+    }
+
+    for (i = pivot; i < length; i++) {
+      if (this[i] === searchElement) {
+        return i;
+      }
+    }
+    return -1;
+  };
+}
+
 function file_ext( filename ){
     if( filename.length === 0 ) return "";
     var dot = filename.lastIndexOf(".");
@@ -89,7 +120,7 @@ function file_ext( filename ){
 
     var addFiles = function(files, list, readonly){
         for( var i in files ){
-            if( files[i] ){
+            if (files.hasOwnProperty(i)) {
                 var html = '<li>';
 
                     if( ['jpg', 'jpeg', 'gif', 'png'].indexOf(file_ext(files[i].toLowerCase()))!==-1  ){

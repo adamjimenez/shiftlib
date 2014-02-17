@@ -577,7 +577,7 @@ class shop{
 			<input type="hidden" name="desc" value="Basket contents">
 			<input type="hidden" name="testMode" value="'.$testmode.'">
 
-			<input type="hidden" name="name" value="'.$this->cust['email'].' '.$this->cust['email'].'">
+			<input type="hidden" name="name" value="'.$this->cust['name'].' '.$this->cust['surname'].'">
 			<input type="hidden" name="address" value="'.$this->cust['address'].'">
 			<input type="hidden" name="postcode" value="'.$this->cust['postcode'].'">
 			<input type="hidden" name="country" value="GB">
@@ -792,6 +792,8 @@ class shop{
 	{
         global $admin_email, $PreSharedKey, $Password;
 
+		$oid = $_POST['OrderID'];
+
 		$error='';
 
         // Check the passed HashDigest against our own to check the values passed are legitimate.
@@ -844,6 +846,9 @@ class shop{
 				$msg.="$k = $v \n";
 			}
 
+			//order status
+			mysql_query("UPDATE orders SET status='failed' WHERE id='".escape($oid)."' LIMIT 1");
+
 			mail($admin_email,'Order not verified',$msg,$this->headers);
 
 			//die('order not verified');
@@ -855,8 +860,6 @@ class shop{
 		}
 
 		mail($admin_email,'Order Placed',$msg,$this->headers);
-
-		$oid = $_POST['OrderID'];
 		$ref = $_POST['CrossReference'];
 		$status = $_POST['Message'];
 

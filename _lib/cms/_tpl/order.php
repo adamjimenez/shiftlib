@@ -4,34 +4,40 @@ if( !$shop_enabled ){
 }
 
 if( $_POST['status'] ){
+    $order = sql_query("SELECT * FROM orders WHERE
+    	id='".escape($_GET['id'])."'
+    ", 1);
+
 	mysql_query("UPDATE orders SET
-		status='".escape($_POST['status'])."',
-		dispatched_date=NOW()
-		WHERE id='".escape($_GET['id'])."' LIMIT 1
+		status='".escape($_POST['status'])."'
+		WHERE
+		    id='".escape($_GET['id'])."' LIMIT 1
 	") or trigger_error("SQL", E_USER_ERROR);
 
 	if( $_POST['status'] == 'dispatched' ){
 		mysql_query("UPDATE orders SET
 			dispatched_date=NOW()
-			WHERE id='".escape($_GET['id'])."' LIMIT 1
+			WHERE
+			    id='".escape($_GET['id'])."' LIMIT 1
 		") or trigger_error("SQL", E_USER_ERROR);
+
+		$this->trigger_event('dispatched', array($order));
 	}elseif( $_POST['status'] == 'refunded' ){
 		mysql_query("UPDATE orders SET
 			refund_date=NOW()
-			WHERE id='".escape($_GET['id'])."' LIMIT 1
+			WHERE
+			    id='".escape($_GET['id'])."' LIMIT 1
 		") or trigger_error("SQL", E_USER_ERROR);
 	}
 }
 
-$select = mysql_query("SELECT * FROM orders WHERE
+$order = sql_query("SELECT * FROM orders WHERE
 	id='".escape($_GET['id'])."'
-") or trigger_error("SQL", E_USER_ERROR);
+", 1);
 
-if( !mysql_num_rows($select) ){
+if( !$order ){
 	print 'order not found';
 }else{
-	$order = mysql_fetch_array($select);
-
 	$items = sql_query("SELECT * FROM order_items WHERE `order`='".escape($_GET['id'])."'");
 
 	$details = '';

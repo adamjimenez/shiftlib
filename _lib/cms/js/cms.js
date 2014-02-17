@@ -32,7 +32,7 @@ function debug(log_txt) {
 		}).get();
 
 		return $.param(arr);
-	}
+	};
 })(jQuery);
 
 function remove_options(select)
@@ -51,19 +51,19 @@ function add_options(result,target_option, value)
 
 	if( !models ){
 		optval="";
-		opttext="Not Applicable"
+		opttext="Not Applicable";
 		mod.options[0]=new Option(opttext,optval, true,true);
 	}else{
 		for( i=0;i<models.length;i++ ){
 			mod.options[i+1]=new Option(models[i],i, true,true);
 
-			if( models[i].replace(/-/,'').toLowerCase()==value.replace(/-/,'').toLowerCase() ){
+			if( models[i].replace(/-/,'').toLowerCase()===value.replace(/-/,'').toLowerCase() ){
 				selectedIndex=i+1;
 			}
 		}
 
-		mod.options[0].value=""
-		mod.options[0].text=""
+		mod.options[0].value="";
+		mod.options[0].text="";
 		mod.disabled=false;
 	}
 	mod.options.selectedIndex=selectedIndex;
@@ -76,7 +76,7 @@ function showProgress(on){
 
 	if(on){
 		var dialog = jQuery("#progressDialog");
-		if (jQuery("#progressDialog").length == 0){
+		if (jQuery("#progressDialog").length === 0){
 			dialog = jQuery('<div id="progressDialog" title="Loading">Please wait..</div>').appendTo('body');
 		}
 
@@ -101,7 +101,7 @@ function initForms()
 		showProgress(true);
 
 		//disable buttons
-		jQuery('*[type=submit], *[type=image]',this).attr('disabled', '');;
+		jQuery('*[type=submit], *[type=image]',this).attr('disabled', '');
 
 		//remove error messages
 		jQuery('div.error').remove();
@@ -117,13 +117,20 @@ function initForms()
 			type: 'post',
 			data: jQuery(this).serializeAll()+'&validate=1&nospam=1',
 			success: jQuery.proxy(function(returned){
-				var errorMethod=jQuery(this).attr('errorMethod')=='alert' ? 'alert' : 'inline';
+			    var errorMethod = 'inline';
+
+				if( jQuery(this).attr('data-errorMethod') ){
+				    errorMethod = jQuery(this).attr('data-errorMethod');
+				//legacy support
+				}else if( jQuery(this).attr('errorMethod') ){
+				    errorMethod = jQuery(this).attr('errorMethod');
+				}
 
 				debug(returned);
 
 				showProgress(false);
 
-				if( parseInt(returned)!=returned-0 ){
+				if( parseInt(returned, 10)!==returned-0 ){
 					if( returned.length>0 ){
 
 						//display errors
@@ -132,7 +139,7 @@ function initForms()
 						for( i=0;i<returned.length;i++ ){
 							var pos=returned[i].indexOf(' ');
 
-							if( pos==-1 ){
+							if( pos===-1 ){
 								var field=returned[i];
 								var error='Required';
 							}else{
@@ -381,85 +388,33 @@ function initForms()
 
 	//tinymce4
     var tinymce_url = '//tinymce.cachefly.net/4.0/';
-
-    jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
-        $('textarea.tinymce').tinymce({
-            script_url: tinymce_url+'tinymce.min.js',
-            plugins: [
-                "advlist autolink lists link image charmap print preview anchor",
-                "searchreplace visualblocks code fullscreen",
-                "insertdatetime media table contextmenu paste textcolor"
-            ],
-            toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
-
-            //content_css: "css/style.css",
-
-            /*
-            style_formats: [
-                {title: 'Bold text', inline: 'b'},
-                {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
-                {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
-                {title: 'Example 1', inline: 'span', classes: 'example1'},
-                {title: 'Example 2', inline: 'span', classes: 'example2'},
-                {title: 'Table styles'},
-                {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
-            ],
-            */
-
-            relative_urls : false,
-            remove_script_host : false,
-
-			// Drop lists for link/image/media/template dialogs
-			template_external_list_url : "lists/template_list.js",
-			external_link_list_url : "/_lib/js/tinymce.lists/links.php",
-			external_image_list_url : "/_lib/js/tinymce.lists/images.php",
-			media_external_list_url : "lists/media_list.js",
-
-            file_browser_callback :  function(field_name, url, type, win) {
-                tinymce.activeEditor.windowManager.open({
-                    title: "File browser",
-                    url: "/_lib/modules/phpupload/?field=field_name&file=url",
-                    width: 800,
-                    height: 600
-                }, {
-                    oninsert: function(url) {
-                        win.document.getElementById(field_name).value = url;
-                    }
-                });
-            },
-    		accessibility_warnings : false,
-            popup_css: false
-        });
-    });
-
-	//tinymce
-	/*
 	if( jQuery('textarea.tinymce').length ){
-		jQuery.getScript("/_lib/js/tinymce/jquery.tinymce.js").done(function(){
-        	jQuery('textarea.tinymce').tinymce({
-    			// Location of TinyMCE script
-    			script_url : '/_lib/js/tinymce/tiny_mce.js',
+        jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
+            $('textarea.tinymce').tinymce({
+                script_url: tinymce_url+'tinymce.min.js',
+                plugins: [
+                    "advlist autolink lists link image charmap print preview anchor",
+                    "searchreplace visualblocks code fullscreen",
+                    "insertdatetime media table contextmenu paste textcolor"
+                ],
+                toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
+
+                //content_css: "css/style.css",
+
+                /*
+                style_formats: [
+                    {title: 'Bold text', inline: 'b'},
+                    {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
+                    {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
+                    {title: 'Example 1', inline: 'span', classes: 'example1'},
+                    {title: 'Example 2', inline: 'span', classes: 'example2'},
+                    {title: 'Table styles'},
+                    {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
+                ],
+                */
 
                 relative_urls : false,
                 remove_script_host : false,
-                //convert_urls : false,
-
-    			// General options
-    			theme : "advanced",
-    			plugins : "autolink,lists,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,preview,media,searchreplace,contextmenu,paste,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,advlist",
-
-    			// Theme options
-    			//theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,styleselect,formatselect,fontselect,fontsizeselect",
-        		theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,formatselect,fontselect,fontsizeselect",
-    			theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,code,|,preview,|,forecolor,backcolor",
-    			theme_advanced_buttons3 : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,iespell,media,advhr,|,fullscreen,attribs,|,visualchars,nonbreaking,template,pagebreak",
-    			theme_advanced_toolbar_location : "top",
-    			theme_advanced_toolbar_align : "left",
-    			theme_advanced_statusbar_location : "bottom",
-    			theme_advanced_resizing : true,
-
-    			// Example content CSS (should be your site CSS)
-    			//content_css : "css/style.css",
 
     			// Drop lists for link/image/media/template dialogs
     			template_external_list_url : "lists/template_list.js",
@@ -467,12 +422,23 @@ function initForms()
     			external_image_list_url : "/_lib/js/tinymce.lists/images.php",
     			media_external_list_url : "lists/media_list.js",
 
-                file_browser_callback : myFileBrowser,
-        		accessibility_warnings : false
-    		});
-		});
+                file_browser_callback :  function(field_name, url, type, win) {
+                    tinymce.activeEditor.windowManager.open({
+                        title: "File browser",
+                        url: "/_lib/modules/phpupload/?field=field_name&file=url",
+                        width: 800,
+                        height: 600
+                    }, {
+                        oninsert: function(url) {
+                            win.document.getElementById(field_name).value = url;
+                        }
+                    });
+                },
+        		accessibility_warnings : false,
+                popup_css: false
+            });
+        });
 	}
-    */
 
 	//files
 	if( jQuery('ul.files').length ){
@@ -547,6 +513,105 @@ function initForms()
               reader.readAsDataURL(f);
             }
 		});
+	}
+
+	//cms inline editing
+	if( jQuery('span[data-id]').length ){
+        jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
+            var cms_save = function(){
+                $('#saveButton').attr('disabled','disabled');
+
+                //get edited data
+                var data = [];
+                var item = {};
+                $("span[data-edited='true']").each(function( index ) {
+                    item = $(this).data();
+                    item.value = $(this).html();
+                    data.push(item);
+                });
+
+                //console.log(data);
+
+                //save it
+                $.ajax({
+                    type: "POST",
+                    url: '/_lib/cms/_ajax/save.php',
+                    data: {
+                        data: JSON.stringify(data)
+                    },
+                    success: function(data, textStatus, jqXHR){
+                        //console.log(data);
+                        $('#saveDiv').remove();
+                    },
+                    dataType: 'json'
+                });
+            }
+
+            var cms_cancel = function(){
+                $('#saveDiv').remove();
+            }
+
+            var tinymce_onchange = function (ed) {
+                ed.on('change', function(e) {
+                    //set data attribute edited
+                    ed.bodyElement.dataset.edited = true;
+
+                    //show save button
+                    if( !document.getElementById('saveDiv') ){
+                        var div = document.createElement("div");
+                        div.id = 'saveDiv';
+                        div.style.position = 'fixed';
+                        div.style.bottom = 0;
+                        div.style.left = 0;
+                        div.style.right = 0;
+                        div.style.zIndex = 1000;
+                        div.style.textAlign = 'center';
+                        div.style.background = '#999';
+                        div.style.padding = '3px';
+
+                        var saveBtn = document.createElement("BUTTON");
+                        saveBtn.id = 'saveButton';
+                        saveBtn.type = 'button';
+                        saveBtn.innerText = 'Save changes';
+                        saveBtn.style.margin = '0px 5px';
+                        div.appendChild(saveBtn);
+                        saveBtn.onclick = cms_save;
+
+                        var cancelBtn = document.createElement("BUTTON");
+                        cancelBtn.id = 'cancelButton';
+                        cancelBtn.type = 'button';
+                        cancelBtn.innerText = 'Cancel';
+                        cancelBtn.style.margin = '0px 5px';
+                        div.appendChild(cancelBtn);
+                        cancelBtn.onclick = cms_cancel;
+
+                        document.body.appendChild(div);
+                    }
+                });
+            }
+
+            $('span.cms_text').tinymce({
+                script_url: tinymce_url+'tinymce.min.js',
+                selector: "span.cms_text",
+                inline: true,
+                toolbar: "undo redo",
+                menubar: false,
+                setup : tinymce_onchange
+            });
+
+            $('div.cms_editor').tinymce({
+                script_url: tinymce_url+'tinymce.min.js',
+                selector: "div.cms_editor",
+                inline: true,
+                plugins: [
+                    "advlist autolink lists link image charmap print preview anchor",
+                    "searchreplace visualblocks code fullscreen",
+                    "insertdatetime media table contextmenu paste"
+                ],
+                toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+                setup : tinymce_onchange
+            });
+        });
 	}
 }
 

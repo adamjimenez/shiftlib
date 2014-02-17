@@ -44,24 +44,28 @@ function __autoload($class) {
     //trigger_error('no such class: '.$class, E_USER_ERROR);
 }
 
-$root_folders = array('httpdocs', 'htdocs', 'public_html', 'html');
 
-$dir = dirname($_SERVER['SCRIPT_FILENAME']);
-
-//find out root dir
-foreach( $root_folders as $root_folder ){
-	$pos = strrpos($dir,'/'.$root_folder);
-
-	if( $pos){
-		break;
-	}
-}
-
-if( $pos ){
-	$root_folder = substr($dir,0,$pos).'/'.$root_folder;
-	chdir($root_folder);
+if( __FILE__ === $_SERVER['SCRIPT_FILENAME'] ){
+    $root_folder = realpath(dirname(__FILE__).'/../');
 }else{
-	die('no '.$root_folder.' folder: '.$dir);
+    //find out root dir
+    $root_folders = array('httpdocs', 'htdocs', 'public_html', 'html');
+    $dir = dirname($_SERVER['SCRIPT_FILENAME']);
+
+    foreach( $root_folders as $root_folder ){
+    	$pos = strrpos($dir,'/'.$root_folder);
+
+    	if( $pos){
+    		break;
+    	}
+    }
+
+    if( $pos ){
+    	$root_folder = substr($dir,0,$pos).'/'.$root_folder;
+    	chdir($root_folder);
+    }else{
+    	die('no root folder: '.$dir);
+    }
 }
 
 require(dirname(__FILE__).'/core/common.php');

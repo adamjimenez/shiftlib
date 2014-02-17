@@ -36,6 +36,9 @@ function send_password_information()
 class cms{
 	function cms()
 	{
+	    //enable inline editing
+	    //$this->inline = true;
+
 		$this->file_fields=array(
 			'date'=>'date',
 			'name'=>'text',
@@ -178,7 +181,7 @@ class cms{
 
 	function get($sections,$conditions=NULL,$num_results=NULL,$order=NULL,$asc=true,$prefix=NULL,$return_query=false)
 	{
-		global $vars;
+		global $vars, $auth;
 
 		if( $this->language  ){
 			$language=$this->language;
@@ -394,6 +397,11 @@ class cms{
 									$where[]="T_$table.".$field_name." ".escape($conditions['func'][$field_name])." '".escape($value)."'";
 								}
 							break;
+        					case 'id':
+								if( is_numeric($value) ){
+								    $where[]="T_$table.".$field_name." LIKE '".escape($value)."'";
+								}
+							break;
 							default:
 								$value=str_replace('*','%',$value);
 								$where[]="T_$table.".$field_name." LIKE '".escape($value)."'";
@@ -511,6 +519,21 @@ class cms{
 			$this->p = new paging( $query, $limit, $order, $asc, $prefix );
 
 			$content = $this->p->rows;
+
+			//inline editing
+			if( $auth->user['admin'] and $this->inline ){
+			    foreach( $content as $k=>$row ){
+			        foreach( $vars['fields'][$section] as $name=>$type ){
+			            $field_name=underscored($name);
+
+			            if( in_array($name, array('heading')) ){
+			                $content[$k][$field_name] = '<span data-section="'.$section.'" data-id="'.$row['id'].'" data-field="'.$name.'" class="cms_'.$type.'">'.$row[$field_name].'</span>';
+			            }elseif( in_array($name, array('copy')) ){
+			                $content[$k][$field_name] = '<div data-section="'.$section.'" data-id="'.$row['id'].'" data-field="'.$name.'" class="cms_'.$type.'">'.$row[$field_name].'</div>';
+			            }
+			        }
+			    }
+			}
 
 			if( !in_array('id',$vars['fields'][$section]) or $id or $num_results==1 ){
 				return $content[0];
@@ -770,7 +793,7 @@ class cms{
 			case 'editor':
 				$value=mb_detect_encoding($value, "UTF-8") == "UTF-8" ? $value : utf8_encode($value);
 		?>
-			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=$value;?></textarea>
+			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=htmlentities($value);?></textarea>
 		<?php
 			break;
 			case 'file':
@@ -1363,7 +1386,7 @@ class cms{
 
 	function admin()
 	{
-		global $auth;
+		global $auth, $vars, $blog;
 
 		if( !$auth ){
 			die('database settings not configured');
@@ -1381,6 +1404,14 @@ class cms{
             !array_key_exists($_GET['option'],$auth->user['privileges'])
         ){
 			die('access denied');
+		}
+
+		//don't allow inline editing'
+		$this->inline = false;
+
+		//load blog handlers
+		if( $vars['fields']['blog'] ){
+		    $blog = new blog;
 		}
 
 		$this->language='en';
@@ -1763,8 +1794,7 @@ class cms{
 
 					$data[$name] = $_SERVER["REMOTE_ADDR"];
 				}elseif( $v=='page-name' ){
-					$data[$name] = strtolower(str_replace(' ','-',$data[$name]));
-                    $data[$name] = preg_replace("/[^A-Za-z0-9\-]/", '', $data[$name]);
+					$data[$name] = str_to_pagename($data[$name]);
 				}elseif( $v=='coords' ){
 					$this->query.="`$k`=GeomFromText('POINT(".$data[$name].")'),\n";
 					continue;
@@ -1931,13 +1961,15 @@ class cms{
 		return $this->id;
 	}
 
-	function trigger_event($event,$args)
+	function trigger_event($event, $args)
 	{
 		global $cms_handlers;
 
 		if( is_array($cms_handlers) ){
 			foreach( $cms_handlers as $handler ){
-				if( $handler['section']==$this->section and $handler['event']==$event ){
+				if(
+				    (!$this->section or $handler['section']==$this->section)
+				    and $handler['event']==$event ){
 					return call_user_func_array($handler['handler'],(array)$args);
 				}
 			}

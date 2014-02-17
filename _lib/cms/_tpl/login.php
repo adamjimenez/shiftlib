@@ -5,7 +5,7 @@ if( $auth->user['admin'] ){
 ?>
 
 <div align="center" style="margin: 100px auto;">
-    <form method="post" id="login_form">
+    <form method="post" id="login_form" action="/admin">
     <input type="hidden" name="login" value="1">
     <fieldset>
     <legend>Sign in</legend>

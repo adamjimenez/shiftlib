@@ -9,7 +9,7 @@
     * |                  http://www.phpguru.org/static/license.html                  |
     * o------------------------------------------------------------------------------o
     *
-    * © Copyright 2008,2009 Richard Heyes
+    * ï¿½ Copyright 2008,2009 Richard Heyes
     */
 
 define('SMTP_STATUS_NOT_CONNECTED', 1, true);
@@ -72,7 +72,7 @@ class smtp
 
     /**
     * Connect function. This will, when called
-    * statically, create a new smtp object, 
+    * statically, create a new smtp object,
     * call the connect function (ie this function)
     * and return it. When not called statically,
     * it will connect to the server and send
@@ -132,7 +132,7 @@ class smtp
             }
 
             $this->mail($this->from);
-            
+
             if (is_array($this->recipients)) {
                 foreach ($this->recipients as $value) {
                     $this->rcpt($value);
@@ -163,7 +163,7 @@ class smtp
             return FALSE;
         }
     }
-    
+
     /**
     * Function to implement HELO cmd
     */
@@ -180,7 +180,7 @@ class smtp
             return false;
         }
     }
-    
+
     /**
     * Function to implement EHLO cmd
     */
@@ -197,7 +197,7 @@ class smtp
             return false;
         }
     }
-    
+
     /**
     * Function to implement RSET cmd
     */
@@ -233,7 +233,7 @@ class smtp
             return false;
         }
     }
-    
+
     /**
     * Function to implement AUTH cmd
     */
@@ -322,7 +322,7 @@ class smtp
     {
         if(is_resource($this->connection)){
             return fwrite($this->connection, $data.CRLF, strlen($data)+2);
-            
+
         } else {
             return false;
         }
@@ -351,13 +351,13 @@ class smtp
 
     /**
     * Sets a variable
-    */    
+    */
     public function set($var, $value)
     {
         $this->$var = $value;
         return true;
     }
-    
+
     /**
     * Function to return the errors array
     */
@@ -365,7 +365,7 @@ class smtp
     {
         return $this->errors;
     }
-    
+
 
 } // End of class
 ?>

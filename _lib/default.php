@@ -56,15 +56,17 @@ function stop(){
 function parse_request(){
     global $tpl_config;
 
-    if( substr($_SERVER['REDIRECT_URL'],-6)=='/index' ){ //redirect /index to /
-        redirect(substr($_SERVER['REDIRECT_URL'],0,-5),true);
+    $script_url = $_SERVER['SCRIPT_URL'] ?: $_SERVER['REDIRECT_URL'];
+
+    if( substr($script_url,-6)=='/index' ){ //redirect /index to /
+        redirect(substr($script_url,0,-5),true);
     }
 
-    if( $_SERVER['REDIRECT_URL']=='index' ){
+    if( $script_url=='index' ){
         redirect('/');
     }
 
-    $request = $_SERVER['REDIRECT_URL'] ? $_SERVER['REDIRECT_URL'] : 'index';
+    $request = $script_url ?: 'index';
 
     if( substr( $request, -1)=='/' ){
     	$request.='index';
@@ -102,14 +104,14 @@ function parse_request(){
 }
 
 function get_include( $request ){
-    global $tpl_config, $root_folder, $catcher;
+    global $tpl_config, $root_folder, $catcher, $sections;
 
     $include_file = false;
 
-    if( file_exists($root_folder.'/_tpl/'.$request.'.php') ){
+    if( in_array($request, $tpl_config['catchers']) or file_exists($root_folder.'/_tpl/'.$request.'/index.php') ){
+    	redirect('/'.$request.'/', true);
+    }elseif( file_exists($root_folder.'/_tpl/'.$request.'.php') ){
         $include_file = $root_folder.'/_tpl/'.$request.'.php';
-    }elseif( file_exists($root_folder.'/_tpl/'.$request.'/index.php') ){
-    	redirect($request.'/');
 	//check redirects
     }elseif( array_key_exists($request,$tpl_config['redirects']) ){
         redirect($tpl_config['redirects'][$request],true);
@@ -175,14 +177,17 @@ switch( $request ){
 }
 
 //current tab
-$sections = explode('/',$request);
+$sections = explode('/', $request);
 
 //templates
 $catcher = '';
 $include_file = get_include($request);
 
 ob_start("ob_gzhandler");
-if( $include_file===false ){
+
+if( end($sections)=='template' ){
+    $trigger_404=true;
+}elseif( $include_file===false ){
     $trigger_404=true;
 }elseif( $include_file ){
 	ob_start();
@@ -224,10 +229,11 @@ if( $stop ){
 		}
 	}
 
-	$page_title = $title;
+	$title = strip_tags($title);
 
-	if( !$title and $title!==false and preg_match('/<h1[^>]*>([\s\S]*?)<\/h1>/i', $include_content, $matches) ){
+	if( !$title and $title!==false and preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches) ){
 		$title = strip_tags($matches[1]);
+		$title = trim(preg_replace( "/\r|\n/", "", $title));
 	}
 
 	header("Access-Control-Allow-Origin: *");
@@ -238,16 +244,14 @@ if( $stop ){
 		require($root_folder.'/_tpl/'.dirname($request).'/template.php');
 	}elseif( $catcher and file_exists($root_folder.'/_tpl/'.dirname($catcher).'/template.php') ){
 		require($root_folder.'/_tpl/'.dirname($catcher).'/template.php');
-	}elseif( file_exists($root_folder.'/_tpl/template.php') ){
-		require($root_folder.'/_tpl/template.php');
 	}else{
-		die('template not found.');
+		require($root_folder.'/_tpl/template.php');
 	}
 
 	$time_end = microtime(true);
 	$time = $time_end - $time_start;
 
-	if( $show_load_time ){
+    if( $auth->user['admin'] and $_GET['time'] ){
 		echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0;">Loaded in '.number_format($time,3).' seconds</span>';
 	}
 }

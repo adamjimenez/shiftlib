@@ -56,6 +56,7 @@ class auth{
 		$this->salt='a9u03udk[';
 
 		$this->errors=array();
+		$this->expiry = 60;
 
 		foreach( $auth_config as $k=>$v ){
 			$this->$k=$v;
@@ -119,9 +120,10 @@ class auth{
 		}
 
 		//check if logged in
-		if( $_SESSION[$this->cookie_prefix.'_email'] AND $_SESSION[$this->cookie_prefix.'_password'] ){
-			$this->check_login_attempts();
-
+		if( $_SESSION[$this->cookie_prefix.'_user'] and time() < $_SESSION[$this->cookie_prefix.'_expires'] ){
+			$this->user =  $_SESSION[$this->cookie_prefix.'_user'];
+		}else if( $_SESSION[$this->cookie_prefix.'_email'] and $_SESSION[$this->cookie_prefix.'_password'] ){
+			//$this->check_login_attempts();
 			$select=mysql_query("SELECT * FROM ".$this->table." WHERE
 				email='".escape($_SESSION[$this->cookie_prefix.'_email'])."' AND
 				password='".escape($_SESSION[$this->cookie_prefix.'_password'])."'
@@ -130,6 +132,8 @@ class auth{
 
 			if( mysql_num_rows($select)==1 ){
 				$this->user=mysql_fetch_array($select);
+				$_SESSION[$this->cookie_prefix.'_user'] = $this->user;
+				$_SESSION[$this->cookie_prefix.'_expires'] = time() + $this->expiry;
 
 				if( $this->user['admin']>1 and table_exists('cms_privileges') ){
 					$select_privileges=mysql_query("SELECT * FROM cms_privileges WHERE
@@ -412,6 +416,7 @@ class auth{
 			if( mysql_num_rows($select)==1 ){
 				$_SESSION[$this->cookie_prefix.'_email']=$_POST['email'];
 				$_SESSION[$this->cookie_prefix.'_password']=$_POST['password'];
+				$_SESSION[$this->cookie_prefix.'_expires'] = time() + $this->expiry;
 
 				if( $this->log_last_login ){
 					mysql_query("UPDATE ".$this->table." SET
@@ -643,28 +648,9 @@ class auth{
 
 	function check_login()
 	{
-		if( $this->db ){
-			mysql_select_db($this->db) or trigger_error("SQL", E_USER_ERROR);
-		}
-
-		if( $_SESSION[$this->cookie_prefix.'_email'] and $_SESSION[$this->cookie_prefix.'_password'] ){
-			$select=mysql_query("SELECT * FROM ".$this->table." WHERE
-				email='".$_SESSION[$this->cookie_prefix.'_email']."' AND
-				password='".$_SESSION[$this->cookie_prefix.'_password']."'
-				".($this->login_wherestr ? 'AND '.$this->login_wherestr : '')."
-			");
-
-			if( mysql_num_rows($select)!=1 ){
-				redirect($this->login);
-			}
-		}else{
-			if( !$_SESSION['request'] ){
-				$_SESSION['request']='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-			}
-
+		if( !$this->user ){
+			$_SESSION['request'] = $_SERVER['REQUEST_URI'];
 			redirect($this->login);
-			print 'access denied';
-			exit;
 		}
 	}
 
@@ -683,20 +669,10 @@ class auth{
 			mysql_query("INSERT INTO ".$this->table." SET email='admin', password='123', admin='1'");
 		}
 
-		if( $_SESSION[$this->cookie_prefix.'_email'] AND $_SESSION[$this->cookie_prefix.'_password'] ){
-			$select=mysql_query("SELECT * FROM ".$this->table." WHERE
-				email='".$_SESSION[$this->cookie_prefix.'_email']."' AND
-				password='".$_SESSION[$this->cookie_prefix.'_password']."' AND
-				admin!=0
-			");
-
-			if( mysql_num_rows($select) ){
-				return true;
-			}
+		if( !$this->user['admin'] ){
+    		$_SESSION['request']=$_SERVER['REQUEST_URI'];
+    		redirect('?option=login');
 		}
-
-		$_SESSION['request']=$_SERVER['REQUEST_URI'];
-		redirect('?option=login');
 	}
 
 	function logout()

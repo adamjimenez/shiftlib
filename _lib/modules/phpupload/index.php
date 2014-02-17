@@ -277,10 +277,9 @@ if( $_GET["cmd"] ){
 
         case 'update':
             //rename
-            if( $request["name"] and $request['id'] ){
+            //print_r($file);
+            if( $file["name"] and $file['id'] ){
                 //rename
-                $file = $request;
-
                 if( rename($path.$file['id'], $path.$file['name']) ){
                     $result[] = array(
                         'data'=>array(
