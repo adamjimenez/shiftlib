@@ -45,8 +45,14 @@ function __autoload($class) {
 }
 
 
-if( __FILE__ === $_SERVER['SCRIPT_FILENAME'] ){
+//symlinked dir?
+$web_root = $_SERVER['DOCUMENT_ROOT'];
+if( $web_root and substr(__FILE__, 0, strlen($web_root)) === $web_root ){
+    //not symlinked so use parent dir
     $root_folder = realpath(dirname(__FILE__).'/../');
+}else if( $web_root ){
+    //symlinked so use web root - set manually for subfolders'
+    $root_folder = $web_root;
 }else{
     //find out root dir
     $root_folders = array('httpdocs', 'htdocs', 'public_html', 'html');
@@ -67,8 +73,9 @@ if( __FILE__ === $_SERVER['SCRIPT_FILENAME'] ){
     	die('no root folder: '.$dir);
     }
 }
+chdir($root_folder);
 
-require(dirname(__FILE__).'/core/common.php');
+require_once(dirname(__FILE__).'/core/common.php');
 include($root_folder.'/_inc/config.php');
 
 if( $db_config['user'] or $db_connection ){

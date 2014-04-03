@@ -2,8 +2,9 @@
 /*
 	File:		default.php
 	Author:		Adam Jimenez
-	Modified:	07/07/2009
 */
+
+require_once(dirname(__FILE__).'/core/common.php');
 
 function get_tpl_catcher($request)
 {
@@ -78,7 +79,7 @@ function parse_request(){
     }
 
     //ssl
-    if( in_array($request,$tpl_config['secure']) and !$_SERVER['HTTPS']  ){
+    if( $tpl_config['secure'] and in_array($request,$tpl_config['secure']) and !$_SERVER['HTTPS']  ){
     	if( substr($request,-5)=='index' ){
     		$request=substr($request,0,-5);
     	}
@@ -88,7 +89,7 @@ function parse_request(){
     	}
 
     	redirect('https://'.$_SERVER['HTTP_HOST'].'/'.$request);
-    }elseif( !in_array($request,$tpl_config['secure']) and $_SERVER['HTTPS'] ){
+    }elseif( $tpl_config['secure'] and !in_array($request, $tpl_config['secure']) and $_SERVER['HTTPS'] ){
     	if( substr($request,-5)=='index' ){
     		$request=substr($request,0,-5);
     	}
@@ -139,6 +140,12 @@ function get_include( $request ){
     			redirect("http://".$_SERVER['SERVER_NAME'].'/'.$request.'/',301);
     		}
 
+    		//check if using urlencode
+            $decoded = urldecode($request);
+            if( !file_exists($request) and file_exists($decoded) ){
+                redirect('/'.$decoded);
+            }
+
     		if( file_exists($root_folder.'/_inc/catch_all.php') ){
     			$include_file = $root_folder.'/_inc/catch_all.php';
     		}else{
@@ -150,10 +157,10 @@ function get_include( $request ){
     return $include_file;
 }
 
-require(dirname(__FILE__).'/base.php');
-
 $request = parse_request();
-
+//print $request;
+require(dirname(__FILE__).'/base.php');
+//debug($request);
 $time_start = microtime(true);
 
 //check for predefined pages

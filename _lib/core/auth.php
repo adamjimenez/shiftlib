@@ -176,7 +176,7 @@ class auth{
 		if(
 			(
 				$this->check_all and
-				array_search($request,$this->skip_checks)===false
+				!in_array($request,$this->skip_checks)
 			) and (
 				$this->check_all and
 				$this->skip_check!==true

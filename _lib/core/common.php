@@ -321,7 +321,7 @@ function dateformat( $format, $date, $uk=true )
 	return date( $format, make_timestamp($date) );
 }
 
-function debug($var, $die)
+function debug($var, $die=false)
 {
 	global $auth;
 
@@ -837,24 +837,20 @@ function is_assoc_array($var)
 }
 
 function is_domain($domain){
-	global $whois_exts;
+	$whois_exts = array('com', 'co.uk', 'net', 'org', 'org.uk', 'tv');
 
 	$d = explode('.', $domain);
 	if($d[2]) {
-	  $ext = $d[1].'.'.$d[2];
+	    $ext = $d[1].'.'.$d[2];
 	}else{
-	  $ext = $d[1];
+	    $ext = $d[1];
 	}
-	$domainname=$d[0];
+	$domainname = $d[0];
 
-	preg_match('`([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}`',$domainname.'.'.$ext,$match);
+	preg_match('`([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}`', $domainname.'.'.$ext, $match);
 
-	if($match[0]==$domainname.'.'.$ext){
-		if(array_search($ext,$whois_exts)!==false){
-			return true;
-		}else{
-			return false;
-		}
+	if( $match[0]==$domain ){
+		return in_array($ext, $whois_exts);
 	}else{
 		return false;
 	}
@@ -868,11 +864,7 @@ function is_email($email)
 
 	preg_match_all("^([a-zA-Z0-9_\-\.\+]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^",$email,$matches);
 
-	if($matches[0][0]!=$email){
-		return false;
-	}else{
-		return true;
-	}
+	return $matches[0][0] == $email;
 }
 
 // is valid national insurance number
@@ -959,7 +951,7 @@ function load_js($libs)
 
 	if( $deps['cms'] ){
 	?>
-		<script type="text/javascript" src="/_lib/cms/js/cms.js"></script>
+		<script type="text/javascript" src="/_lib/cms/js/cms.min.js"></script>
 	<?php
 	}
 
@@ -1035,6 +1027,24 @@ function load_js($libs)
         <!-- Latest compiled and minified JavaScript -->
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <?php
+	}
+
+	if( $deps['syntaxhighlighter'] ){
+	?>
+
+	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shCore.css" rel="stylesheet" type="text/css" />
+	<link href="//alexgorbatchev.com/pub/sh/current/styles/shThemeRDark.css" rel="stylesheet" type="text/css" />
+    <script src="//alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
+    <script src="//alexgorbatchev.com/pub/sh/current/scripts/shAutoloader.js" type="text/javascript"></script>
+    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPHP.js"></script>
+    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushJScript.js"></script>
+    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushCss.js"></script>
+    <style>
+        .toolbar{
+            display: none;
+        }
+    </style>
+	<?
 	}
 }
 
@@ -1196,11 +1206,7 @@ function sql_query($query,$single=false)
 	}
 	mysql_free_result($result);
 
-	if( $single ){
-		return $return_array[0];
-	}else{
-		return $return_array;
-	}
+    return $single ? $return_array[0] : $return_array;
 }
 
 function str_to_pagename($str){

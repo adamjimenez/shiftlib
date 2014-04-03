@@ -696,7 +696,7 @@ function str_replace(search, replace, subject) {
     return sa ? s : s[0];
 }
 
-function init(){
+function initSortables(){
     jQuery( ".fields, .subsections" ).sortable({
         handle: '.handle',
         opacity: 0.5,
@@ -767,6 +767,8 @@ function addTR(obj,contentHolder,sortable,countKey,section_id)
 		jQuery(form['sections['+count[countKey]+']']).focus();
 		jQuery(form['sections['+count[countKey]+']']).select();
 	}
+
+	initSortables();
 }
 
 function set_list_type(id,type)
@@ -780,7 +782,7 @@ function set_list_type(id,type)
 	}
 }
 
-window.onload=init;
+window.onload=initSortables;
 
 var section_templates=<?=json_encode($section_templates);?>;
 </script>

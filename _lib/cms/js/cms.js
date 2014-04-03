@@ -393,11 +393,11 @@ function initForms()
             $('textarea.tinymce').tinymce({
                 script_url: tinymce_url+'tinymce.min.js',
                 plugins: [
-                    "advlist autolink lists link image charmap print preview anchor",
+                    "importcss advlist autolink lists link image charmap print preview anchor",
                     "searchreplace visualblocks code fullscreen",
                     "insertdatetime media table contextmenu paste textcolor"
                 ],
-                toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
+                toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
 
                 //content_css: "css/style.css",
 
@@ -415,6 +415,8 @@ function initForms()
 
                 relative_urls : false,
                 remove_script_host : false,
+
+                content_css : "/css/style.css?" + new Date().getTime(),
 
     			// Drop lists for link/image/media/template dialogs
     			template_external_list_url : "lists/template_list.js",
