@@ -24,7 +24,7 @@ $startedAt = time();
 
 $_POST = $_GET;
 
-$table=str_replace(' ','_',$_POST['section']);
+$table = str_replace(' ','_',$_POST['section']);
 
 $allowed_exts=array('csv');
 
@@ -42,9 +42,11 @@ if( !$errors ){
 	$i=0;
 	$total=0;
 
-	$handle = fopen(dirname(__FILE__).'/../tmp/'.$_SERVER['HTTP_HOST'].'.csv', "r");
+	$csv_path = 'uploads/'.$_SERVER['HTTP_HOST'].'.csv';
+
+	$handle = fopen($csv_path, "r");
     if( $handle=== false){
-        die('error opening '.$_SERVER['HTTP_HOST'].'.csv' );
+        die('error opening '.basename($csv_path) );
     }
 	while (($data = fgetcsv($handle, 0, ",")) !== FALSE ) {
 		if( $i!=0 ){
@@ -251,6 +253,9 @@ if( !$errors ){
 
 		$i++;
 	}
+
+	//delete file
+	unlink($csv_path);
 }else{
     print json_encode($errors);
 }

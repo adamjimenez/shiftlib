@@ -117,7 +117,7 @@ foreach( $vars['content'] as $v){
 	<?
 	if( is_array($vars['labels'][$this->section]) ){
 		foreach( $vars['labels'][$this->section] as $i=>$k ){
-			$value=$v[$k];
+			$value = $v[underscored($k)];
 
 			if( $vars['fields'][$this->section][$k] == 'select-multiple' or $vars['fields'][$this->section][$k]=='checkboxes' ){
 				if( !is_array($vars['options'][$k]) and $vars['options'][$k] ){

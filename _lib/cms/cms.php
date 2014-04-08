@@ -184,28 +184,28 @@ class cms{
 		global $vars, $auth;
 
 		if( $this->language  ){
-			$language=$this->language;
+			$language = $this->language;
 		}else{
-			$language='en';
+			$language = 'en';
 		}
 
 		if( is_numeric($conditions) ){
-			if( $language=='en' ){
-				$id=$conditions;
+			if( $language == 'en' ){
+				$id = $conditions;
 			}else{
-				$id=NULL;
-				$conditions=array('translated_from'=>$conditions, 'language'=>$language);
+				$id = NULL;
+				$conditions = array('translated_from'=>$conditions, 'language'=>$language);
 			}
-			$num_results=1;
+			$num_results = 1;
 		}elseif( is_string($conditions) ){
 			if( in_array('page-name',$vars['fields'][$sections]) ){
-				$page_name=$conditions;
+				$page_name = $conditions;
 
-				$field_page_name=array_search('page-name',$vars['fields'][$sections]);
+				$field_page_name = array_search('page-name',$vars['fields'][$sections]);
 
-				$conditions=array($field_page_name=>$page_name);
+				$conditions = array($field_page_name=>$page_name);
 
-				$num_results=1;
+				$num_results = 1;
 			}
 		}else{
 			if( in_array('language',$vars['fields'][$sections]) and $language ){
@@ -258,7 +258,7 @@ class cms{
 
 						$cols.="\t".$db_field_name." AS `".underscored($k)."`,"."\n";
 					}else{
-						$cols.="\t"."T_$table.`".underscored($k)."` AS `".$k."`,"."\n";
+						$cols.="\t"."T_$table.`".underscored($k)."` AS `".underscored($k)."`,"."\n";
 					}
 				}
 			}
@@ -520,6 +520,13 @@ class cms{
 
 			$content = $this->p->rows;
 
+			//spaced versions of field names for compatibility
+		    foreach( $content as $k=>$v ){
+		        foreach( $v as $k2=>$v2 ){
+		            $content[$k][spaced($k2)] = $v2;
+		        }
+		    }
+
 			//inline editing
 			if( $auth->user['admin'] and $this->inline ){
 			    foreach( $content as $k=>$row ){
@@ -553,6 +560,10 @@ class cms{
 
 		$this->section=$section;
 		$this->table=underscored($section);
+
+        foreach( $editable_fields as $k=>$v ){
+            $editable_fields[$k] = spaced($v);
+        }
 
 		if( is_array($editable_fields) ){
 			$this->editable_fields=$editable_fields;
@@ -717,6 +728,8 @@ class cms{
 	{
 		global $vars, $id, $strs, $cms_config;
 
+        $name = spaced($name);
+
 		if( $vars['fields'][$this->section][$name] ){
 			$type=$vars['fields'][$this->section][$name];
 		}else{
@@ -749,10 +762,14 @@ class cms{
 			case 'float':
 			case 'decimal':
 			case 'page-name':
-			case 'int':
 			case 'tel':
 		?>
 			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
+		<?php
+			break;
+			case 'int':
+		?>
+			<input type="number" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'coords':

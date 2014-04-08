@@ -44,7 +44,7 @@ foreach($_FILES as $file){
 	}
 
 	if( !$error ){
-		if(!move_uploaded_file($file['tmp_name'],dirname(__FILE__).'/../tmp/'.$_SERVER['HTTP_HOST'].'.csv')){
+		if(!move_uploaded_file($file['tmp_name'], 'uploads/'.$_SERVER['HTTP_HOST'].'.csv')){
 			$error="File upload error. Make sure folder is writeable.";
 		}
 	}

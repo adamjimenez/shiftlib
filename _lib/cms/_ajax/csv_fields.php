@@ -3,7 +3,7 @@ require('../../base.php');
 
 ini_set('auto_detect_line_endings', '1');
 
-$handle = fopen(dirname(__FILE__).'/../tmp/'.$_SERVER['HTTP_HOST'].'.csv', "r");
+$handle = fopen('uploads/'.$_SERVER['HTTP_HOST'].'.csv', "r");
 if( $handle=== false){
     die('error opening '.$_SERVER['HTTP_HOST'].'.csv' );
 }
