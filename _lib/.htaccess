@@ -1,2 +1,3 @@
 RewriteEngine off
 
+php_value max_input_vars 2000

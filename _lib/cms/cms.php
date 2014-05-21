@@ -550,7 +550,7 @@ class cms{
 		}
 	}
 
-	function set_section($section,$id,$editable_fields)
+	function set_section($section, $id, $editable_fields)
 	{
 		global $vars, $languages;
 
@@ -728,7 +728,9 @@ class cms{
 	{
 		global $vars, $id, $strs, $cms_config;
 
-        $name = spaced($name);
+		if( $vars['fields'][$this->section][spaced($name)] ){
+            $name = spaced($name);
+		}
 
 		if( $vars['fields'][$this->section][$name] ){
 			$type=$vars['fields'][$this->section][$name];
@@ -868,12 +870,11 @@ class cms{
 			break;
 			case 'select-multiple':
 			case 'checkboxes':
-
 				$value=array();
 
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
 					if( $this->id ){
-						$join_id=array_search('id',$vars['fields'][$vars['options'][$name]]);
+						$join_id = array_search('id', $vars['fields'][$vars['options'][$name]]);
 
 						$rows=sql_query("SELECT T1.value FROM cms_multiple_select T1
 							INNER JOIN `".escape(underscored($vars['options'][$name]))."` T2 ON T1.value=T2.$join_id
@@ -899,7 +900,7 @@ class cms{
 							}
 						}
 
-						$raw_option=$vars['fields'][$vars['options'][$name]][$field];
+						$raw_option = $vars['fields'][$vars['options'][$name]][$field];
 
 						$cols='';
 						if( is_array($raw_option) ){
@@ -932,9 +933,12 @@ class cms{
 							$options[$id]=$row[underscored($field)];
 						}
 
-						$vars['options'][$name]=$options;
+						$vars['options'][$name] = $options;
 					}else{
-						$vars['options'][$name]=get_options(underscored($vars['options'][$name]),underscored(key($vars['fields'][$vars['options'][$name]])),NULL,$join_id);
+					    //make sure we get the first field
+					    reset($vars['fields'][$vars['options'][$name]]);
+
+						$vars['options'][$name] = get_options(underscored($vars['options'][$name]), underscored(key($vars['fields'][$vars['options'][$name]])),NULL,$join_id);
 					}
 
 				}else{
@@ -1110,6 +1114,9 @@ class cms{
 
 			if( !is_array($vars['options'][$name]) and $vars['options'][$name] ){
 				$join_id=array_search('id',$vars['fields'][$vars['options'][$name]]);
+
+                //make sure we get the label from the first array item
+                reset($vars['fields'][$vars['options'][$name]]);
 
 				$rows=sql_query("SELECT `".underscored(key($vars['fields'][$vars['options'][$name]]))."`,T1.value FROM cms_multiple_select T1
 					INNER JOIN `".escape(underscored($vars['options'][$name]))."` T2 ON T1.value = T2.$join_id
@@ -1444,36 +1451,63 @@ class cms{
 		}
 	}
 
+	function submit($notify){
+        $errors = $this->validate();
+
+        //handle validation
+        if( count( $errors ) ){
+            //validateion failed
+            die(json_encode($errors));
+        }elseif( $_POST['validate'] ){
+            //validation passed
+            die('1');
+        }else{
+            $id = $this->save();
+
+    		if( $notify ){
+                $msg = '';
+                foreach( $_POST as $k=>$v ){
+                    if( $k=='nospam' ){
+                        continue;
+                    }
+
+                    $msg .= $k.': '.$v."\n";
+                }
+                $msg .= "\n".'http://'.$_SERVER['HTTP_HOST'].'/admin?option='.$this->section.'&edit=true&id='.$this->id;
+
+                $headers = 'From: auto@'.$_SERVER["HTTP_HOST"]."\n";
+                $headers .= 'Reply-to: '.$_POST["email"]."\n";
+
+                global $from_email;
+                mail($from_email, 'Website enquiry', $msg, $headers);
+    		}
+        }
+	}
+
 	function validate($data)
 	{
 		global $vars,$languages,$strs;
 
-		$in_use=is_object($strs) ? $strs->inUse : 'in use';
+		$in_use = is_object($strs) ? $strs->inUse : 'in use';
 
 		if( !is_array($data) ){
-			$data=$_POST;
+			$data = $_POST;
 		}
 
-		$errors = $this->trigger_event('beforeValidate',array('data'=>$data));
+		$errors = $this->trigger_event('beforeValidate', array('data'=>$data));
 
 		if( !is_array($errors) ){
-			$errors=array();
+			$errors = array();
 		}
 
-		$table_keys=sql_query("SHOW keys FROM `".$this->table."`");
+		$table_keys = sql_query("SHOW keys FROM `".$this->table."`");
 
-		$keys=array();
+		$keys = array();
 		foreach( $table_keys as $v ){
 			if( $v['Non_unique']==0 ){
 				$keys[$v['Key_name']][]=$v['Column_name'];
 			}
 		}
-
-		/*
-		foreach( $languages as $v ){
-			$errors[]=$v;
-		}
-		*/
 
 		if( count($languages) and in_array('language',$vars['fields'][$this->section]) ){
 			$languages=array_merge(array('en'),$languages);
@@ -1583,8 +1617,13 @@ class cms{
 			}
 		}
 
+		//antispam
+		if( $data['nospam']!='1' ){
+		    $errors[] = 'nospam';
+		}
+
 		if( count($errors) ){
-			$errors=array_values(array_unique($errors));
+			$errors = array_values(array_unique($errors));
 		}
 
 		return $errors;
@@ -1832,16 +1871,16 @@ class cms{
 
 	function save($data)
 	{
-		global $vars,$languages,$auth;
+		global $vars, $languages,$auth;
 
 		$this->trigger_event('beforeSave');
 
 		if( !isset($data) ){
-			$data=$_POST;
+			$data = $_POST;
 		}
 
-		if( count($languages) and !in_array('en',$languages) ){
-			$languages=array_merge(array('en'),$languages);
+		if( count($languages) and !in_array('en', $languages) ){
+			$languages=array_merge(array('en'), $languages);
 		}elseif( !count($languages) ){
 			$languages=array('en');
 		}
@@ -1954,26 +1993,14 @@ class cms{
 					}
 				}
 			}
-
-			/*
-			if( in_array('related',$vars['fields'][$this->section]) ){
-				mysql_query("DELETE FROM related_products WHERE product='".$this->id."'");
-				if( is_array($_POST['related']) ){
-					foreach( $_POST['related'] as $v ){
-						mysql_query("INSERT INTO related_products SET
-							item='".$this->id."',
-							related='".$v."'
-						") or trigger_error("SQL", E_USER_ERROR);
-					}
-				}
-			}
-			*/
 		}
 
 		//restore language
-		$this->language=$current_language;
+		$this->language = $current_language;
 
 		$this->trigger_event('save', array($this->id));
+
+		$this->saved = true;
 
 		return $this->id;
 	}

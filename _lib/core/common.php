@@ -34,11 +34,11 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 
     if( starts_with($file, '//') ){
         $file = 'http:'.$file;
-        die($file);
+        return $file;
     }
 
     //no resize
-    if( !$w and !$h ){
+    if( !$w and !$h and !starts_with($file, 'http') ){
         $path = '/uploads/'.$file;
     }
 
@@ -102,7 +102,9 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 				$width = imagesx($img);
 				$height = imagesy($img);
 
-                if( $crop ){
+                if( !$w and !$h ){
+                    $scale = 1;
+                }elseif( $crop ){
 				    $scale = max($max_width/$width, $max_height/$height);
                 }else{
     			    $scale = min($max_width/$width, $max_height/$height);
@@ -239,6 +241,15 @@ function analytics($id){
     <?
 }
 
+function basename_safe($path)
+{
+	if( mb_strrpos($path, '/')!==false ){
+		return mb_substr($path, mb_strrpos($path, '/')+1);
+	}else{
+		return $path;
+	}
+}
+
 function calc_grids($pcodeA)
 {
 	$pos=strpos($pcodeA,' ');
@@ -289,12 +300,14 @@ function clean($string)
 	return strip_tags($string);
 }
 
-function current_tab( $tab, $index=0 )
+function current_tab( $tab, $class )
 {
 	global $sections, $request;
 
+	$index = 0;
+
 	if( $sections[$index]==$tab or $tab == $request ){
-		echo ' class="current active"';
+		echo ' class="current active '.$class.'"';
 	}
 }
 
@@ -1209,9 +1222,23 @@ function sql_query($query,$single=false)
     return $single ? $return_array[0] : $return_array;
 }
 
-function str_to_pagename($str){
-	$str = strtolower(str_replace(' ','-', $str));
-    return preg_replace("/[^A-Za-z0-9\-\/]/", '', $str);
+function str_to_pagename($page_name){
+    //remove odd chars
+    $page_name = preg_replace("/[^\sA-Za-z0-9\->]/", '', $page_name);
+
+    //replace > with /
+    $page_name = str_replace('>','/',$page_name);
+
+    //lowercase
+    $page_name = strtolower($page_name);
+
+    //trim
+    $page_name = trim($page_name);
+
+    //replace spaces with dashes
+    $page_name = preg_replace("/\s+/", '-', $page_name);
+
+    return $page_name;
 }
 
 function table_exists($table)
@@ -1359,9 +1386,15 @@ function validate($fields, $required, $array=true)
 }
 
 function youtube_id_from_url($url) {
+    $pattern = '#^(?:https?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
+    preg_match($pattern, $url, $matches);
+    return (isset($matches[1])) ? $matches[1] : false;
+
+    /*
     $bits = parse_url($url);
     $query = parse_str($bits['query']);
 
     return $v;
+    */
 }
 ?>

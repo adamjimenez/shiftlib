@@ -46,33 +46,7 @@ function __autoload($class) {
 
 
 //symlinked dir?
-$web_root = $_SERVER['DOCUMENT_ROOT'];
-if( $web_root and substr(__FILE__, 0, strlen($web_root)) === $web_root ){
-    //not symlinked so use parent dir
-    $root_folder = realpath(dirname(__FILE__).'/../');
-}else if( $web_root ){
-    //symlinked so use web root - set manually for subfolders'
-    $root_folder = $web_root;
-}else{
-    //find out root dir
-    $root_folders = array('httpdocs', 'htdocs', 'public_html', 'html');
-    $dir = dirname($_SERVER['SCRIPT_FILENAME']);
-
-    foreach( $root_folders as $root_folder ){
-    	$pos = strrpos($dir,'/'.$root_folder);
-
-    	if( $pos){
-    		break;
-    	}
-    }
-
-    if( $pos ){
-    	$root_folder = substr($dir,0,$pos).'/'.$root_folder;
-    	chdir($root_folder);
-    }else{
-    	die('no root folder: '.$dir);
-    }
-}
+$root_folder = $_SERVER['DOCUMENT_ROOT'];
 chdir($root_folder);
 
 require_once(dirname(__FILE__).'/core/common.php');
@@ -86,9 +60,11 @@ if( $db_config['user'] or $db_connection ){
 		mysql_select_db($db_config['name']) or trigger_error("SQL", E_USER_ERROR);
 	}
 
-	if( $auth_config ){
-        $auth = new auth();
-	}
+    $auth = new auth();
+}elseif( $db_config!==false ){
+    //prompt to configure connection
+    require(dirname(__FILE__).'/cms/_tpl/db.php');
+    exit;
 }
 
 include($root_folder.'/_inc/custom.php');

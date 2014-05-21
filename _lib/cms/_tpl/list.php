@@ -237,7 +237,7 @@ foreach( $vars['content'] as $v){
 				<?
 				}elseif( $vars['fields'][$this->section][$k]=='phpupload' ){
 				?>
-					<? image($value,100,100);?><br />
+					<?=image($value,100,100);?><br />
 					<label><?=$value;?></label>
 				<?
 				}elseif( $vars['fields'][$this->section][$k]=='textarea' ){

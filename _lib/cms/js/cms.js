@@ -414,7 +414,7 @@ function initForms()
                 */
 
                 relative_urls : false,
-                remove_script_host : false,
+                remove_script_host : true,
 
                 content_css : "/css/style.css?" + new Date().getTime(),
 

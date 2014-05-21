@@ -62,6 +62,10 @@ class auth{
 			$this->$k=$v;
 		}
 
+		if( !$this->table ){
+		    $this->table = 'users';
+		}
+
 		$this->required=$vars["required"][$this->table];
 
 		if( $this->db ){
@@ -257,7 +261,10 @@ class auth{
 
 	function show_error( $error )
 	{
-		$_SESSION['error']=$error;
+		//$_SESSION['error'] = $error;
+
+	    print json_encode($this->errors);
+        exit;
 	}
 
 	function register() //invoked by $_POST['register']
@@ -353,22 +360,27 @@ class auth{
 	function forgot_password() //invoked by $_POST['forgot_password']
 	{
 		if( !is_email($_POST['email']) ){
-			$this->show_error('Email address not entered or invalid.');
+			$errors[] = 'email';
 
-			$this->errors[]='email';
+            print json_encode($errors);
+            exit;
 		}
 
-		$select=mysql_query("SELECT * FROM ".$this->table."
+		$select = mysql_query("SELECT * FROM ".$this->table."
 			WHERE
 				email='".escape($_POST['email'])."'
 		") or trigger_error("SQL", E_USER_ERROR);
 
 		if( mysql_num_rows($select)==1 ){
-			$user=mysql_fetch_array($select);
-		}else{
-			$this->show_error('Email address is not in use.');
+			$user = mysql_fetch_array($select);
 
-			$this->errors[]='email not in use';
+			if( $_POST['validate'] ){
+                print 1;
+                exit;
+		    }
+		}else{
+			$this->errors[]='email not recognised';
+			$this->show_error('Email address is not in use.');
 
 			//redirect('forgot');
 			return false;
@@ -433,24 +445,36 @@ class auth{
 					setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$_POST['password']), time()+(86400*14), '/', $this->cookie_domain );
 				}
 
+				if( $_POST['validate'] ){
+                    print 1;
+                    exit;
+        		}
+
 				if( $_SESSION['request'] ){
 					$request=$_SESSION['request'];
 					unset($_SESSION['request']);
 					redirect($request);
 				}
 			}else{
-				$this->show_error('login incorrect');
+				$this->errors[]='password incorrect';
 
-				$this->errors[]='email';
-				$this->errors[]='password';
+				$this->show_error('login incorrect');
 
 				$this->failed_login_attempt($_POST['email'],$_POST['password']);
 			}
 		}else{
-			$this->show_error('missing email or password');
-
 			$this->errors[]='email';
 			$this->errors[]='password';
+
+			$this->show_error('missing email or password');
+		}
+
+		if( count($this->errors) ){
+            print json_encode($this->errors);
+            exit;
+		}elseif( $_POST['validate'] ){
+            print 1;
+            exit;
 		}
 	}
 

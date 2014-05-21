@@ -3,8 +3,6 @@ if( $auth->user['admin']!=1 ){
     die('access denied');
 }
 
-include('_lib/php/geshi/geshi.php');
-
 global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $mailer_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields, $admin_config, $cms_config;
 
 $cms_multiple_select_fields=array(

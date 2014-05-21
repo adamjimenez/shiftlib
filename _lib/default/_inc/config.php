@@ -1,21 +1,21 @@
 <?php
 #GENERAL SETTINGS
-$db_config["host"]="localhost";
-$db_config["user"]="";
-$db_config["pass"]="";
-$db_config["name"]=$db_config["user"];
+$db_config["host"] = "localhost";
+$db_config["user"] = "";
+$db_config["pass"] = "";
+$db_config["name"] = "";
 
 #TPL
-$tpl_config["catchers"]=array();
+$tpl_config["catchers"] = array();
 
 #USER LOGIN
-$auth_config=array();
+$auth_config = array();
 
 //table where your users are stored
-$auth_config["table"]="users";
+$auth_config["table"] = "users";
 
 //required fields when registering and updating
-$auth_config["required"]=array(
+$auth_config["required"] = array(
 
 );
 
@@ -125,16 +125,13 @@ $vars["labels"]["users"]=array("name","surname","email",);
 
 $vars["subsections"]["users"]=array();
 
-
 $vars["files"]["dir"]="files/"; //folder to store files
 
 #SHOP
 $shop_enabled=false;
-
 $shop_config["paypal_email"]="";
 
 #OPTIONS
-
 $opts["admin"]=array(
 	'1'=>'admin',
 	'2'=>'staff',

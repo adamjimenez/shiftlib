@@ -1,7 +1,7 @@
 <?
 class blog{
     function blog($options){
-		global $cms,$sections,$vars,$from_email;
+		global $cms, $sections, $vars, $from_email;
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog',$sections);
 
@@ -242,13 +242,13 @@ class blog{
 		return $c;
 	}
 
-	function recent_posts(){
+	function recent_posts($limit=5){
 		return sql_query("SELECT * FROM blog
 			WHERE
 				display=1 AND
 				date <= NOW()
 			ORDER BY date DESC
-			LIMIT 5
+			LIMIT ".escape($limit)."
 		");
 	}
 }
