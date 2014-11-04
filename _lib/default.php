@@ -14,7 +14,7 @@ function get_tpl_catcher($request)
 		return false;
 	}else{
 		foreach( $tpl_config['catchers'] as $catcher ){
-			if( substr($request,0,strlen($catcher)+1)==$catcher.'/' ){
+			if( substr($request, 0, strlen($catcher)+1)==$catcher.'/' ){
 				return $catcher;
 			}
 		}
@@ -79,7 +79,7 @@ function parse_request(){
     }
 
     //ssl
-    if( $tpl_config['secure'] and in_array($request,$tpl_config['secure']) and !$_SERVER['HTTPS']  ){
+    if( !$_SERVER['HTTPS'] and ($tpl_config['ssl'] or in_array($request,$tpl_config['secure'])) ){
     	if( substr($request,-5)=='index' ){
     		$request=substr($request,0,-5);
     	}
@@ -89,7 +89,7 @@ function parse_request(){
     	}
 
     	redirect('https://'.$_SERVER['HTTP_HOST'].'/'.$request);
-    }elseif( $tpl_config['secure'] and !in_array($request, $tpl_config['secure']) and $_SERVER['HTTPS'] ){
+    }elseif( $_SERVER['HTTPS'] and (!$tpl_config['ssl'] and !in_array($request,$tpl_config['secure'])) ){
     	if( substr($request,-5)=='index' ){
     		$request=substr($request,0,-5);
     	}
@@ -157,10 +157,12 @@ function get_include( $request ){
     return $include_file;
 }
 
-$request = parse_request();
-//print $request;
 require(dirname(__FILE__).'/base.php');
-//debug($request);
+
+if(!$request){
+	$request = parse_request();
+}
+
 $time_start = microtime(true);
 
 //check for predefined pages

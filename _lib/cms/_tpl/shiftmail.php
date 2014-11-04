@@ -18,8 +18,8 @@ $sms = new shiftmail($mailer_config['username'], $mailer_config['password'], $ma
 $credits=$sms->quota(); //we need to obtain this somehow
 
 //sms templates
-$select=mysql_query("SELECT * FROM email_templates ORDER BY subject");
-while( $row=mysql_fetch_array($select) ){
+$rows = sql_query("SELECT * FROM email_templates ORDER BY subject");
+foreach($rows as $row){
 	$opts['email_template'][$row['id']]=$row['subject'];
 	$email_templates[$row['id']]=$row;
 }
@@ -29,6 +29,7 @@ if( !is_numeric($credits) ){
 }
 
 if( $_POST['message'] ){
+
 	$users = $_SESSION['valid_users'];
 
 
@@ -53,10 +54,12 @@ if( $_POST['message'] ){
 	//print_r($result);
 	*/
 
-	$result=$sms->send($users, $_POST['subject'], $_POST['message']);
+	$result = $sms->send($users, $_POST['subject'], $_POST['message']);
 	//$result=true;
 
 	$_SESSION['message']=$result;
+
+	//print var_dump($result);exit;
 
 	//unset($_POST);
 	redirect('?'.$_SERVER['QUERY_STRING']);

@@ -4,9 +4,8 @@ if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
 }
 
-$this->set_section($this->section,$_GET['id']);
-
-$content = $this->get($this->section,$_GET['id']);
+$this->set_section($this->section, $_GET['id']);
+$content = $this->content;
 
 //get id if it exists
 $id = $content['id'];
@@ -16,7 +15,7 @@ $id = $content['id'];
 if( isset($_POST['custom_button']) ){
     $cms_buttons[$_POST['custom_button']]['handler']($_GET['id']);
 
-    $content = $this->get($this->section,$_GET['id']);
+    $content = $this->get($this->section, $_GET['id']);
 }
 
 //subsections delete
@@ -36,15 +35,15 @@ if(
 	( $content['admin']==2 or $content['admin']==3 ) and
 	$_POST['privileges']
 ){
-	mysql_query("DELETE FROM cms_privileges WHERE user='".$this->id."'") or trigger_error("SQL", E_USER_ERROR);
+	sql_query("DELETE FROM cms_privileges WHERE user='".$this->id."'");
 
 	foreach( $_POST['privileges'] as $k=>$v ){
-		mysql_query("INSERT INTO cms_privileges SET
+		sql_query("INSERT INTO cms_privileges SET
 			user='".escape($this->id)."',
 			section='".escape($k)."',
 			access='".escape($v)."',
 			filter='".escape($_POST['filters'][$k])."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
 }
 
@@ -145,17 +144,17 @@ window.onload=init;
 
 		$section='';
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
-			if( $_GET[$name] and $name!='id' and $type=='select' ){
+			if( $_GET[underscored($name)] and $name!='id' and $type=='select' ){
 				$section=$name;
 				break;
 			}
 		}
 		?>
 
-		<? if( $section and in_array('id',$vars['fields'][$this->section]) ){ ?>
+		<? if( $section and in_array('id', $vars['fields'][$this->section]) ){ ?>
 		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>">&laquo; Back to <?=ucfirst($section);?></a>
 		&nbsp;
-		<? }elseif( in_array('id',$vars['fields'][$this->section]) ){ ?>
+		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ ?>
 		<a href="?option=<?=$this->section;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
 		&nbsp;
 		<? } ?>
@@ -223,10 +222,9 @@ foreach( $languages as $language ){
 	<table border="0" cellspacing="0" cellpadding="5" width="100%">
 	<?
 	foreach( $vars['fields'][$this->section] as $name=>$type ){
-		$label=ucfirst(str_replace('_',' ',$name));
+		$label = ucfirst(str_replace('_', ' ', $name));
 
-		$value=$content[$name];
-		$name=$name;
+		$value = $content[$name];
 
 		if( $type=='select-multiple' or $type=='checkboxes' ){
 			if( !is_array($vars['options'][$name]) and $vars['options'][$name] ){
@@ -315,7 +313,7 @@ foreach( $languages as $language ){
 			<?=$value;?>
 			<a href="http://maps.google.co.uk/maps?f=q&source=s_q&hl=en&geocode=&q=<?=$value;?>" target="_blank">(view map)</a>
 		<? }elseif( $type == 'coords' ){ ?>
-			<?=$value;?>
+			<input type="hidden" class="map" value="<?=htmlspecialchars(substr($value,6,-1));?>">
 		<? }elseif( $type == 'textarea' ){ ?>
 			<?=nl2br(strip_tags($value));?>
 		<? }elseif( $type == 'editor' ){ ?>
@@ -449,7 +447,8 @@ foreach( $languages as $language ){
 				);
 		?>
 			<select name="<?=$field_name;?>" class="rating" disabled="disabled">
-				<?=html_options($opts['rating'],$value);?>
+				<option value=""></option>
+				<?=html_options($opts['rating'], $value);?>
 			</select>
 		<? }elseif( $type == 'number' ){ ?>
 			<?=number_format($value,2);?>
@@ -550,17 +549,22 @@ if(
 
  	check_table('cms_privileges',$cms_privileges_fields);
 
-	$select_priveleges=mysql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'") or trigger_error("SQL", E_USER_ERROR);
-	while( $row=mysql_fetch_array($select_priveleges) ){
+	$rows = sql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'");
+	foreach($rows as $row){
 		$privileges[$row['section']]=$row;
 	}
 ?>
 <h2>Privileges</h2>
 <form method="post">
-<table class="box">
+<table class="box" width="100%">
 <tr>
 	<th>Section</th>
-	<th>Access</th>
+	<th>
+		Access<br>
+		<a href="#" id="privileges_none">None</a>,
+		<a href="#" id="privileges_read">Read</a>,
+		<a href="#" id="privileges_write">Write</a>
+	</th>
 	<th>Filter</th>
 </tr>
 <?
@@ -569,7 +573,7 @@ if(
 <tr>
 	<td><?=$section;?></td>
 	<td>
-		<select name="privileges[<?=$section;?>]">
+		<select name="privileges[<?=$section;?>]" class="privileges">
 			<option value=""></option>
 			<?=html_options(array(1=>'Read',2=>'Write'),$privileges[$section]['access']);?>
 		</select>
@@ -585,7 +589,7 @@ if(
 <tr>
 	<td>Email Templates</td>
 	<td>
-		<select name="privileges[email_templates]">
+		<select name="privileges[email_templates]" class="privileges">
 			<option value=""></option>
 			<?=html_options(array(1=>'Read',2=>'Write'),$privileges['uploads']['access']);?>
 		</select>
@@ -594,7 +598,7 @@ if(
 <tr>
 	<td>Uploads</td>
 	<td>
-		<select name="privileges[uploads]">
+		<select name="privileges[uploads]" class="privileges">
 			<option value=""></option>
 			<?=html_options(array(1=>'Read',2=>'Write'),$privileges['uploads']['access']);?>
 		</select>
@@ -608,6 +612,22 @@ if(
 </table>
 </form>
 <br />
+<script>
+$('#privileges_none').click(function(){
+	$('select.privileges').val('0');
+	return false;
+});
+
+$('#privileges_read').click(function(){
+	$('select.privileges').val('1');
+	return false;
+});
+
+$('#privileges_write').click(function(){
+	$('select.privileges').val('2');
+	return false;
+});	
+</script>
 <?
 }
 ?>

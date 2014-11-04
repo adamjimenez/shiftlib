@@ -151,7 +151,7 @@ Ext.onReady(function(){
         },
         autoStart: false,
         //chunk_size: '8mb',
-        max_file_size : '10mb',
+        max_file_size : '100mb',
         drop_element: 'dragload',
         statusQueuedText: 'Ready to upload',
         statusUploadingText: 'Uploading ({0}%)',

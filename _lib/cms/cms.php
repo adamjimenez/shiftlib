@@ -3,11 +3,9 @@ function send_password_information()
 {
 	global $auth;
 
-	$select=mysql_query("SELECT * FROM ".$auth->table." WHERE id='".escape($_GET['id'])."'");
+	$user = sql_query("SELECT * FROM ".$auth->table." WHERE id='".escape($_GET['id'])."'");
 
-	if( mysql_num_rows($select)==1 ){
-		$user=mysql_fetch_array($select);
-	}else{
+	if( !$user ){
 		$_SESSION['message']='Email address is not in use.';
 		return false;
 	}
@@ -15,7 +13,7 @@ function send_password_information()
 	if( !$user['password'] ){
 		$password=generate_password();
 
-		mysql_query("UPDATE ".$auth->table." SET
+		sql_query("UPDATE ".$auth->table." SET
 				password='".escape($password)."'
 			WHERE
 				id='".$user['id']."'
@@ -38,6 +36,14 @@ class cms{
 	{
 	    //enable inline editing
 	    //$this->inline = true;
+
+		$this->opts['rating']=array(
+			1=>'Very Poor',
+			2=>'Poor',
+			3=>'Average',
+			4=>'Good',
+			5=>'Excellent',
+		);
 
 		$this->file_fields=array(
 			'date'=>'date',
@@ -163,27 +169,35 @@ class cms{
 		$this->trigger_event('beforeDelete', array($ids));
 
 		foreach( $ids as $id ){
-			mysql_query("DELETE FROM `".escape(underscored($section))."`
+			sql_query("DELETE FROM `".escape(underscored($section))."`
 				WHERE ".$field_id."='$id'
 			LIMIT 1
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 
 			if( in_array('language',$vars['fields'][$section]) ){
-				mysql_query("DELETE FROM `".escape(underscored($section))."`
+				sql_query("DELETE FROM `".escape(underscored($section))."`
 					WHERE
 						translated_from='$id'
-				") or trigger_error("SQL", E_USER_ERROR);
+				");
 			}
+
+			//multiple select items
+			sql_query("DELETE FROM cms_multiple_select
+			    WHERE
+			        section = '".escape(underscored($section))."' AND
+			        item = '$id'
+			");
 		}
 
 		$this->trigger_event('delete', array($ids));
 	}
 
-	function get($sections,$conditions=NULL,$num_results=NULL,$order=NULL,$asc=true,$prefix=NULL,$return_query=false)
-	{
-		global $vars, $auth;
+	function conditions_to_sql($section, $conditions=NULL, $num_results){
+	    global $vars;
 
-		if( $this->language  ){
+	    //debug($conditions);
+
+		if( $this->language ){
 			$language = $this->language;
 		}else{
 			$language = 'en';
@@ -198,22 +212,228 @@ class cms{
 			}
 			$num_results = 1;
 		}elseif( is_string($conditions) ){
-			if( in_array('page-name',$vars['fields'][$sections]) ){
+			if( in_array('page-name',$vars['fields'][$section]) ){
 				$page_name = $conditions;
 
-				$field_page_name = array_search('page-name',$vars['fields'][$sections]);
+				$field_page_name = array_search('page-name',$vars['fields'][$section]);
 
 				$conditions = array($field_page_name=>$page_name);
 
 				$num_results = 1;
 			}
 		}else{
-			if( in_array('language',$vars['fields'][$sections]) and $language ){
-				$conditions['language']=$language;
-			}elseif( !in_array('id',$vars['fields'][$sections]) ){
+			if( in_array('language',$vars['fields'][$section]) and $language ){
+				$conditions['language'] = $language;
+			}elseif( !in_array('id', $vars['fields'][$section]) ){
 				$id=1;
 			}
 		}
+
+		$table = underscored($section);
+		$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
+
+		if( is_numeric($id) ){
+			$where[] = "T_$table.".$field_id."='".escape($id)."'";
+		}
+
+		if( in_array('language',$vars['fields'][$section]) and $language=='en' ){
+			$where[] = "`translated_from`='0'";
+		}
+
+		if( is_array($conditions) ){
+			foreach( $vars['fields'][$section] as $name=>$type ){
+				$field_name=underscored($name);
+
+				if(
+					( isset($conditions[$name]) and $conditions[$name]!=='' ) or
+					( isset($conditions[$field_name]) and $conditions[$field_name]!=='' )
+				){
+					$value=$conditions[$name] ? $conditions[$name] : $conditions[$field_name];
+
+					switch( $type ){
+						case 'select':
+						case 'combo':
+						case 'radio':
+							if( $conditions['func'][$field_name]=='!=' ){
+								$operator='!=';
+							}else{
+								$operator='=';
+							}
+
+							$where[]="T_$table.".$field_name." ".$operator." '".escape($value)."'";
+						break;
+						case 'select-multiple':
+						case 'checkboxes':
+							if( count($conditions[$field_name])==1 and !reset($conditions[$field_name]) ){
+								continue;
+							}
+
+							$joins.=" LEFT JOIN cms_multiple_select T_".$field_name." ON T_".$field_name.".item=T_".$table.".".$field_id;
+
+							$or='(';
+
+							foreach( $conditions[$field_name] as $k=>$v ){
+								$or.="T_".$field_name.".value = '".escape($v)."' OR ";
+							}
+							$or=substr($or,0,-4);
+							$or.=')';
+
+							$where[]=$or;
+							$where[]="T_".$field_name.".section='".$section."'";
+						break;
+						case 'date':
+						case 'datetime':
+						case 'timestamp':
+							if( $conditions['func'][$field_name]=='month' ){
+								$where[]="date_format(".$field_name.", '%m%Y') = '".escape($value)."'";
+							}elseif( $conditions['func'][$field_name] ){
+								$parts=explode('/',$value);
+								$value=$parts[2].'-'.$parts[1].'-'.$parts[0];
+
+								$where[]="`".$field_name."` ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d',$value))."'";
+							}
+						break;
+						case 'dob':
+							if( is_numeric($value) or is_numeric($conditions['func'][$field_name]) ){
+								$where[]="`".$field_name."`!='0000-00-00'";
+							}
+							if( is_numeric($value) ){
+								$where[]="DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))<= ".escape($conditions['func'][$field_name])." ";
+							}
+							if( is_numeric($conditions['func'][$field_name]) ){
+								$where[]="DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))>= ".escape($value)." ";
+							}
+						break;
+						case 'postcode':
+							if( format_postcode($value) and is_numeric($conditions['func'][$field_name]) ){
+								$grids=calc_grids(format_postcode($value));
+
+								$cols.=",
+								(
+									SELECT
+										ROUND(SQRT(POW(Grid_N-".$grids[0].",2)+POW(Grid_E-".$grids[1].",2)) * 0.000621371192)
+										AS distance
+									FROM postcodes
+									WHERE
+										Pcode=
+										REPLACE(SUBSTRING(SUBSTRING_INDEX(T_$table.$field_name, ' ', 1), LENGTH(SUBSTRING_INDEX(T_$table.$field_name, ' ', 0)) + 1), ',', '')
+
+								) AS distance";
+
+
+								$having[]="distance <= ".escape($conditions['func'][$field_name])."";
+
+								$vars['labels'][$section][]='distance';
+							}
+						break;
+						case 'int':
+						case 'decimal':
+    					case 'position':
+    						$pos = strrpos($value, '-');
+
+							if( $conditions['func'][$field_name] ){
+								$where[]="T_$table.".$field_name." ".escape($conditions['func'][$field_name])." '".escape($value)."'";
+							}elseif( $pos>0 ){
+							    $min = substr($value, 0, $pos);
+							    $max = substr($value, $pos+1);
+
+								$where[]="(
+								    T_$table.".$field_name." >= '".escape($min)."' AND
+								    T_$table.".$field_name." <= '".escape($max)."'
+								)";
+							}
+						break;
+						default:
+							$value=str_replace('*','%',$value);
+							$where[]="T_$table.".$field_name." LIKE '".escape($value)."'";
+						break;
+					}
+				}
+			}
+
+			if( $conditions['s'] ){
+				$words=explode(' ',$conditions['s']);
+
+				foreach( $words as $word ){
+					$or=array();
+
+					foreach( $vars['fields'][$section] as $name=>$type ){
+						if(
+                            (
+                                $type=='text' or
+                                $type=='textarea' or
+                                $type=='email' or
+                                $type=='mobile' or
+                                $type=='select'
+                            ) &&
+                            !in_array($name, $vars["non_searchable"][$section])
+                        ){
+							$value=str_replace('*','%',$word);
+							
+							if($type == 'select'){
+								if( is_string($vars['options'][$name]) ){
+									$option = '';
+									foreach( $vars['fields'][$vars['options'][$name]] as $k=>$v ){
+										if( $v!='separator' ){
+											$option=$k;
+											break;
+										}
+									}
+									
+									$or[] = "T_".underscored($name).".".underscored($option)." LIKE '%".escape($value)."%'";
+								}
+							}else{
+								$or[] = "T_$table.".underscored($name)." LIKE '%".escape($value)."%'";
+							}
+						}
+					}
+
+					if( count($or) ){
+						$or_str='';
+						foreach($or as $w){
+							$or_str.=$w." OR ";
+						}
+						$or_str=substr($or_str,0,-3);
+
+						$where[]='('.$or_str.')';
+					}
+				}
+
+			}
+		}
+
+		//additional custom conditions
+		foreach($conditions as $k=>$v){
+			if(is_int($k)){
+				$where[] = $v;
+			}
+		}
+
+		if( count($where) ){
+			foreach($where as $w){
+				$where_str.="\t".$w." AND"."\n";
+			}
+			$where_str="WHERE \n".substr($where_str,0,-5);
+		}
+
+		if( count($having) ){
+			foreach($having as $w){
+				$having_str.="\t".$w." AND"."\n";
+			}
+			$having_str="HAVING \n".substr($having_str,0,-5);
+		}
+
+		return array(
+		    'where_str' => $where_str,
+		    'having_str' => $having_str,
+		    'joins' => $joins,
+		    'num_results' => $num_results,
+		);
+	}
+
+	function get($sections, $conditions=NULL, $num_results=NULL, $order=NULL, $asc=true, $prefix=NULL, $return_query=false)
+	{
+		global $vars, $auth;
 
 		if( is_array($sections) ){
 			die('array of sections not yet supported');
@@ -226,14 +446,8 @@ class cms{
                 $prefix = $table;
             }
 
-			$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
-
-			if( $id ){
-				$where[] = "T_$table.".$field_id."='".escape($id)."'";
-			}
-
 			//sortable
-			$sortable = in_array('position',$vars['fields'][$section]);
+			$sortable = in_array('position', $vars['fields'][$section]);
 
 			//parent
 			if(
@@ -262,23 +476,35 @@ class cms{
 					}
 				}
 			}
+
+			$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
 			$cols.="\tT_$table.$field_id";
 
 			if( !$order ){
 				if( $sortable ){
 					$order='T_'.$table.'.position';
+				}else if( in_array('date', $vars['fields'][$section]) ){
+					$field_date = array_search('date', $vars['fields'][$section]);
+					$order = 'T_'.$table.'.'.underscored($field_date);
+					$asc = false;
+				}else if( in_array('timestamp', $vars['fields'][$section]) ){
+					$field_date = array_search('timestamp', $vars['fields'][$section]);
+					$order = 'T_'.$table.'.'.underscored($field_date);
+					$asc = false;
+				}else if( in_array('date', $vars['fields'][$section]) ){
+					$order='T_'.$table.'.date';
 				}else{
-					$label=$vars['labels'][$section][0];
+					$label = $vars['labels'][$section][0];
 
-					$type=$vars['fields'][$this->section][$label];
+					$type = $vars['fields'][$this->section][$label];
 
 					if( ($type=='select' or $type=='combo' or $type=='radio') and !is_array($vars['opts'][$label]) ){
 						foreach( $vars['fields'][$vars['options'][$label]] as $k=>$v ){
 							if( $v!='separator' ){
 								if( is_array($v) ){
-									$order=underscored($label);
+									$order = underscored($label);
 								}else{
-									$order='T_'.underscored($label).'.'.underscored($k);
+									$order = 'T_'.underscored($label).'.'.underscored($k);
 								}
 
 								break;
@@ -294,170 +520,17 @@ class cms{
 				}
 			}
 
-
-			if( in_array('language',$vars['fields'][$section]) and $language=='en' ){
-				$where[] = "`translated_from`='0'";
-			}
-
+			/*
 			if( $parent_field ){
 				$parent = is_numeric($conditions['parent']) ? $conditions['parent'] : 0;
 				//$where[]="`".$parent_field."`='".$parent."'";
-			}
+			}*/
 
-			if( is_array($conditions) ){
-				foreach( $vars['fields'][$section] as $name=>$type ){
-					$field_name=underscored($name);
+            $sql = $this->conditions_to_sql($sections, $conditions, $num_results);
 
-					if(
-						( isset($conditions[$name]) and $conditions[$name]!=='' ) or
-						( isset($conditions[$field_name]) and $conditions[$field_name]!=='' )
-					){
-						$value=$conditions[$name] ? $conditions[$name] : $conditions[$field_name];
-
-						switch( $type ){
-							case 'select':
-							case 'combo':
-							case 'radio':
-								if( $conditions['func'][$field_name]=='!=' ){
-									$operator='!=';
-								}else{
-									$operator='=';
-								}
-
-								$where[]="T_$table.".$field_name." ".$operator." '".escape($value)."'";
-							break;
-							case 'select-multiple':
-							case 'checkboxes':
-								if( count($conditions[$field_name])==1 and !reset($conditions[$field_name]) ){
-									continue;
-								}
-
-								$joins.=" LEFT JOIN cms_multiple_select T_".$field_name." ON T_".$field_name.".item=T_".$table.".".$field_id;
-
-								$or='(';
-
-								foreach( $conditions[$field_name] as $k=>$v ){
-									$or.="T_".$field_name.".value = '".escape($v)."' OR ";
-								}
-								$or=substr($or,0,-4);
-								$or.=')';
-
-								$where[]=$or;
-								$where[]="T_".$field_name.".section='".$section."'";
-							break;
-							case 'date':
-							case 'datetime':
-							case 'timestamp':
-								if( $conditions['func'][$field_name]=='month' ){
-									$where[]="date_format(".$field_name.", '%m%Y') = '".escape($value)."'";
-								}elseif( $conditions['func'][$field_name] ){
-									$parts=explode('/',$value);
-									$value=$parts[2].'-'.$parts[1].'-'.$parts[0];
-
-									$where[]="`".$field_name."` ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d',$value))."'";
-								}
-							break;
-							case 'dob':
-								if( is_numeric($value) or is_numeric($conditions['func'][$field_name]) ){
-									$where[]="`".$field_name."`!='0000-00-00'";
-								}
-								if( is_numeric($value) ){
-									$where[]="DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))<= ".escape($conditions['func'][$field_name])." ";
-								}
-								if( is_numeric($conditions['func'][$field_name]) ){
-									$where[]="DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))>= ".escape($value)." ";
-								}
-							break;
-							case 'postcode':
-								if( format_postcode($value) and is_numeric($conditions['func'][$field_name]) ){
-									$grids=calc_grids(format_postcode($value));
-
-									$cols.=",
-									(
-										SELECT
-											ROUND(SQRT(POW(Grid_N-".$grids[0].",2)+POW(Grid_E-".$grids[1].",2)) * 0.000621371192)
-											AS distance
-										FROM postcodes
-										WHERE
-											Pcode=
-											REPLACE(SUBSTRING(SUBSTRING_INDEX(T_$table.$field_name, ' ', 1), LENGTH(SUBSTRING_INDEX(T_$table.$field_name, ' ', 0)) + 1), ',', '')
-
-									) AS distance";
-
-
-									$having[]="distance <= ".escape($conditions['func'][$field_name])."";
-
-									$vars['labels'][$section][]='distance';
-								}
-							break;
-							case 'int':
-							case 'decimal':
-        					case 'position':
-								if( $conditions['func'][$field_name] ){
-									$where[]="T_$table.".$field_name." ".escape($conditions['func'][$field_name])." '".escape($value)."'";
-								}
-							break;
-        					case 'id':
-								if( is_numeric($value) ){
-								    $where[]="T_$table.".$field_name." LIKE '".escape($value)."'";
-								}
-							break;
-							default:
-								$value=str_replace('*','%',$value);
-								$where[]="T_$table.".$field_name." LIKE '".escape($value)."'";
-							break;
-						}
-					}
-				}
-
-				if( $conditions['s'] ){
-					$words=explode(' ',$conditions['s']);
-
-					foreach( $words as $word ){
-						$or=array();
-
-						foreach( $vars['fields'][$section] as $name=>$type ){
-    						if(
-                                (
-                                    $type=='text' or
-                                    $type=='textarea' or
-                                    $type=='email' or
-                                    $type=='mobile'
-                                ) &&
-                                !in_array($name,$vars["non_searchable"][$section])
-                            ){
-								$value=str_replace('*','%',$word);
-								$or[]="T_$table.".underscored($name)." LIKE '%".escape($value)."%'";
-							}
-						}
-
-						if( count($or) ){
-							$or_str='';
-							foreach($or as $w){
-								$or_str.=$w." OR ";
-							}
-							$or_str=substr($or_str,0,-3);
-
-							$where[]='('.$or_str.')';
-						}
-					}
-
-				}
-			}
-
-			if( count($where) ){
-				foreach($where as $w){
-					$where_str.="\t".$w." AND"."\n";
-				}
-				$where_str="WHERE \n".substr($where_str,0,-5);
-			}
-
-			if( count($having) ){
-				foreach($having as $w){
-					$having_str.="\t".$w." AND"."\n";
-				}
-				$having_str="HAVING \n".substr($having_str,0,-5);
-			}
+            $where_str = $sql['where_str'];
+            $having_str = $sql['having_str'];
+            $joins = $sql['joins'];
 
 			if( in_array('select',$vars['fields'][$section]) or in_array('combo',$vars['fields'][$section]) or in_array('radio',$vars['fields'][$section]) ){
 				$selects=array_keys($vars['fields'][$section], "select");
@@ -507,14 +580,14 @@ class cms{
 				T_$table.$field_id
 			$having_str
 			";
+			//debug($query);
 
 			if( $return_query===true ){
 				return $query;
 			}
 
-			$limit = ($num_results) ? $num_results : NULL;
+			$limit = $sql['num_results'] ?: NULL;
 
-			//debug($query);
             //require_once('_lib/paging.class.php');
 			$this->p = new paging( $query, $limit, $order, $asc, $prefix );
 
@@ -526,6 +599,60 @@ class cms{
 		            $content[$k][spaced($k2)] = $v2;
 		        }
 		    }
+
+            //nested arrays for checkbox info //disabled for now
+			foreach( $vars['fields'][$section] as $field=>$type ){
+				$label = '';
+
+				if( $type=='checkboxes' ){
+					foreach($content as $k=>$v){
+						if( !is_array($vars['options'][$field]) and $vars['options'][$field] ){
+							$join_id = array_search('id',$vars['fields'][$vars['options'][$field]]);
+
+                            reset($vars['fields'][$vars['options'][$field]]);
+                            $key = key($vars['fields'][$vars['options'][$field]]);
+
+							$rows = sql_query("SELECT `".underscored($key)."`,T1.value FROM cms_multiple_select T1
+								INNER JOIN `".escape(underscored($vars['options'][$field]))."` T2 ON T1.value = T2.$join_id
+								WHERE
+									T1.section='".escape($section)."' AND
+									T1.field='".escape($field)."' AND
+									T1.item='".escape($v['id'])."'
+								GROUP BY T1.value
+								ORDER BY T2.".underscored(key($vars['fields'][$vars['options'][$field]]))."
+							");
+
+							$items = array();
+							foreach($rows as $row){
+								$items[] = $row[$key];
+							}
+						}else{
+							$rows = sql_query("SELECT value FROM cms_multiple_select
+								WHERE
+									section='".escape($section)."' AND
+									field='".escape($field)."' AND
+									item='".$v['id']."'
+								ORDER BY id
+							");
+
+							$items = array();
+							foreach($rows as $row){
+								$items[] = $row['value'];
+							}
+						}
+
+						$items = array_unique($items);
+
+						$label = '';
+						foreach($items as $item){
+							$label .= $item.', ';
+						}
+
+						$content[$k][underscored($field)] = $rows;
+						$content[$k][underscored($field).'_label'] = substr($label, 0, -2);
+					}
+				}
+			}
 
 			//inline editing
 			if( $auth->user['admin'] and $this->inline ){
@@ -542,7 +669,7 @@ class cms{
 			    }
 			}
 
-			if( !in_array('id',$vars['fields'][$section]) or $id or $num_results==1 ){
+			if( !in_array('id',$vars['fields'][$section]) or $id or $sql['num_results']==1 ){
 				return $content[0];
 			}else{
 				return $content;
@@ -558,25 +685,30 @@ class cms{
 			throw new Exception("Section does not exist: ".$section, E_USER_ERROR);
 		}
 
-		$this->section=$section;
-		$this->table=underscored($section);
+		$this->section = $section;
+		$this->table = underscored($section);
 
         foreach( $editable_fields as $k=>$v ){
             $editable_fields[$k] = spaced($v);
         }
 
 		if( is_array($editable_fields) ){
-			$this->editable_fields=$editable_fields;
+			$this->editable_fields = $editable_fields;
 		}else{
-			$this->editable_fields=NULL;
+			$this->editable_fields = null;
 		}
 
-		$this->field_id=array_search('id',$vars['fields'][$this->section]) ? array_search('id',$vars['fields'][$this->section]) : 'id';
+		$this->field_id = array_search('id', $vars['fields'][$this->section]);
+
+		if(!$this->field_id){
+			$this->field_id = 'id';
+			$id = 1;
+		}
 
 		if( $id ){
-			$this->id=$id;
+			$this->id = $id;
 
-			$fields='';
+			$fields = '';
 			foreach( $vars['fields'][$section] as $k=>$v ){
 				if( $v=='separator' or $v=='checkboxes' ){
 					continue;
@@ -584,21 +716,23 @@ class cms{
 
 				if( $v=='coords' ){
 					$fields.="AsText(".underscored($k).") AS ".underscored($k).','."\n";
-
 					continue;
 				}
 
 				$fields.='`'.underscored($k).'`,'."\n";
 			}
-			$fields=substr($fields,0,-2);
+			$fields = substr($fields,0,-2);
 
-			$select = mysql_query("SELECT $fields FROM `".$this->table."` WHERE ".$this->field_id."='".escape($this->id)."'");
+			$row = sql_query("SELECT $fields FROM `".$this->table."`
+				WHERE
+					".$this->field_id."='".escape($this->id)."'
+			", 1);
 
-            if( !$select ){
-                throw new Exception(mysql_error());
-            }
+			$this->content = $this->get($section, array('id'=>$this->id), 1);
 
-			$this->content = mysql_fetch_array($select);
+			if(!$this->content){
+				$this->id = null;
+			}
 
 			if( in_array('language',$vars['fields'][$this->section]) ){
 				foreach( $languages as $language ){
@@ -612,16 +746,11 @@ class cms{
 				}
 			}
 		}elseif( !in_array('id',$vars['fields'][$this->section]) ){
-			$select = mysql_query("SELECT * FROM `".$this->table."` ORDER BY ".$this->field_id." LIMIT 1");
+			$row = sql_query("SELECT * FROM `".$this->table."` ORDER BY ".$this->field_id." LIMIT 1", 1);
 
-            if( !$select ){
-                throw new Exception(mysql_error());
-            }
-
-			if( mysql_num_rows($select) ){
-				$this->content=mysql_fetch_array($select);
-
-				$this->id=$this->content[$this->field_id];
+			if( $row ){
+				$this->content = $row;
+				$this->id = $this->content[$this->field_id];
 			}
 
 			if( in_array('language',$vars['fields'][$this->section]) ){
@@ -637,7 +766,6 @@ class cms{
 			}
 		}else{
 			$this->content=$_GET;
-
 			$this->id=NULL;
 		}
 	}
@@ -693,13 +821,13 @@ class cms{
 		global $vars;
 
 		reset($vars['fields'][$section]);
-		$label=key($vars['fields'][$section]);
+		$label = key($vars['fields'][$section]);
 
-		$select=mysql_query("SELECT id,`$label` FROM `".underscored($section)."`
+		$rows = sql_query("SELECT id,`$label` FROM `".underscored($section)."`
 			WHERE
 				$parent_field='$parent'
 			ORDER BY `$label`
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 
 		$indent='';
 		for( $i=0; $i<$depth; $i++ ){
@@ -707,7 +835,7 @@ class cms{
 		}
 
 		$parents=array();
-		while( $row=mysql_fetch_array($select) ){
+		foreach($rows as $row){
 			if( $row['id']==$this->id ){
 				continue;
 			}
@@ -724,9 +852,11 @@ class cms{
 		return $parents;
 	}
 
-	function get_field($name,$attribs='',$separator='',$placeholder='')
+	function get_field($name, $attribs='', $separator='', $where = false)
 	{
 		global $vars, $id, $strs, $cms_config;
+
+		$placeholder = '';
 
 		if( $vars['fields'][$this->section][spaced($name)] ){
             $name = spaced($name);
@@ -743,9 +873,9 @@ class cms{
 			}
 		}
 
-		$field_name=underscored($name);
+		$field_name = underscored($name);
 
-		$value=$this->content[$field_name];
+		$value = $this->content[$field_name];
 
 		if( $this->language!='en' and $this->language!='' and in_array('language',$vars['fields'][$this->section]) ){
 			$value=$this->content[$this->language][$field_name];
@@ -776,7 +906,10 @@ class cms{
 			break;
 			case 'coords':
 		?>
-			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?>>
+			<input type="text" size="40" value="London, UK" />
+			<input type="button" value="Search" class="mapSearch" /><br />
+
+			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?> placeholder="coordinates">
 		<?php
 			break;
 			case 'email':
@@ -810,9 +943,9 @@ class cms{
 		<?php
 			break;
 			case 'editor':
-				$value=mb_detect_encoding($value, "UTF-8") == "UTF-8" ? $value : utf8_encode($value);
+				//$value = mb_detect_encoding($value, "UTF-8") == "UTF-8" ? $value : utf8_encode($value);
 		?>
-			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=htmlentities($value);?></textarea>
+			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
 		<?php
 			break;
 			case 'file':
@@ -838,7 +971,7 @@ class cms{
 			case 'select-distance':
 			case 'radio':
 				if( $type!=='combo' ){
-					$vars['options'][$name]=$this->get_options($name);
+					$vars['options'][$name] = $this->get_options($name, $where);
 				}
 
 				if( $type=='radio' ){
@@ -890,8 +1023,8 @@ class cms{
 					}
 
 					if( in_array('language',$vars['fields'][$vars['options'][$name]]) ){
-						$language=$this->language ? $this->language : 'en';
-						$table=underscored($vars['options'][$name]);
+						$language = $this->language ? $this->language : 'en';
+						$table = underscored($vars['options'][$name]);
 
 						foreach( $vars['fields'][$vars['options'][$name]] as $k=>$v ){
 							if( $v!='separator' ){
@@ -911,19 +1044,15 @@ class cms{
 							$cols.='`'.underscored($field).'`';
 						}
 
-						$select = mysql_query("SELECT id,$cols FROM
+						$rows = sql_query("SELECT id,$cols FROM
 							$table
 							WHERE
 								language='".$language."'
 							ORDER BY `".underscored($field)."`
 						");
 
-                        if( !$select ){
-                            throw new Exception(mysql_error());
-                        }
-
 						$options=array();
-						while( $row=mysql_fetch_array($select) ){
+						foreach($rows as $row){
 							if( $row['translated_from'] ){
 								$id=$row['translated_from'];
 							}else{
@@ -938,7 +1067,7 @@ class cms{
 					    //make sure we get the first field
 					    reset($vars['fields'][$vars['options'][$name]]);
 
-						$vars['options'][$name] = get_options(underscored($vars['options'][$name]), underscored(key($vars['fields'][$vars['options'][$name]])),NULL,$join_id);
+						$vars['options'][$name] = $this->get_options($name, $where);
 					}
 
 				}else{
@@ -980,20 +1109,16 @@ class cms{
 
 			break;
 			case 'parent':
-				$parent_field=array_search('parent',$vars['fields'][$this->section]);
+				$parent_field = array_search('parent',$vars['fields'][$this->section]);
 
 				reset($vars['fields'][$this->section]);
 
 				$label=key($vars['fields'][$this->section]);
 
-				$select = mysql_query("SELECT id,`$label` FROM `".$this->table."` ORDER BY `$label`");
-
-                if( !$select ){
-                    throw new Exception(mysql_error());
-                }
+				$rows = sql_query("SELECT id,`$label` FROM `".$this->table."` ORDER BY `$label`");
 
 				$parents=array();
-				while( $row=mysql_fetch_array($select) ){
+				foreach($rows as $row){
 					if( $row['id']==$this->id ){
 						continue;
 					}
@@ -1038,10 +1163,9 @@ class cms{
 				?>
 
 				<li>
-					<input type="file" name="<?=$field_name;?>[]" <? if( $readonly ){ ?>disabled<? } ?> />
-					<a href="javascript:;" class="link" onClick="delFile(this)">Delete</a>
+					<input type="file" name="<?=$field_name;?>[]" multiple="multiple" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?> />
 				</li>
-			</ul><p><a href="javascript:;" id="labelAttach" onClick="addFile(this,'<?=$field_name;?>')">Add more</a></p>
+			</ul>
 		<?php
 			break;
 			case 'phpuploads':
@@ -1080,34 +1204,28 @@ class cms{
 		<?php
 			break;
 			case 'rating':
-				$opts['rating']=array(
-        			0=>'No Rating',
-					1=>'Very Poor',
-					2=>'Poor',
-					3=>'Average',
-					4=>'Good',
-					5=>'Excellent',
-				);
+			case 'avg-rating':
 		?>
-			<select name="<?=$field_name;?>" class="rating">
-				<?=html_options($opts['rating'],$value);?>
+			<select name="<?=$field_name;?>" class="rating" data-section="<?=$this->section;?>" data-item="<?=$this->content['id'];?>" <? if($type=='avg-rating'){?>data-avg='data-avg'<?}?> <?=$attribs;?>>
+			    <option value="">Choose</option>
+				<?=html_options($this->opts['rating'], $value, true);?>
 			</select>
 		<?php
 			break;
 		}
 	}
 
-	function get_value($name,$return=true)
+	function get_value($name, $return=true)
 	{
 		global $vars;
 
-		$type=$vars['fields'][$this->section][$name];
+		$type = $vars['fields'][$this->section][$name];
 
-		$field_name=underscored($name);
+		$field_name = underscored($name);
 
-		$value=$this->content[$field_name];
+		$value = $this->content[$field_name];
 
-		$id=$this->id;
+		$id = $this->id;
 
 		if( $type=='select-multiple' or $type=='checkboxes' ){
 			$array=array();
@@ -1185,7 +1303,7 @@ class cms{
 				if( $value=='0' ){
 					$value='';
 				}else{
-					$value='<a href="?option='.escape($vars['options'][$name]).'&view=true&id='.$value.'">'.$content[underscored($name).'_label'].'</a>';
+					$value='<a href="?option='.escape($vars['options'][$name]).'&view=true&id='.$value.'">'.$this->content[underscored($name).'_label'].'</a>';
 				}
 			}else{
 				if( is_assoc_array($vars['options'][$name]) ){
@@ -1280,19 +1398,17 @@ class cms{
 			<?=number_format($value,2);?>
 
 		<? }elseif( $type == 'rating' ){
-				$opts['rating']=array(
-					1=>'Very Poor',
-					2=>'Poor',
-					3=>'Average',
-					4=>'Good',
-					5=>'Excellent',
-				);
 		?>
 			<select name="<?=$field_name;?>" class="rating" disabled="disabled">
-				<?=html_options($opts['rating'],$value);?>
+			    <option value="">Choose</option>
+				<?=html_options($this->opts['rating'], $value, true);?>
 			</select>
-
-		<? }
+		<?
+		}elseif( $type == 'coords' ){
+		?>
+			<input type="hidden" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?>>
+		<?
+		}
 
 		if( $return ){
 			return $value;
@@ -1301,7 +1417,7 @@ class cms{
 		}
 	}
 
-	function get_options($name)
+	function get_options($name, $where=false)
 	{
 		global $vars,$strs;
 
@@ -1335,22 +1451,33 @@ class cms{
 				$cols.='`'.underscored($field).'`';
 			}
 
-			if( in_array('language',$vars['fields'][$vars['options'][$name]]) ){
-				$language=$this->language ? $this->language : 'en';
+			//sortable
+			$sortable = in_array('position', $vars['fields'][$vars['options'][$name]]);
 
-				$select = mysql_query("SELECT id,$cols FROM
+			if( $sortable ){
+				$order = 'position';
+			}else{
+				$order = $field;
+			}
+
+			if( in_array('language', $vars['fields'][$vars['options'][$name]]) ){
+				$where_str = '';
+				if($where){
+					$where_str = 'AND '.$where;
+				}
+
+				$language = $this->language ? $this->language : 'en';
+
+				$rows = sql_query("SELECT id, $cols FROM
 					$table
 					WHERE
 						language='".$language."'
-					ORDER BY `".underscored($field)."`
+						$where_str
+					ORDER BY `".underscored($order)."`
 				");
 
-                if( !$select ){
-                    throw new Exception(mysql_error());
-                }
-
 				$options=array();
-				while( $row=@mysql_fetch_array($select) ){
+				foreach($rows as $row){
 					if( $row['translated_from'] ){
 						$id=$row['translated_from'];
 					}else{
@@ -1360,22 +1487,24 @@ class cms{
 					$options[$id]=$row[underscored($field)];
 				}
 			}else{
-				$parent_field=array_search('parent',$vars['fields'][$vars['options'][$name]]);
+				$parent_field = array_search('parent',$vars['fields'][$vars['options'][$name]]);
 
 				if( $parent_field!==false ){
-					$options=$this->get_children($vars['options'][$name],$parent_field);
+					$options = $this->get_children($vars['options'][$name],$parent_field);
 				}else{
-					$select = mysql_query("SELECT id,$cols FROM
+					$where_str = '';
+					if($where){
+						$where_str = 'WHERE '.$where;
+					}
+
+					$rows = sql_query("SELECT id, $cols FROM
 						$table
-						ORDER BY `".underscored($field)."`
+						$where_str
+						ORDER BY `".underscored($order)."`
 					");
 
-                    if( !$select ){
-                        throw new Exception(mysql_error());
-                    }
-
 					$options=array();
-					while( $row=@mysql_fetch_array($select) ){
+					foreach($rows as $row){
 						$options[$row['id']]=$row[underscored($field)];
 					}
 				}
@@ -1451,36 +1580,53 @@ class cms{
 		}
 	}
 
-	function submit($notify){
-        $errors = $this->validate();
+	function notify($subject){
+		global $vars, $from_email;
+
+		if(!$subject or is_numeric($subject)){
+			$subject = 'New submission to: '.$this->section;
+		}
+
+        $msg = 'New submission to '.$this->section.":\n\n";
+
+        $this->set_section($this->section, $this->id);
+
+        foreach( $vars['fields'][$this->section] as $name=>$type ){
+            $msg .= ucfirst(spaced($name)).': '.$this->get_value($name)."\n";
+        }
+        $msg .= "\n".'http://'.$_SERVER['HTTP_HOST'].'/admin?option='.rawurlencode($this->section).'&edit=true&id='.$this->id;
+
+        $msg = nl2br($msg);
+
+        $headers = 'From: auto@'.$_SERVER["HTTP_HOST"]."\n";
+        $headers .= 'Reply-to: '.$_POST["email"]."\n";
+
+		$mail = new Rmail();
+		$mail->setHtml($msg);
+		$mail->setFrom($from_email);
+		$mail->setSubject($subject);
+		$result = $mail->send(array($from_email),'mail');
+	}
+
+	function submit($notify, $errors = array()){
+		global $vars;
+        $errors = array_merge($errors, $this->validate());
 
         //handle validation
-        if( count( $errors ) ){
+        if( count($errors) ){
             //validateion failed
             die(json_encode($errors));
         }elseif( $_POST['validate'] ){
             //validation passed
             die('1');
         }else{
-            $id = $this->save();
+            $this->id = $this->save();
 
     		if( $notify ){
-                $msg = '';
-                foreach( $_POST as $k=>$v ){
-                    if( $k=='nospam' ){
-                        continue;
-                    }
-
-                    $msg .= $k.': '.$v."\n";
-                }
-                $msg .= "\n".'http://'.$_SERVER['HTTP_HOST'].'/admin?option='.$this->section.'&edit=true&id='.$this->id;
-
-                $headers = 'From: auto@'.$_SERVER["HTTP_HOST"]."\n";
-                $headers .= 'Reply-to: '.$_POST["email"]."\n";
-
-                global $from_email;
-                mail($from_email, 'Website enquiry', $msg, $headers);
+    			$this->notify();
     		}
+
+    		return $this->id;
         }
 	}
 
@@ -1595,16 +1741,12 @@ class cms{
 						}
 						$where_str="WHERE \n".substr($where_str,0,-5);
 
-						$select_field = mysql_query("SELECT * FROM `".$this->table."`
+						$field = sql_query("SELECT * FROM `".$this->table."`
 							$where_str
 							LIMIT 1
-						");
+						", 1);
 
-                        if( !$select_field ){
-                            throw new Exception(mysql_error());
-                        }
-
-						if( mysql_num_rows($select_field) ){
+						if( $field ){
 							$errors[]=$key.' '.$in_use;
 
 							foreach( $fields as $field ){
@@ -1658,13 +1800,7 @@ class cms{
 
 				if( $v=='position' and !$this->id ){
 					//find last position
-					$select_max_pos = mysql_query("SELECT MAX(position) AS `max_pos` FROM `".$this->table."`");
-
-                    if( !$select_max_pos ){
-                        throw new Exception(mysql_error());
-                    }
-
-					$max_pos = mysql_fetch_array($select_max_pos);
+					$max_pos = sql_query("SELECT MAX(position) AS `max_pos` FROM `".$this->table."`", 1);
 					$max_pos = $max_pos['max_pos']+1;
 
 					$this->query.="`$k`='".escape($max_pos)."',\n";
@@ -1725,30 +1861,31 @@ class cms{
 					if( $_FILES[$name]['error']=='UPLOAD_ERR_OK' ){
 						check_table('files', $this->file_fields);
 
-						$content=file_get_contents($_FILES[$name]['tmp_name']);
+						$content = file_get_contents($_FILES[$name]['tmp_name']);
 
-						$result = mysql_query("INSERT INTO files SET
+						$result = sql_query("INSERT INTO files SET
 							date=NOW(),
 							name='".escape($_FILES[$name]['name'])."',
 							size='".escape( strlen($content) )."',
 							type='".escape($_FILES[$name]['type'])."'
 						");
 
-                        if( !$result ){
-                            throw new Exception(mysql_error());
-                        }
+						$data[$name] = sql_insert_id();
 
-						$data[$name]=mysql_insert_id();
+						//check folder exists
+						if(!file_exists($vars['files']['dir'])){
+							mkdir($vars['files']['dir']);
+						}
 
 						if( $vars['files']['dir'] ){
 							file_put_contents($vars['files']['dir'].$data[$name],$content) or
 								trigger_error("Can't save ".$vars['files']['dir'].$data[$name], E_ERROR);
 						}else{
-							mysql_query("UPDATE files SET
+							sql_query("UPDATE files SET
 								data='".escape($content)."'
 								WHERE
-								id='".escape($data[$name])."'
-							") or trigger_error("SQL", E_USER_ERROR);
+									id='".escape($data[$name])."'
+							");
 						}
 
 						//thumb
@@ -1767,11 +1904,10 @@ class cms{
                             }
 						}
 					}elseif( !$data[$name] and $row[$name] ){
-
-						mysql_query("DELETE FROM files
+						sql_query("DELETE FROM files
 							WHERE
 							id='".escape($row[$name])."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 
 						if( $vars['files']['dir'] ){
 							unlink($vars['files']['dir'].$row[$name]);
@@ -1787,25 +1923,31 @@ class cms{
 							if( $error=='UPLOAD_ERR_OK' ){
 								check_table('files', $this->file_fields);
 
-								$content=file_get_contents($_FILES[$name]['tmp_name'][$key]);
+								$content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
 
-								mysql_query("INSERT INTO files SET
+								sql_query("INSERT INTO files SET
 									date=NOW(),
 									name='".escape($_FILES[$name]['name'][$key])."',
 									size='".escape( strlen($content) )."',
 									type='".escape($_FILES[$name]['type'][$key])."'
-								") or trigger_error("SQL", E_USER_ERROR);
+								");
 
-								$files[]=mysql_insert_id();
+								$files[] = sql_insert_id();
+
+								//check folder exists
+								if(!file_exists($vars['files']['dir'])){
+									mkdir($vars['files']['dir']);
+								}
 
 								if( $vars['files']['dir'] ){
-									file_put_contents($vars['files']['dir'].mysql_insert_id(),$content);
+									file_put_contents($vars['files']['dir'].sql_insert_id(),$content) or
+										trigger_error("Can't save ".$vars['files']['dir'].$data[$name], E_ERROR);
 								}else{
-									mysql_query("UPDATE files SET
+									sql_query("UPDATE files SET
 										data='".escape($content)."'
 										WHERE
 										id='".escape($data[$name])."'
-									") or trigger_error("SQL", E_USER_ERROR);
+									");
 								}
 							}
 						}
@@ -1813,17 +1955,16 @@ class cms{
 
 					if( $this->id ){
 						//clean up
-						$select_row=mysql_query("SELECT `$name` FROM `".$this->table."` ") or trigger_error("SQL", E_USER_ERROR);
-						$row=mysql_fetch_assoc($select_row);
+						$row = sql_query("SELECT `$name` FROM `".$this->table."`", 1);
 
-						$old_files=explode("\n",$row[$name]);
+						$old_files = explode("\n",$row[$name]);
 
 						foreach( $old_files as $old_file ){
 							if( in_array($old_file,$files) ){
-								mysql_query("DELETE FROM files
+								sql_query("DELETE FROM files
 									WHERE
 									id='".escape($old_file['id'])."'
-								") or trigger_error("SQL", E_USER_ERROR);
+								");
 
 								if( $vars['files']['dir'] ){
 									unlink($vars['files']['dir'].$old_file['id']);
@@ -1871,32 +2012,32 @@ class cms{
 
 	function save($data)
 	{
-		global $vars, $languages,$auth;
-
-		$this->trigger_event('beforeSave');
+		global $vars, $languages, $auth;
 
 		if( !isset($data) ){
 			$data = $_POST;
 		}
 
+		$this->trigger_event('beforeSave', array('data'=>$data));
+
 		if( count($languages) and !in_array('en', $languages) ){
-			$languages=array_merge(array('en'), $languages);
+			$languages = array_merge(array('en'), $languages);
 		}elseif( !count($languages) ){
-			$languages=array('en');
+			$languages = array('en');
 		}
 
 		//remember language
-		$current_language=$this->language;
+		$current_language = $this->language;
 
 		foreach( $languages as $language ){
-			$this->language=$language;
+			$this->language = $language;
 
 			//build query
 			$this->query='';
 
-			$this->build_query($vars['fields'][$this->section],$data);
+			$this->build_query($vars['fields'][$this->section], $data);
 
-			$this->query=substr($this->query,0,-2);
+			$this->query=substr($this->query, 0, -2);
 
 			//debug($this->query,true);
 
@@ -1905,60 +2046,54 @@ class cms{
 
 				$where_str=$this->field_id."='".escape($this->id)."'";
 			}elseif( $this->id and $language!=='en' ){
-				$select_language = mysql_query("SELECT * FROM `".$this->table."`
+				$row = sql_query("SELECT * FROM `".$this->table."`
 					WHERE
 						`translated_from`='".escape($this->id)."' AND
 						language='".escape($language)."'
-				");
+				", 1);
 
-                if( !$select_language ){
-                    throw new Exception(mysql_error());
-                }
-
-				if( mysql_num_rows($select_language) ){
+				if( $row ){
 					$language_exists=true;
-
 					$where_str="`translated_from`='".escape($this->id)."' AND language='".escape($language)."'";
 				}else{
 					$language_exists=false;
 				}
 			}
 
-			if( isset($this->id) and ($language_exists) ){
-				mysql_query("UPDATE `".$this->table."` SET
+			if( $this->id and ($language_exists) ){
+				sql_query("UPDATE `".$this->table."` SET
 					".$this->query."
 					WHERE $where_str
-				") or trigger_error("SQL", E_USER_ERROR);
+				");
 
 				//log it
 				if( table_exists('cms_logs') ){
-					mysql_query("INSERT INTO cms_logs SET
+					sql_query("INSERT INTO cms_logs SET
 						user='".$auth->user['id']."',
 						section='".escape($this->section)."',
 						item='".escape($this->id)."',
 						task='edit',
 						details=''
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				}
 			}else{
-				mysql_query("INSERT IGNORE INTO `".$this->table."` SET
+				sql_query("INSERT IGNORE INTO `".$this->table."` SET
 					".$this->query."
-
-") or trigger_error("SQL", E_USER_ERROR);
+				");
 
 				if( $language=='en' ){
-					$this->id=mysql_insert_id();
+					$this->id = sql_insert_id();
 				}
 
 				//log it
 				if( table_exists('cms_logs') ){
-					mysql_query("INSERT INTO cms_logs SET
+					sql_query("INSERT INTO cms_logs SET
 						user='".$auth->user['id']."',
 						section='".escape($this->section)."',
 						item='".escape($this->id)."',
 						task='add',
 						details=''
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				}
 			}
 
@@ -1966,27 +2101,27 @@ class cms{
 				foreach( $vars['fields'][$this->section] as $k=>$v ){
 					if( $v=='select-multiple' or $v=='checkboxes' ){
 						if( $language=='en' ){
-							$name=$k;
+							$name = $k;
 						}else{
-							$name=$language.'_'.$k;
+							$name = $language.'_'.$k;
 						}
 
-						$name=underscored($name);
+						$name = underscored($name);
 
-						mysql_query("DELETE FROM cms_multiple_select
+						sql_query("DELETE FROM cms_multiple_select
 							WHERE
 								section='".escape($this->section)."' AND
 								field='".escape($k)."' AND
 								item='".escape($this->id)."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 
 						foreach( $data[$name] as $v ){
-							mysql_query("INSERT INTO cms_multiple_select SET
+							sql_query("INSERT INTO cms_multiple_select SET
 								section='".escape($this->section)."',
 								field='".escape($k)."',
 								item='".escape($this->id)."',
 								value='".escape($v)."'
-							") or trigger_error("SQL", E_USER_ERROR);
+							");
 						}
 
 						continue;
@@ -2014,7 +2149,7 @@ class cms{
 				if(
 				    (!$this->section or $handler['section']==$this->section)
 				    and $handler['event']==$event ){
-					return call_user_func_array($handler['handler'],(array)$args);
+					return call_user_func_array($handler['handler'], (array)$args);
 				}
 			}
 		}
@@ -2132,7 +2267,7 @@ class cms{
 
 			if( !count($vars['content']) ){
 				foreach( $email_templates as $k=>$v ){
-					mysql_query("INSERT INTO email_templates SET
+					sql_query("INSERT INTO email_templates SET
 						body='".escape($v)."',
 						subject='".escape($k)."'
 					");
@@ -2143,19 +2278,19 @@ class cms{
 			$this->template('email_templates_list.php',true);
 		}else{
 			if( $_POST['save'] ){
-				$select=mysql_query("SELECT * FROM email_templates
+				$rows = sql_query("SELECT * FROM email_templates
 					WHERE
 						subject='".escape($_GET['subject'])."'
 				");
 
-				if( mysql_num_rows($select) ){
-					mysql_query("UPDATE email_templates SET
+				if( $rows ){
+					sql_query("UPDATE email_templates SET
 						body='".escape($_POST['body'])."'
 					WHERE
 						subject='".escape($_GET['subject'])."'
 					");
 				}else{
-					mysql_query("INSERT INTO email_templates SET
+					sql_query("INSERT INTO email_templates SET
 						body='".escape($_POST['body'])."',
 						subject='".escape($_GET['subject'])."'
 					");
@@ -2165,19 +2300,19 @@ class cms{
 				exit;
 			}
 
-			$select=mysql_query("SELECT * FROM email_templates
+			$row = sql_query("SELECT * FROM email_templates
 				WHERE
 					subject='".escape($_GET['subject'])."'
-			");
+			", 1);
 
-			if( mysql_num_rows($select) ){
-				$vars['email']=mysql_fetch_array($select);
+			if( $row ){
+				$vars['email'] = $row;
 			}else{
-				$vars['email']['subject']=$_GET['subject'];
-				$vars['email']['body']=$email_templates[$_GET['subject']];
+				$vars['email']['subject'] = $_GET['subject'];
+				$vars['email']['body'] = $email_templates[$_GET['subject']];
 			}
 
-			$vars['email']['body']=str_replace("\t",'',$vars['email']['body']);
+			$vars['email']['body'] = str_replace("\t",'',$vars['email']['body']);
 
 			$this->template('email_templates_edit.php',true);
 		}
@@ -2188,9 +2323,8 @@ class cms{
 		global $vars,$auth_config,$auth;
 
 		if( isset($_POST['save']) ){
-
 			if( $auth->user['admin']==1 ){
-				mysql_query("UPDATE  ".$auth_config['table']." SET password='".addslashes($_POST['password'])."' WHERE id='".escape($auth->user['id'])."'") or trigger_error("SQL", E_USER_ERROR);
+				sql_query("UPDATE  ".$auth_config['table']." SET password='".addslashes($_POST['password'])."' WHERE id='".escape($auth->user['id'])."'");
 				$_SESSION['password']=$_POST['password'];
 
 				$_SESSION['message']='Password saved';

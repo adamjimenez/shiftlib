@@ -28,53 +28,53 @@ $raw_option=$vars['fields'][$vars['options'][$name]][$field];
 $cols='';
 if( is_array($raw_option) ){
 	$db_field_name=$this->db_field_name($vars['options'][$name],$field);
-	
+
 	$cols.="".underscored($db_field_name)." AS `".underscored($field)."`"."\n";
 }else{
 	$cols.='`'.underscored($field).'`';
 }
 
-if( in_array('language',$vars['fields'][$vars['options'][$name]]) ){	
+if( in_array('language',$vars['fields'][$vars['options'][$name]]) ){
 	$language=$this->language ? $this->language : 'en';
-					
-	$select=mysql_query("SELECT id,$cols FROM 
-		$table 
+
+	$rows = sql_query("SELECT id,$cols FROM
+		$table
 		WHERE
 			language='".$language."'
 		ORDER BY `".underscored($field)."`
-	") or trigger_error("SQL", E_USER_ERROR); 
-	
+	") or trigger_error("SQL", E_USER_ERROR);
+
 	$options=array();
-	while( $row=@mysql_fetch_array($select) ){
+	foreach($rows as $row){
 		if( $row['translated_from'] ){
 			$id=$row['translated_from'];
 		}else{
 			$id=$row['id']	;
 		}
-		
+
 		$options[$id]=$row[underscored($field)];
 	}
 }else{
 	$parent_field=array_search('parent',$vars['fields'][$vars['options'][$name]]);
-	
-	if( $parent_field!==false ){						
-		$options=$this->get_children($vars['options'][$name],$parent_field);							
-	}else{											
-		$select=mysql_query("SELECT id,$cols FROM 
-			$table 
+
+	if( $parent_field!==false ){
+		$options=$this->get_children($vars['options'][$name],$parent_field);
+	}else{
+		$rows = sql_query("SELECT id,$cols FROM
+			$table
 			WHERE
 				`$field` LIKE '".escape($_GET['term'])."%'
 			ORDER BY `".underscored($field)."`
 			LIMIT 10
-		") or trigger_error("SQL", E_USER_ERROR); 
-		
+		") or trigger_error("SQL", E_USER_ERROR);
+
 		$options=array();
-		while( $row=@mysql_fetch_array($select) ){
+		foreach($rows as $row){
 			$options[$row['id']]=$row[underscored($field)];
 		}
 	}
 }
-			
+
 
 
 $results=array();

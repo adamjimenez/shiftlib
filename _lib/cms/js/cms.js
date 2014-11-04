@@ -118,6 +118,7 @@ function initForms()
 			data: jQuery(this).serializeAll()+'&validate=1&nospam=1',
 			success: jQuery.proxy(function(returned){
 			    var errorMethod = 'inline';
+				var firstError;
 
 				if( jQuery(this).attr('data-errorMethod') ){
 				    errorMethod = jQuery(this).attr('data-errorMethod');
@@ -137,14 +138,17 @@ function initForms()
 						var errors='';
 
 						for( i=0;i<returned.length;i++ ){
-							var pos=returned[i].indexOf(' ');
+							var pos = returned[i].indexOf(' ');
+
+							var field;
+							var error;
 
 							if( pos===-1 ){
-								var field=returned[i];
-								var error='Required';
+								field=returned[i];
+								error='Required';
 							}else{
-								var field=returned[i].substring(0,pos);
-								var error=returned[i].substring(pos+1);
+								field=returned[i].substring(0,pos);
+								error=returned[i].substring(pos+1);
 							}
 
 							var parent='';
@@ -152,7 +156,7 @@ function initForms()
 							if( this[field] ){
 								if( this[field].style ){
 									if( !firstError ){
-										var firstError=field;
+										firstError=field;
 									}
 
 									parent=this[field].parentNode;
@@ -163,7 +167,7 @@ function initForms()
 							}else if( this[field+'[]'] ){
 								if( this[field+'[]'].style ){
 									if( !firstError ){
-										var firstError=field;
+										firstError=field;
 									}
 
 									parent=this[field+'[]'].parentNode;
@@ -174,6 +178,8 @@ function initForms()
 								errors+=field+'\n';
 							}else{
 								errors+=error+'\n';
+
+								debug('field not found: '+field);
 							}
 
 							if( parent && errorMethod=='inline' ){
@@ -297,7 +303,10 @@ function initForms()
 
 	//maps
 	if( jQuery('input.map').length ){
+		var maps = [];
 		google.load("maps", "3", {other_params: "sensor=false", "callback" : function(){
+			geocoder = new google.maps.Geocoder();
+
 			jQuery.each(jQuery('input.map'), function() {
 				div = document.createElement("div");
 				div.style.width='600px';
@@ -321,7 +330,7 @@ function initForms()
 					zoom: 10,
 					center: latlng,
 					mapTypeId: google.maps.MapTypeId.ROADMAP
-				}
+				};
 				maps[this.name] = new google.maps.Map(div, myOptions);
 
 				maps[this.name].markers=[];
@@ -341,6 +350,21 @@ function initForms()
 		}});
 	}
 
+	function showAddress(address, mapName) {
+		geocoder.geocode( { 'address': address}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				maps[mapName].setCenter(results[0].geometry.location);
+				maps[mapName].markers[0].setPosition(results[0].geometry.location);
+			} else {
+				console.log("Geocode was not successful for the following reason: " + status);
+			}
+		});
+	}
+
+	jQuery('.mapSearch').click(function(){
+		showAddress($(this).prev().val(), $(this).next().next().attr('name'));
+	});
+
     //upload
     if( jQuery('.upload').length ){
 		jQuery.getScript("/_lib/modules/phpupload/js/jquery.upload.js").done(function(){
@@ -351,43 +375,60 @@ function initForms()
     //ratings
 	if( jQuery('select.rating').length ){
 		jQuery("head").append("<link>");
-		var css = jQuery("head").children(":last");
-		css.attr({
+		var ratingCss = jQuery("head").children(":last");
+		ratingCss.attr({
 			rel:  "stylesheet",
 			type: "text/css",
-			href: "/_lib/js/rateit/rateit.css"
+			href: "http://www.radioactivethinking.com/rateit/src/rateit.css"
 		});
 
-		jQuery.getScript("/_lib/js/rateit/jquery.rateit.js").done(function(){
-            $( "select.rating" ).each(function( index ) {
+		jQuery.getScript("http://www.radioactivethinking.com/rateit/src/jquery.rateit.js").done(function(){
+            $("select.rating").each(function(index) {
                 var field = $(this);
+                field.hide();
 
-                field.after('<div></div>').next().rateit({
-                    backingfld: field,
-                    resetable: false,
-                    ispreset: true
+				var starwidth = field.attr('data-rateit-starwidth') ? field.attr('data-rateit-starwidth') : 16;
+				var starheight = field.attr('data-rateit-starheight') ? field.attr('data-rateit-starheight') : 16;
+
+				var cls = field.attr('class');
+
+                field.after('<div class="'+cls+'"></div>').next().rateit({
+                    backingfld: field.attr('id'),
+                    resetable: true,
+                    ispreset: true,
+                    step: 1,
+                    value: field.val(),
+                    readonly: field.prop('disabled'),
+                    starwidth: starwidth,
+                    starheight: starheight
                 }).bind('rated', function (event, value) {
                     var field = $(this).prev();
+                    field.val(value);
 
-                    if( field.attr('section') ){
-                        jQuery.ajax( '/_lib/cms/_ajax/rating.php', {
+					/* TODO: restore for avg-rating
+                    if( field.attr('data-section') && field.attr('data-item') ){
+                        jQuery.ajax('/_lib/cms/_ajax/rating.php', {
                             dataType: 'json',
                 			type: 'post',
                 			data: {
-                                section: field.attr('section'),
+                                section: field.attr('data-section'),
                                 field: field.attr('name'),
-                                item: field.attr('item'),
+                                item: field.attr('data-item'),
                                 value: value
                 			}
                         });
                     }
+                    */
+                }).bind('reset', function (event, value) {
+                    var field = $(this).prev();
+                    field.val('');
                 });
             });
 		});
 	}
 
 	//tinymce4
-    var tinymce_url = '//tinymce.cachefly.net/4.0/';
+    var tinymce_url = '//tinymce.cachefly.net/4.1/';
 	if( jQuery('textarea.tinymce').length ){
         jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
             $('textarea.tinymce').tinymce({
@@ -397,7 +438,7 @@ function initForms()
                     "searchreplace visualblocks code fullscreen",
                     "insertdatetime media table contextmenu paste textcolor"
                 ],
-                toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
+                toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
                 //content_css: "css/style.css",
 
@@ -414,7 +455,7 @@ function initForms()
                 */
 
                 relative_urls : false,
-                remove_script_host : true,
+                remove_script_host : false, //needed for shiftmail
 
                 content_css : "/css/style.css?" + new Date().getTime(),
 
@@ -436,8 +477,44 @@ function initForms()
                         }
                     });
                 },
-        		accessibility_warnings : false,
-                popup_css: false
+        		accessibility_warnings: false,
+                popup_css: false,
+
+                theme_advanced_styles: 'Link to Image=lightbox',
+
+                extended_valid_elements: 'span[itemprop|itemtype|itemscope|class]',
+
+                setup : function(editor) {
+                    editor.addShortcut('Ctrl+219', '', 'indent');
+                    editor.addShortcut('Ctrl+221', '', 'outdent');
+
+                    var componentMenu = [];
+
+                    if (typeof components != 'undefined') {
+	                   	for(var i in components){
+                    		if (components.hasOwnProperty(i)) {
+	                    		componentMenu.push({
+	                    			text: components[i],
+	                    			value: '{$'+components[i]+'}',
+	                    			onclick: function(val, val2) {
+	                    				editor.insertContent(this._value);
+	                    			}
+	                    		});
+	                    	}
+                    	}
+
+						if (components.length) {
+					        var result = editor.addButton('components', {
+					            type: 'menubutton',
+					            text: 'Components',
+					            icon: false,
+					            menu: componentMenu
+					        });
+						}
+                    }
+
+			        //console.log(result);
+                }
             });
         });
 	}
@@ -547,11 +624,11 @@ function initForms()
                     },
                     dataType: 'json'
                 });
-            }
+            };
 
             var cms_cancel = function(){
                 $('#saveDiv').remove();
-            }
+            };
 
             var tinymce_onchange = function (ed) {
                 ed.on('change', function(e) {
@@ -590,7 +667,7 @@ function initForms()
                         document.body.appendChild(div);
                     }
                 });
-            }
+            };
 
             $('span.cms_text').tinymce({
                 script_url: tinymce_url+'tinymce.min.js',
@@ -646,18 +723,18 @@ function myFileBrowser (field_name, url, type, win) {
 */
 
 function numbersonly(e){
-	var unicode=e.charCode? e.charCode : e.keyCode
+	var unicode=e.charCode? e.charCode : e.keyCode;
 
-	if (unicode!=8 && unicode!=46 && unicode!=9){ //if the key isn't the backspace key or dot or tab (which we should allow)
+	if (unicode!==8 && unicode!==46 && unicode!==9){ //if the key isn't the backspace key or dot or tab (which we should allow)
 		if (unicode<48||unicode>57){ //if not a number
-			return false //disable key press
+			return false; //disable key press
 		}
 	}
 }
 
 function addItem(aList,aField) {
 	phpUploadCallback=function(images){
-		for( i in images ){
+		for( var i in images ){
 			if( images.hasOwnProperty(i) ){
 				var ul = document.getElementById(aList);
 				li = document.createElement("li");
@@ -734,7 +811,7 @@ function delRow(row) {
 function init_tabs()
 {
 	jQuery('.tab').each(function(index) {
-		if( index==0 ){
+		if( index===0 ){
 			set_tab(this.target);
 		}
 
@@ -749,10 +826,10 @@ function set_tab(target)
     jQuery('.tab').each(function(index) {
 		if( target==this.target ){
 			jQuery('#'+this.target).show();
-			jQuery(this).addClass('current')
+			jQuery(this).addClass('current');
 		}else{
 			jQuery('#'+this.target).hide();
-			jQuery(this).removeClass('current')
+			jQuery(this).removeClass('current');
 		}
 	});
 }

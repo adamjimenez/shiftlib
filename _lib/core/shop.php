@@ -42,6 +42,7 @@ class shop{
 			'total'=>'decimal',
 			'status'=>'text',
 			'txn_id'=>'text',
+			'method'=>'text',
 			'dispatched_date'=>'datetime',
 			'refund_date'=>'datetime',
 		);
@@ -71,8 +72,9 @@ class shop{
 			$this->guest['address']=$_POST['address'];
 			$this->guest['city']=$_POST['city'];
 			$this->guest['postcode']=$_POST['postcode'];
+			$this->guest['comments']=$_POST['comments'];
 
-			$_SESSION['guest']=$this->guest;
+			$_SESSION['guest'] = $this->guest;
 		}
 
 		if( $this->guest ){
@@ -99,7 +101,7 @@ class shop{
 
 		if( is_array($_POST['add_to_basket']) ){
 			if( $_POST['buy_now'] ){
-				mysql_query("DELETE FROM basket WHERE session='".session_id()."' OR user='".$auth->user['id']."'") or trigger_error("SQL", E_USER_ERROR);
+				sql_query("DELETE FROM basket WHERE session='".session_id()."' OR user='".$auth->user['id']."'");
 			}
 
 			foreach( $_POST['add_to_basket'] as $k=>$v ){
@@ -113,16 +115,16 @@ class shop{
 
 		if( $_POST['code'] && table_exists('promo_codes') ){
 			//lookup discount
-			$select_code=mysql_query("SELECT * FROM promo_codes
+			$select_code=sql_query("SELECT * FROM promo_codes
 				WHERE
-					code='".addslashes($_POST['code'])."' AND
+					code='".escape($_POST['code'])."' AND
 					(
 						expiry>CURDATE() OR
 						expiry='0000-00-00'
 					)
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 
-			if( mysql_num_rows($select_code) ){
+			if( $select_code ){
 				$_SESSION['code']=$_POST['code'];
 			}else{
 				$_SESSION['error']='Invalid promo code.';
@@ -139,11 +141,9 @@ class shop{
 
 		if( $_SESSION['code'] ){
 			//lookup discount
-			$select_code=mysql_query("SELECT * FROM promo_codes WHERE code='".addslashes($_SESSION['code'])."'") or trigger_error("SQL", E_USER_ERROR);
+			$promo = sql_query("SELECT * FROM promo_codes WHERE code='".escape($_SESSION['code'])."'", 1);
 
-			if( mysql_num_rows($select_code) ){
-				$promo=mysql_fetch_array($select_code);
-
+			if( $promo ){
 				if( $promo['discount'] ){
 					$this->promo=$promo;
 
@@ -158,7 +158,7 @@ class shop{
 
 	function remove($product)
 	{
-		mysql_query("DELETE FROM basket
+		sql_query("DELETE FROM basket
 			WHERE
 				(session='".session_id()."' OR user='".$auth->user['id']."') AND
 				id='".escape($product)."'
@@ -201,16 +201,15 @@ class shop{
 
 				$extras=array();
 				foreach( $lines as $line ){
-					$arr=explode(': ',$line);
+					$arr = explode(': ',$line);
 
-					$select=mysql_query("SELECT * FROM extras WHERE
+					$row = sql_query("SELECT * FROM extras WHERE
 						name='".escape($arr[0])."' AND
 						value='".escape($arr[1])."' AND
 						product='".$v['product']."'
-					") or die (mysql_error());
+					");
 
-					if( mysql_num_rows($select) ){
-						$row=mysql_fetch_array($select);
+					if( $row ){
 						$this->basket[$k]['cost']+=$row['cost'];
 					}
 				}
@@ -237,29 +236,27 @@ class shop{
 		}
 
 		if( $buy_now ){
-			mysql_query("DELETE FROM basket WHERE session='".session_id()."' OR user='".$auth->user['id']."'");
+			sql_query("DELETE FROM basket WHERE session='".session_id()."' OR user='".$auth->user['id']."'");
 		}
 
 		$extras='';
 		if( $extras_arr ){
 			foreach( $extras_arr as $k=>$v ){
-				$extras.=$k.': '.$v."\n";
+				$extras.=spaced($k).': '.$v."\n";
 			}
 		}
 
 		if( $variation_id ){
-			$select_variation=mysql_query("SELECT * FROM variations WHERE
+			$variation = sql_query("SELECT * FROM variations WHERE
 				id='".escape($variation_id)."'
-			") or trigger_error("SQL", E_USER_ERROR);
+			", 1);
 
-			if( mysql_num_rows($select_variation) ){
-				$variation=mysql_fetch_assoc($select_variation);
-
+			if( $variation ){
 				foreach( $variation as $k=>$v ){
 					if( $k=='id' or $k=='product' or $k=='quantity' or $k=='image' or $k=='cost' or $k=='position' or $v=='' ){
 						continue;
 					}
-					$extras.=ucfirst($k).': '.$v."\n";
+					$extras.=ucfirst(spaced($k)).': '.$v."\n";
 				}
 			}
 
@@ -277,7 +274,7 @@ class shop{
 		if( $auth->user ){
 			$where_str=" OR user='".$auth->user['id']."'";
 		}
-		$select=mysql_query("SELECT * FROM basket WHERE
+		$row = sql_query("SELECT * FROM basket WHERE
 			(
 				session='".session_id()."'
 				$where_str
@@ -285,11 +282,9 @@ class shop{
 			product='".escape($product)."' AND
 			extras='".escape(trim($extras))."' AND
 			variation='".escape($variation_id)."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		", 1);
 
-		if( mysql_num_rows($select) ){
-			$row=mysql_fetch_array($select);
-
+		if( $row ){
 			$quantity+=$row['quantity'];
 
 			if( $this->stock_control ){
@@ -299,7 +294,7 @@ class shop{
 				}
 			}
 
-			mysql_query("UPDATE basket SET
+			sql_query("UPDATE basket SET
 				user='".$auth->user['id']."',
 				quantity='".$quantity."'
 			WHERE
@@ -307,16 +302,16 @@ class shop{
 				product='".escape($product)."' AND
 				extras='".escape(trim($extras))."' AND
 				variation='".escape($variation_id)."'
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 		}else{
-			mysql_query("INSERT INTO basket SET
+			sql_query("INSERT INTO basket SET
 				user='".$auth->user['id']."',
 				quantity='".escape($quantity)."',
 				session='".session_id()."',
 				product='".escape($product)."',
 				extras='".escape(trim($extras))."',
 				variation='".escape($variation_id)."'
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 		}
 
 		if( $buy_now ){
@@ -331,33 +326,33 @@ class shop{
 		if( $_POST['quantity'] ){
 			foreach( $_POST['quantity'] as $k=>$v ){
 				if( $v==0 ){
-					mysql_query("DELETE FROM basket
+					sql_query("DELETE FROM basket
 						WHERE id='".escape($k)."'
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				}elseif( $v>0 ){
-					mysql_query("UPDATE basket SET
+					sql_query("UPDATE basket SET
 						quantity='".addslashes($v)."'
 						WHERE id='".escape($k)."'
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				}
 			}
 		}
 
 		if( $_POST['remove'] ){
 			foreach( $_POST['remove'] as $k=>$v ){
-				mysql_query("DELETE FROM basket
+				sql_query("DELETE FROM basket
 					WHERE id='".escape($k)."'
-				") or trigger_error("SQL", E_USER_ERROR);
+				");
 			}
 		}
 	}
 
 	function empty_basket()
 	{
-		mysql_query("DELETE FROM basket
+		sql_query("DELETE FROM basket
 		    WHERE
 		        session='".session_id()."' OR user='".$auth->user['id']."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
 
 	function set_delivery($price)
@@ -399,7 +394,7 @@ class shop{
 
 		$this->update_total();
 
-		mysql_query("INSERT INTO orders SET
+		sql_query("INSERT INTO orders SET
 			date=NOW(),
 			customer='".addslashes($this->cust['id'])."',
 			name='".addslashes( ($this->cust['name'].' '.$this->cust['surname']) )."',
@@ -414,20 +409,20 @@ class shop{
 			delivery='".addslashes($this->delivery)."',
 			total='".addslashes($this->total)."',
 			status='pending'
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 
-		$this->oid=mysql_insert_id();
+		$this->oid = sql_insert_id();
 
 		if( $this->cust['comments'] ){
-		    mysql_query("UPDATE orders SET
-		        comments = '".escape($_POST["comments"])."'
+		    sql_query("UPDATE orders SET
+		        comments = '".escape($this->cust['comments'])."'
 		        WHERE
 		            id = '".$this->oid."'
 		    ");
 		}
 
 		if( $this->include_vat ){
-			mysql_query("UPDATE orders SET
+			sql_query("UPDATE orders SET
 				vat='".$this->vat."'
 				WHERE
 					id='".$this->oid."'
@@ -437,7 +432,7 @@ class shop{
 
 		//order items
 		foreach( $this->basket as $item ){
-			mysql_query("INSERT INTO order_items SET
+			sql_query("INSERT INTO order_items SET
 				`order`='".addslashes($this->oid)."',
 				product='".addslashes($item['product'])."',
 				variation='".addslashes($item['variation'])."',
@@ -445,8 +440,10 @@ class shop{
 				extras='".addslashes($item['extras'])."',
 				cost='".addslashes($item['cost'])."',
 				quantity='".addslashes($item['quantity'])."'
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 		}
+		
+		return $this->oid;
 	}
 
     function gc_button($value='Pay using Google Checkout'){
@@ -586,6 +583,7 @@ class shop{
 			<input type="hidden" name="tel" value="'.$this->cust['tel'].'">
 
 			<input type="hidden" name="email" value="'.$this->cust['email'].'">
+			<!-- <input type="hidden" name="MC_callback" value="http://'.$_SERVER['HTTP_HOST'].'/process_payment"> -->
 
 			<button type="submit">'.$value.'</button>
 			</form>
@@ -834,7 +832,7 @@ class shop{
         $hashcode=$hashcode . '&PhoneNumber=' . $_POST["PhoneNumber"];
 
 		if( $_POST['HashDigest'] != sha1($hashcode)){
-			$error='checksum failed';
+			$error='Checksum failed';
 		}
 
 		if( $_POST['StatusCode'] != 0 ){
@@ -842,18 +840,8 @@ class shop{
 		}
 
 		if( $error ){
-			$_POST['error']=$error;
+			$this->failed_order($error, $oid, $ref, 'cardsave');
 
-			foreach($_POST as $k=>$v){
-				$msg.="$k = $v \n";
-			}
-
-			//order status
-			mysql_query("UPDATE orders SET status='failed' WHERE id='".escape($oid)."' LIMIT 1");
-
-			mail($admin_email,'Order not verified',$msg,$this->headers);
-
-			//die('order not verified');
 			return false;
 		}
 
@@ -861,7 +849,7 @@ class shop{
 			$msg.="$k = $v \n";
 		}
 
-		mail($admin_email,'Order Placed',$msg,$this->headers);
+		mail($admin_email, 'Order Placed', $msg,$this->headers);
 		$ref = $_POST['CrossReference'];
 		$status = $_POST['Message'];
 
@@ -876,8 +864,7 @@ class shop{
 		$ref=$_POST['transId'];
 		$status='paid';
 
-		$select=mysql_query("SELECT * FROM orders WHERE id='".addslashes($oid)."'");
-		$order=mysql_fetch_array($select);
+		$order = sql_query("SELECT * FROM orders WHERE id='".escape($oid)."'", 1);
 
 		$error='';
 
@@ -921,17 +908,16 @@ class shop{
 		global $debug, $admin_email;
 
 		// check if invoice has been paid
-		$select=mysql_query("SELECT * FROM orders WHERE id='".addslashes($oid)."'");
-		$order=mysql_fetch_array($select);
+		$order = sql_query("SELECT * FROM orders WHERE id='".escape($oid)."'", 1);
 
 		if( $order['status']=='pending' ){
 			//order status
-			mysql_query("UPDATE orders SET status='paid' WHERE id='".$order['id']."' LIMIT 1");
-			mysql_query("UPDATE orders SET txn_id='".addslashes($ref)."' WHERE id='".$order['id']."' LIMIT 1");
-			mysql_query("UPDATE orders SET method='".addslashes($method)."' WHERE id='".$order['id']."' LIMIT 1");
+			sql_query("UPDATE orders SET status='paid' WHERE id='".$order['id']."' LIMIT 1");
+			sql_query("UPDATE orders SET txn_id='".escape($ref)."' WHERE id='".$order['id']."' LIMIT 1");
+			sql_query("UPDATE orders SET method='".escape($method)."' WHERE id='".$order['id']."' LIMIT 1");
 
 			if( $this->test ){
-				mysql_query("UPDATE orders SET test='1' WHERE id='".$order['id']."' LIMIT 1");
+				sql_query("UPDATE orders SET test='1' WHERE id='".$order['id']."' LIMIT 1");
 			}
 
 			$items=sql_query("SELECT * FROM order_items WHERE `order`='".$order['id']."'");
@@ -943,27 +929,24 @@ class shop{
 			}
 
 			try {
-				$reps=array(
+				$reps = array_merge($order, array(
 					'method'=>$method,
 					'status'=>$status,
 					'oid'=>$order['id'],
 					'order_id'=>$order['id'],
-					'name'=>$order['name'],
-					'address'=>$order['address'],
-					'postcode'=>$order['postcode'],
-					'tel'=>$order['tel'],
 					'details'=>$details,
-					'delivery'=>'£'.number_format($order['delivery'],2),
+					'delivery'=>'£'.number_format($order['delivery'], 2),
 					'vat'=>'£'.number_format($order['vat'],2),
 					'total'=>'£'.number_format($order['total'],2),
-					'event_date'=>dateformat('d-m-Y',$order['event_date']),
-				);
+					'event_date'=>dateformat('d-m-Y', $order['event_date']),
+				));
 
-				email_template($order['email'],'Order Confirmation',$reps);
-
-				email_template($admin_email,'Order Confirmation',$reps);
-
-				email_template($this->paypal_email,'Order Confirmation',$reps);
+				if(!$this->disable_confirmation_email){
+					email_template($order['email'], 'Order Confirmation', $reps);
+					email_template($this->paypal_email, 'Order Confirmation', $reps);
+				}
+				
+				email_template($admin_email, 'Order Confirmation', $reps);
 			} catch (Exception $e) {
 				$msg='';
 
@@ -1027,24 +1010,53 @@ class shop{
 					$msg.=dateformat('d-m-Y',$order['event_date'])."\n\n";
 				}
 
-				//confirmation to customer
-				mail($order['email'],'Order Confirmation',$msg,$this->headers);
+				//confirmation email
+				mail($admin_email, 'Order Placed', $msg, $this->headers);
 
-				mail($admin_email,'Order Placed',$msg,$this->headers);
-
-				if( $this->cc ){
-					$this->headers.="Cc: ".$this->cc."\n";
+				if(!$this->disable_confirmation_email){
+					mail($order['email'], 'Order Confirmation', $msg, $this->headers);
+				
+					if( $this->cc ){
+						$this->headers.="Cc: ".$this->cc."\n";
+					}
+					
+					mail($this->paypal_email,'Order Placed',$msg,$this->headers);
 				}
-
-				mail($this->paypal_email,'Order Placed',$msg,$this->headers);
 			}
 
 			//empty basket
-			mysql_query("DELETE FROM basket WHERE user='".$order['customer']."'") or trigger_error("SQL", E_USER_ERROR);
+			sql_query("DELETE FROM basket WHERE user='".$order['customer']."'");
 
 			return $order['id'];
 		}else{
 			return false;
+		}
+	}
+
+	function failed_order($error, $oid, $ref, $method)
+	{
+		global $debug, $admin_email;
+
+		$order = sql_query("SELECT * FROM orders WHERE id='".addslashes($oid)."'", 1);
+
+		$_POST['error'] = $error;
+
+		foreach($_POST as $k=>$v){
+			$msg.="$k = $v \n";
+		}
+
+		//order status
+		sql_query("UPDATE orders SET status='failed'
+			WHERE
+				id='".escape($oid)."'
+			LIMIT 1
+		");
+
+		mail($admin_email, 'Order Failed', $msg, $this->headers);
+
+		try {
+			email_template($order['email'], 'Order Failed', $_POST);
+		} catch (Exception $e) {
 		}
 	}
 }

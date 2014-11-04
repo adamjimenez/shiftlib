@@ -69,7 +69,7 @@ class auth{
 		$this->required=$vars["required"][$this->table];
 
 		if( $this->db ){
-			mysql_select_db($this->db) or trigger_error("SQL", E_USER_ERROR);
+			//sql_select_db($this->db);
 		}
 
 		/*
@@ -101,18 +101,15 @@ class auth{
 		}
 
 		if( $email and $password ){
-			$select=mysql_query("SELECT * FROM ".$this->table." WHERE
+			$result = sql_query("SELECT * FROM ".$this->table." WHERE
 				email='".escape($email)."'
-			") or trigger_error("SQL", E_USER_ERROR);
+			", 1);
 
-			if( mysql_num_rows($select) ){
-				$result=mysql_fetch_array($select);
-
+			if( $result ){
 				//check password
-				if( $password==md5($this->secret_phrase.$result['password']) ){
+				if( $password == md5($this->secret_phrase.$result['password']) ){
 					$_SESSION[$this->cookie_prefix.'_email']=$result['email'];
 					$_SESSION[$this->cookie_prefix.'_password']=$result['password'];
-
 				}elseif( $_SERVER['PHP_AUTH_USER'] and $_SERVER['PHP_AUTH_PW'] ){
 					//die('bad authentication login');
 				}
@@ -127,40 +124,7 @@ class auth{
 		if( $_SESSION[$this->cookie_prefix.'_user'] and time() < $_SESSION[$this->cookie_prefix.'_expires'] ){
 			$this->user =  $_SESSION[$this->cookie_prefix.'_user'];
 		}else if( $_SESSION[$this->cookie_prefix.'_email'] and $_SESSION[$this->cookie_prefix.'_password'] ){
-			//$this->check_login_attempts();
-			$select=mysql_query("SELECT * FROM ".$this->table." WHERE
-				email='".escape($_SESSION[$this->cookie_prefix.'_email'])."' AND
-				password='".escape($_SESSION[$this->cookie_prefix.'_password'])."'
-				".($this->login_wherestr ? 'AND '.$this->login_wherestr : '')."
-			") or trigger_error("SQL", E_USER_ERROR);
-
-			if( mysql_num_rows($select)==1 ){
-				$this->user=mysql_fetch_array($select);
-				$_SESSION[$this->cookie_prefix.'_user'] = $this->user;
-				$_SESSION[$this->cookie_prefix.'_expires'] = time() + $this->expiry;
-
-				if( $this->user['admin']>1 and table_exists('cms_privileges') ){
-					$select_privileges=mysql_query("SELECT * FROM cms_privileges WHERE
-						user='".escape($this->user['id'])."'
-					") or trigger_error("SQL", E_USER_ERROR);
-
-					while( $row=mysql_fetch_array($select_privileges) ){
-						$this->user['privileges'][$row['section']]=$row['access'];
-
-						$pairs=explode('&',$row['filter']);
-
-						foreach( $pairs as $pair ){
-							$arr=explode('=',$pair);
-
-							$this->user['filters'][$row['section']][underscored($arr[0])]=urldecode($arr[1]);
-						}
-
-					}
-				}
-			}else{
-				$this->failed_login_attempt($_SESSION[$this->cookie_prefix.'_email'],$_SESSION[$this->cookie_prefix.'_password']);
-				$this->logout();
-			}
+			$this->load();
 		}
 
 		if( $_POST['register'] ){
@@ -201,12 +165,49 @@ class auth{
 		}
 	}
 
+	function load(){
+		$result = sql_query("SELECT * FROM ".$this->table." WHERE
+			email='".escape($_SESSION[$this->cookie_prefix.'_email'])."' AND
+			password='".escape($_SESSION[$this->cookie_prefix.'_password'])."'
+			".($this->login_wherestr ? 'AND '.$this->login_wherestr : '')."
+		", 1);
+
+		if( $result ){
+			$this->user = $result;
+
+			if( $this->user['admin']>1 and table_exists('cms_privileges') ){
+				$rows = sql_query("SELECT * FROM cms_privileges WHERE
+					user='".escape($this->user['id'])."'
+				");
+
+				foreach($rows as $row){
+					$this->user['privileges'][$row['section']]=$row['access'];
+
+					$pairs=explode('&',$row['filter']);
+
+					foreach( $pairs as $pair ){
+						$arr=explode('=',$pair);
+
+						$this->user['filters'][$row['section']][underscored($arr[0])]=urldecode($arr[1]);
+					}
+
+				}
+			}
+
+			$_SESSION[$this->cookie_prefix.'_user'] = $this->user;
+			$_SESSION[$this->cookie_prefix.'_expires'] = time() + $this->expiry;
+		}else{
+			$this->failed_login_attempt($_SESSION[$this->cookie_prefix.'_email'],$_SESSION[$this->cookie_prefix.'_password']);
+			$this->logout();
+		}
+	}
+
 	/* private function */
 	function email_in_use( $email )
 	{
-		$select=mysql_query("SELECT * FROM ".$this->table." WHERE email='".$email."'") or trigger_error("SQL", E_USER_ERROR);
+		$select = sql_query("SELECT * FROM ".$this->table." WHERE email='".$email."'", 1);
 
-		if( mysql_num_rows($select)>0 ){
+		if( $select ){
 			return true;
 		}else{
 			return false;
@@ -234,27 +235,27 @@ class auth{
 	{
 		check_table('login_attempts', $this->login_attempts_fields );
 
-		mysql_query("INSERT INTO login_attempts SET
+		sql_query("INSERT INTO login_attempts SET
 			email='".escape($email)."',
 			password='".escape($password)."',
 			ip='".escape($_SERVER['REMOTE_ADDR'])."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
 
 	function check_login_attempts()
 	{
 		check_table('login_attempts', $this->login_attempts_fields );
 
-		mysql_query("DELETE FROM login_attempts WHERE
+		sql_query("DELETE FROM login_attempts WHERE
 			`date`<DATE_SUB(NOW(),INTERVAL 10 MINUTE)
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 
-		$select=mysql_query("SELECT id FROM login_attempts WHERE
+		$rows = sql_query("SELECT id FROM login_attempts WHERE
 			ip='".escape($_SERVER['REMOTE_ADDR'])."' AND
 			`date`>DATE_SUB(NOW(),INTERVAL 10 MINUTE)
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 
-		if( mysql_num_rows($select)>=5 ){
+		if( count($rows)>=5 ){
 			die('Too many login attempts - try again in 10 minutes.');
 		}
 	}
@@ -278,6 +279,9 @@ class auth{
 		if( $errors ){
             print json_encode($errors);
             exit;
+		}elseif( $_POST['validate'] ){
+		    print 1;
+		    exit;
 		}
 
 		if( $this->generate_password ){
@@ -308,8 +312,10 @@ class auth{
 			mail($from_email,'New user registration',$msg,$headers);
 		}
 
-		//$_SESSION[$this->cookie_prefix.'_email']=$_POST['email'];
-		//$_SESSION[$this->cookie_prefix.'_password']=$_POST['password'];
+		if( $this->register_login ){
+			$_SESSION[$this->cookie_prefix.'_email']=$_POST['email'];
+			$_SESSION[$this->cookie_prefix.'_password']=$_POST['password'];
+		}
 
 		header("location:".$this->register_success);
 		exit;
@@ -326,6 +332,9 @@ class auth{
 		if( $errors ){
 			$this->show_error('Check the following fields:\n'.implode("\n",$errors));
 			return false;
+		}elseif( $_POST['validate'] ){
+		    print 1;
+		    exit;
 		}
 
 		if( $_POST['password'] ){
@@ -347,12 +356,12 @@ class auth{
 			$_SESSION[$this->cookie_prefix.'_password']=$_POST['password'];
 		}
 
-		$select=mysql_query("SELECT * FROM ".$this->table."
+		$row = sql_query("SELECT * FROM ".$this->table."
 			WHERE
 				id='".escape($id)."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		", 1);
 
-		$this->user=mysql_fetch_array($select);
+		$this->user = $row;
 
 		$this->update_success=true;
 	}
@@ -366,13 +375,13 @@ class auth{
             exit;
 		}
 
-		$select = mysql_query("SELECT * FROM ".$this->table."
+		$row = sql_query("SELECT * FROM ".$this->table."
 			WHERE
 				email='".escape($_POST['email'])."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		", 1);
 
-		if( mysql_num_rows($select)==1 ){
-			$user = mysql_fetch_array($select);
+		if( $row ){
+			$user = $row;
 
 			if( $_POST['validate'] ){
                 print 1;
@@ -386,27 +395,41 @@ class auth{
 			return false;
 		}
 
-		if( !$user['password'] ){
-			$password=generate_password();
+		if( $this->hash_password ){
+			//activation code
+			$code = substr(md5(rand(0,10000)), 0, 10);
 
-			mysql_query("UPDATE ".$this->table." SET
-					password='".addslashes($password)."'
+			sql_query("UPDATE ".$this->table." SET
+				code = '".escape($code)."',
+				code_expire = DATE_ADD(CURDATE(), INTERVAL 1 HOUR)
 				WHERE
 					id='".$user['id']."'
 				LIMIT 1
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 
-			$user['password']=$password;
+	        $reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/forgot?u='.$user['id'].'&code='.$code;
+		}else{
+			if( !$user['password'] ){
+				$password=generate_password();
+
+				sql_query("UPDATE ".$this->table." SET
+						password='".addslashes($password)."'
+					WHERE
+						id='".$user['id']."'
+					LIMIT 1
+				");
+
+				$user['password'] = $password;
+			}
+
+			$reps = $user;
+			$reps['password'] = $user['password'];
+	        $reps['domain'] = $_SERVER["HTTP_HOST"];
 		}
 
-		$reps=$user;
-		$reps['password'] = $user['password'];
-        $reps['domain'] = $_SERVER["HTTP_HOST"];
+		email_template( $_POST['email'], 'Password Reminder', $reps );
 
-		email_template( $_POST['email'],'Password Reminder', $reps );
-
-		header("location:".$this->forgot_success);
-		exit;
+		redirect($this->forgot_success);
 	}
 
 	function login() //invoked by $_POST['login']
@@ -418,25 +441,25 @@ class auth{
 				$_POST['password']=$this->create_hash($_POST['password']);
 			}
 
-			$select=mysql_query("SELECT * FROM ".$this->table."
+			$row = sql_query("SELECT * FROM ".$this->table."
 				WHERE
 					email='".escape($_POST['email'])."' AND
 					password='".escape($_POST['password'])."'
 					".($this->login_wherestr ? 'AND '.$this->login_wherestr : '')."
-			") or trigger_error("SQL", E_USER_ERROR);
+			", 1);
 
-			if( mysql_num_rows($select)==1 ){
-				$_SESSION[$this->cookie_prefix.'_email']=$_POST['email'];
-				$_SESSION[$this->cookie_prefix.'_password']=$_POST['password'];
+			if( $row ){
+				$_SESSION[$this->cookie_prefix.'_email'] = $_POST['email'];
+				$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
 				$_SESSION[$this->cookie_prefix.'_expires'] = time() + $this->expiry;
 
 				if( $this->log_last_login ){
-					mysql_query("UPDATE ".$this->table." SET
+					sql_query("UPDATE ".$this->table." SET
 						last_login=NOW()
 						WHERE
 							email='".escape($_POST['email'])."'
 						LIMIT 1
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				}
 
 				//cookies
@@ -506,41 +529,40 @@ class auth{
 					$surname=$attribs['namePerson/last'];
 					$email=$attribs['contact/email'];
 
-					$select=mysql_query("SELECT * FROM ".$this->table." WHERE
+					$row = sql_query("SELECT * FROM ".$this->table." WHERE
 						email='".escape($email)."'
 						LIMIT 1
-					");
+					", 1);
 
 					//debug($openid->__get('identity'));
 
-					if( mysql_num_rows($select) ){
-						$user=mysql_fetch_array($select);
-						$password=$user['password'];
+					if( count($row) ){
+						$user = $row;
+						$password = $user['password'];
 					}else{
-						$password=generate_password();
+						$password = generate_password();
 
-						mysql_query("INSERT INTO ".$this->table." SET
+						sql_query("INSERT INTO ".$this->table." SET
 							email='".escape($email)."',
 							name='".escape($name)."',
 							surname='".escape($surname)."',
 							password='".escape($password)."'
-						") or trigger_error("SQL", E_USER_ERROR);
-
-						$select=mysql_query("SELECT * FROM ".$this->table." WHERE
-							email='".escape($email)."'
 						");
-						$user=mysql_fetch_array($select);
+
+						$user = sql_query("SELECT * FROM ".$this->table." WHERE
+							email='".escape($email)."'
+						", 1);
 
 						$this->trigger_event('registration',$user);
 					}
 
 					if( $this->log_last_login ){
-						mysql_query("UPDATE ".$this->table." SET
+						sql_query("UPDATE ".$this->table." SET
 							last_login=NOW()
 							WHERE
 								email='".escape($email)."'
 							LIMIT 1
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 					}
 
 					$_SESSION[$this->cookie_prefix.'_email']=$email;
@@ -614,40 +636,39 @@ class auth{
 			$surname=$user_profile['last_name'];
 			$email=$user_profile['email'];
 
-			$select=mysql_query("SELECT * FROM ".$this->table." WHERE
+			$row = sql_query("SELECT * FROM ".$this->table." WHERE
 				email='".escape($email)."'
-			");
+			", 1);
 
 			//debug($openid->__get('identity'));
 
-			if( mysql_num_rows($select) ){
-				$user=mysql_fetch_array($select);
-				$password=$user['password'];
+			if( $row ){
+				$user = $row;
+				$password = $user['password'];
 			}else{
-				$password=generate_password();
+				$password = generate_password();
 
-				mysql_query("INSERT INTO ".$this->table." SET
+				sql_query("INSERT INTO ".$this->table." SET
 					email='".escape($email)."',
 					name='".escape($name)."',
 					surname='".escape($surname)."',
 					password='".escape($password)."'
-				") or trigger_error("SQL", E_USER_ERROR);
-
-				$select=mysql_query("SELECT * FROM ".$this->table." WHERE
-					email='".escape($email)."'
 				");
-				$user_id=mysql_fetch_array($select);
+
+				$user_id = sql_query("SELECT * FROM ".$this->table." WHERE
+					email='".escape($email)."'
+				", 1);
 
 				$this->trigger_event('registration',$user_id);
 			}
 
 			if( $this->log_last_login ){
-				mysql_query("UPDATE ".$this->table." SET
+				sql_query("UPDATE ".$this->table." SET
 					last_login=NOW()
 					WHERE
 						email='".escape($email)."'
 					LIMIT 1
-				") or trigger_error("SQL", E_USER_ERROR);
+				");
 			}
 
 			$_SESSION[$this->cookie_prefix.'_email']=$email;
@@ -685,12 +706,12 @@ class auth{
 		if( !table_exists($this->table) ){
 			check_table($this->table, $vars['fields'][$this->table]);
 
-			mysql_query("ALTER TABLE `users` ADD UNIQUE `email` ( `email` )") or trigger_error("SQL", E_USER_ERROR);
+			sql_query("ALTER TABLE `users` ADD UNIQUE `email` ( `email` )");
 		}
 
-		$select_admin=mysql_query("SELECT * FROM ".$this->table." WHERE admin>0 LIMIT 1") or trigger_error("SQL", E_USER_ERROR);
-		if( mysql_num_rows($select_admin)==0 ){
-			mysql_query("INSERT INTO ".$this->table." SET email='admin', password='123', admin='1'");
+		$row = sql_query("SELECT * FROM ".$this->table." WHERE admin>0 LIMIT 1", 1);
+		if( !$row ){
+			sql_query("INSERT INTO ".$this->table." SET email='admin', password='123', admin='1'");
 		}
 
 		if( !$this->user['admin'] ){

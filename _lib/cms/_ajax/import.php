@@ -155,12 +155,7 @@ if( !$errors ){
     			LIMIT 1
     		";
 
-            $select = mysql_query($qry) or trigger_error("SQL ".$qry, E_USER_ERROR);
-
-    		if( mysql_num_rows($select) ){
-    			$result = mysql_fetch_assoc($select);
-    			$row['id']=$result['id'];
-    		}
+            $row = sql_query($qry, 1);
 
         	//CMS SAVE
         	$cms->set_section($_POST['section'], $row['id']);

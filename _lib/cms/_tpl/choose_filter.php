@@ -73,10 +73,10 @@ window.close();
 
 					$cols="".$db_field_name." AS `".underscored($field)."`"."\n";
 
-					$select=mysql_query("SELECT id,$cols FROM $table ORDER BY `$db_field_name`") or trigger_error("SQL", E_USER_ERROR);
+					$rows = sql_query("SELECT id,$cols FROM $table ORDER BY `$db_field_name`");
 
 					$options=array();
-					while( $row=@mysql_fetch_array($select) ){
+					foreach($rows as $row){
 						$options[$row['id']]=$row[$field];
 					}
 				}

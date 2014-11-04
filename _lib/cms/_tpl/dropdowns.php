@@ -6,7 +6,7 @@ function array_to_csv($array)
 	foreach( $array as $k=>$v ){
 		$array[$k]="\t'".addslashes($v)."'";
 	}
-	
+
 	return implode(",\n", $array);
 }
 
@@ -21,7 +21,7 @@ function str_to_csv($str)
 	foreach( $array as $k=>$v ){
 		$array[$k]="\t'".addslashes(trim($v))."'"."";
 	}
-	
+
 	return implode(",\n", $array);
 }
 
@@ -37,7 +37,7 @@ function str_to_assoc($str)
 		$pair=explode('=',$v);
 		$array[$k]="\t'".addslashes(trim($pair[0]))."'=>'".addslashes(trim($pair[1]))."'"."";
 	}
-	
+
 	return implode(",\n", $array);
 }
 
@@ -46,7 +46,7 @@ function str_to_bool($str)
 	if( $str ){
 		return 'true';
 	}else{
-		return 'false';	
+		return 'false';
 	}
 }
 
@@ -61,21 +61,17 @@ if( !file_exists($config_file) ){
 	die('Error: config file does not exist: '.$config_file);
 }
 
-if( mysql_connect() ){
-	die('Error: can\'t connect to db');
-}
-
 if( $_POST['save'] ){
 	if( !is_writable($config_file) ){
 		die('Error: config file is not writable: '.$config_file);
 	}
-	
+
 	$config=file_get_contents($config_file);
-	
+
 	$pos=strpos($config,'#OPTIONS');
-	
+
 	$config=substr($config,0,$pos);
-	
+
 $config.='
 #OPTIONS
 ';
@@ -94,15 +90,15 @@ $opts["'.$option['name'].'"]="'.$option['section'].'";
 		if( strstr($option['list'],'=') ){
 $config.='
 $opts["'.$option['name'].'"]=array(
-'.str_to_assoc($option['list']).'	
+'.str_to_assoc($option['list']).'
 );
 ';
 		}else{
 $config.='
 $opts["'.$option['name'].'"]=array(
-'.str_to_csv($option['list']).'	
+'.str_to_csv($option['list']).'
 );
-';	
+';
 		}
 	}
 }
@@ -122,7 +118,7 @@ $vars["options"]=$opts;
 
 	//die($config);
 	file_put_contents($config_file,$config);
-	
+
 	unset($_POST);
 	redirect('/admin?option=dropdowns');
 }
@@ -132,20 +128,20 @@ $vars["options"]=$opts;
 function str_replace(search, replace, subject) {
 	var f = search, r = replace, s = subject;
     var ra = r instanceof Array, sa = s instanceof Array, f = [].concat(f), r = [].concat(r), i = (s = [].concat(s)).length;
- 
+
     while (j = 0, i--) {
         if (s[i]) {
             while (s[i] = (s[i]+'').split(f[j]).join(ra ? r[j] || "" : r[0]), ++j in f){};
         }
     };
- 
+
     return sa ? s : s[0];
 }
 
 function init()
 {
 	initAutoGrows();
-	
+
 	Sortable.create('sections', { handle:'handle', only : 'draggable', tag:'TR' });
 	//alert(count['fields']);
 	for(i=1;i<=count['sections'];i++){
@@ -196,7 +192,7 @@ foreach( $vars['options'] as $opt=>$val ){
 				foreach( $val as $k=>$v ){
 					$options.=$k.'='.$v."\n";
 				}
-				
+
 				print trim($options);
 			}else{
 				print implode("\n",$val);

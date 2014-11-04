@@ -74,8 +74,8 @@ function file_ext( filename ){
             url += '&file='+file;
         }
 
-        if( !file && typeof phpupload_defaut_dir !== 'undefined' ){
-            url += '#'+phpupload_defaut_dir;
+        if( !file && typeof phpupload_default_dir !== 'undefined' ){
+            url += '#'+phpupload_default_dir;
         }
 
         $('iframe#uploadFrame').attr('src', url);
@@ -131,8 +131,8 @@ function file_ext( filename ){
 
                     html += '<label class="label">'+files[i]+'</label>';
 
-                    if( !readonly ){
-                        html += '<a href="javascript:;" class="clear">Delete</a>';
+                    if( !readonly && files[i] ){
+                        html += '&nbsp;<a href="javascript:;" class="clear">delete</a>';
                     }
 
                     html += '</li>';

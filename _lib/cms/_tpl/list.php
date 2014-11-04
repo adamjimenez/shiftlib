@@ -37,7 +37,7 @@ function export_selected(){
 
 <div class="box" style="clear:both;">
 <form method="post" id="cms_list_<?=underscored($this->section);?>" class="cms_list">
-<input type="hidden" class="section" name="section" value="<?=underscored($this->section);?>">
+<input type="hidden" class="section" name="section" value="<?=$this->section;?>">
 <input type="hidden" class="action" name="action" id="action" value="">
 <input type="hidden" class="select_all_pages" name="select_all_pages" value="0">
 <?
@@ -64,8 +64,8 @@ foreach( $where as $k=>$v ){
 <tr>
 	<? if( $sortable ){ ?>
 		<th width="16" style="text-align:center;">
-			<img src="/_lib/images/sort_up.gif" vspace="5" />
-			<img src="/_lib/images/sort_down.gif" vspace="5" />
+			<i class="fa fa-arrow-up"></i>
+			<i class="fa fa-arrow-down"></i>
 		</th>
 	<? } ?>
 	<th width="20" valign="top" align="center" style="text-align:center;">
@@ -120,6 +120,12 @@ foreach( $vars['content'] as $v){
 			$value = $v[underscored($k)];
 
 			if( $vars['fields'][$this->section][$k] == 'select-multiple' or $vars['fields'][$this->section][$k]=='checkboxes' ){
+			    $value = '';
+			    foreach( $v[underscored($k)] as $val ){
+			        $value .= current($val)."<br>\n";
+			    }
+			    
+			    /*
 				if( !is_array($vars['options'][$k]) and $vars['options'][$k] ){
 					$join_id=array_search('id',$vars['fields'][$vars['options'][$k]]);
 
@@ -155,6 +161,7 @@ foreach( $vars['content'] as $v){
 						}
 					}
 				}
+				*/
 			}
 	?>
 		<td valign="top" <? if( $i==0 ){ ?>style="white-space:nowrap;"<? } ?>>
@@ -258,7 +265,9 @@ foreach( $vars['content'] as $v){
 			?>
 			<? if( $i==0 ){ ?>
 			</a>
-			<a href="?option=<?=$this->section;?>&edit=true&id=<?=$v['id'];?>&<?=$qs;?>"><img src="/_lib/images/icons/accessories-text-editor.png" title="Edit" align="top" /></a>
+			<a href="?option=<?=$this->section;?>&edit=true&id=<?=$v['id'];?>&<?=$qs;?>">
+			    <i class="fa fa-pencil-square-o"></i>
+			</a>
 			<? } ?>
 		</td>
 	<?

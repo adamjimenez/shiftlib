@@ -32,6 +32,10 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 {
     $file = trim($file);
 
+    if( !$file ){
+        return false;
+    }
+
     if( starts_with($file, '//') ){
         $file = 'http:'.$file;
         return $file;
@@ -50,6 +54,9 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			return false;
 		}
 
+		$upload_path = 'uploads/';
+		$image_path = starts_with($file, 'http') ? $file : $upload_path.$file;
+
 		$cached = 'uploads/cache/';
 
 		$dirname = dirname(urlencode($file));
@@ -66,7 +73,6 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			ignore_user_abort();
 
 			// configure these
-			$upload_path = 'uploads/';
 			$quality = 90;
 			$cache_dir = 'uploads/cache/';
 
@@ -74,24 +80,28 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			$max_width = isset($w) ? $w : null;
 			$max_height = isset($h) ? $h : null;
 
-			$image_path = starts_with($file, 'http') ? $file : $upload_path.$file;
-
 			// Load image
 			$img = null;
-			$ext = $image_path;
+			$ext = file_ext($image_path);
 
-			switch( $ext ){
-				case 'jpg':
-				case 'jpeg':
+			$info = getimagesize($image_path);
+
+			switch( $info['mime'] ){
+				case 'image/jpeg':
 					$img = imagecreatefromjpeg($image_path);
 				break;
-				case 'png':
+				case 'image/png':
 					$img = imagecreatefrompng($image_path);
 				break;
-				case 'gif':
+				case 'image/gif':
 					$img = imagecreatefromgif($image_path);
 				break;
+				case 'image/png':
+					$img = imagecreatefrompng($image_path);
+				break;
 				default:
+					return false;
+
 					$img = imagecreatefromstring(file_get_contents($image_path));
 			    break;
 			}
@@ -145,6 +155,9 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 				}
 
 				$cache_image=true;
+			}else{
+				print 2;
+			    return false;
 			}
 
 			//check cache dir
@@ -257,11 +270,9 @@ function calc_grids($pcodeA)
 		$pcodeA=substr($pcodeA,0,$pos);
 	}
 
-	$result=mysql_query("SELECT * FROM postcodes WHERE Pcode='$pcodeA' LIMIT 1") or trigger_error("SQL", E_USER_ERROR);
+	$row = sql_query("SELECT * FROM postcodes WHERE Pcode='$pcodeA' LIMIT 1", 1);
 
-	if( mysql_num_rows($result) ){
-		$row=mysql_fetch_array($result);
-
+	if( $row ){
 		$grids[0]=$row['Grid_N'];
 		$grids[1]=$row['Grid_E'];
 
@@ -272,26 +283,26 @@ function calc_grids($pcodeA)
 }
 
 function check_table($table,$fields){
-	$select=mysql_query("SHOW TABLES LIKE '$table'") or trigger_error("SQL", E_USER_ERROR);
-	if( mysql_num_rows($select)==0 ){
+	$select = sql_query("SHOW TABLES LIKE '$table'");
+	if( !$select ){
 		//build table query
 		$query='';
 		foreach($fields as $name=>$type){
-			$name=underscored(trim($name));
+			$name = underscored(trim($name));
 
-			$db_field=form_to_db($type);
+			$db_field = form_to_db($type);
 
 			if( $db_field ){
 				$query.='`'.$name.'` '.$db_field.' NOT NULL,';
 			}
 		}
 
-		mysql_query("CREATE TABLE `$table` (
+		sql_query("CREATE TABLE `$table` (
 			`id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
 			$query
 			PRIMARY KEY ( `id` )
 			)
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
 }
 
@@ -356,7 +367,7 @@ function shutdown()
 	}
 }
 
-function email_template($email,$subject,$reps,$headers,$language='en')
+function email_template($email, $subject, $reps, $headers, $language='en')
 {
 	global $from_email, $email_templates, $cms, $lang;
 
@@ -369,7 +380,9 @@ function email_template($email,$subject,$reps,$headers,$language='en')
 	}
 
 	if( table_exists('email_templates') ){
-		$template=$cms->get('email templates',array('subject'=>$subject),1);
+		$conditions = is_numeric($subject) ? $subject : array('subject'=>$subject);
+
+		$template = $cms->get('email templates', $conditions, 1);
 
 		if( $language!=='en' ){
 			$template=$cms->get('email templates',array('translated from'=>$template['id']),1);
@@ -377,28 +390,57 @@ function email_template($email,$subject,$reps,$headers,$language='en')
 	}
 
 	if( !$template and $email_templates[$subject]){
-		$template['subject']=$subject;
-		$template['body']=$email_templates[$subject];
+		$template['subject'] = $subject;
+		$template['body'] = $email_templates[$subject];
 	}elseif( !$template ){
 		throw new Exception("Cannot find email template: '".$subject."'");
 		return false;
 	}
 
-	$template['body']=str_replace("\t",'',$template['body']);
-
-	$body=str_replace("\r\n","\n",$template['body']);
+	$body = str_replace("\t", '', $template['body']);
+	$body = str_replace("\r\n", "\n", $body);
 
 	if( is_array($reps) ){
 		foreach( $reps as $k=>$v ){
-			$body=str_replace('{$'.$k.'}',$v,$body);
+			$body = str_replace('{$'.$k.'}',$v,$body);
 		}
 	}
+
+	//replace empty tokens
+	$body = preg_replace('/{\$[A-Za-z0-9]+}/', '', $body);
 
 	if( $from_email ){
 		$headers.="From: ".$from_email."\n";
 	}
 
-	mail($email,$template['subject'],$body,$headers);
+	//fix for outlook clipping new lines
+	$body = str_replace("\n", "\t\n", $body);
+
+	//mail($email, $template['subject'], $body, $headers);
+
+	$mail = new Rmail();
+
+	//set html or text
+	if( strip_tags($body)!==$body ){
+		$mail->setHtml($body, strip_tags($body));
+	}else{
+		$mail->setText($body);
+	}
+
+	$mail->setHTMLCharset('UTF-8');
+	$mail->setHeadCharset('UTF-8');
+	$mail->setFrom($from_email);
+	$mail->setSubject($template['subject']);
+
+	if( $template['attachments'] ){
+		$attachments = explode("\n", $template['attachments']);
+
+		foreach($attachments as $attachment){
+			$mail->addAttachment(new fileAttachment('uploads/'.$attachment));
+		}
+	}
+
+	return $mail->send(array($email), 'mail');
 }
 
 function starts_with($haystack, $needle){
@@ -431,12 +473,17 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 		case E_CORE_ERROR:
 		case E_COMPILE_ERROR:
 
-			global $query;
+			global $query, $db_config;
 
 			if( substr($errstr,0,3)=='SQL' ){
-				$MYSQL_ERRNO = mysql_errno();
-				$MYSQL_ERROR = mysql_error();
-				$errstr .= "\nMySQL error: $MYSQL_ERRNO : $MYSQL_ERROR";
+				if($db_config['mysqli']){
+					$ERRNO = mysqli_errno();
+					$ERROR = mysqli_error();
+				}else{
+					$ERRNO = mysql_errno();
+					$ERROR = mysql_error();
+				}
+				$errstr .= "\nMySQL error: $ERRNO : $ERROR";
 			}else{
 				$query = NULL;
 			}
@@ -469,7 +516,14 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 				}
 			}
 
-			$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : 'http://cdn.grumpycats.com/wp-content/uploads/2012/09/GC-Gravatar-copy.png';
+			$images = array(
+			    'http://www.hdwallpaper4all.com/wp-content/uploads/2014/04/Grumpy-Cat-14.jpg',
+			    'http://i.huffpost.com/gen/1735626/thumbs/o-GRUMPY-PHARRELL-facebook.jpg',
+			    'http://blog.innovation.ca/wp-content/uploads/2013/02/GrumpyCat.png',
+			);
+			shuffle($images);
+
+			$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : current($images);
 
     		echo '
             <div style="text-align: center;">
@@ -506,17 +560,23 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 
 function escape($string)
 {
-	return mysql_real_escape_string($string);
+	global $db_config;
+
+	if($db_config['mysqli']){
+		return mysqli_real_escape_string($string);
+	}else{
+		return mysql_real_escape_string($string);
+	}
 }
 
 function escape_strip($string)
 {
-	return mysql_real_escape_string(strip_tags($string));
+	return escape(strip_tags($string));
 }
 
 function escape_clean($string)
 {
-	return mysql_real_escape_string(clean($string));
+	return escape(clean($string));
 }
 
 function file_ext($file)
@@ -573,6 +633,9 @@ function form_to_db($type)
 		break;
 		case 'polygon':
 			return 'POLYGON';
+		break;
+		case 'coords':
+			return 'POINT';
 		break;
 		case 'language':
 			return 'VARCHAR( 32 )';
@@ -666,9 +729,9 @@ function get_client_language($availableLanguages, $default='en')
 	return $default;
 }
 
-function get_options($table,$field,$where=false)
+function get_options($table, $field, $where=false)
 {
-	$qry="SELECT id,$field FROM $table";
+	$qry="SELECT id, $field FROM $table";
 
 	if( $where ){
 		$qry.=' WHERE '.$where;
@@ -676,10 +739,10 @@ function get_options($table,$field,$where=false)
 
 	$qry.=" ORDER BY `$field`";
 
-	$select=mysql_query($qry) or trigger_error("SQL", E_USER_ERROR);
+	$rows = sql_query($qry);
 
 	$options=array();
-	while( $row=@mysql_fetch_array($select) ){
+	foreach( $rows as $row ){
 		$options[$row['id']]=$row[$field];
 	}
 	return $options;
@@ -850,7 +913,7 @@ function is_assoc_array($var)
 }
 
 function is_domain($domain){
-	$whois_exts = array('com', 'co.uk', 'net', 'org', 'org.uk', 'tv');
+	$whois_exts = array('com', 'co.uk', 'uk', 'net', 'org', 'org.uk', 'tv');
 
 	$d = explode('.', $domain);
 	if($d[2]) {
@@ -928,7 +991,7 @@ function load_js($libs)
 			case 'prototype';
 			break;
 			case 'cms':
-				$deps['jqueryui']=true;
+				//$deps['jqueryui']=true;
 				$deps['jquery']=true;
 			break;
 		}
@@ -964,7 +1027,7 @@ function load_js($libs)
 
 	if( $deps['cms'] ){
 	?>
-		<script type="text/javascript" src="/_lib/cms/js/cms.min.js"></script>
+		<script type="text/javascript" src="/_lib/cms/js/cms.js"></script>
 	<?php
 	}
 
@@ -1030,33 +1093,59 @@ function load_js($libs)
 	}
 
 	if( $deps['bootstrap'] ){
+	    //$version = '3.1.1';
+	    $version = '3.0.0';
 	?>
         <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap.min.css">
 
         <!-- Optional theme -->
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap-theme.min.css">
 
         <!-- Latest compiled and minified JavaScript -->
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/js/bootstrap.min.js"></script>
     <?php
 	}
 
 	if( $deps['syntaxhighlighter'] ){
 	?>
-
 	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shCore.css" rel="stylesheet" type="text/css" />
-	<link href="//alexgorbatchev.com/pub/sh/current/styles/shThemeRDark.css" rel="stylesheet" type="text/css" />
-    <script src="//alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
-    <script src="//alexgorbatchev.com/pub/sh/current/scripts/shAutoloader.js" type="text/javascript"></script>
-    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPHP.js"></script>
-    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushJScript.js"></script>
-    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushCss.js"></script>
+	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shThemeRDark.css" rel="stylesheet" type="text/css" />
     <style>
         .toolbar{
             display: none;
         }
+
+        pre,code{
+            white-space:pre-wrap;/*css-3*/
+            word-wrap:break-word;/*InternetExplorer5.5+*/
+        }
+
+        .syntaxhighlighter{
+            padding: 10px;
+        }
     </style>
+    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js" type="text/javascript"></script>
+    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shAutoloader.js" type="text/javascript"></script>
+	<script>
+	SyntaxHighlighter.autoloader(
+	  'php //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPHP.js',
+	  'js jscript javascript //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushJScript.js',
+	  'css //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushCss.js'
+	);
+
+    $(function() {
+        SyntaxHighlighter.all();
+    });
+    </script>
+	<?
+	}
+
+	if( $deps['fontawesome'] ){
+		//$fontawesome_version = '3.2.1';
+		$fontawesome_version = '4.0.3';
+	?>
+		<link href="//netdna.bootstrapcdn.com/font-awesome/<?=$fontawesome_version;?>/css/font-awesome.min.css" rel="stylesheet">
 	<?
 	}
 }
@@ -1067,8 +1156,10 @@ function make_timestamp($string)
         // use "now":
         $time = time();
 
+    }elseif($string === '0000-00-00'){
+        return false;
     } elseif (preg_match('/^\d{14}$/', $string)) {
-        // it is mysql timestamp format of YYYYMMDDHHMMSS?
+        // it is timestamp format of YYYYMMDDHHMMSS?
         $time = mktime(substr($string, 8, 2),substr($string, 10, 2),substr($string, 12, 2),
                        substr($string, 4, 2),substr($string, 6, 2),substr($string, 0, 4));
 
@@ -1081,7 +1172,8 @@ function make_timestamp($string)
         $time = strtotime($string);
         if ($time == -1 || $time === false) {
             // strtotime() was not able to parse $string, use "now":
-            $time = time();
+            //$time = time();
+            return false;
         }
     }
     return $time;
@@ -1089,10 +1181,10 @@ function make_timestamp($string)
 
 function mysql2csv($query,$filename='data')
 {
-	$select=mysql_query($query) or trigger_error("SQL", E_USER_ERROR);
+	$rows = sql_query($query);
 
 	$i=0;
-	while($row=mysql_fetch_array($select,MYSQL_ASSOC)){
+	foreach($rows as $row){
 		if($i==0){
 			foreach($row as $k=>$v){
 				$data.="\"$k\",";
@@ -1205,26 +1297,64 @@ function spaced($str) // also see underscored
 	return str_replace('_',' ',$str);
 }
 
+function sql_insert_id(){
+	global $db_config;
+
+	if($db_config['mysqli']){
+		return mysqli_insert_id();
+	}else{
+		return mysql_insert_id();
+	}
+}
+
+function sql_num_rows(){
+	global $db_config;
+
+	if($db_config['mysqli']){
+		return mysqli_num_rows();
+	}else{
+		return mysql_num_rows();
+	}
+}
+
 function sql_query($query,$single=false)
 {
-	$result = mysql_query($query);
+	global $db_config, $db_connection;
 
-    if( !$result ){
-        throw new Exception(mysql_error());
-    }
+	if($db_config['mysqli']){
+		$result = mysqli_query($db_connection, $query);
 
-	$return_array = array();
-	while ($row = mysql_fetch_assoc($result)) {
-		array_push($return_array, $row);
+	    if( $result===false ){
+	        throw new Exception(mysqli_error());
+	    }
+
+		$return_array = array();
+		while ($row = mysqli_fetch_assoc($result)) {
+			array_push($return_array, $row);
+		}
+		mysqli_free_result($result);
+
+	    return $single ? $return_array[0] : $return_array;
+	}else{
+		$result = mysql_query($query);
+
+	    if( !$result ){
+	        throw new Exception(mysql_error());
+	    }
+
+		$return_array = array();
+		while ($row = mysql_fetch_assoc($result)) {
+			array_push($return_array, $row);
+		}
+		mysql_free_result($result);
+
+	    return $single ? $return_array[0] : $return_array;
 	}
-	mysql_free_result($result);
-
-    return $single ? $return_array[0] : $return_array;
 }
 
 function str_to_pagename($page_name){
     //remove odd chars
-    $page_name = preg_replace("/[^\sA-Za-z0-9\->]/", '', $page_name);
+    $page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
 
     //replace > with /
     $page_name = str_replace('>','/',$page_name);
@@ -1243,8 +1373,8 @@ function str_to_pagename($page_name){
 
 function table_exists($table)
 {
-	$select=mysql_query("SHOW TABLES LIKE '$table'") or trigger_error("SQL", E_USER_ERROR);
-	return mysql_num_rows($select) ? true : false;
+	$rows = sql_query("SHOW TABLES LIKE '$table'");
+	return count($rows) ? true : false;
 }
 
 function thumb($file,$max_width=200,$max_height=200,$default=NULL,$save=NULL,$output=true)
@@ -1310,12 +1440,39 @@ function thumb($file,$max_width=200,$max_height=200,$default=NULL,$save=NULL,$ou
 	}
 }
 
+function time_elapsed($ptime) {
+    $etime = time() - make_timestamp($ptime);
+
+    if ($etime < 1)
+    {
+        return '0 seconds';
+    }
+
+    $a = array( 12 * 30 * 24 * 60 * 60  =>  'year',
+                30 * 24 * 60 * 60       =>  'month',
+                24 * 60 * 60            =>  'day',
+                60 * 60                 =>  'hour',
+                60                      =>  'minute',
+                1                       =>  'second'
+                );
+
+    foreach ($a as $secs => $str)
+    {
+        $d = $etime / $secs;
+        if ($d >= 1)
+        {
+            $r = round($d);
+            return $r . ' ' . $str . ($r > 1 ? 's' : '') . ' ago';
+        }
+    }
+}
+
 function truncate($string, $max = 50, $rep = '..')
 {
     $string = strip_tags($string);
 
-	if(  strlen($string)>$max ){
-		$leave = $max - strlen ($rep);
+	if( strlen($string)>$max ){
+		$leave = $max - strlen($rep);
 		return substr_replace($string, $rep, $leave);
 	}else{
 		return $string;
@@ -1385,16 +1542,38 @@ function validate($fields, $required, $array=true)
 	}
 }
 
+//deprecated, use video_info instead
 function youtube_id_from_url($url) {
-    $pattern = '#^(?:https?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
-    preg_match($pattern, $url, $matches);
-    return (isset($matches[1])) ? $matches[1] : false;
+    $info = video_info($url);
+    return $info['id'];
+}
 
-    /*
-    $bits = parse_url($url);
-    $query = parse_str($bits['query']);
+function video_info($url) {
+	$data = array();
 
-    return $v;
-    */
+	if(stristr($url, 'vimeo.com')){
+		$data['source'] = 'vimeo';
+
+		$pattern = '/(https?:\/\/)?(www\.)?(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/';
+	    preg_match($pattern, $url, $matches);
+
+	    $data['id'] = end($matches);
+	    $data['url'] = $url;
+
+	    //not working?
+	    $hash = json_decode(file_get_contents("http://vimeo.com/api/v2/video/".$data['id'].".json"), true);
+	    $data['thumb'] = $hash[0]['thumbnail_medium'];
+	}elseif(stristr($url, 'youtu')){
+    	$data['source']  = 'youtube';
+
+    	$pattern = '#^(?:https?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
+	    preg_match($pattern, $url, $matches);
+	    $data['id'] = (isset($matches[1])) ? $matches[1] : false;
+	    $data['thumb'] = 'https://img.youtube.com/vi/'.$data['id'].'/0.jpg';
+	}else{
+		return false;
+	}
+
+	return $data;
 }
 ?>

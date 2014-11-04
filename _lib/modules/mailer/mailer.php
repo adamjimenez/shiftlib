@@ -18,7 +18,7 @@ class mailer{
 			$users[]=mysql_fetch_array($select);
 		}*/
 
-		$result=$this->send_email($users, $subject, $message);
+		$result = $this->send_email($users, $subject, $message);
 
 		return $result;
 	}

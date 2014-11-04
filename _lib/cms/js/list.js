@@ -50,7 +50,7 @@ $(function() {
     	if ($(this).find('input[name="sortable"]')) {
     		this.isSortable = true;
 
-    		var name = $(this).find('input[name="section"]').val();
+    		var name = $(this).find('input[name="section"]').val().replace(/\s/g, '_');;
 
             $( '#items_'+name ).sortable({
                 handle: '.handle',
@@ -69,8 +69,6 @@ $(function() {
     });
 });
 
-
-
 function toggle_advanced(on)
 {
 	$('#csv').hide();
@@ -79,8 +77,8 @@ function toggle_advanced(on)
 
 	if( !on ){
 		for (i = 0; i < field.length; i++){
-			if( field[i].type!='hidden' && field[i].type!='submit' && field[i].type!='button' ){
-				if( field[i].name!='s' ){
+			if( field[i].type!=='hidden' && field[i].type!=='submit' && field[i].type!=='button' ){
+				if( field[i].name!=='s' ){
 					field[i].disabled = true;
 				}else{
 					field[i].disabled = false;
@@ -92,7 +90,7 @@ function toggle_advanced(on)
 		$('#basic').slideToggle();
 	}else{
 		for (i = 0; i < field.length; i++){
-			if( field[i].type!='hidden' && field[i].type!='submit' && field[i].type!='button' ){
+			if( field[i].type!=='hidden' && field[i].type!=='submit' && field[i].type!=='button' ){
 				if( field[i].name=='s' ){
 					field[i].disabled = true;
 				}else{
@@ -223,24 +221,15 @@ function loadFile(file)
 
 function set_language()
 {
-	var option=document.getElementById('language');
+	var option = document.getElementById('language');
 
-	for( var j=0; j<option.options.length; j++ ){;
-		if( document.getElementById('language_'+option.options[j].value).style.display!='none' ){
-
-			for( var i in xinha_editors ){
-				xinha_editors[i].deactivateEditor();
-			}
-
+	for( var j=0; j<option.options.length; j++ ){
+		if( document.getElementById('language_'+option.options[j].value).style.display!=='none' ){
 			document.getElementById('language_'+option.options[j].value).style.display='none';
 		}
 	}
 
 	document.getElementById('language_'+$('#language').val()).style.display='block';
-
-	for( var i in xinha_editors ){
-		xinha_editors[i].sizeEditor("100%");
-	}
 }
 
 //import csv

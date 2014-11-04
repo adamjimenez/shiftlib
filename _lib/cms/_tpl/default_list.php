@@ -4,10 +4,10 @@ if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
 }
 
-$field_id=in_array('id',$vars['fields'][$this->section]) ? array_search('id',$vars['fields'][$this->section]) : 'id';
+$field_id = in_array('id',$vars['fields'][$this->section]) ? array_search('id',$vars['fields'][$this->section]) : 'id';
 
 //sortable
-$sortable=in_array('position',$vars['fields'][$this->section]);
+$sortable = in_array('position',$vars['fields'][$this->section]);
 
 //distance options
 $opts['distance']=array(
@@ -108,18 +108,14 @@ if( $_POST['action']=='email' ){
 
 		$conditions=$_POST['export'] ? $_GET : NULL;
 
-		$query=$this->get($this->section,$conditions,NULL,NULL,NULL,NULL,true);
-		//print $query;
-
-		$select=mysql_query($query) or die(mysql_error());
-
+		$rows = $this->get($this->section, $conditions);
 
 		header('Pragma: cache');
 		header('Content-Type: text/comma-separated-values; charset=UTF-8');
 		header('Content-Disposition: attachment; filename="'.$this->section.'.csv"');
 
 		$i=0;
-		while( $row=mysql_fetch_assoc($select) ){
+		foreach($rows as $row){
 			$data='';
 
 			if($i==0){
@@ -129,17 +125,19 @@ if( $_POST['action']=='email' ){
 
 					$headings[$j]=$k;
 				}
-				$data=substr($data,0,-1);
-				$data.="\n";
+				$data = substr($data,0,-1);
+				$data .= "\n";
 
 				$j++;
 			}
 			$j=0;
 			foreach($row as $k=>$v){
-				//$v=str_replace("\n","\r\n",$v);
-
-				$data.='"'.str_replace('"','',$v).'",';
-
+			    if(is_array($v)){
+			    	$data.='"'.str_replace('"', '""', serialize($v)).'",';
+			    }else{
+			    	$data.='"'.str_replace('"', '""', $v).'",';
+			    }
+			    
 				$j++;
 			}
 			$data=substr($data,0,-1);
@@ -192,7 +190,7 @@ if( $_POST['action']=='email' ){
 		$conditions[$k]=$v;
 	}
 
-	$vars['content']=$this->get($this->section,$conditions,$limit,NULL,$asc,'list');
+	$vars['content'] = $this->get($this->section, $conditions, $limit, NULL, $asc, 'list');
 	$p=$this->p;
 
 	foreach( $vars['fields'][$this->section] as $field=>$type ){
@@ -235,13 +233,11 @@ jQuery(document).ready(function() {
 
 				$parents=array();
 				while( $parent['parent']!=='0' ){
-					$select_parent=mysql_query("SELECT * FROM `".underscored($this->section)."` WHERE $field_id='".escape($parent_id)."'") or die(mysql_error());
+					$parent = sql_query("SELECT * FROM `".underscored($this->section)."` WHERE $field_id='".escape($parent_id)."'");
 
-					if( !mysql_num_rows($select_parent) ){
+					if( !$parent){
 						break;
 					}
-
-					$parent=mysql_fetch_array($select_parent);
 
 					$parent_id=$parent['parent'];
 
@@ -291,9 +287,9 @@ jQuery(document).ready(function() {
 			</tr>
 			<?
 			}elseif( $type == 'select' or $type=='radio' ){
-				$options=$vars['options'][$name];
+				$options = $vars['options'][$name];
 				if( !is_array($vars['options'][$name]) ){
-					$table=underscored($vars['options'][$name]);
+					$table = underscored($vars['options'][$name]);
 
 					reset($vars['fields'][$vars['options'][$name]]);
 
@@ -304,14 +300,14 @@ jQuery(document).ready(function() {
 						}
 					}
 
-					$db_field_name=$this->db_field_name($vars['options'][$name],$field);
+					$db_field_name = $this->db_field_name($vars['options'][$name],$field);
 
-					$cols="`".underscored($db_field_name)."` AS `".underscored($field)."`"."\n";
+					$cols = "`".underscored($db_field_name)."` AS `".underscored($field)."`"."\n";
 
-					$select=mysql_query("SELECT id,$cols FROM $table ORDER BY `".underscored($db_field_name)."`") or trigger_error("SQL", E_USER_ERROR);
+					$rows = sql_query("SELECT id,$cols FROM $table ORDER BY `".underscored($db_field_name)."`");
 
-					$options=array();
-					while( $row=@mysql_fetch_array($select) ){
+					$options = array();
+					foreach($rows as $row){
 						$options[$row['id']]=$row[$field];
 					}
 				}

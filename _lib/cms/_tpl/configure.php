@@ -37,14 +37,14 @@ $section_templates['blog']=array(
 	'heading'=>'text',
 	'copy'=>'editor',
 	'tags'=>'textarea',
-	'category'=>'checkboxes',
+	'blog category'=>'checkboxes',
 	'date'=>'timestamp',
 	'page name'=>'page-name',
 	'display'=>'checkbox',
 	'id'=>'id',
 );
 
-$section_templates['categories']=array(
+$section_templates['blog categories']=array(
 	'category'=>'text',
 	'page name'=>'page-name',
 	'id'=>'id',
@@ -74,6 +74,16 @@ $section_templates['enquiries']=array(
 	'email'=>'email',
 	'tel'=>'tel',
 	'enquiry'=>'textarea',
+	'date'=>'timestamp',
+	'id'=>'id',
+);
+
+$section_templates['cms logs']=array(
+	'user'=>'select',
+	'section'=>'text',
+	'item'=>'int',
+	'task'=>'text',
+	'details'=>'text',
 	'date'=>'timestamp',
 	'id'=>'id',
 );
@@ -158,6 +168,7 @@ $field_opts=array(
 	'phpupload',
 	'phpuploads',
 	'rating',
+	'avg-rating',
 	'select',
 	'select-multiple',
 	'select-distance',
@@ -193,11 +204,6 @@ $config_file = $root_folder.'/_inc/config.php';
 if( !file_exists($config_file) ){
 	die('Error: config file does not exist: '.$config_file);
 }
-
-/*
-if( mysql_connect() ){
-	die('Error: can\'t connect to db');
-}*/
 
 function loop_fields($field_arr) // should be anonymous function
 {
@@ -239,8 +245,7 @@ function loop_fields($field_arr) // should be anonymous function
 				}
 
 				$query="ALTER TABLE `$table` DROP `".underscored($k)."`";
-				mysql_query($query) or trigger_error("SQL", E_USER_ERROR);
-
+				sql_query($query);
 				continue;
 			}
 
@@ -252,20 +257,20 @@ function loop_fields($field_arr) // should be anonymous function
 				}
 
 				if( $query ){
-					mysql_query($query) or trigger_error("SQL ".$query, E_USER_ERROR);
+					sql_query($query);
 				}
 
 				//convert select to multiple select
 				if( $v=='select' and $new_type=='select-multiple' ){
-					$select_items=mysql_query("SELECT * FROM `$table`");
+					$rows = sql_query("SELECT * FROM `$table`");
 
-					while( $row=mysql_fetch_array($select_items) ){
-						mysql_query("INSERT INTO cms_multiple_select SET
+					foreach($rows as $row){
+						sql_query("INSERT INTO cms_multiple_select SET
 							section='".$section."',
 							field='".$new_name."',
 							item='".escape($row['id'])."',
 							value='".escape($row[$new_name])."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 					}
 				}
 			}
@@ -278,13 +283,15 @@ if( $_POST['save'] ){
 		die('Error: config file is not writable: '.$config_file);
 	}
 
+	/*
 	if( $_POST['live_site'] or !$_POST['db_config']['dev_host'] ){
-		mysql_connect($_POST['db_config']['host'],$_POST['db_config']['user'],$_POST['db_config']['pass']) or trigger_error("SQL", E_USER_ERROR);
+		$result = mysql_connect($_POST['db_config']['host'],$_POST['db_config']['user'],$_POST['db_config']['pass']);
 		mysql_select_db($_POST['db_config']['name']) or trigger_error("SQL", E_USER_ERROR);
 	}else{
 		mysql_connect($_POST['db_config']['dev_host'],$_POST['db_config']['dev_user'],$_POST['db_config']['dev_pass']) or trigger_error("SQL", E_USER_ERROR);
 		mysql_select_db($_POST['db_config']['dev_name']) or trigger_error("SQL", E_USER_ERROR);
 	}
+	*/
 
 	check_table('cms_multiple_select',$cms_multiple_select_fields);
 	check_table('cms_privileges',$cms_privileges_fields);
@@ -298,12 +305,12 @@ if( $_POST['save'] ){
 	foreach( $vars['fields'] as $section=>$fields ){
 		$count['sections']++;
 
-		$table=underscored($section);
+		$table = underscored($section);
 
 		$table_dropped=false;
 		if( !$_POST['sections'][$count['sections']] ){
 			$query="DROP TABLE IF EXISTS `".$table."`";
-			mysql_query($query) or trigger_error("SQL", E_USER_ERROR);
+			sql_query($query);
 
 			$table_dropped=true;
 		}
@@ -342,7 +349,7 @@ if( $_POST['save'] ){
 				}
 
 				if( $query ){
-					mysql_query($query) or trigger_error("SQL", E_USER_ERROR);
+					sql_query($query);
 				}
 			}
 		}
@@ -353,7 +360,7 @@ if( $_POST['save'] ){
 			$new_table=underscored($_POST['sections'][$count['sections']]);
 
 			$query="RENAME TABLE `".$table."`  TO `".$new_table."`";
-			mysql_query($query) or trigger_error("SQL", E_USER_ERROR);
+			sql_query($query);
 		}
 	}
 
@@ -385,6 +392,20 @@ if( $_POST['save'] ){
         $_POST['upload_config']['max_file_size'] = 1000000;
     }
 
+    //hash passwords
+    if( !$auth_config['hash_password'] and $_POST['hash_password'] ){
+    	$users = sql_query("SELECT * FROM users");
+
+    	foreach($users as $user){
+    		$password = $auth->create_hash($user['password']);
+    		sql_query("UPDATE users SET
+    			password = '".escape($password)."'
+    			WHERE
+    				id = '".$user['id']."'
+    		");
+    	}
+    }
+
 	$config='<?php
 #GENERAL SETTINGS
 $db_config["host"]="'.$_POST['db_config']['host'].'";
@@ -409,6 +430,8 @@ $tpl_config["alias"]=array('.str_to_assoc($_POST['tpl_config']['alias']).');
 
 $tpl_config["secure"]=array('.str_to_csv($_POST['tpl_config']['secure']).');
 
+$tpl_config["ssl"]='.str_to_bool($_POST['tpl_config']['ssl']).';
+
 
 #USER LOGIN
 $auth_config=array();
@@ -432,6 +455,12 @@ $auth_config["forgot_success"]="'.$_POST['auth_config']['forgot_success'].'";
 
 //automatically generate a password
 $auth_config["generate_password"]='.str_to_bool($_POST['auth_config']['generate_password']).';
+
+//hash passwords
+$auth_config["hash_password"]='.str_to_bool($_POST['auth_config']['hash_password']).';
+
+//auto login on register
+$auth_config["register_login"]='.str_to_bool($_POST['auth_config']['register_login']).';
 
 //use a secret term to encrypt cookies
 $auth_config["secret_phrase"]="'.$_POST['auth_config']['secret_phrase'].'";
@@ -1372,6 +1401,10 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<textarea name="tpl_config[secure]" cols="70" class="autogrow"><?=$secure;?></textarea>
         			</td>
         		</tr>
+        		<tr>
+        			<th valign="top">Site-wide SSL</th>
+		        		<td><input type="checkbox" name="tpl_config[ssl]" value="1" <? if( $tpl_config['ssl'] ){ ?> checked<? } ?>></td>
+        		</tr>
         		</table>
         	</div>
         </div>
@@ -1400,6 +1433,14 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>generate password</th>
         			<td><input type="checkbox" name="auth_config[generate_password]" value="1" <? if( $auth_config['generate_password'] ){ ?> checked<? } ?>></td>
+        		</tr>
+        		<tr>
+        			<th>hash passwords</th>
+        			<td><input type="checkbox" name="auth_config[hash_password]" value="1" <? if( $auth_config['hash_password'] ){ ?> checked<? } ?>></td>
+        		</tr>
+        		<tr>
+        			<th>register login</th>
+        			<td><input type="checkbox" name="auth_config[register_login]" value="1" <? if( $auth_config['register_login'] ){ ?> checked<? } ?>></td>
         		</tr>
         		<tr>
         			<th>secret phrase</th>

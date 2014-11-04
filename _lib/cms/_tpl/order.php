@@ -8,26 +8,26 @@ if( $_POST['status'] ){
     	id='".escape($_GET['id'])."'
     ", 1);
 
-	mysql_query("UPDATE orders SET
+	sql_query("UPDATE orders SET
 		status='".escape($_POST['status'])."'
 		WHERE
 		    id='".escape($_GET['id'])."' LIMIT 1
-	") or trigger_error("SQL", E_USER_ERROR);
+	");
 
 	if( $_POST['status'] == 'dispatched' ){
-		mysql_query("UPDATE orders SET
+		sql_query("UPDATE orders SET
 			dispatched_date=NOW()
 			WHERE
 			    id='".escape($_GET['id'])."' LIMIT 1
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 
 		$this->trigger_event('dispatched', array($order));
 	}elseif( $_POST['status'] == 'refunded' ){
-		mysql_query("UPDATE orders SET
+		sql_query("UPDATE orders SET
 			refund_date=NOW()
 			WHERE
 			    id='".escape($_GET['id'])."' LIMIT 1
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
 }
 

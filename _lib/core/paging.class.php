@@ -265,11 +265,7 @@ class paging {
 
 	function col($col,$label=NULL)
 	{
-		global $images_dir;
-
-		$images_dir=(isset($images_dir)) ? $images_dir : '/_lib/images/';
-
-		$qs=$_GET;
+		$qs = $_GET;
 
 		unset($qs['order']);
 		unset($qs['asc']);
@@ -286,10 +282,10 @@ class paging {
 		if( $this->order==$col ){
 			if( !$this->asc ){
 				$html='<a href="?'.$query.'&'.$this->prefix.'order='.$col.'&'.$this->prefix.'asc=1&'.$this->prefix.'hash='.$hash.'">'.($label).'</a>';
-				$html.=' <img src="'.$images_dir.'sort_up.gif" vspace="2">';
+				$html.=' <i class="fa fa-chevron-up"></i>';
 			}else{
 				$html='<a href="?'.$query.'&'.$this->prefix.'order='.$col.'&'.$this->prefix.'asc=0&'.$this->prefix.'hash='.$hash.'">'.($label).'</a>';
-				$html.=' <img src="'.$images_dir.'sort_down.gif" vspace="2">';
+				$html.=' <i class="fa fa-chevron-down"></i>';
 			}
 		}else{
 			$html='<a href="?'.$query.'&'.$this->prefix.'order='.$col.'&'.$this->prefix.'asc=1&'.$this->prefix.'hash='.$hash.'">'.($label).'</a>';

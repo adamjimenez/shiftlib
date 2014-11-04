@@ -1,11 +1,13 @@
 <?
 class blog{
     function blog($options){
-		global $cms, $sections, $vars, $from_email;
+		global $cms, $sections, $vars, $from_email, $opts;
 
-		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog',$sections);
+		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
 
 		$this->table_categories = $options['table_categories'] ?: 'categories';
+
+		$this->category_field = array_search($this->table_categories, $opts);
 
 		//categories
 		if( count($vars["fields"][$this->table_categories]) ){
@@ -51,51 +53,54 @@ class blog{
 
 		$limit=NULL;
 
-		//archive
-		if( is_numeric($sections[($this->blog_index+1)]) and is_numeric($sections[($this->blog_index+2)]) ){
-			$date = $sections[($this->blog_index+1)].'/'.$sections[($this->blog_index+2)].'/01';
+		if(in_array('blog', $sections) and $sections[$this->blog_index]=='blog'){
+			//archive
+			if( is_numeric($sections[($this->blog_index+1)]) and is_numeric($sections[($this->blog_index+2)]) ){
+				$date = $sections[($this->blog_index+1)].'/'.$sections[($this->blog_index+2)].'/01';
 
-			$conditions['func']['date'] = 'month';
-			$conditions['date'] = dateformat('mY',$date);
-		}elseif( is_numeric($sections[($this->blog_index+1)]) ){
-			$conditions['id'] = $sections[($this->blog_index+1)];
+				$conditions['func']['date'] = 'month';
+				$conditions['date'] = dateformat('mY',$date);
+			}elseif( is_numeric($sections[($this->blog_index+1)]) ){
+				$conditions['id'] = $sections[($this->blog_index+1)];
 
-			$this->article=true;
-		}elseif( $sections[($this->blog_index+1)]=='category' ){
-            $conditions['func']['date'] = '<';
-    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+				$this->article=true;
+			}elseif( $sections[($this->blog_index+1)]=='category' ){
+	            $conditions['func']['date'] = '<';
+	    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
 
-			$category=sql_query("SELECT * FROM ".underscored($this->table_categories)." WHERE
-			    page_name='".escape($sections[($this->blog_index+2)])."'
-			",1);
+				$category = sql_query("SELECT * FROM ".underscored($this->table_categories)." WHERE
+				    page_name='".escape($sections[($this->blog_index+2)])."'
+				",1);
 
-			if($category['id']){
-				$conditions['category'][]=$category['id'];
+				if($category['id']){
+					$conditions[underscored($this->category_field)][] = $category['id'];
+				}
+			}elseif( $sections[($this->blog_index+1)]=='tags' ){
+				$conditions['tags']='*'.$sections[($this->blog_index+2)].'*';
+			}elseif( $sections[($this->blog_index+1)] and $sections[($this->blog_index+1)]!=='index' ){
+				$conditions['page_name']=$sections[($this->blog_index+1)];
+
+				$this->article=true;
+			}else{
+	        	$conditions['func']['date'] = '<';
+	    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+
+				$limit=6;
 			}
-		}elseif( $sections[($this->blog_index+1)]=='tags' ){
-			$conditions['tags']='*'.$sections[($this->blog_index+2)].'*';
-		}elseif( $sections[($this->blog_index+1)] and $sections[($this->blog_index+1)]!=='index' ){
-			$conditions['page_name']=$sections[($this->blog_index+1)];
 
-			$this->article=true;
-		}else{
-        	$conditions['func']['date'] = '<';
-    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+			$conditions['display'] = 1;
 
-			$limit=6;
-		}
+			//print_r($conditions);
+			$this->content = $cms->get('blog', $conditions, $limit, 'date', false);
+	        $this->p = $cms->p;
 
-		$conditions['display'] = 1;
+			if( $this->article ){
+				$title = $this->content['heading'];
 
-		//print_r($conditions);
-		$this->content = $cms->get('blog', $conditions, $limit, 'date', false);
-
-		if( $article ){
-			$title = $this->content['heading'];
-		}
-
-		if( !count($this->content) ){
-			//die('no item');
+				if(!$this->content){
+					trigger_404();
+				}
+			}
 		}
 
 		if( $_POST['continue'] and $_POST['nospam']==1 ){
@@ -105,7 +110,11 @@ class blog{
 			if( !$_POST['email'] ){
 				$errors[]='email';
 			}
-			if( !$_POST['comment'] or strip_tags($_POST['comment'])!==$_POST['comment'] ){
+			if( 
+			    !$_POST['comment'] or 
+			    strip_tags($_POST['comment'])!==$_POST['comment'] or
+			    strstr($_POST['comment'], '[/url]')
+			){
 				$errors[]='comment';
 			}
 			if( !$_POST['blog'] ){
@@ -123,7 +132,7 @@ class blog{
 				setcookie('email',$_POST['email'],time()+86400*30,'/');
 				setcookie('website',$_POST['website'],time()+86400*30,'/');
 
-				mysql_query("INSERT INTO comments SET
+				sql_query("INSERT INTO comments SET
 					date=NOW(),
 					name='".escape(strip_tags($_POST['name']))."',
 					email='".escape(strip_tags($_POST['email']))."',
@@ -131,9 +140,9 @@ class blog{
 					comment='".escape(strip_tags($_POST['comment']))."',
 					ip='".escape($_SERVER['REMOTE_ADDR'])."',
 					blog='".escape($_POST['blog'])."'
-				") or trigger_error("SQL", E_USER_ERROR);
+				");
 
-				$id=mysql_insert_id();
+				$id = sql_insert_id();
 
 				$headers="From: ".'auto@'.$_SERVER['HTTP_HOST']."\n";
 				$msg='New Comment
@@ -146,7 +155,7 @@ class blog{
 
 				$msg=str_replace("\t",'',$msg);
 
-				mail($from_email,'New comment',$msg,$headers);
+				mail($from_email, 'New comment', $msg, $headers);
 
 				if( $options['thanks_page'] ){
 					redirect($options['thanks_page']);
@@ -157,21 +166,21 @@ class blog{
 		if( $_POST['approve_all'] and $auth->user ){
 			switch($_POST['approve_all']){
 				case 'approve':
-					mysql_query("UPDATE comments
+					sql_query("UPDATE comments
 						SET
 							approved=1
 						WHERE
 							blog='".escape($content[0]['id'])."' AND
 							approved!=1
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				break;
 
 				case 'delete':
-					mysql_query("DELETE FROM comments
+					sql_query("DELETE FROM comments
 						WHERE
 							blog='".escape($content[0]['id'])."' AND
 							approved!=1
-					") or trigger_error("SQL", E_USER_ERROR);
+					");
 				break;
 
 				case 'delete and block':
@@ -182,11 +191,11 @@ class blog{
 					");
 
 					foreach( $comments as $comment ){
-						mysql_query("DELETE FROM comments
+						sql_query("DELETE FROM comments
 							WHERE
 								id='".escape($comment['id'])."' OR
 								ip='".escape($comment['ip'])."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 					}
 				break;
 			}
@@ -201,27 +210,27 @@ class blog{
 
 				switch($v){
 					case 'approve':
-						mysql_query("UPDATE comments
+						sql_query("UPDATE comments
 							SET
 								approved=1
 							WHERE
 								id='".escape($k)."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 					break;
 
 					case 'delete':
-						mysql_query("DELETE FROM comments
+						sql_query("DELETE FROM comments
 							WHERE
 								id='".escape($k)."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 					break;
 
 					case 'delete and block':
-						mysql_query("DELETE FROM comments
+						sql_query("DELETE FROM comments
 							WHERE
 								id='".escape($k)."' OR
 								ip='".escape($comment[0]['ip'])."'
-						") or trigger_error("SQL", E_USER_ERROR);
+						");
 					break;
 				}
 			}
@@ -250,6 +259,43 @@ class blog{
 			ORDER BY date DESC
 			LIMIT ".escape($limit)."
 		");
+	}
+
+	function rss_feed(){
+        $news=sql_query("SELECT
+        		id,
+        		page_name,
+        		heading,
+        		copy,
+        		date
+        	FROM blog
+        	WHERE
+        		display=1
+        	ORDER BY date DESC
+        ");
+
+        header('Content-Type: text/xml');
+
+        $xml = new SimpleXMLElement('<feed xmlns="http://www.w3.org/2005/Atom" />');
+
+        $xml->addChild('title', $_SERVER['HTTP_HOST']);
+
+        $link=$xml->addChild('link');
+        $link->addAttribute('href', 'http://'.$_SERVER['HTTP_HOST'].'/');
+
+        foreach( $news as $k=>$v ){
+        	$entry = $xml->addChild('entry');
+
+        	$entry->addChild('title',htmlspecialchars($v['heading']));
+        	$summary=$entry->addChild('summary',htmlspecialchars($v['copy']));
+        	$summary->addAttribute('type', 'html');
+
+        	$link=$entry->addChild('link');
+        	$link->addAttribute('href', 'http://'.$_SERVER['HTTP_HOST'].'/blog/'.$v['page_name']);
+        }
+
+        echo $xml->asXML();
+        exit;
 	}
 }
 
@@ -319,13 +365,13 @@ function blog_save_handler()
 		$tags[$word]++;
 	}
 
-	mysql_query("DELETE FROM $table_tags") or trigger_error("SQL", E_USER_ERROR);
+	sql_query("DELETE FROM $table_tags");
 
 	foreach( $tags as $tag=>$count ){
-		mysql_query("INSERT INTO $table_tags SET
+		sql_query("INSERT INTO $table_tags SET
 			tag='".escape($tag)."',
 			count='".$count."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
 
 	// email subscribers
@@ -343,7 +389,7 @@ function blog_save_handler()
 
 		foreach( $valid_users as $user ){
 			$reps=array();
-			$reps['link']='http://'.$_SERVER['HTTP_HOST'].'/blog/'.strtolower(str_replace(' ','-',$_POST['page_name']));
+			$reps['link']='http://'.$_SERVER['HTTP_HOST'].'/blog/'.$_POST['page_name'];
 			$reps['unsubscribe_link']='http://'.$_SERVER['HTTP_HOST'].'/newsletter-unsubscribe?email='.$user['email'];
 
 			email_template( $user['email'],'New Blog Entry', $reps );

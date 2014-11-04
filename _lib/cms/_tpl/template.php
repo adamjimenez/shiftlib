@@ -28,7 +28,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 	var fields=(<?=json_encode($fields);?>);
 	</script>
 
-	<? load_js(array('cms','google','lightbox')); ?>
+	<? load_js(array('jqueryui', 'cms', 'google', 'lightbox', 'fontawesome')); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js"></script>
 
 	<? //to be used for custom js ?>

@@ -125,7 +125,7 @@ $vars["labels"]["users"]=array("name","surname","email",);
 
 $vars["subsections"]["users"]=array();
 
-$vars["files"]["dir"]="files/"; //folder to store files
+$vars["files"]["dir"]="uploads/files/"; //folder to store files
 
 #SHOP
 $shop_enabled=false;

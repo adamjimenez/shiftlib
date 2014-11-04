@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?=$_SERVER["HTTP_HOST"];?></title>
+    <title><?=$title;?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <? if($meta_description){ ?>
     <meta name="Description" content="<?=$meta_description;?>" />

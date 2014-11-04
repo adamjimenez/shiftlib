@@ -4,7 +4,7 @@ if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
 }
 
-$this->set_section($this->section,$_GET['id']);
+$this->set_section($this->section, $_GET['id']);
 
 //return url
 $section='';
@@ -76,14 +76,20 @@ $title=ucfirst($this->section).' | '.($label ? $label : '&lt;blank&gt; | Edit');
 if( $_GET["id"] ){
     $id = $_GET["id"];
 }else{
-    $result = mysql_query("SHOW TABLE STATUS LIKE '".underscored($this->section)."'");
-    $row = mysql_fetch_array($result);
+    $row = sql_query("SHOW TABLE STATUS LIKE '".underscored($this->section)."'", 1);
     $id = $row['Auto_increment'];
-    mysql_free_result($result);
 }
 ?>
 
 <script type="text/javascript">
+<?
+if($this->components){
+?>
+var components = <?=json_encode($this->components);?>;
+<?
+}
+?>
+	
 $(function() {
     if( document.getElementById('language') ){
 		$('#language').on('change',set_language);
@@ -93,7 +99,7 @@ $(function() {
 
     $('form input:visible:first').focus();
 
-    var phpupload_defaut_dir = '<?=$_GET["option"];?>/<?=$id;?>';
+    var phpupload_default_dir = '<?=$_GET["option"];?>/<?=$id;?>';
 });
 </script>
 

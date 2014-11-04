@@ -22,11 +22,11 @@ if( $where_str ){
 }
 
 $query.="ORDER BY position";
-	
-$result = mysql_query($query) or trigger_error("SQL", E_USER_ERROR);
+
+$rows = sql_query($query);
 
 $items = array();
-while ($row = mysql_fetch_array($result)) {
+foreach($rows as $row){
 	$items[] = $row['id'];
 }
 
@@ -35,27 +35,27 @@ foreach ($_POST['items_'.$table] as $item_id) {
 	print $item_id;
 	if( !in_array($item_id, $items) ){
 		continue;
-	}	
+	}
 
 	print $ranking;
 	print '<br>';
-	
-	mysql_query("UPDATE `".escape($table)."` SET 
-		position = '$ranking' 
-		WHERE 
-			id = '$item_id' 
+
+	sql_query("UPDATE `".escape($table)."` SET
+		position = '$ranking'
+		WHERE
+			id = '$item_id'
 		LIMIT 1
-	") or trigger_error("SQL", E_USER_ERROR);
-	
+	");
+
 	if( in_array('language',$vars['fields'][$_POST['section']]) ){
-		mysql_query("UPDATE `".escape($table)."` SET 
-			position = '$ranking' 
-			WHERE 
-				translated_from = '$item_id' 
+		sql_query("UPDATE `".escape($table)."` SET
+			position = '$ranking'
+			WHERE
+				translated_from = '$item_id'
 			LIMIT 1
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 	}
-	
+
 	$ranking++;
 }
 ?>

@@ -7,6 +7,7 @@ class shiftmail extends mailer
 
 	function send_email($users, $subject, $msg)
 	{
+
 		// Prepare data for POST request
 		$data = array(
 			'user' => $this->username,
