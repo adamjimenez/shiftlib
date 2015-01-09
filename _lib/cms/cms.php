@@ -290,7 +290,7 @@ class cms{
 								$parts=explode('/',$value);
 								$value=$parts[2].'-'.$parts[1].'-'.$parts[0];
 
-								$where[]="`".$field_name."` ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d',$value))."'";
+								$where[]="T_$table.".$field_name." ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d',$value))."'";
 							}
 						break;
 						case 'dob':
@@ -369,7 +369,7 @@ class cms{
                             !in_array($name, $vars["non_searchable"][$section])
                         ){
 							$value=str_replace('*','%',$word);
-							
+
 							if($type == 'select'){
 								if( is_string($vars['options'][$name]) ){
 									$option = '';
@@ -379,7 +379,7 @@ class cms{
 											break;
 										}
 									}
-									
+
 									$or[] = "T_".underscored($name).".".underscored($option)." LIKE '%".escape($value)."%'";
 								}
 							}else{
@@ -2099,6 +2099,10 @@ class cms{
 
 			foreach( $languages as $language ){
 				foreach( $vars['fields'][$this->section] as $k=>$v ){
+    				if( $this->editable_fields and !in_array($k, $this->editable_fields) ){
+    					continue;
+    				}
+
 					if( $v=='select-multiple' or $v=='checkboxes' ){
 						if( $language=='en' ){
 							$name = $k;
@@ -2170,14 +2174,14 @@ class cms{
 		$this->template('dropdowns.php',true);
 	}
 
-	function orders()
+	function shop_orders()
 	{
-		$this->template('orders.php',true);
+		$this->template('shop_orders.php',true);
 	}
 
-	function order()
+	function shop_order()
 	{
-		$this->template('order.php',true);
+		$this->template('shop_order.php',true);
 	}
 
 	function template($include,$local=false)

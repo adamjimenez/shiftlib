@@ -375,17 +375,27 @@ class shop{
 
 	function update_total()
 	{
+	    $this->subtotal = 0;
+	    $this->item_count = 0;
+
+	    foreach( $this->basket as $k=>$v ){
+			$this->subtotal += $v['quantity']*$this->basket[$k]['cost'];
+			$this->item_count += $v['quantity'];
+	    }
+
+		$this->vat = $this->subtotal*$this->vat_rate;
+
 		$this->total = $this->subtotal-$this->discount;
 
-        if( $this->total<0 ){
+        if( $this->total < 0 ){
             $this->total = 0;
         }
 
 		if( $this->include_vat ){
-			$this->total+=($this->total*$this->vat_rate);
+			$this->total += ($this->total*$this->vat_rate);
 		}
 
-		$this->total+=$this->delivery;
+		$this->total += $this->delivery;
 	}
 
 	function prepare()
@@ -393,6 +403,10 @@ class shop{
 		global $auth;
 
 		$this->update_total();
+
+		if( !$this->total ){
+		    return false;
+		}
 
 		sql_query("INSERT INTO orders SET
 			date=NOW(),
@@ -442,7 +456,7 @@ class shop{
 				quantity='".addslashes($item['quantity'])."'
 			");
 		}
-		
+
 		return $this->oid;
 	}
 
@@ -839,17 +853,18 @@ class shop{
 			$error='Transaction error:'. $_POST["Message"];
 		}
 
+		foreach($_POST as $k=>$v){
+			$msg.="$k = $v \n";
+		}
+
+		mail($admin_email, 'Order Details', $msg, $this->headers);
+
 		if( $error ){
 			$this->failed_order($error, $oid, $ref, 'cardsave');
 
 			return false;
 		}
 
-		foreach($_POST as $k=>$v){
-			$msg.="$k = $v \n";
-		}
-
-		mail($admin_email, 'Order Placed', $msg,$this->headers);
 		$ref = $_POST['CrossReference'];
 		$status = $_POST['Message'];
 
@@ -945,7 +960,7 @@ class shop{
 					email_template($order['email'], 'Order Confirmation', $reps);
 					email_template($this->paypal_email, 'Order Confirmation', $reps);
 				}
-				
+
 				email_template($admin_email, 'Order Confirmation', $reps);
 			} catch (Exception $e) {
 				$msg='';
@@ -1015,11 +1030,11 @@ class shop{
 
 				if(!$this->disable_confirmation_email){
 					mail($order['email'], 'Order Confirmation', $msg, $this->headers);
-				
+
 					if( $this->cc ){
 						$this->headers.="Cc: ".$this->cc."\n";
 					}
-					
+
 					mail($this->paypal_email,'Order Placed',$msg,$this->headers);
 				}
 			}

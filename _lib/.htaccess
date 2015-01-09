@@ -1,3 +1,13 @@
+<IfModule pagespeed_module>
+    ModPagespeed on
+
+    # using commands,fileters etc
+    ModPagespeedEnableFilters rewrite_javascript
+    ModPagespeedEnableFilters rewrite_css
+    ModPagespeedEnableFilters extend_cache,combine_css
+    ModPagespeedEnableFilters combine_javascript
+    ModPagespeedEnableFilters collapse_whitespace,elide_attributes,remove_comments
+</IfModule>
 RewriteEngine off
 
 <IfModule mod_php5.c>

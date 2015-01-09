@@ -114,17 +114,17 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 					?>
 					<ul>
 						<?
-							foreach( $vars['sections'] as $section){
-								if( $section=='-' ){
+						foreach( $vars['sections'] as $section){
+							if( $section=='-' ){
 						?>
 								<hr>
 						<?
-								}elseif( $auth->user['admin']==1 or $auth->user['privileges'][$section] ){
+							}elseif( $auth->user['admin']==1 or $auth->user['privileges'][$section] ){
 						?>
 							<li <? if($section==$_GET['option']){ ?>id="current"<? } ?>><a href="?option=<?=$section;?>" title="<?=ucfirst($section);?>"><?=ucfirst($section);?></a></li>
 						<?
-								}
 							}
+						}
 						?>
 					</ul>
 
@@ -132,7 +132,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 
 					<ul>
 						<? if( $shop_enabled and ($auth->user['admin']==1 or $auth->user['privileges']['orders']) ){ ?>
-						<li <? if($_GET['option']=='orders'){ ?>id="current"<? } ?>><a href="?option=orders">Orders</a></li>
+						<li <? if($_GET['option']=='shop_orders'){ ?>id="current"<? } ?>><a href="?option=shop_orders">Orders</a></li>
 						<? } ?>
 						<? if( ($auth->user['admin']==1 or $auth->user['privileges']['email_templates']) ){ ?>
 						<li <? if($_GET['option']=='email_templates'){ ?>id="current"<? } ?>><a href="?option=email templates">Email Templates</a></li>

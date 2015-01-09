@@ -5,7 +5,7 @@ if( $auth->user['admin'] ){
 ?>
 
 <div align="center" style="margin: 100px auto;">
-    <form method="post" id="login_form" action="/admin" class="validate">
+    <form method="post" id="login_form" action="/admin?option=login" class="validate">
     <input type="hidden" name="login" value="1">
     <fieldset>
     <legend>Sign in</legend>

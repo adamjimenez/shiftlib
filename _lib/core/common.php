@@ -934,13 +934,7 @@ function is_domain($domain){
 
 function is_email($email)
 {
-	if( !$email ){
-		return false;
-	}
-
-	preg_match_all("^([a-zA-Z0-9_\-\.\+]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^",$email,$matches);
-
-	return $matches[0][0] == $email;
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
 // is valid national insurance number
@@ -961,6 +955,7 @@ function is_postcode($code)
 function is_url($str)
 {
 	return preg_match('/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i', $str);
+    //return filter_var($email, FILTER_VALIDATE_URL);
 }
 
 function load_js($libs)
@@ -1563,15 +1558,21 @@ function video_info($url) {
 	    //not working?
 	    $hash = json_decode(file_get_contents("http://vimeo.com/api/v2/video/".$data['id'].".json"), true);
 	    $data['thumb'] = $hash[0]['thumbnail_medium'];
+	    $data['type'] = 'application/x-shockwave-flash';
 	}elseif(stristr($url, 'youtu')){
     	$data['source']  = 'youtube';
 
     	$pattern = '#^(?:https?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
 	    preg_match($pattern, $url, $matches);
 	    $data['id'] = (isset($matches[1])) ? $matches[1] : false;
-	    $data['thumb'] = 'https://img.youtube.com/vi/'.$data['id'].'/0.jpg';
+	    $data['thumb'] = 'https://i.ytimg.com/vi/'.$data['id'].'/hqdefault.jpg';
+	    $data['type'] = 'application/x-shockwave-flash';
+	    $data['url'] = 'http://www.youtube.com/v/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
 	}else{
-		return false;
+		return array(
+		    'url' => $url,
+		    'type' => 'application/x-shockwave-flash'
+		);
 	}
 
 	return $data;
