@@ -484,6 +484,12 @@ function initForms()
 
                 extended_valid_elements: 'span[itemprop|itemtype|itemscope|class]',
 
+                //valid_elements : "a[href|target=_blank],strong/b,div,br,table,tr,th,td,img,span[itemprop|itemtype|itemscope|class],i[class],hr,iframe[width|height|src|frameborder|allowfullscreen],ul[id],li",
+
+                valid_elements: "*[*]",
+
+                //invalid_elements: '',
+
                 setup : function(editor) {
                     editor.addShortcut('Ctrl+219', '', 'indent');
                     editor.addShortcut('Ctrl+221', '', 'outdent');

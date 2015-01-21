@@ -6,6 +6,13 @@
 
 require_once(dirname(__FILE__).'/core/common.php');
 
+function add_components($html){
+    return preg_replace_callback('/{\$([A-Za-z0-9]+)}/', function($match) {
+        $include = $match[1];
+        return file_get_contents('http://'.$_SERVER['HTTP_HOST'].'/components/'.$include);
+    }, $html);
+}
+
 function get_tpl_catcher($request)
 {
     global $tpl_config;

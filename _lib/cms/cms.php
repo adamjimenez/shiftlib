@@ -768,6 +768,8 @@ class cms{
 			$this->content=$_GET;
 			$this->id=NULL;
 		}
+
+		$this->trigger_event('beforeEdit', array($id));
 	}
 
 	function set_language( $language )
