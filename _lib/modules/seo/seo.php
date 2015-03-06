@@ -12,6 +12,7 @@ function get_dir_contents( $dirstr='_tpl/' ) {
 				or $filename=='admin.php'
 				or $filename=='template.php'
 				or $filename=='404.php'
+				or strstr($pathname,'dev')
 				or strstr($pathname,'old')
 				or strstr($pathname,'includes')
 			){

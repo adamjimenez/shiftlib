@@ -225,6 +225,7 @@ foreach( $languages as $language ){
 		$label = ucfirst(str_replace('_', ' ', $name));
 
 		$value = $content[$name];
+		$name = $name;
 
 		if( $type=='select-multiple' or $type=='checkboxes' ){
 			if( !is_array($vars['options'][$name]) and $vars['options'][$name] ){
@@ -626,7 +627,7 @@ $('#privileges_read').click(function(){
 $('#privileges_write').click(function(){
 	$('select.privileges').val('2');
 	return false;
-});	
+});
 </script>
 <?
 }
@@ -648,54 +649,63 @@ if( is_array($vars['subsections'][$this->section]) ){
 	</ul>
 <?
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
-		$this->section=$subsection;
 
-		$table=underscored($this->section);
+	    if( count($vars['fields'][$subsection]) ){
+    		$this->section = $subsection;
 
-		if( !count($vars['labels'][$this->section]) ){
-			reset($vars['fields'][$this->section]);
-			$vars['labels'][$this->section][]=key($vars['fields'][$this->section]);
-		}
+    		$table = underscored($this->section);
 
-		if( in_array('position',$vars['fields'][$this->section]) ){
-			$order='position';
-			$asc=true;
-			$limit=NULL;
-		}else{
-			$label=$vars['labels'][$this->section][0];
+    		if( !count($vars['labels'][$this->section]) ){
+    			reset($vars['fields'][$this->section]);
+    			$vars['labels'][$this->section][]=key($vars['fields'][$this->section]);
+    		}
 
-			$type=array_search($label,$vars['fields'][$this->section]);
-			if( ($typw=='select' or $typw=='combo') and !is_array($vars['opts'][$label]) ){
-				$order='T_'.$label.'.'.underscored(key($vars['fields'][$vars['options'][$label]]));
-			}else{
-				$order="T_$table.".underscored($vars['labels'][$this->section][0]);
-			}
-			$limit=10;
-		}
+    		if( in_array('position', $vars['fields'][$this->section]) ){
+    			$order = 'position';
+    			$asc = true;
+    			$limit = NULL;
+    		}else{
+    			$label = $vars['labels'][$this->section][0];
 
+    			$type = array_search($label,$vars['fields'][$this->section]);
+    			if( ($typw=='select' or $typw=='combo') and !is_array($vars['opts'][$label]) ){
+    				$order='T_'.$label.'.'.underscored(key($vars['fields'][$vars['options'][$label]]));
+    			}else{
+    				$order="T_$table.".underscored($vars['labels'][$this->section][0]);
+    			}
+    			$limit=10;
+    		}
 
+    		$conditions = array();
+    		$qs = array();
 
-		$conditions=array();
-		$qs=array();
+    		foreach( $vars['fields'][$this->section] as $k=>$v ){
+    			if( ($v=='select' or $v=='combo' or $v=='radio') and $vars['options'][$k]==$_GET['option'] ){
+    				$conditions[$k] = escape($this->id);
 
-		foreach( $vars['fields'][$this->section] as $k=>$v ){
-			if( ($v=='select' or $v=='combo' or $v=='radio') and $vars['options'][$k]==$_GET['option'] ){
-				$conditions[$k]=escape($this->id);
+    				$qs[$k] = $this->id;
 
-				$qs[$k]=$this->id;
+    				break;
+    			}
+    		}
 
-				break;
-			}
-		}
+    		$qs = http_build_query($qs);
 
-		$qs=http_build_query($qs);
-
-		$vars['content']=$this->get($subsection,$conditions,NULL,$order,$asc,$table);
-		$p=$this->p;
+    		$vars['content'] = $this->get($subsection, $conditions, $limit, $order, $asc, $table);
+    		$p = $this->p;
+	    }
 ?>
 
 <div style="display:none;" id="subsection_<?=$count;?>">
-	<? require(dirname(__FILE__).'/list.php'); ?>
+    <div class="box" style="clear:both;">
+	<?
+	if( count($vars['fields'][$subsection]) ){
+	    require(dirname(__FILE__).'/list.php');
+	}else if(file_exists('_tpl/admin/'.$subsection.'.php')){
+	    require('_tpl/admin/'.$subsection.'.php');
+	}
+	?>
+	</div>
 </div>
 
 

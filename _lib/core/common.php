@@ -1562,8 +1562,9 @@ function video_info($url) {
 	}elseif(stristr($url, 'youtu')){
     	$data['source']  = 'youtube';
 
-    	$pattern = '#^(?:https?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
+        $pattern = '#^(?:https?:)?(?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
 	    preg_match($pattern, $url, $matches);
+
 	    $data['id'] = (isset($matches[1])) ? $matches[1] : false;
 	    $data['thumb'] = 'https://i.ytimg.com/vi/'.$data['id'].'/hqdefault.jpg';
 	    $data['type'] = 'application/x-shockwave-flash';

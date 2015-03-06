@@ -366,9 +366,13 @@ class auth{
 		$this->update_success=true;
 	}
 
-	function forgot_password() //invoked by $_POST['forgot_password']
+	function forgot_password($email) //invoked by $_POST['forgot_password']
 	{
-		if( !is_email($_POST['email']) ){
+	    if(!$email){
+	        $email = $_POST['email'];
+	    }
+
+		if( !is_email($email) ){
 			$errors[] = 'email';
 
             print json_encode($errors);
@@ -377,7 +381,7 @@ class auth{
 
 		$row = sql_query("SELECT * FROM ".$this->table."
 			WHERE
-				email='".escape($_POST['email'])."'
+				email = '".escape($email)."'
 		", 1);
 
 		if( $row ){
@@ -388,7 +392,7 @@ class auth{
                 exit;
 		    }
 		}else{
-			$this->errors[]='email not recognised';
+			$this->errors[] = 'email not recognised';
 			$this->show_error('Email address is not in use.');
 
 			//redirect('forgot');
@@ -410,12 +414,12 @@ class auth{
 	        $reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/forgot?u='.$user['id'].'&code='.$code;
 		}else{
 			if( !$user['password'] ){
-				$password=generate_password();
+				$password = generate_password();
 
 				sql_query("UPDATE ".$this->table." SET
-						password='".addslashes($password)."'
+						password = '".addslashes($password)."'
 					WHERE
-						id='".$user['id']."'
+						id = '".$user['id']."'
 					LIMIT 1
 				");
 
@@ -427,9 +431,11 @@ class auth{
 	        $reps['domain'] = $_SERVER["HTTP_HOST"];
 		}
 
-		email_template( $_POST['email'], 'Password Reminder', $reps );
+		email_template($email, 'Password Reminder', $reps);
 
-		redirect($this->forgot_success);
+        if($this->forgot_success){
+		    redirect($this->forgot_success);
+        }
 	}
 
 	function login() //invoked by $_POST['login']

@@ -110,8 +110,8 @@ class blog{
 			if( !$_POST['email'] ){
 				$errors[]='email';
 			}
-			if( 
-			    !$_POST['comment'] or 
+			if(
+			    !$_POST['comment'] or
 			    strip_tags($_POST['comment'])!==$_POST['comment'] or
 			    strstr($_POST['comment'], '[/url]')
 			){
@@ -389,7 +389,7 @@ function blog_save_handler()
 
 		foreach( $valid_users as $user ){
 			$reps=array();
-			$reps['link']='http://'.$_SERVER['HTTP_HOST'].'/blog/'.$_POST['page_name'];
+			$reps['link']='http://'.$_SERVER['HTTP_HOST'].'/blog/'.str_to_pagename($_POST['page_name']);
 			$reps['unsubscribe_link']='http://'.$_SERVER['HTTP_HOST'].'/newsletter-unsubscribe?email='.$user['email'];
 
 			email_template( $user['email'],'New Blog Entry', $reps );

@@ -482,9 +482,9 @@ function initForms()
 
                 theme_advanced_styles: 'Link to Image=lightbox',
 
-                extended_valid_elements: 'span[itemprop|itemtype|itemscope|class]',
+                extended_valid_elements: 'span[itemprop|itemtype|itemscope|class|style]',
 
-                //valid_elements : "a[href|target=_blank],strong/b,div,br,table,tr,th,td,img,span[itemprop|itemtype|itemscope|class],i[class],hr,iframe[width|height|src|frameborder|allowfullscreen],ul[id],li",
+                //valid_elements : "a[href|target=_blank],strong/b,div,br,table,tr,th,td,img,span[itemprop|itemtype|itemscope|class|style],i[class],hr,iframe[width|height|src|frameborder|allowfullscreen],ul[id],li",
 
                 valid_elements: "*[*]",
 

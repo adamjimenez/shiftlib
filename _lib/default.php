@@ -85,29 +85,6 @@ function parse_request(){
     	$request=(substr($request,1));
     }
 
-    //ssl
-    if( !$_SERVER['HTTPS'] and ($tpl_config['ssl'] or in_array($request,$tpl_config['secure'])) ){
-    	if( substr($request,-5)=='index' ){
-    		$request=substr($request,0,-5);
-    	}
-
-    	if( $_SERVER['QUERY_STRING'] ){
-    		$request.='?'.$_SERVER['QUERY_STRING'];
-    	}
-
-    	redirect('https://'.$_SERVER['HTTP_HOST'].'/'.$request);
-    }elseif( $_SERVER['HTTPS'] and (!$tpl_config['ssl'] and !in_array($request,$tpl_config['secure'])) ){
-    	if( substr($request,-5)=='index' ){
-    		$request=substr($request,0,-5);
-    	}
-
-    	if( $_SERVER['QUERY_STRING'] ){
-    		$request.='?'.$_SERVER['QUERY_STRING'];
-    	}
-
-    	redirect('http://'.$_SERVER['HTTP_HOST'].'/'.$request);
-    }
-
     return $request;
 }
 
@@ -168,10 +145,34 @@ function get_include( $request ){
     return $include_file;
 }
 
-require(dirname(__FILE__).'/base.php');
-
+//comes before base.php so that custom.php can use request variable
 if(!$request){
 	$request = parse_request();
+}
+
+require(dirname(__FILE__).'/base.php');
+
+//ssl - must come after base.php
+if( !$_SERVER['HTTPS'] and ($tpl_config['ssl'] or in_array($request,$tpl_config['secure'])) ){
+	if( substr($request,-5)=='index' ){
+		$request=substr($request,0,-5);
+	}
+
+	if( $_SERVER['QUERY_STRING'] ){
+		$request.='?'.$_SERVER['QUERY_STRING'];
+	}
+
+	redirect('https://'.$_SERVER['HTTP_HOST'].'/'.$request);
+}elseif( $_SERVER['HTTPS'] and (!$tpl_config['ssl'] and !in_array($request,$tpl_config['secure'])) ){
+	if( substr($request,-5)=='index' ){
+		$request=substr($request,0,-5);
+	}
+
+	if( $_SERVER['QUERY_STRING'] ){
+		$request.='?'.$_SERVER['QUERY_STRING'];
+	}
+
+	redirect('http://'.$_SERVER['HTTP_HOST'].'/'.$request);
 }
 
 $time_start = microtime(true);

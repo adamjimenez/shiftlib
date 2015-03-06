@@ -137,7 +137,7 @@ if( $_POST['action']=='email' ){
 			    }else{
 			    	$data.='"'.str_replace('"', '""', $v).'",';
 			    }
-			    
+
 				$j++;
 			}
 			$data=substr($data,0,-1);
@@ -355,22 +355,8 @@ jQuery(document).ready(function() {
 			}elseif( $type == 'checkboxes' ){
 				$value=array();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
-					$rows=sql_query("SELECT T1.value FROM cms_multiple_select T1
-						INNER JOIN `".escape(underscored($vars['options'][$name]))."` T2 ON T1.value=T2.$field_id
-						WHERE
-							section='".$this->section."' AND
-							field='".escape($name)."' AND
-							item='".$id."'
-					");
-
 					$vars['options'][$name]=get_options(underscored($vars['options'][$name]),underscored(key($vars['fields'][$vars['options'][$name]])));
 				}else{
-					$rows=sql_query("SELECT value FROM cms_multiple_select
-						WHERE
-							section='".$this->section."' AND
-							field='".escape($name)."' AND
-							item='".$id."'
-					");
 				}
 			?>
 			<tr>
@@ -378,6 +364,7 @@ jQuery(document).ready(function() {
 				<td>
                     <div style="max-height: 200px; width: 200px; overflow: scroll">
     				<?
+    				$is_assoc = is_assoc_array($vars['options'][$name]);
                     foreach( $vars['options'][$name] as  $k=>$v ){
                         $val = $is_assoc ? $k : $v;
                     ?>
