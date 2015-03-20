@@ -823,7 +823,7 @@ class cms{
 
 		$rows = sql_query("SELECT id,`$label` FROM `".underscored($section)."`
 			WHERE
-				$parent_field='$parent'
+				`".underscored($parent_field)."` = '$parent'
 			ORDER BY `$label`
 		");
 

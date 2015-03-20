@@ -363,7 +363,7 @@ foreach( $languages as $language ){
 
 			$field=key($vars['fields'][$this->section]);
 
-			$row=sql_query("SELECT id,`$field` FROM `".$this->table."` WHERE id='".escape($value)."' ORDER BY `$label`");
+			$row=sql_query("SELECT id,`$field` FROM `".$this->table."` WHERE id='".escape($value)."' ORDER BY `".underscored($label)."`");
 
 			$value='<a href="?option='.escape($this->section).'&view=true&id='.$value.'">'.($row[0][$field]).'</a>';
 
