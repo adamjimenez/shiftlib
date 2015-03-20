@@ -379,10 +379,10 @@ function initForms()
 		ratingCss.attr({
 			rel:  "stylesheet",
 			type: "text/css",
-			href: "http://www.radioactivethinking.com/rateit/src/rateit.css"
+			href: "/_lib/js/rateit/rateit.css"
 		});
 
-		jQuery.getScript("http://www.radioactivethinking.com/rateit/src/jquery.rateit.js").done(function(){
+		jQuery.getScript("/_lib/js/rateit/jquery.rateit.js").done(function(){
             $("select.rating").each(function(index) {
                 var field = $(this);
                 field.hide();
@@ -392,21 +392,21 @@ function initForms()
 
 				var cls = field.attr('class');
 
+				var readonly = $(this).attr('disabled');
+
                 field.after('<div class="'+cls+'"></div>').next().rateit({
                     backingfld: field.attr('id'),
-                    resetable: true,
+                    resetable: false,
                     ispreset: true,
                     step: 1,
                     value: field.val(),
-                    readonly: field.prop('disabled'),
                     starwidth: starwidth,
-                    starheight: starheight
+                    starheight: starheight,
+                    readonly: readonly
                 }).bind('rated', function (event, value) {
                     var field = $(this).prev();
-                    field.val(value);
 
-					/* TODO: restore for avg-rating
-                    if( field.attr('data-section') && field.attr('data-item') ){
+                    if( field.attr('data-section') ){
                         jQuery.ajax('/_lib/cms/_ajax/rating.php', {
                             dataType: 'json',
                 			type: 'post',
@@ -418,10 +418,6 @@ function initForms()
                 			}
                         });
                     }
-                    */
-                }).bind('reset', function (event, value) {
-                    var field = $(this).prev();
-                    field.val('');
                 });
             });
 		});

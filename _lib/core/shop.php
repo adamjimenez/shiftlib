@@ -925,7 +925,7 @@ class shop{
 		// check if invoice has been paid
 		$order = sql_query("SELECT * FROM orders WHERE id='".escape($oid)."'", 1);
 
-		if( $order['status']=='pending' ){
+		if( $order['status']!='paid' ){
 			//order status
 			sql_query("UPDATE orders SET status='paid' WHERE id='".$order['id']."' LIMIT 1");
 			sql_query("UPDATE orders SET txn_id='".escape($ref)."' WHERE id='".$order['id']."' LIMIT 1");

@@ -317,8 +317,10 @@ function current_tab( $tab, $class )
 
 	$index = 0;
 
-	if( $sections[$index]==$tab or $tab == $request ){
+	if( $sections[$index] == $tab or $tab == $request ){
 		echo ' class="current active '.$class.'"';
+	}else if($class){
+		echo ' class="'.$class.'"';
 	}
 }
 
