@@ -33,6 +33,10 @@ function __autoload($class) {
             require(dirname(__FILE__).'/modules/sms/txtlocal.php');
             return;
         break;
+        case 'Hybrid_Auth':
+            require(dirname(__FILE__).'/modules/hybridauth/Hybrid/Auth.php');
+            return;
+        break;
     }
 
     //bit hacky

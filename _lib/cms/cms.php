@@ -16,6 +16,16 @@ function send_password_information()
 	$_SESSION['message'] = 'Password details sent';
 }
 
+function send_email_preview(){
+    global $auth, $cms;
+
+    $content = $cms->get('email templates', $_GET['id']);
+
+    email_template($auth->user['email'], $content['id'], $auth->user);
+
+    $_SESSION['message'] = 'Preview sent';
+}
+
 class cms{
 	function cms()
 	{
@@ -62,6 +72,13 @@ class cms{
 			'page'=>'view',
 			'label'=>'Send Password Information',
 			'handler'=>'send_password_information'
+		);
+
+		$cms_buttons[] = array(
+			'section'=>'email templates',
+			'page'=>'view',
+			'label'=>'Send Preview',
+			'handler'=>'send_email_preview'
 		);
 
 		if( !$vars['fields']['email templates'] ){
@@ -278,6 +295,10 @@ class cms{
 						case 'date':
 						case 'datetime':
 						case 'timestamp':
+						    if(!$conditions['func'][$field_name]){
+						        $conditions['func'][$field_name] = '=';
+						    }
+
 							if( $conditions['func'][$field_name] == 'month' ){
 								$where[] = "date_format(".$field_name.", '%m%Y') = '".escape($value)."'";
 							}elseif( $conditions['func'][$field_name] ){
@@ -931,6 +952,11 @@ class cms{
 		<?php
 			break;
 			case 'password':
+			    global $auth;
+
+			    if($auth->hash_password){
+			        $value = '';
+			    }
 		?>
 			<input type="password" name="<?=$field_name;?>" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
 		<?php
@@ -1613,7 +1639,7 @@ class cms{
 
 	function submit($notify, $errors = array()){
 		global $vars;
-        $errors = array_merge($errors, $this->validate());
+        $errors = array_unique(array_merge($errors, $this->validate()));
 
         //handle validation
         if( count($errors) ){
@@ -1725,6 +1751,10 @@ class cms{
 						continue;
 					}
 
+					if($v=='password' and $this->id){
+					    continue;
+					}
+
 					$errors[] = $name;
 					continue;
 				}
@@ -1827,9 +1857,15 @@ class cms{
 					$name = $this->language.'_'.$k;
 				}
 
-				//leave passwords blank to keep
-				if( $v=='password' and $data[$name]=='' ){
-					continue;
+				if( $v=='password' ){
+				    //leave passwords blank to keep
+				    if($data[$name]==''){
+					    continue;
+				    }
+
+            		if( $auth->hash_password ){
+            			$data[$name] = $auth->create_hash($data[$name]);
+            		}
 				}
 
 				//protected vars
@@ -1960,7 +1996,7 @@ class cms{
 						//clean up
 						$row = sql_query("SELECT `$name` FROM `".$this->table."`", 1);
 
-						$old_files = explode("\n",$row[$name]);
+						$old_files = explode("\n", $row[$name]);
 
 						foreach( $old_files as $old_file ){
 							if( in_array($old_file,$files) ){
@@ -1996,15 +2032,19 @@ class cms{
 				}elseif( $v=='page-name' ){
 					$data[$name] = str_to_pagename($data[$name]);
 				}elseif( $v=='coords' ){
-					$this->query.="`$k`=GeomFromText('POINT(".$data[$name].")'),\n";
+					$this->query.="`$k`=GeomFromText('POINT(".escape($data[$name]).")'),\n";
 					continue;
+				}elseif( $v=='text' ){
+				    $data[$name] = strip_tags($data[$name]);
+				}elseif( $v=='textarea' and !$auth->user['admin'] ){
+				    $data[$name] = strip_tags($data[$name]);
 				}
 
 				if( is_array($data[$name]) ){
-					$data[$name] = implode("\n",$data[$name]);
+					$data[$name] = implode("\n", strip_tags($data[$name]));
 				}
 
-				if( (!isset($data[$name]) or $data[$name]==='') and in_array($k,$null_fields) ){
+				if( (!isset($data[$name]) or $data[$name]==='') and in_array($k, $null_fields) ){
 					$this->query .= "`$k`=NULL,\n";
 				}else{
 					$this->query .= "`$k`='".escape($data[$name])."',\n";
@@ -2160,6 +2200,11 @@ class cms{
 				}
 			}
 		}
+	}
+
+	function backup()
+	{
+		$this->template('backup.php',true);
 	}
 
 	function choose_filter()

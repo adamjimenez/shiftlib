@@ -459,6 +459,9 @@ $auth_config["generate_password"]='.str_to_bool($_POST['auth_config']['generate_
 //hash passwords
 $auth_config["hash_password"]='.str_to_bool($_POST['auth_config']['hash_password']).';
 
+//activation_required
+$auth_config["activation_required"]='.str_to_bool($_POST['auth_config']['activation_required']).';
+
 //auto login on register
 $auth_config["register_login"]='.str_to_bool($_POST['auth_config']['register_login']).';
 
@@ -1157,8 +1160,8 @@ var section_templates=<?=json_encode($section_templates);?>;
 
         <?
         $source='
-        <?
-        $'.underscored($section).'=$cms->get(\''.$section.'\'';
+        <?php
+        $content = $cms->get(\''.$section.'\'';
 
         if( in_array('id',$fields) ){
         	$source.=',$_GET[\'id\'],1';
@@ -1168,14 +1171,14 @@ var section_templates=<?=json_encode($section_templates);?>;
         ';
 
         if( in_array('id',$fields) ){
-        	$source.='$'.underscored($section).'_items=$cms->get(\''.$section.'\');'."\n";
+        	$source.='$items = $cms->get(\''.$section.'\');'."\n";
         }
         $source.= '
         ?>
         ';
 
         if( in_array('id',$fields) ){
-        	$source.='<div id="menu" style="float:left; width:100px;">';
+        	$source.='<div>';
         $source.='
         <? foreach( $'.underscored($section).'_items as $v ){ ?>
         	<a href="?id=<?=$v[\'id\'];?>"><?=$v[\'heading\'];?></a><br>
@@ -1184,7 +1187,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         ';
         }
 
-        $source.='<div id="content" style="float:left;">
+        $source.='<div>
         ';
         foreach( $fields as $k=>$v ){
         	$source.="\t".$k.': <?=$'.underscored($section).'[\''.$k.'\'];?><br>'."\n";
@@ -1437,6 +1440,10 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>hash passwords</th>
         			<td><input type="checkbox" name="auth_config[hash_password]" value="1" <? if( $auth_config['hash_password'] ){ ?> checked<? } ?>></td>
+        		</tr>
+        		<tr>
+        			<th>activation required</th>
+        			<td><input type="checkbox" name="auth_config[activation_required]" value="1" <? if( $auth_config['activation_required'] ){ ?> checked<? } ?>></td>
         		</tr>
         		<tr>
         			<th>register login</th>

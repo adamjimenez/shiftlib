@@ -139,6 +139,10 @@ class auth{
 			$this->update_details();
 		}
 
+		if( $_GET['u'] ){
+			$_SESSION['request']=$_GET['u'];
+		}
+
 		global $request;
 
 		if(
@@ -274,7 +278,7 @@ class auth{
 
 		$cms->set_section($this->table);
 
-		$errors=$cms->validate();
+		$errors = $cms->validate();
 
 		if( $errors ){
             print json_encode($errors);
@@ -285,40 +289,55 @@ class auth{
 		}
 
 		if( $this->generate_password ){
-			$_POST['password']=generate_password();
+			$_POST['password'] = generate_password();
 		}
 
 		if( $this->hash_password ){
-			$_POST['password']=$this->create_hash($_POST['password']);
+			$_POST['password'] = $this->create_hash($_POST['password']);
 		}
 
-		$id=$cms->save();
+		$id = $cms->save();
 
 		$reps = $_POST;
+
+		if( $this->activation_required ){
+			//activation code
+			$code = substr(md5(rand(0,10000)), 0, 10);
+
+			sql_query("UPDATE ".$this->table." SET
+				code = '".escape($code)."',
+				code_expire = DATE_ADD(CURDATE(), INTERVAL 1 HOUR)
+				WHERE
+					id='".$id."'
+				LIMIT 1
+			");
+
+			$reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/activate?u='.$id.'&code='.$code;
+		}
+
         $reps['domain'] = $_SERVER["HTTP_HOST"];
 
-		email_template( $_POST['email'],'Registration Confirmation',$reps );
+		email_template( $_POST['email'], 'Registration Confirmation',$reps );
 
 		if( $this->registration_notification ){
 			global $from_email;
 
-			$headers="From: ".$from_email."\n";
+			$headers = "From: ".$from_email."\n";
 
-			$msg='New user registration:
+			$msg = 'New user registration:
 			http://'.$_SERVER['HTTP_HOST'].'/admin?option=users&view=true&id='.$id;
 
-			$msg=str_replace("\t",'',$msg);
+			$msg = str_replace("\t", '', $msg);
 
-			mail($from_email,'New user registration',$msg,$headers);
+			mail($from_email, 'New user registration', $msg, $headers);
 		}
 
 		if( $this->register_login ){
-			$_SESSION[$this->cookie_prefix.'_email']=$_POST['email'];
-			$_SESSION[$this->cookie_prefix.'_password']=$_POST['password'];
+			$_SESSION[$this->cookie_prefix.'_email'] = $_POST['email'];
+			$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
 		}
 
-		header("location:".$this->register_success);
-		exit;
+		redirect($this->register_success);
 	}
 
 	function update_details()
@@ -699,6 +718,11 @@ class auth{
 
 	function check_login()
 	{
+		if($this->activation_required and $this->user and !$this->user['active']){
+			$_SESSION['request'] = $_SERVER['REQUEST_URI'];
+			redirect('/activate');
+		}
+
 		if( !$this->user ){
 			$_SESSION['request'] = $_SERVER['REQUEST_URI'];
 			redirect($this->login);

@@ -424,7 +424,7 @@ function initForms()
 	}
 
 	//tinymce4
-    var tinymce_url = '//tinymce.cachefly.net/4.1/';
+    var tinymce_url = '//tinymce.cachefly.net/4.2/';
 	if( jQuery('textarea.tinymce').length ){
         jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
             $('textarea.tinymce').tinymce({
@@ -432,7 +432,7 @@ function initForms()
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
                     "searchreplace visualblocks code fullscreen",
-                    "insertdatetime media table contextmenu paste textcolor"
+                    "insertdatetime media table contextmenu paste textcolor colorpicker"
                 ],
                 toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
@@ -461,7 +461,7 @@ function initForms()
     			external_image_list_url : "/_lib/js/tinymce.lists/images.php",
     			media_external_list_url : "lists/media_list.js",
 
-                file_browser_callback :  function(field_name, url, type, win) {
+                file_picker_callback  :  function(callback, value, meta) {
                     tinymce.activeEditor.windowManager.open({
                         title: "File browser",
                         url: "/_lib/modules/phpupload/?field=field_name&file=url",
@@ -469,9 +469,10 @@ function initForms()
                         height: 600
                     }, {
                         oninsert: function(url) {
-                            win.document.getElementById(field_name).value = url;
+                            callback(url, {text: url});
                         }
                     });
+
                 },
         		accessibility_warnings: false,
                 popup_css: false,

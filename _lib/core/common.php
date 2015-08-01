@@ -89,15 +89,17 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			switch( $info['mime'] ){
 				case 'image/jpeg':
 					$img = imagecreatefromjpeg($image_path);
+					$ext = 'jpg';
 				break;
 				case 'image/png':
 					$img = imagecreatefrompng($image_path);
+					$ext = 'png';
+					//imagealphablending($img, true);
+                    imagesavealpha($img, true);
 				break;
 				case 'image/gif':
 					$img = imagecreatefromgif($image_path);
-				break;
-				case 'image/png':
-					$img = imagecreatefrompng($image_path);
+					$ext = 'gif';
 				break;
 				default:
 					return false;
@@ -692,9 +694,8 @@ function format_postcode($postcode)
 	}
 }
 
-function generate_password()
+function generate_password($length=8)
 {
-	$length=8;
 	$password = "";
 
 	// define possible characters
@@ -703,13 +704,8 @@ function generate_password()
 	$i = 0;
 	while ($i < $length) {
 		// pick a random character from the possible ones
-		$char = substr($possible, mt_rand(0, strlen($possible)-1), 1);
-
-		// we don't want this character if it's already in the password
-		if (!strstr($password, $char)) {
-		  $password .= $char;
-		  $i++;
-		}
+		$password .= substr($possible, mt_rand(0, strlen($possible)-1), 1);
+        $i++;
 	}
 
 	return $password;
@@ -915,23 +911,13 @@ function is_assoc_array($var)
 }
 
 function is_domain($domain){
-	$whois_exts = array('com', 'co.uk', 'uk', 'net', 'org', 'org.uk', 'tv');
-
-	$d = explode('.', $domain);
-	if($d[2]) {
-	    $ext = $d[1].'.'.$d[2];
-	}else{
-	    $ext = $d[1];
-	}
-	$domainname = $d[0];
-
-	preg_match('`([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}`', $domainname.'.'.$ext, $match);
-
-	if( $match[0]==$domain ){
-		return in_array($ext, $whois_exts);
-	}else{
+	if( !$domain ){
 		return false;
 	}
+
+	preg_match_all("^((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^", $domain, $matches);
+
+	return $matches[0][0] == $domain;
 }
 
 function is_email($email)
@@ -1365,6 +1351,9 @@ function str_to_pagename($page_name){
     //replace spaces with dashes
     $page_name = preg_replace("/\s+/", '-', $page_name);
 
+    //trailing .
+    $page_name = rtrim($page_name, '.');
+
     return $page_name;
 }
 
@@ -1570,7 +1559,7 @@ function video_info($url) {
 	    $data['id'] = (isset($matches[1])) ? $matches[1] : false;
 	    $data['thumb'] = 'https://i.ytimg.com/vi/'.$data['id'].'/hqdefault.jpg';
 	    $data['type'] = 'application/x-shockwave-flash';
-	    $data['url'] = 'http://www.youtube.com/v/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
+	    $data['url'] = 'https://www.youtube.com/v/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
 	}else{
 		return array(
 		    'url' => $url,

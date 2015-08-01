@@ -274,7 +274,7 @@ class paging {
 		$query=http_build_query($qs);
 
 		if( !$label ){
-			$label=$col;
+			$label = ucfirst(spaced($col));
 		}
 
 		$hash=md5($col.$this->hash_secret);

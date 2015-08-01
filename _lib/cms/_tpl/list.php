@@ -124,7 +124,7 @@ foreach( $vars['content'] as $v){
 			    foreach( $v[underscored($k)] as $val ){
 			        $value .= current($val)."<br>\n";
 			    }
-			    
+
 			    /*
 				if( !is_array($vars['options'][$k]) and $vars['options'][$k] ){
 					$join_id=array_search('id',$vars['fields'][$vars['options'][$k]]);
@@ -289,7 +289,7 @@ foreach( $vars['content'] as $v){
 
 	<? if( $parent_field ){ ?>
 		<td valign="top">
-			<a href="?option=<?=$_GET['option'];?>&parent=<?=$v['id'];?>">Children</a>
+			<a href="?option=<?=$_GET['option'];?>&<?=underscored($parent_field);?>=<?=$v['id'];?>">Children</a>
 		</td>
 	<? } ?>
 </tr>

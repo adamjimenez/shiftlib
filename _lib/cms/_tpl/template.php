@@ -156,6 +156,10 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 						<? if( $auth->user['admin']==1 ){ ?>
 						<li <? if($_GET['option']=='configure'){ ?>id="current"<? } ?>><a href="?option=configure">Configure</a></li>
 						<? } ?>
+
+						<? if( $auth->user['admin']==1 ){ ?>
+						<li <? if($_GET['option']=='backup'){ ?>id="current"<? } ?>><a href="?option=backup">Download Database</a></li>
+						<? } ?>
 					</ul>
 					<?
 					}

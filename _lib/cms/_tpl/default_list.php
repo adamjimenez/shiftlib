@@ -182,8 +182,8 @@ if( $_POST['action']=='email' ){
 		$parent_field=array_search('parent',$vars['fields'][$this->section]);
 	}
 
-	if( $parent_field and !$conditions['parent'] ){
-		$conditions['parent']=0;
+	if( $parent_field and !$conditions[underscored($parent_field)] ){
+		$conditions[underscored($parent_field)]=0;
 	}
 
 	foreach( $auth->user['filters'][$this->section] as $k=>$v ){
@@ -225,21 +225,21 @@ jQuery(document).ready(function() {
 		<h3>
 			<a href="?option=<?=$this->section;?>">Root</a>
 			<?
-			if($_GET['parent']){
-				$parent_id=$_GET['parent'];
+			if($_GET[$parent_field]){
+				$parent_id = $_GET[$parent_field];
 
 				reset($vars['fields'][$this->section]);
 				$label=key($vars['fields'][$this->section]);
 
 				$parents=array();
-				while( $parent['parent']!=='0' ){
-					$parent = sql_query("SELECT * FROM `".underscored($this->section)."` WHERE $field_id='".escape($parent_id)."'");
+				while( $parent[$parent_field]!=='0' ){
+					$parent = sql_query("SELECT * FROM `".underscored($this->section)."` WHERE $field_id='".escape($parent_id)."'", 1);
 
 					if( !$parent){
 						break;
 					}
 
-					$parent_id=$parent['parent'];
+					$parent_id = $parent[$parent_field];
 
 					$parents[$parent['id']]=$parent[$label];
 

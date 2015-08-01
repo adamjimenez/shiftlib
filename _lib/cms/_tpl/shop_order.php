@@ -73,7 +73,7 @@ if( !$order ){
     		<strong>Mobile:</strong>
     		<?=$order['mobile'];?><br><br>
     		<strong>Comments:</strong>
-    		<?=$order['mobile'];?><br><br>
+    		<?=$order['comments'];?><br><br>
     		<strong>Details:</strong><br>
     		<?=nl2br(htmlentities($details));?><br>
     		<strong>Delivery:</strong>

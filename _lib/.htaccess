@@ -1,7 +1,7 @@
 <IfModule pagespeed_module>
     ModPagespeed off
 
-    # using commands,fileters etc
+    # using commands,filters etc
     ModPagespeedEnableFilters rewrite_javascript
     ModPagespeedEnableFilters rewrite_css
     ModPagespeedEnableFilters extend_cache,combine_css
@@ -13,3 +13,24 @@ RewriteEngine off
 <IfModule mod_php5.c>
 php_value max_input_vars 2000
 </IfModule>
+
+ExpiresActive on
+
+# Add correct content-type for fonts
+AddType application/vnd.ms-fontobject .eot
+AddType application/x-font-ttf .ttf
+AddType application/x-font-opentype .otf
+AddType application/x-font-woff .woff
+AddType image/svg+xml .svg
+
+# Compress compressible fonts
+AddOutputFilterByType DEFLATE application/x-font-ttf application/x-font-opentype image/svg+xml
+
+ExpiresActive on
+
+# Add a far future Expires header for fonts
+ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+ExpiresByType application/x-font-ttf "access plus 1 year"
+ExpiresByType application/x-font-opentype "access plus 1 year"
+ExpiresByType application/x-font-woff "access plus 1 year"
+ExpiresByType image/svg+xml "access plus 1 year"

@@ -317,7 +317,7 @@ function blog_save_handler()
 	check_table($table_tags, $fields);
 
 	//update tag cloud
-	$blogs=sql_query("SELECT tags FROM blog");
+	$blogs=sql_query("SELECT tags FROM blog WHERE display=1");
 
 	foreach( $blogs as $blog ){
 		$content.=$blog['tags'].',';
