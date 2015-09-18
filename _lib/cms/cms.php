@@ -1637,9 +1637,14 @@ class cms{
 		$result = $mail->send(array($from_email),'mail');
 	}
 
-	function submit($notify, $errors = array()){
+	function submit($notify, $other_errors = array()){
 		global $vars;
-        $errors = array_unique(array_merge($errors, $this->validate()));
+
+        $errors = $this->validate();
+
+		if(is_array($other_errors)){
+		    $errors = array_unique(array_merge($errors, $other_errors));
+		}
 
         //handle validation
         if( count($errors) ){

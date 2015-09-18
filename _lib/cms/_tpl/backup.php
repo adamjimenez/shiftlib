@@ -1,4 +1,6 @@
 <?
+ini_set('memory_limit','512M');
+
 /* backup the db OR just a table */
 function backup_tables($tables = '*')
 {

@@ -52,6 +52,19 @@ $vars["fields"]["users"]=array(
 	"admin"=>"select",
 	"id"=>"id",
 );
+
+
+// sections in menu
+$vars["sections"]=array(
+	"users",
+);
+
+#OPTIONS
+$opts["admin"]=array(
+	"1"=>"admin",
+	"2"=>"staff",
+	"3"=>"guest",
+);
 ?>';
 
         file_put_contents('_inc/config.php', $content);

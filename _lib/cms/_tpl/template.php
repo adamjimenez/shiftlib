@@ -110,7 +110,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 			<tr>
 				<td valign="top" width="120" id="menu">
 					<?
-					if( is_array($vars['sections']) and $auth->user['admin'] ){
+					if( $auth->user['admin'] ){
 					?>
 					<ul>
 						<?
