@@ -285,11 +285,6 @@ if( $_POST['save'] ){
 		die('Error: config file is not writable: '.$config_file);
 	}
 
-	//check variable limit
-
-
-	exit;
-
 	/*
 	if( $_POST['live_site'] or !$_POST['db_config']['dev_host'] ){
 		$result = mysql_connect($_POST['db_config']['host'],$_POST['db_config']['user'],$_POST['db_config']['pass']);
