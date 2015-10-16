@@ -3,6 +3,8 @@ if( $auth->user['admin']!=1 ){
     die('access denied');
 }
 
+$max_input_vars = ini_get('max_input_vars');
+
 global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $mailer_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields, $admin_config, $cms_config;
 
 $cms_multiple_select_fields=array(
@@ -283,6 +285,11 @@ if( $_POST['save'] ){
 		die('Error: config file is not writable: '.$config_file);
 	}
 
+	//check variable limit
+
+
+	exit;
+
 	/*
 	if( $_POST['live_site'] or !$_POST['db_config']['dev_host'] ){
 		$result = mysql_connect($_POST['db_config']['host'],$_POST['db_config']['user'],$_POST['db_config']['pass']);
@@ -528,8 +535,6 @@ $vars["sections"]=array(
 foreach( $_POST['sections'] as $section_id=>$section ){
 	$fields='';
 	$required='';
-	$protected='';
-	$non_searchable='';
 	$labels='';
 	$subsections='';
 
@@ -552,14 +557,6 @@ foreach( $_POST['sections'] as $section_id=>$section ){
 					$required.='"'.$v['name'].'",';
 				}
 
-				if( $_POST['vars']['protected'][$k] ){
-					$protected.='"'.$v['name'].'",';
-				}
-
-				if( $_POST['vars']['non_searchable'][$k] ){
-					$non_searchable.='"'.$v['name'].'",';
-				}
-
 				if( $_POST['vars']['labels'][$k] ){
 					$labels.='"'.$v['name'].'",';
 				}
@@ -572,14 +569,6 @@ foreach( $_POST['sections'] as $section_id=>$section ){
 
 		if( $_POST['vars']['required'][$field_id] ){
 			$required.='"'.$field['name'].'",';
-		}
-
-		if( $_POST['vars']['protected'][$field_id] ){
-			$protected.='"'.$field['name'].'",';
-		}
-
-		if( $_POST['vars']['non_searchable'][$field_id] ){
-			$non_searchable.='"'.$field['name'].'",';
 		}
 
 		if( $_POST['vars']['labels'][$field_id] ){
@@ -597,10 +586,6 @@ $vars["fields"]["'.$section.'"]=array(
 );
 
 $vars["required"]["'.$section.'"]=array('.$required.');
-
-$vars["protected"]["'.$section.'"]=array('.$protected.');
-
-$vars["non_searchable"]["'.$section.'"]=array('.$non_searchable.');
 
 $vars["labels"]["'.$section.'"]=array('.$labels.');
 
@@ -837,8 +822,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 				<th>Type</th>
 				<th>Label</th>
 				<th>Required</th>
-				<th>Protected</th>
-				<th>Non-searchable</th>
 				<th>&nbsp;</th>
 			</tr>
 			<tr>
@@ -893,8 +876,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 	</td>
 	<td><input type="checkbox" name="vars[labels][{$count}]" value="1"></td>
 	<td><input type="checkbox" name="vars[required][{$count}]" value="1"></td>
-	<td><input type="checkbox" name="vars[protected][{$count}]" value="1"></td>
-	<td><input type="checkbox" name="vars[non_searchable][{$count}]" value="1"></td>
 	<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
 </tr>
 </table>
@@ -970,8 +951,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         					<th>Type</th>
         					<th>Label</th>
         					<th>Required</th>
-        					<th>Protected</th>
-        					<th>Non-searchable</th>
         					<th>&nbsp;</th>
         				</tr>
         				<?
@@ -994,8 +973,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         					</td>
         					<td><input type="checkbox" name="vars[labels][<?=$count['fields'];?>]" value="1" <? if( in_array($k,$vars['labels'][$section]) ){ ?> checked<? } ?>></td>
         					<td><input type="checkbox" name="vars[required][<?=$count['fields'];?>]" value="1" <? if( in_array($k,$vars['required'][$section]) ){ ?> checked<? } ?>></td>
-        					<td><input type="checkbox" name="vars[protected][<?=$count['fields'];?>]" value="1" <? if( in_array($k,$vars['protected'][$section]) ){ ?> checked<? } ?>></td>
-        					<td><input type="checkbox" name="vars[non_searchable][<?=$count['fields'];?>]" value="1" <? if( in_array($k,$vars['non_searchable'][$section]) ){ ?> checked<? } ?>></td>
         					<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         				</tr>
         				<?
@@ -1019,8 +996,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         							</td>
         							<td><input type="checkbox" name="vars[labels][<?=$count['fields'];?>]" value="1" <? if( in_array($k2,$vars['labels'][$section]) ){ ?> checked<? } ?>></td>
         							<td><input type="checkbox" name="vars[required][<?=$count['fields'];?>]" value="1" <? if( in_array($k2,$vars['required'][$section]) ){ ?> checked<? } ?>></td>
-        							<td><input type="checkbox" name="vars[protected][<?=$count['fields'];?>]" value="1" <? if( in_array($k2,$vars['protected'][$section]) ){ ?> checked<? } ?>></td>
-        							<td><input type="checkbox" name="vars[non_searchable][<?=$count['fields'];?>]" value="1" <? if( in_array($k2,$vars['non_searchable'][$section]) ){ ?> checked<? } ?>></td>
         							<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         						</tr>
         						<?
@@ -1542,4 +1517,18 @@ var section_templates=<?=json_encode($section_templates);?>;
 
 <script type="text/ecmascript">
 var count=<?=json_encode($count);?>
+</script>
+
+<script src="/_lib/js/jquery.maxsubmit.js"></script>
+<script type="text/javascript">
+    /* Plugin: Max Submit Protect */
+    jQuery(document).ready(function($) {
+        $('form[method*=post]').maxSubmit({
+            max_count: <?=$max_input_vars;?>,
+            confirm_display: function(){
+                alert('Save aborted: This form has too many fields for the server to accept.');
+                return false;
+            }
+        });
+    })
 </script>

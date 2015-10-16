@@ -1604,7 +1604,7 @@ class cms{
 		}
 	}
 
-	function notify($subject){
+	function notify($subject, $to){
 		global $vars, $from_email;
 
 		if(!$subject or is_numeric($subject)){
@@ -1634,7 +1634,12 @@ class cms{
 		$mail->setHtml($msg);
 		$mail->setFrom('auto@'.$_SERVER["HTTP_HOST"]);
 		$mail->setSubject($subject);
-		$result = $mail->send(array($from_email),'mail');
+
+		if(!is_string($to)){
+		    $to = $from_email;
+		}
+
+		$result = $mail->send(array($to), 'mail');
 	}
 
 	function submit($notify, $other_errors = array()){
@@ -1657,7 +1662,7 @@ class cms{
             $this->id = $this->save();
 
     		if( $notify ){
-    			$this->notify();
+    			$this->notify(null, $notify);
     		}
 
     		return $this->id;
