@@ -281,6 +281,10 @@ function loop_fields($field_arr) // should be anonymous function
 }
 
 if( $_POST['save'] ){
+    if(!$_POST['last']) {
+        die('Error: form submission incomplete');
+    }
+
 	if( !is_writable($config_file) ){
 		die('Error: config file is not writable: '.$config_file);
 	}
@@ -1503,11 +1507,11 @@ var section_templates=<?=json_encode($section_templates);?>;
 <br>
     <p>
 		<button type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
-		<button type="button" onclick="location.href='?option=configure'">Cancel</button>
 	</p>
 </div>
 <br>
 
+<input type="hidden" name="last" value="1">
 </form>
 
 <script type="text/ecmascript">

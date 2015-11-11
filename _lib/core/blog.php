@@ -103,7 +103,7 @@ class blog{
 			}
 		}
 
-		if( $_POST['continue'] and $_POST['nospam']==1 ){
+		if( $_POST['save_blog_comment'] and $_POST['nospam']==1 ){
 			if( !$_POST['name'] ){
 				$errors[]='name';
 			}

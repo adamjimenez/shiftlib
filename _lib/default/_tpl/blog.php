@@ -169,7 +169,7 @@ $blog = new blog(
 	<br>
 
 	<form method="post" id="blog-form" class="validate" errorMethod="alert">
-		<input type="hidden" name="continue" value="1">
+		<input type="hidden" name="save_blog_comment" value="1">
 		<input type="hidden" id="nospam" name="nospam" value="0" />
 		<input type="hidden" id="nospam" name="blog" value="<?=$blog->content[0]['id'];?>" />
 		<p>

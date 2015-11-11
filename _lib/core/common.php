@@ -552,7 +552,10 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 			$body.='<pre>'.$var_dump.'</pre>';
 
             global $admin_email;
-			mail($admin_email,'PHP Error '.$_SERVER['HTTP_HOST'], $body, $headers );
+
+            if($admin_email){
+			    mail($admin_email, 'PHP Error '.$_SERVER['HTTP_HOST'], $body, $headers );
+            }
 
 			//error_log($errorstring, 1, $_SERVER['SERVER_ADMIN']);
 			die();

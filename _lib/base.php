@@ -1,6 +1,8 @@
 <?php
 //send errors and notifications to
-$admin_email = 'adam@shiftcreate.com';
+//$admin_email = 'adam@shiftcreate.com';
+
+$admin_email = $_SERVER['SERVER_ADMIN'];
 
 function __autoload($class) {
     switch( $class ){

@@ -488,8 +488,8 @@ function initForms()
                 //invalid_elements: '',
 
                 setup : function(editor) {
-                    editor.addShortcut('Ctrl+219', '', 'indent');
-                    editor.addShortcut('Ctrl+221', '', 'outdent');
+                    editor.addShortcut('Ctrl+219', '', 'outdent');
+                    editor.addShortcut('Ctrl+221', '', 'indent');
 
                     var componentMenu = [];
 

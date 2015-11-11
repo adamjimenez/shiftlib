@@ -64,7 +64,12 @@ function stop(){
 function parse_request(){
     global $tpl_config;
 
-    $script_url = $_SERVER['SCRIPT_URL'] ?: $_SERVER['REDIRECT_URL'];
+    $script_url = $_SERVER['REQUEST_URI'];
+    $pos = strpos($script_url, '?');
+
+    if($pos) {
+        $script_url = substr($script_url, 0, $pos);
+    }
 
     if( substr($script_url,-6)=='/index' ){ //redirect /index to /
         redirect(substr($script_url,0,-5),true);
