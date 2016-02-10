@@ -222,7 +222,11 @@ foreach( $languages as $language ){
 	<table border="0" cellspacing="0" cellpadding="5" width="100%">
 	<?
 	foreach( $vars['fields'][$this->section] as $name=>$type ){
-		$label = ucfirst(str_replace('_', ' ', $name));
+		$label = $vars['label'][$this->section][$name];
+
+		if(!$label) {
+			$label = ucfirst(str_replace('_', ' ', $name));
+		}
 
 		$value = $content[$name];
 		$name = $name;
@@ -268,7 +272,7 @@ foreach( $languages as $language ){
 			}
 		}
 
-		if( (!$value or $value=='0000-00-00' or $value=='00:00:00' or $type=='password') and $type != 'separator' and !is_array($type) ){
+		if( ($value=='' or $value=='0000-00-00' or $value=='00:00:00' or $type=='password') and $type != 'separator' and !is_array($type) ){
 			continue;
 		}
 
@@ -661,7 +665,7 @@ if( is_array($vars['subsections'][$this->section]) ){
     		}
 
     		if( in_array('position', $vars['fields'][$this->section]) ){
-    			$order = 'position';
+    			//$order = 'position';
     			$asc = true;
     			$limit = NULL;
     		}else{
@@ -669,9 +673,9 @@ if( is_array($vars['subsections'][$this->section]) ){
 
     			$type = array_search($label,$vars['fields'][$this->section]);
     			if( ($typw=='select' or $typw=='combo') and !is_array($vars['opts'][$label]) ){
-    				$order='T_'.$label.'.'.underscored(key($vars['fields'][$vars['options'][$label]]));
+    				//$order='T_'.$label.'.'.underscored(key($vars['fields'][$vars['options'][$label]]));
     			}else{
-    				$order="T_$table.".underscored($vars['labels'][$this->section][0]);
+    				//$order="T_$table.".underscored($vars['labels'][$this->section][0]);
     			}
     			$limit=10;
     		}
@@ -691,6 +695,7 @@ if( is_array($vars['subsections'][$this->section]) ){
 
     		$qs = http_build_query($qs);
 
+			$order = null;
     		$vars['content'] = $this->get($subsection, $conditions, $limit, $order, $asc, $table);
     		$p = $this->p;
 	    }

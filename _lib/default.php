@@ -64,7 +64,7 @@ function stop(){
 function parse_request(){
     global $tpl_config;
 
-    $script_url = $_SERVER['REQUEST_URI'];
+    $script_url = rawurldecode($_SERVER['REQUEST_URI']);
     $pos = strpos($script_url, '?');
 
     if($pos) {

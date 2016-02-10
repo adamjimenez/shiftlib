@@ -11,7 +11,9 @@
 RewriteEngine off
 
 <IfModule mod_php5.c>
-php_value max_input_vars 2000
+php_value max_input_vars 5000
+php_value upload_max_filesize 30M
+php_value post_max_size 30M
 </IfModule>
 
 ExpiresActive on

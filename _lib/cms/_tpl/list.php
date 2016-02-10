@@ -83,7 +83,10 @@ foreach( $where as $k=>$v ){
 		}
 	?>
 		<th>
-			<?=($sortable) ? ucfirst($k) : $p->col($order,ucfirst($k));?>
+			<?=(
+				$sortable or
+				( $vars['fields'][$this->section][$k] == 'select-multiple' or $vars['fields'][$this->section][$k]=='checkboxes' )
+			) ? ucfirst($k) : $p->col($order, ucfirst($k));?>
 		</th>
 	<?
 	}
@@ -171,7 +174,7 @@ foreach( $vars['content'] as $v){
 			<?
 			$value=trim($value);
 
-			if( $value ){
+			if( $value!=='' ){
 				if( $vars['fields'][$this->section][$k]=='date' ){
 				?>
 					<? if( $value!='0000-00-00' ){ ?>
@@ -318,3 +321,4 @@ foreach( $vars['content'] as $v){
 	<td width="33%" style="text-align:right;"><?=$p->items_per_page();?>&nbsp;</td>
 </tr>
 </table>
+

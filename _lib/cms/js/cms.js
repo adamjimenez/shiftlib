@@ -303,10 +303,8 @@ function initForms()
 
 	//maps
 	if( jQuery('input.map').length ){
-		var maps = [];
+	    var maps = [];
 		google.load("maps", "3", {other_params: "sensor=false", "callback" : function(){
-			geocoder = new google.maps.Geocoder();
-
 			jQuery.each(jQuery('input.map'), function() {
 				div = document.createElement("div");
 				div.style.width='600px';
@@ -322,30 +320,110 @@ function initForms()
 					coords=[51.8100844,-0.02911359999995966];
 				}
 
-				var lat=coords[0];
-				var lng=coords[1];
+				var lat = coords[0];
+				var lng = coords[1];
 
 				var latlng = new google.maps.LatLng(lat, lng);
 				var myOptions = {
-					zoom: 10,
+					zoom: 7,
 					center: latlng,
 					mapTypeId: google.maps.MapTypeId.ROADMAP
 				};
 				maps[this.name] = new google.maps.Map(div, myOptions);
 
-				maps[this.name].markers=[];
-				maps[this.name].markers.push(new google.maps.Marker({
-					map: maps[this.name],
-					position: latlng,
-					draggable:true
-				}));
+				maps[this.name].markers = [];
+				if( this.value || !$(this).prop('readonly') ){
+					maps[this.name].markers.push(new google.maps.Marker({
+						map: maps[this.name],
+						position: latlng,
+						draggable: true
+					}));
 
-				var field=this;
+					var field = this;
 
-				google.maps.event.addListener(maps[this.name].markers[0], "dragend", function() {
-					var latlng=this.getPosition();
-					field.value=latlng.lat()+' '+latlng.lng();
-				});
+					google.maps.event.addListener(maps[this.name].markers[0], "dragend", function() {
+						var latlng=this.getPosition();
+						field.value=latlng.lat()+' '+latlng.lng();
+					});
+				}
+
+				if ($(this).data('points')) {
+					var infowindow = new google.maps.InfoWindow();
+					var points = $(this).data('points');
+					var name = this.name;
+
+					for (i in points) {
+						var point = points[i];
+
+						lat = point.coords[0];
+						lng = point.coords[1];
+						latlng = new google.maps.LatLng(lat, lng);
+
+						var length = maps[this.name].markers.push(new google.maps.Marker({
+							map: maps[this.name],
+							position: latlng,
+							title: point.title,
+							description: point.description,
+							icon: point.icon,
+							link: point.link
+						}));
+
+						var marker = maps[this.name].markers[length-1];
+
+						google.maps.event.addListener(marker, 'click', (function(marker, i) {
+							return function() {
+								infowindow.setContent('<strong>'+marker.title+'</strong><br>'+marker.description+'<br><a href="'+marker.link+'">read more</a>');
+								infowindow.open(maps[name], marker);
+							};
+						})(marker, i));
+					}
+
+					if ($(this).data('results')) {
+						var map = maps[this.name];
+						var markers = maps[this.name].markers;
+						var resultsEl = $('#'+$(this).data('results'));
+						var current_marker;
+						google.maps.event.addListener( map, 'bounds_changed', function() {
+							resultsEl.children().remove();
+
+							// Read the bounds of the map being displayed.
+							bounds = map.getBounds();
+
+							// Iterate through all of the markers that are displayed on the *entire* map.
+							for ( i = 0, l = markers.length; i < l; i++ ) {
+								current_marker = markers[ i ];
+
+								/* If the current marker is visible within the bounds of the current map,
+								* let's add it as a list item to #nearby-results that's located above
+								* this script.
+								*/
+								if ( bounds.contains( current_marker.getPosition() ) ) {
+
+									/* Only add a list item if it doesn't already exist. This is so that
+									* if the browser is resized or the tablet or phone is rotated, we don't
+									* have multiple results.
+									*/
+									if ( 0 === $( '#map-marker-' + i ).length ) {
+										resultsEl.append(
+											$( '<li />' )
+											.attr( 'id', 'map-marker-' + i )
+											.attr( 'class', 'depot-result' )
+											.html( '<a href="#">'+current_marker.title+'</a>' )
+											.click($.proxy(function() {
+												new google.maps.event.trigger( this, 'click' );
+											}, current_marker))
+										);
+
+									}
+
+								}
+
+							}
+
+						});
+
+					}
+				}
 			});
 		}});
 	}
@@ -432,7 +510,7 @@ function initForms()
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
                     "searchreplace visualblocks code fullscreen",
-                    "insertdatetime media table contextmenu paste textcolor colorpicker"
+                    "insertdatetime media table contextmenu paste textcolor colorpicker hr"
                 ],
                 toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
@@ -517,7 +595,9 @@ function initForms()
                     }
 
 			        //console.log(result);
-                }
+                },
+
+                paste_data_images: true
             });
         });
 	}

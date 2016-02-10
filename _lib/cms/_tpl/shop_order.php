@@ -95,7 +95,11 @@ if( !$order ){
             <?=$order['method'];?><br><br>
 
     		<? if( $order['event_date'] ){ ?>
-    			<p>Event date: <strong><?=dateformat('d/m/Y',$order['event_date']);?></strong></p>
+    			<p>Event date: <strong><?=dateformat('d/m/Y', $order['event_date']);?></strong></p>
+    		<? } ?>
+
+    		<? if( $order['session'] ){ ?>
+    			<p>Session: <strong><?=$order['session'];?></strong></p>
     		<? } ?>
 
     		<? if( $order['organiser'] ){ ?>

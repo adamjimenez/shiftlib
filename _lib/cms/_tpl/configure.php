@@ -536,8 +536,13 @@ foreach( $_POST['sections'] as $section_id=>$section ){
 	$required='';
 	$labels='';
 	$subsections='';
+	$label = '';
 
 	foreach( $_POST['vars']['fields'][$section_id] as $field_id=>$field ){
+		if($_POST['vars']['fields'][$section_id][$field_id]['label']){
+			$label.= '"'.$field['name'].'" => "'.$_POST['vars']['fields'][$section_id][$field_id]['label'].'", ';
+		}
+
 		if( $field['parent'] ){
 			continue;
 		}
@@ -587,6 +592,8 @@ $vars["fields"]["'.$section.'"]=array(
 $vars["required"]["'.$section.'"]=array('.$required.');
 
 $vars["labels"]["'.$section.'"]=array('.$labels.');
+
+$vars["label"]["'.$section.'"]=array('.$label.');
 
 $vars["subsections"]["'.$section.'"]=array('.$subsections.');
 
@@ -818,6 +825,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<tr>
 				<th>&nbsp;</th>
 				<th>Name</th>
+				<th>Label</th>
 				<th>Type</th>
 				<th>Label</th>
 				<th>Required</th>
@@ -868,6 +876,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 <tr class="draggable">
 	<td><div class="handle">&nbsp;</div></td>
 	<td><input type="text" name="vars[fields][{$section_id}][{$count}][name]" value="" /></td>
+	<td><input type="text" name="vars[fields][{$section_id}][{$count}][label]" value="" /></td>
 	<td>
 		<select name="vars[fields][{$section_id}][{$count}][value]" onblur="if( $(form['vars[fields][{$section_id}][{$count}][name]']).val()=='' ){ $(form['vars[fields][{$section_id}][{$count}][name]']).val($(this).val().replace('-',' ')) }">
 			<?=html_options($field_opts);?>
@@ -947,6 +956,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<tr>
         					<th>&nbsp;</th>
         					<th>Name</th>
+        					<th>Label</th>
         					<th>Type</th>
         					<th>Label</th>
         					<th>Required</th>
@@ -965,6 +975,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<tr class="draggable">
         					<td><div class="handle">&nbsp;</div></td>
         					<td><input type="text" name="vars[fields][<?=$count['sections'];?>][<?=$count['fields'];?>][name]" value="<?=$k;?>" /></td>
+        					<td><input type="text" name="vars[fields][<?=$count['sections'];?>][<?=$count['fields'];?>][label]" value="<?=$vars['label'][$section][$k];?>" /></td>
         					<td>
         						<select name="vars[fields][<?=$count['sections'];?>][<?=$count['fields'];?>][value]">
         							<?=html_options($field_opts,$field_type);?>

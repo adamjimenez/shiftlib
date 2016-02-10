@@ -146,7 +146,8 @@ tr.result_selected td{
 .box th{
 	font-weight:bold;
 	border-style: none;
-	white-space:nowrap;
+	white-space: normal;
+	max-width: 200px;
 }
 .box td{
 	border-style: none;

@@ -13,7 +13,7 @@ $(function() {
                 $(_this).find('tr.select_all_row').show();
     		}else{
                 $(_this).find('input[name="items[]"]:checked').trigger('click');
-                _this.select_all_pages_el.value = 0;
+                _this.select_all_pages_el.value(0);
             	$(_this).find('tr.select_all_row').hide();
             	$(_this).find('tr.clear_all_row').hide();
     		}
@@ -21,7 +21,7 @@ $(function() {
 
         //select all pages
     	$(this).find('a.select_all_pages').bind('click', function() {
-        	_this.select_all_pages_el.value = 1;
+        	_this.select_all_pages_el.val(1);
         	$(_this).find('tr.select_all_row').hide();
             $(_this).find('tr.clear_all_row').show();
     	});

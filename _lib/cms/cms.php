@@ -202,7 +202,7 @@ class cms{
 		$this->trigger_event('delete', array($ids));
 	}
 
-	function conditions_to_sql($section, $conditions=NULL, $num_results){
+	function conditions_to_sql($section, $conditions=NULL, $num_results, $cols){
 	    global $vars;
 
 	    //debug($conditions);
@@ -443,6 +443,7 @@ class cms{
 		    'having_str' => $having_str,
 		    'joins' => $joins,
 		    'num_results' => $num_results,
+		    'cols' => $cols,
 		);
 	}
 
@@ -543,11 +544,12 @@ class cms{
 				//$where[]="`".$parent_field."`='".$parent."'";
 			}*/
 
-            $sql = $this->conditions_to_sql($sections, $conditions, $num_results);
+            $sql = $this->conditions_to_sql($sections, $conditions, $num_results, $cols);
 
             $where_str = $sql['where_str'];
             $having_str = $sql['having_str'];
             $joins = $sql['joins'];
+            $cols = $sql['cols'];
 
 			if( in_array('select',$vars['fields'][$section]) or in_array('combo',$vars['fields'][$section]) or in_array('radio',$vars['fields'][$section]) ){
 				$selects = array_keys($vars['fields'][$section], "select");
@@ -1648,7 +1650,7 @@ class cms{
         $errors = $this->validate();
 
 		if(is_array($other_errors)){
-		    $errors = array_unique(array_merge($errors, $other_errors));
+		    $errors = array_values(array_unique(array_merge($errors, $other_errors)));
 		}
 
         //handle validation
@@ -2285,7 +2287,7 @@ class cms{
 
 		$vars["labels"]["sms templates"]=array('subject','message');
 
-		$this->section = $option;
+		$this->section=$option;
 
 		$this->table=underscored($option);
 
@@ -2300,13 +2302,14 @@ class cms{
 			    check_table('files', $this->file_fields);
 			}
 		}else{
-			die('no fields');
+			$index = true;
 		}
 
-
-		if($_GET['edit']){
+		if ($index) {
+			$this->template('default_index.php', true);
+		} elseif($_GET['edit']){
 			$this->template('default_edit.php', true);
-		}elseif( $_GET['view'] or !array_search('id', $vars['fields'][$this->section]) ){
+		}elseif( $_GET['view'] or !array_search('id',$vars['fields'][$this->section]) ){
 			$this->template('default_view.php', true);
 		}else{
 			$this->template('default_list.php', true);

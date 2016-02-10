@@ -128,7 +128,14 @@ class auth{
 		}
 
 		if( $_POST['register'] ){
-			$this->register();
+			$result = $this->register();
+
+			if($result===true) {
+				redirect($this->register_success);
+			}else{
+				print $result;
+				exit;
+			}
 		}
 
 		if( $_POST['forgot_password'] ){
@@ -281,11 +288,9 @@ class auth{
 		$errors = $cms->validate();
 
 		if( $errors ){
-            print json_encode($errors);
-            exit;
+            return json_encode($errors);
 		}elseif( $_POST['validate'] ){
-		    print 1;
-		    exit;
+		    return 1;
 		}
 
 		if( $this->generate_password ){
@@ -312,7 +317,7 @@ class auth{
 				LIMIT 1
 			");
 
-			$reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/activate?u='.$id.'&code='.$code;
+			$reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/activate?user='.$id.'&code='.$code;
 		}
 
         $reps['domain'] = $_SERVER["HTTP_HOST"];
@@ -337,7 +342,7 @@ class auth{
 			$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
 		}
 
-		redirect($this->register_success);
+		return true;
 	}
 
 	function update_details()

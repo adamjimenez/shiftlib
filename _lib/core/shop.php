@@ -658,7 +658,7 @@ class shop{
             }
 
 			if( !$verified ){
-				mail($admin_email,'Order Not verified',$msg,$this->headers);
+				mail($admin_email,'Order Not verified', $res, $this->headers);
 				exit;
 			}
 		}

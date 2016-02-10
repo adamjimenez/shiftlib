@@ -265,18 +265,23 @@ function basename_safe($path)
 	}
 }
 
-function calc_grids($pcodeA)
+function calc_grids($pcodeA, $lat = false)
 {
-	$pos=strpos($pcodeA,' ');
+	$pos = strpos($pcodeA,' ');
 	if($pos){
-		$pcodeA=substr($pcodeA,0,$pos);
+		$pcodeA = substr($pcodeA, 0, $pos);
 	}
 
 	$row = sql_query("SELECT * FROM postcodes WHERE Pcode='$pcodeA' LIMIT 1", 1);
 
 	if( $row ){
-		$grids[0]=$row['Grid_N'];
-		$grids[1]=$row['Grid_E'];
+		if ($lat) {
+			$grids[0] = $row['Latitude'];
+			$grids[1] = $row['Longitude'];
+		} else {
+			$grids[0] = $row['Grid_N'];
+			$grids[1] = $row['Grid_E'];
+		}
 
 		return $grids;
 	}else{
@@ -1547,7 +1552,7 @@ function video_info($url) {
 	    preg_match($pattern, $url, $matches);
 
 	    $data['id'] = end($matches);
-	    $data['url'] = $url;
+	    $data['url'] = 'https://player.vimeo.com/video/'.$data['id'];
 
 	    //not working?
 	    $hash = json_decode(file_get_contents("http://vimeo.com/api/v2/video/".$data['id'].".json"), true);
@@ -1563,6 +1568,7 @@ function video_info($url) {
 	    $data['thumb'] = 'https://i.ytimg.com/vi/'.$data['id'].'/hqdefault.jpg';
 	    $data['type'] = 'application/x-shockwave-flash';
 	    $data['url'] = 'https://www.youtube.com/v/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
+	    $data['embed_url'] = 'https://www.youtube.com/embed/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
 	}else{
 		return array(
 		    'url' => $url,

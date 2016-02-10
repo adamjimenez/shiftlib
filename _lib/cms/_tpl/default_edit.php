@@ -89,7 +89,7 @@ var components = <?=json_encode($this->components);?>;
 <?
 }
 ?>
-	
+
 $(function() {
     if( document.getElementById('language') ){
 		$('#language').on('change',set_language);
@@ -106,6 +106,10 @@ $(function() {
 <form id="form" method="post" enctype="multipart/form-data" class="validate">
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
 <input type="hidden" name="save" value="1">
+
+<!-- fake fields are a workaround for chrome autofill -->
+<input style="display:none" type="text" name="fakeusernameremembered">
+<input style="display:none" type="password" name="fakepasswordremembered">
 
 <table width="100%">
 <tr>
@@ -160,7 +164,11 @@ foreach( $languages as $language ){
 				continue;
 			}
 
-			$label=ucfirst(spaced($name));
+			$label = $vars['label'][$this->section][$name];
+
+			if(!$label) {
+				$label = ucfirst(spaced($name));
+			}
 
 			if( $type=='select-multiple' ){
 				$value=$id;
