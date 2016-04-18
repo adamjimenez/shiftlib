@@ -494,10 +494,10 @@ if( table_exists('cms_logs') ){
 
 	if( count($logs) ){
 ?>
-<table border="1" cellspacing="0" cellpadding="5" class="box">
-<tr>
-	<th>Logs</th>
-</tr>
+<br>
+<br>
+<h3>Log</h3>
+<div style="max-height: 200px; overflow: scroll; background: #fff;">
 <?
 	foreach( $logs as $k=>$v ){
 		switch( $v['task'] ){
@@ -523,13 +523,15 @@ if( table_exists('cms_logs') ){
 
 		$name=$v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
 ?>
-<tr>
-	<td>
-		<a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=$action;?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=dateformat('d-m-Y H:i:s',$v['date']);?>
-	</td>
-</tr>
+<p>
+	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=dateformat('d-m-Y H:i:s',$v['date']);?></strong><br>
+	<?=nl2br($v['details']);?>
+</p>
+<br>
+<br>
 <? 	} ?>
-</table>
+</div>
+
 <br />
 <br />
 <?

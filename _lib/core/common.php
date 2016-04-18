@@ -526,13 +526,11 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 			}
 
 			$images = array(
-			    'http://www.hdwallpaper4all.com/wp-content/uploads/2014/04/Grumpy-Cat-14.jpg',
 			    'http://i.huffpost.com/gen/1735626/thumbs/o-GRUMPY-PHARRELL-facebook.jpg',
-			    'http://blog.innovation.ca/wp-content/uploads/2013/02/GrumpyCat.png',
 			);
 			shuffle($images);
 
-			$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : current($images);
+			//$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : current($images);
 
     		echo '
             <div style="text-align: center;">
@@ -1005,7 +1003,7 @@ function load_js($libs)
 
 	if( $deps['jquery'] ){
 	?>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 		<?php
 		if( $deps['prototype'] ){
 		?>
@@ -1023,9 +1021,9 @@ function load_js($libs)
 	}
 
 	if( $deps['jqueryui'] ){
-		$jqueryui_version='1.9.2';
+		$jqueryui_version='1.11.4';
 	?>
-		<link href="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+		<link href="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version;?>/jquery-ui.min.js"></script>
 	<?php
 	}

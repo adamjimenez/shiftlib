@@ -285,13 +285,13 @@ function initForms()
 
 	//datefields
     if( jQuery().datepicker ){
-    	jQuery('input.date').datepicker({
+    	jQuery("input[data-type='date']").datepicker({
     		dateFormat: 'dd/mm/yy',
     		altFormat: 'dd/mm/yy'
     	});
 
     	//dob
-    	jQuery('input.dob').datepicker({
+    	jQuery("input[data-type='dob']").datepicker({
     		dateFormat: 'dd/mm/yy',
     		altFormat: 'dd/mm/yy',
     		changeMonth : true,
@@ -502,7 +502,7 @@ function initForms()
 	}
 
 	//tinymce4
-    var tinymce_url = '//tinymce.cachefly.net/4.2/';
+    var tinymce_url = '//cdn.tinymce.com/4/';
 	if( jQuery('textarea.tinymce').length ){
         jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
             $('textarea.tinymce').tinymce({
@@ -563,7 +563,7 @@ function initForms()
 
                 valid_elements: "*[*]",
 
-                //invalid_elements: '',
+                invalid_elements: 'script',
 
                 setup : function(editor) {
                     editor.addShortcut('Ctrl+219', '', 'outdent');

@@ -584,8 +584,15 @@ $(document).keydown(function(e){
         $('#s').focus();
     }
 });
-</script>
 
+//omit empty fields on search
+$("#search_form").submit(function() {
+    $(this).find(":input").filter(function() {
+	    return !$(this).val();
+	}).prop("disabled", true);
+    return true; // ensure form still submits
+});
+</script>
 
 <?
 }

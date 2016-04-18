@@ -2,11 +2,11 @@
 class shop{
 	function shop()
 	{
-		global $shop_config,$auth;
+		global $shop_config,$auth,$from_email;
 
 		$this->vat_rate=0.2;
 
-		$this->from_email='auto@'.$_SERVER['HTTP_HOST'];
+		$this->from_email = $from_email ?: 'auto@'.$_SERVER['HTTP_HOST'];
 		$this->headers="From: ".$this->from_email."\n";
 
 		$this->discount=0;
@@ -70,7 +70,9 @@ class shop{
 			$this->guest['mobile']=$_POST['mobile'];
 			$this->guest['surname']=$_POST['surname'];
 			$this->guest['address']=$_POST['address'];
+			$this->guest['address2']=$_POST['address2'];
 			$this->guest['city']=$_POST['city'];
+			$this->guest['county']=$_POST['county'];
 			$this->guest['postcode']=$_POST['postcode'];
 			$this->guest['comments']=$_POST['comments'];
 
@@ -412,7 +414,7 @@ class shop{
 			date=NOW(),
 			customer='".addslashes($this->cust['id'])."',
 			name='".addslashes( ($this->cust['name'].' '.$this->cust['surname']) )."',
-			address='".addslashes($this->cust['address'])."\n".addslashes($this->cust['address2'])."\n".addslashes($this->cust['city'])."',
+			address='".addslashes($this->cust['address'])."\n".addslashes($this->cust['address2'])."\n".addslashes($this->cust['city'])."\n".addslashes($this->cust['county'])."',
 			postcode='".addslashes($this->cust['postcode'])."',
 			email='".addslashes($this->cust['email'])."',
 			tel='".addslashes($this->cust['tel'])."',

@@ -1201,12 +1201,12 @@ class cms{
 			break;
 			case 'date':
 		?>
-			<input type="text" class="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'dob':
 		?>
-			<input type="text" class="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'time':
@@ -2050,6 +2050,18 @@ class cms{
 				    $data[$name] = strip_tags($data[$name]);
 				}elseif( $v=='textarea' and !$auth->user['admin'] ){
 				    $data[$name] = strip_tags($data[$name]);
+				}elseif( $v=='editor' ){
+					$dom = new DOMDocument();
+					
+					$dom->loadHTML($data[$name], LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);
+					
+					$script = $dom->getElementsByTagName('script');
+					
+					foreach($script as $item) {
+						$item->parentNode->removeChild($item); 
+					}
+					
+					$data[$name] = $dom->saveHTML();
 				}
 
 				if( is_array($data[$name]) ){
@@ -2068,12 +2080,12 @@ class cms{
 	function save($data)
 	{
 		global $vars, $languages, $auth;
+		
+		$this->trigger_event('beforeSave', $data);
 
 		if( !isset($data) ){
 			$data = $_POST;
 		}
-
-		$this->trigger_event('beforeSave', array('data'=>$data));
 
 		if( count($languages) and !in_array('en', $languages) ){
 			$languages = array_merge(array('en'), $languages);
@@ -2114,23 +2126,28 @@ class cms{
 					$language_exists = false;
 				}
 			}
+			
+			//remember old state
+			if( table_exists('cms_logs') ) {
+				if( $this->id and $language==='en' ){
+					$row = sql_query("SELECT * FROM `".$this->table."`
+						WHERE
+							`id`='".escape($this->id)."'
+					", 1);
+				}elseif( $this->id and $language!=='en' ){
+					$row = sql_query("SELECT * FROM `".$this->table."`
+						WHERE
+							`translated_from`='".escape($this->id)."' AND
+							language='".escape($language)."'
+					", 1);
+				}
+			}
 
 			if( $this->id and ($language_exists) ){
 				sql_query("UPDATE `".$this->table."` SET
 					".$this->query."
 					WHERE $where_str
 				");
-
-				//log it
-				if( table_exists('cms_logs') ){
-					sql_query("INSERT INTO cms_logs SET
-						user='".$auth->user['id']."',
-						section='".escape($this->section)."',
-						item='".escape($this->id)."',
-						task='edit',
-						details=''
-					");
-				}
 			}else{
 				sql_query("INSERT IGNORE INTO `".$this->table."` SET
 					".$this->query."
@@ -2139,17 +2156,43 @@ class cms{
 				if( $language=='en' ){
 					$this->id = sql_insert_id();
 				}
-
-				//log it
-				if( table_exists('cms_logs') ){
-					sql_query("INSERT INTO cms_logs SET
-						user='".$auth->user['id']."',
-						section='".escape($this->section)."',
-						item='".escape($this->id)."',
-						task='add',
-						details=''
-					");
+			}
+			
+			//log it
+			if( table_exists('cms_logs') ) {
+				$details = '';
+				
+				$task = 'add';
+				if ($this->id) {
+					$task = 'edit';
+				
+					if( $this->id and $language==='en' ){
+						$updated_row = sql_query("SELECT * FROM `".$this->table."`
+							WHERE
+								`id`='".escape($this->id)."'
+						", 1);
+					}elseif( $this->id and $language!=='en' ){
+						$updated_row = sql_query("SELECT * FROM `".$this->table."`
+							WHERE
+								`translated_from`='".escape($this->id)."' AND
+								language='".escape($language)."'
+						", 1);
+					}
+					
+					foreach($updated_row as $k=>$v) {
+						if (isset($row[$k]) and $row[$k]!==$v) {
+							$details.= $k.'='.$v."\n";
+						}
+					}
 				}
+				
+				sql_query("INSERT INTO cms_logs SET
+					user = '".$auth->user['id']."',
+					section = '".escape($this->section)."',
+					item = '".escape($this->id)."',
+					task = '".$task."',
+					details = '".escape($details)."'
+				");
 			}
 
 			foreach( $languages as $language ){

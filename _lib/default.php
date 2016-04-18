@@ -100,16 +100,14 @@ function get_include( $request ){
 
     if( in_array($request, $tpl_config['catchers']) or file_exists($root_folder.'/_tpl/'.$request.'/index.php') ){
     	redirect('/'.$request.'/', true);
+    }elseif( $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'] ){
+        $redirect = $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'];
+        redirect($redirect, true);
     }elseif( file_exists($root_folder.'/_tpl/'.$request.'.php') ){
         $include_file = $root_folder.'/_tpl/'.$request.'.php';
 	//check redirects
-    }elseif( array_key_exists($request,$tpl_config['redirects']) ){
+    }elseif( $tpl_config['redirects'][$request] ){
         $redirect = $tpl_config['redirects'][$request];
-        /*
-        if( substr($redirect, 0, 1)!=='/' ){
-            $redirect = '/'.$redirect;
-        };
-        */
         redirect($redirect, true);
     }elseif( $catcher=get_tpl_catcher($request) ){
     	$include_file = $root_folder.'/_tpl/'.$catcher.'.php';

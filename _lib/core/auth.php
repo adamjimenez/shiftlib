@@ -297,10 +297,6 @@ class auth{
 			$_POST['password'] = generate_password();
 		}
 
-		if( $this->hash_password ){
-			$_POST['password'] = $this->create_hash($_POST['password']);
-		}
-
 		$id = $cms->save();
 
 		$reps = $_POST;
@@ -335,6 +331,10 @@ class auth{
 			$msg = str_replace("\t", '', $msg);
 
 			mail($from_email, 'New user registration', $msg, $headers);
+		}
+
+		if( $this->hash_password ){
+			$_POST['password'] = $this->create_hash($_POST['password']);
 		}
 
 		if( $this->register_login ){

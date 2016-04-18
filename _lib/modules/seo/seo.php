@@ -15,6 +15,7 @@ function get_dir_contents( $dirstr='_tpl/' ) {
 				or strstr($pathname,'dev')
 				or strstr($pathname,'old')
 				or strstr($pathname,'includes')
+				or strstr($pathname,'misc')
 			){
 				continue;
 			}
