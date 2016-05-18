@@ -512,16 +512,14 @@ if( table_exists('cms_logs') ){
 			break;
 		}
 
-		if( $_GET['option']=='users' ){
-			$item_table=underscored($v['section']);
-			$item=sql_query("SELECT * FROM `$item_table` WHERE id='".escape($v['item'])."'");
-
-			$label=$vars['labels'][$v['section']][0];
-
-			$item_name=$item[0][$label];
+		if( $_GET['option']=='users' and $vars['fields'][$v['section']] ){
+			$item_table = underscored($v['section']);
+			$item = sql_query("SELECT * FROM `$item_table` WHERE id='".escape($v['item'])."'", 1);
+			$label = $vars['labels'][$v['section']];
+			$item_name = $item[$label];
 		}
 
-		$name=$v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
+		$name = $v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
 ?>
 <p>
 	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=dateformat('d-m-Y H:i:s',$v['date']);?></strong><br>

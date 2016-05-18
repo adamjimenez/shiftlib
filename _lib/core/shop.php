@@ -813,45 +813,53 @@ class shop{
 		$error='';
 
         // Check the passed HashDigest against our own to check the values passed are legitimate.
-        $hashcode="PreSharedKey=" . $PreSharedKey;
-        $hashcode=$hashcode . '&MerchantID=' . $_POST["MerchantID"];
-        $hashcode=$hashcode . '&Password=' . $Password;
-        $hashcode=$hashcode . '&StatusCode=' . $_POST["StatusCode"];
-        $hashcode=$hashcode . '&Message=' . $_POST["Message"];
-        $hashcode=$hashcode . '&PreviousStatusCode=' . $_POST["PreviousStatusCode"];
-        $hashcode=$hashcode . '&PreviousMessage=' . $_POST["PreviousMessage"];
-        $hashcode=$hashcode . '&CrossReference=' . $_POST["CrossReference"];
-        $hashcode=$hashcode . '&AddressNumericCheckResult=' . $_POST["AddressNumericCheckResult"];
-        $hashcode=$hashcode . '&PostCodeCheckResult=' . $_POST["PostCodeCheckResult"];
-        $hashcode=$hashcode . '&CV2CheckResult=' . $_POST["CV2CheckResult"];
-        $hashcode=$hashcode . '&ThreeDSecureAuthenticationCheckResult=' . $_POST["ThreeDSecureAuthenticationCheckResult"];
-        $hashcode=$hashcode . '&CardType=' . $_POST["CardType"];
-        $hashcode=$hashcode . '&CardClass=' . $_POST["CardClass"];
-        $hashcode=$hashcode . '&CardIssuer=' . $_POST["CardIssuer"];
-        $hashcode=$hashcode . '&CardIssuerCountryCode=' . $_POST["CardIssuerCountryCode"];
-        $hashcode=$hashcode . '&Amount=' . $_POST["Amount"];
-        $hashcode=$hashcode . '&CurrencyCode=' . $_POST["CurrencyCode"];
-        $hashcode=$hashcode . '&OrderID=' . $_POST["OrderID"];
-        $hashcode=$hashcode . '&TransactionType=' . $_POST["TransactionType"];
-        $hashcode=$hashcode . '&TransactionDateTime=' . $_POST["TransactionDateTime"];
-        $hashcode=$hashcode . '&OrderDescription=' . $_POST["OrderDescription"];
-        $hashcode=$hashcode . '&CustomerName=' . $_POST["CustomerName"];
-        $hashcode=$hashcode . '&Address1=' . $_POST["Address1"];
-        $hashcode=$hashcode . '&Address2=' . $_POST["Address2"];
-        $hashcode=$hashcode . '&Address3=' . $_POST["Address3"];
-        $hashcode=$hashcode . '&Address4=' . $_POST["Address4"];
-        $hashcode=$hashcode . '&City=' . $_POST["City"];
-        $hashcode=$hashcode . '&State=' . $_POST["State"];
-        $hashcode=$hashcode . '&PostCode=' . $_POST["PostCode"];
-        $hashcode=$hashcode . '&CountryCode=' . $_POST["CountryCode"];
-        $hashcode=$hashcode . '&EmailAddress=' . $_POST["EmailAddress"];
-        $hashcode=$hashcode . '&PhoneNumber=' . $_POST["PhoneNumber"];
+		$hashcode = "PreSharedKey=" . $PreSharedKey;
+		$hashcode .= '&MerchantID=' . $_POST["MerchantID"];
+		$hashcode .= '&Password=' . $Password;
+		$hashcode .= '&StatusCode=' . $_POST["StatusCode"];
+		$hashcode .= '&Message=' . $_POST["Message"];
+		$hashcode .= '&PreviousStatusCode=' . $_POST["PreviousStatusCode"];
+		$hashcode .= '&PreviousMessage=' . $_POST["PreviousMessage"];
+		$hashcode .= '&CrossReference=' . $_POST["CrossReference"];
+		$hashcode .= '&AddressNumericCheckResult=' . $_POST["AddressNumericCheckResult"];
+		$hashcode .= '&PostCodeCheckResult=' . $_POST["PostCodeCheckResult"];
+		$hashcode .= '&CV2CheckResult=' . $_POST["CV2CheckResult"];
+		if (isset($_POST["ThreeDSecureAuthenticationCheckResult"])) {
+			$hashcode .= '&ThreeDSecureAuthenticationCheckResult=' . $_POST["ThreeDSecureAuthenticationCheckResult"];
+		}
+		$hashcode .= '&CardType=' . $_POST["CardType"];
+		$hashcode .= '&CardClass=' . $_POST["CardClass"];
+		$hashcode .= '&CardIssuer=' . $_POST["CardIssuer"];
+		$hashcode .= '&CardIssuerCountryCode=' . $_POST["CardIssuerCountryCode"];
+		$hashcode .= '&Amount=' . $_POST["Amount"];
+		$hashcode .= '&CurrencyCode=' . $_POST["CurrencyCode"];
+		$hashcode .= '&OrderID=' . $_POST["OrderID"];
+		$hashcode .= '&TransactionType=' . $_POST["TransactionType"];
+		$hashcode .= '&TransactionDateTime=' . $_POST["TransactionDateTime"];
+		$hashcode .= '&OrderDescription=' . $_POST["OrderDescription"];
+		$hashcode .= '&CustomerName=' . $_POST["CustomerName"];
+		$hashcode .= '&Address1=' . $_POST["Address1"];
+		$hashcode .= '&Address2=' . $_POST["Address2"];
+		$hashcode .= '&Address3=' . $_POST["Address3"];
+		$hashcode .= '&Address4=' . $_POST["Address4"];
+		$hashcode .= '&City=' . $_POST["City"];
+		$hashcode .= '&State=' . $_POST["State"];
+		$hashcode .= '&PostCode=' . $_POST["PostCode"];
+		$hashcode .= '&CountryCode=' . $_POST["CountryCode"];
+		$hashcode .= '&EmailAddress=' . $_POST["EmailAddress"];
+		$hashcode .= '&PhoneNumber=' . $_POST["PhoneNumber"];
+		
+		/*
+		$contents = print_r($_POST, true) ;
+		$contents1 = print_r($hashcode, true) ;
+		$result =  ("\r\n CardSave Callback\r\n".PHP_EOL.$contents."\r\n".PHP_EOL);
+		$result .= ("\r\n CardSave Callback\r\n".PHP_EOL."Hashcode=".$contents1."\r\n".PHP_EOL);
+		mail($admin_email, 'Order debug', $result, $this->headers);
+		*/
 
 		if( $_POST['HashDigest'] != sha1($hashcode)){
 			$error='Checksum failed';
-		}
-
-		if( $_POST['StatusCode'] != 0 ){
+		} else if( $_POST['StatusCode'] != 0 ){
 			$error='Transaction error:'. $_POST["Message"];
 		}
 

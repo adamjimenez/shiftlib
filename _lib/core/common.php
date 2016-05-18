@@ -208,7 +208,7 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 	}
 
 	if($attribs!==false){
-        $html = '<img src="'.$path.'" '.$attribs.' />';
+        $html = '<img src="http'.(($_SERVER['HTTPS']=='on')?'s':'').'://'.$_SERVER['HTTP_HOST'].$path.'" '.$attribs.' />';
         echo $html;
 	}else{
 		return $path;
@@ -946,6 +946,11 @@ function is_postcode($code)
 	return preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code);
 }
 
+function is_tel($string)
+{
+	return preg_match("/^[0-9\-]+$/", $string);
+}
+
 function is_url($str)
 {
 	return preg_match('/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i', $str);
@@ -1509,6 +1514,11 @@ function validate($fields, $required, $array=true)
 					$errors[]=$v;
 				}
 			break;
+			case 'tel':
+				if( !is_tel($fields[$v]) ){
+					$errors[]=$v;
+				}
+			break;
 			case 'postcode':
 				if( !format_postcode($fields[$v]) ){
 					$errors[]=$v;
@@ -1555,7 +1565,6 @@ function video_info($url) {
 	    //not working?
 	    $hash = json_decode(file_get_contents("http://vimeo.com/api/v2/video/".$data['id'].".json"), true);
 	    $data['thumb'] = $hash[0]['thumbnail_medium'];
-	    $data['type'] = 'application/x-shockwave-flash';
 	}elseif(stristr($url, 'youtu')){
     	$data['source']  = 'youtube';
 
@@ -1563,15 +1572,18 @@ function video_info($url) {
 	    preg_match($pattern, $url, $matches);
 
 	    $data['id'] = (isset($matches[1])) ? $matches[1] : false;
-	    $data['thumb'] = 'https://i.ytimg.com/vi/'.$data['id'].'/hqdefault.jpg';
-	    $data['type'] = 'application/x-shockwave-flash';
-	    $data['url'] = 'https://www.youtube.com/v/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
-	    $data['embed_url'] = 'https://www.youtube.com/embed/'.$data['id'].'?version=3&amp;autohide=1&amp;rel=0'; //needs to be this format for facebook
+	    $data['thumb'] = 'https://img.youtube.com/vi/'.$data['id'].'/0.jpg';
+	    $data['url'] = 'https://www.youtube.com/embed/'.$data['id'].'?rel=0';
 	}else{
-		return array(
-		    'url' => $url,
-		    'type' => 'application/x-shockwave-flash'
-		);
+		$data['url'] = $url;
+	}
+	
+	if (ends_with($data['url'], '.mp4')) {
+		$data['tag'] = '<video controls>
+		    <source src="'.$data['url'].'" type="video/mp4">
+		</video>';
+	} else {
+		$data['tag'] = '<iframe src="'.$data['url'].'" frameborder="0" allowfullscreen></iframe>';
 	}
 
 	return $data;

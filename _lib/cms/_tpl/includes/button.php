@@ -10,7 +10,7 @@ if( $button['submit']===false ){
 <?
 }else{
 ?>
-<form method="post" style="display:inline" <? if( $button['confirm'] ){ ?>onsubmit="return confirm('<?=escape($button['confirm']);?>');"<? } ?>>
+<form method="post" <? if($button['target']){ ?>target="<?=$button['target'];?>"<? } ?> style="display:inline" <? if( $button['confirm'] ){ ?>onsubmit="return confirm('<?=escape($button['confirm']);?>');"<? } ?>>
 <input type="hidden" name="custom_button" value="<?=$k;?>">
 	<button type="submit"><?=$button['label'];?></button>
 </form>

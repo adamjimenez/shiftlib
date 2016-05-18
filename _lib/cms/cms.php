@@ -1734,6 +1734,12 @@ class cms{
 							continue;
 						}
 					break;
+					case 'tel':
+						if( $data[$name] and !is_tel($data[$name]) ){
+							$errors[] = $name;
+							continue;
+						}
+					break;
 					case 'postcode':
 						if(
 							$data[$name] and
@@ -2248,9 +2254,17 @@ class cms{
 
 		if( is_array($cms_handlers) ){
 			foreach( $cms_handlers as $handler ){
+				if (!is_array($handler['section'])) {
+					$handler['section'] = array($handler['section']);
+				}
+				
 				if(
-				    (!$this->section or $handler['section']==$this->section)
-				    and $handler['event'] == $event ){
+					(
+						!$this->section or 
+						in_array($this->section, $handler['section'])
+					) and 
+					$handler['event']===$event
+				){
 					return call_user_func_array($handler['handler'], (array)$args);
 				}
 			}
