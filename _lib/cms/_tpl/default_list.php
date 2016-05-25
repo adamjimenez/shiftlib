@@ -69,7 +69,7 @@ if( $_POST['action']=='export' ){
 }
 
 if( $_POST['action']=='delete' ){
-	$this->delete_items($_POST['section'],$_POST['items']);
+	$this->delete_items($this->section, $_POST['items']);
 }
 
 if( $_POST['action']=='email' ){
@@ -373,7 +373,7 @@ jQuery(document).ready(function() {
                     </div>
 				</td>
 			</tr>
-			<? }elseif( $type == 'checkbox' ){ ?>
+			<? }elseif( $type == 'checkbox' or $type == 'deleted' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>

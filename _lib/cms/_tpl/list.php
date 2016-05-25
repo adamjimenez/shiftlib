@@ -112,7 +112,7 @@ if( count($vars['content']) ){
 <?
 foreach( $vars['content'] as $v){
 ?>
-<tr class="draggable row" id="tr_<?=$v['id'];?>">
+<tr class="draggable list-row" id="tr_<?=$v['id'];?>">
 	<? if( $sortable ){ ?>
 		<td valign="top"><div class="handle">&nbsp;</div></td>
 	<? } ?>

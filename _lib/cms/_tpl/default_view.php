@@ -300,7 +300,7 @@ foreach( $languages as $language ){
 			<th align="left" valign="top" width="20%"><?=$label;?></th>
 			<td>
 		<?
-		if( in_array($type,array('text','float','decimal','int','id','page-name','hidden','ip')) ){
+		if( in_array($type,array('text','float','decimal','int','id','page-name','hidden','ip','deleted')) ){
 			if( is_numeric($value) and $value==0 ){
 				continue;
 			}
@@ -552,7 +552,7 @@ if(
 		'id'=>'id',
 	);
 
- 	check_table('cms_privileges',$cms_privileges_fields);
+ 	check_table('cms_privileges', $cms_privileges_fields);
 
 	$rows = sql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'");
 	foreach($rows as $row){

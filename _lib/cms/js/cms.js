@@ -920,3 +920,10 @@ function set_tab(target)
 jQuery(document).ready(function() {
 	initForms();
 });
+
+$(document).ready(function(){
+	$('.mob-nav-icon').click(function () {
+			$('.content-wrapper').toggleClass('fullwidth');
+			$('.leftcol').toggleClass('nav-hdn');
+	});
+});

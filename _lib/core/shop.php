@@ -462,57 +462,7 @@ class shop{
 		return $this->oid;
 	}
 
-    function gc_button($value='Pay using Google Checkout'){
-        global $shop_config;
-
-        require_once(dirname(__FILE__).'/../modules/googlecheckout/googlecart.php');
-        require_once(dirname(__FILE__).'/../modules/googlecheckout/googleitem.php');
-        require_once(dirname(__FILE__).'/../modules/googlecheckout/googleshipping.php');
-        require_once(dirname(__FILE__).'/../modules/googlecheckout/googletax.php');
-
-        $merchant_id = $this->gc_merchant_id;  // Your Merchant ID
-    	$merchant_key = $this->gc_merchant_key;  // Your Merchant Key
-    	$server_type = "production";  //sandbox
-    	$currency = "GBP";
-    	$cart = new GoogleCart($merchant_id, $merchant_key, $server_type, $currency);
-
-    	foreach( $this->basket as $item ){
-    		$GoogleItem = new GoogleItem($item['name'],      // Item name
-			   $item['description'], // Item      description
-			   $item['quantity'], // Quantity
-			   $item['cost']); // Unit price
-    		$cart->AddItem($GoogleItem);
-    	}
-
-    	// Add shipping options
-    	$ship_1 = new GoogleFlatRateShipping("Standard Delivery", 0);
-
-    	//$Gfilter = new GoogleShippingFilters();
-    	//$Gfilter->SetAllowedCountryArea('CONTINENTAL_48');
-
-    	//$ship_1->AddShippingRestrictions($Gfilter);
-
-    	//$cart->AddShipping($ship_1);
-
-    	// Add tax rules
-    	//$tax_rule = new GoogleDefaultTaxRule(0.05);
-    	//$tax_rule->SetStateAreas(array("MA"));
-    	//$cart->AddDefaultTaxRules($tax_rule);
-
-    	// Specify <edit-cart-url>
-    	$cart->SetEditCartUrl('http://'.$_SERVER["HTTP_HOST"]."/basket");
-
-    	// Specify "Return to xyz" link
-    	$cart->SetContinueShoppingUrl('http://'.$_SERVER["HTTP_HOST"]."/thanks");
-
-    	// Request buyer's phone number
-    	$cart->SetRequestBuyerPhone(true);
-
-    	// Display Google Checkout button
-    	print $cart->CheckoutButtonCode("SMALL");
-    }
-
-	function paypal_button($value='Pay using paypal click here')
+	function paypal_button($value='Checkout with PayPal')
 	{
 		if( $this->test ){
 			print '

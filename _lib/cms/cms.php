@@ -162,15 +162,17 @@ class cms{
 		}
 	}
 
-	function delete($section, $ids) // no security checks
+	function delete($section,$ids) // no security checks
 	{
 		global $vars;
 
 		if( !is_array($ids) ){
-			$ids = array($ids);
+			$ids=array($ids);
 		}
 
-		$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
+		$field_id = in_array('id', $vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
+		
+		$soft_delete = in_array('deleted', spaced($vars['fields'][$section]));
 
 		$response = $this->trigger_event('beforeDelete', array($ids));
 
@@ -179,24 +181,40 @@ class cms{
 		}
 
 		foreach( $ids as $id ){
-			sql_query("DELETE FROM `".escape(underscored($section))."`
-				WHERE ".$field_id."='$id'
-			LIMIT 1
-			");
-
-			if( in_array('language', $vars['fields'][$section]) ){
+			if ($soft_delete) {
+				sql_query("UPDATE `".escape(underscored($section))."` SET
+					deleted = 1
+					WHERE ".$field_id."='$id'
+						LIMIT 1
+				");
+	
+				if( in_array('language',$vars['fields'][$section]) ){
+					sql_query("UPDATE `".escape(underscored($section))."` SET
+						deleted = 1
+						WHERE
+							translated_from='$id'
+					");
+				}
+			} else {
 				sql_query("DELETE FROM `".escape(underscored($section))."`
-					WHERE
-						translated_from='$id'
+					WHERE ".$field_id."='$id'
+						LIMIT 1
+				");
+	
+				if( in_array('language',$vars['fields'][$section]) ){
+					sql_query("DELETE FROM `".escape(underscored($section))."`
+						WHERE
+							translated_from='$id'
+					");
+				}
+	
+				//multiple select items
+				sql_query("DELETE FROM cms_multiple_select
+				    WHERE
+				        section = '".escape(underscored($section))."' AND
+				        item = '$id'
 				");
 			}
-
-			//multiple select items
-			sql_query("DELETE FROM cms_multiple_select
-			    WHERE
-			        section = '".escape(underscored($section))."' AND
-			        item = '$id'
-			");
 		}
 
 		$this->trigger_event('delete', array($ids));
@@ -246,8 +264,12 @@ class cms{
 			$where[] = "T_$table.".$field_id."='".escape($id)."'";
 		}
 
-		if( in_array('language',$vars['fields'][$section]) and $language=='en' ){
+		if( in_array('language', $vars['fields'][$section]) and $language=='en' ){
 			$where[] = "`translated_from`='0'";
+		}
+		
+		if( in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) ){
+			$where[] = "`deleted`='0'";
 		}
 
 		if( is_array($conditions) ){
@@ -787,8 +809,6 @@ class cms{
 			$this->content=$_GET;
 			$this->id=NULL;
 		}
-
-		$this->trigger_event('beforeEdit', array($id));
 	}
 
 	function set_language( $language )

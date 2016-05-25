@@ -5,6 +5,7 @@ if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
 }
 
 $this->set_section($this->section, $_GET['id']);
+$this->trigger_event('beforeEdit', array($this->id));
 
 //return url
 $section='';
@@ -160,7 +161,7 @@ foreach( $languages as $language ){
 		<table border="1" cellspacing="0" cellpadding="5" width="100%">
 		<?
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
-			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','hidden')) ){
+			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','hidden','deleted')) ){
 				continue;
 			}
 

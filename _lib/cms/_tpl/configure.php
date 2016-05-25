@@ -190,6 +190,7 @@ $field_opts=array(
 	'translated-from',
 	'parent',
 	'position',
+	'deleted',
 	'id',
 	'separator',
 	'array',

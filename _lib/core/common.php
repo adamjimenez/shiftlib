@@ -615,6 +615,7 @@ function form_to_db($type)
 		case 'phpuploads':
 			return 'TEXT';
 		break;
+		case 'deleted':
 		case 'checkbox':
 		case 'rating':
 			return 'TINYINT';
