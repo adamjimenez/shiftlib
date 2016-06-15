@@ -322,16 +322,19 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	border-left-color: #66A63A;
 }
 .leftcol {
+	padding-top: 50px;
 	position: fixed;
-	margin-top: 50px;
 	width: 250px;
 	/*background: #23527C;*/
 	/* BLUE background: #222D32;*/
 	background: #223224;
-	height: 100vh;
+	height: 100%;
+}
+
+.leftcol .menu {
 	transition: margin 0.4s linear;
 	overflow: scroll;
-	height: calc(100% - 50px);
+	height: 100%;
 }
 
 .leftcol ul {

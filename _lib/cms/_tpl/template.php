@@ -79,6 +79,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 		</div>
 		
 		<div class="leftcol">
+			<div class="menu">
 			<?
 			if( $auth->user['admin'] ){
 			?>
@@ -132,6 +133,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 			<?
 			}
 			?>
+			</div>
 		</div>	
 			
 		<div class="content-wrapper">
