@@ -166,7 +166,7 @@ if( $auth->user['admin'] ){
     
     <form class="login-form validate" method="post" id="login_form" action="/admin?option=login">
         <input type="hidden" name="login" value="1">
-      <input type="text" name="email" id="email" placeholder="email"/>
+      <input type="text" name="email" id="email" placeholder="username"/>
           <? if( in_array('email',$auth->errors) ){ ?>
               <p style="color:red;">Username is required</p>
               <br>

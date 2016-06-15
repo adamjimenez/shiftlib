@@ -322,7 +322,6 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	border-left-color: #66A63A;
 }
 .leftcol {
-	
 	position: fixed;
 	margin-top: 50px;
 	width: 250px;
@@ -331,6 +330,8 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	background: #223224;
 	height: 100vh;
 	transition: margin 0.4s linear;
+	overflow: scroll;
+	height: calc(100% - 50px);
 }
 
 .leftcol ul {
@@ -396,4 +397,13 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	
 	margin-left: -250px;
 	transition: margin 0.4s linear;
+}
+
+/* configure area */
+#sections table{
+	width: 100%;
+}
+
+#sections h3{
+	margin: 0;
 }

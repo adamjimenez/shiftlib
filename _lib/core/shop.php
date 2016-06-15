@@ -819,14 +819,14 @@ class shop{
 
 		mail($admin_email, 'Order Details', $msg, $this->headers);
 
+		$ref = $_POST['CrossReference'];
+		$status = $_POST['Message'];
+
 		if( $error ){
 			$this->failed_order($error, $oid, $ref, 'cardsave');
 
 			return false;
 		}
-
-		$ref = $_POST['CrossReference'];
-		$status = $_POST['Message'];
 
 		return $this->complete_order($oid, $ref, 'cardsave');
 	}

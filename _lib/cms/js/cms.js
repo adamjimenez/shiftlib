@@ -557,7 +557,7 @@ function initForms()
 
                 theme_advanced_styles: 'Link to Image=lightbox',
 
-                extended_valid_elements: 'span[itemprop|itemtype|itemscope|class|style]',
+                extended_valid_elements: '[span[itemprop|itemtype|itemscope|class|style]',
 
                 //valid_elements : "a[href|target=_blank],strong/b,div,br,table,tr,th,td,img,span[itemprop|itemtype|itemscope|class|style],i[class],hr,iframe[width|height|src|frameborder|allowfullscreen],ul[id],li",
 
@@ -613,6 +613,87 @@ function initForms()
 			jQuery(this).autocomplete({
 				source: '_lib/cms/_ajax/autocomplete.php?field='+this.name
 			});
+		});
+	}
+
+	//chained
+	if( jQuery('div.chained').length ){
+		jQuery('div.chained').each(function() {
+			//create select element
+			var section = $(this).data('section');
+			var name = $(this).data('name');
+			var value = $(this).data('value');
+			var el = $(this);
+			
+			function create_select(options) {
+				// only create menu if there ar eoptions
+            	if (!Object.keys(options).length) {
+            		return;
+            	}
+            	
+            	// we will need the name attribute for the new select
+               	el.children('select').removeAttr('name');
+               	
+               	// create new select
+				var select = $('<select name="'+name+'" class="chained"></select>').appendTo(el);
+				
+				// the choose option will use the value from the previous select
+				var chooseValue = select.prev('select').val();
+				select.append('<option value="'+chooseValue+'">Choose</option>');
+				
+				// add options
+                $.each(options, function(key, val) {
+                	var selected = (key==value || val.children) ? 'selected' : '';
+                	select.append('<option value="'+key+'" '+selected+'>'+val.value+'</option>');
+                	
+                	// create next select
+                	if (val.children) {
+                		create_select(val.children);
+                	}
+                });
+			}
+			
+			function get_values(value, parent) {
+				//get values
+	            $.ajax({
+	                type: "GET",
+	                url: '/_lib/cms/_ajax/chained.php',
+	                data: {
+	                    section: section,
+	                    value: value,
+	                    parent: parent
+	                },
+	                success: function(data, textStatus, jqXHR){
+	                	create_select(data.options);
+	                	
+	                	if (parent) {
+	                		el.children('select').last().change();
+	                	}
+	                },
+	                dataType: 'json'
+	            });
+			}
+			
+			if (!value) {
+				get_values(0);
+			} else {
+				//work backwards
+				get_values(value, 1);
+			}
+            
+            $('body').on('change', 'select.chained', function() {
+            	// remove following selects
+            	$(this).nextAll('select').remove();
+            	
+            	// add name attribute
+            	$(this).attr('name', name);
+            	
+            	// get the next select menu
+            	var value = $(this).val();
+            	if (value && $(this).find(":selected").index()!==0) {
+            		get_values(value);
+            	}
+            });
 		});
 	}
 
@@ -923,7 +1004,7 @@ jQuery(document).ready(function() {
 
 $(document).ready(function(){
 	$('.mob-nav-icon').click(function () {
-			$('.content-wrapper').toggleClass('fullwidth');
-			$('.leftcol').toggleClass('nav-hdn');
+		$('.content-wrapper').toggleClass('fullwidth');
+		$('.leftcol').toggleClass('nav-hdn');
 	});
 });

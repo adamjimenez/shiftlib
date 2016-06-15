@@ -381,20 +381,19 @@ function email_template($email, $subject, $reps, $headers, $language='en')
 	global $from_email, $email_templates, $cms, $lang;
 
 	if( !$language ){
-		$language=$cms->language;
+		$language = $cms->language;
 	}
 
 	if( !$from_email ){
-		$from_email='auto@'.$_SERVER['HTTP_HOST'];
+		$from_email = 'auto@'.$_SERVER['HTTP_HOST'];
 	}
 
 	if( table_exists('email_templates') ){
 		$conditions = is_numeric($subject) ? $subject : array('subject'=>$subject);
-
 		$template = $cms->get('email templates', $conditions, 1);
 
 		if( $language!=='en' ){
-			$template=$cms->get('email templates',array('translated from'=>$template['id']),1);
+			$template = $cms->get('email templates',array('translated from'=>$template['id']),1);
 		}
 	}
 
@@ -411,7 +410,7 @@ function email_template($email, $subject, $reps, $headers, $language='en')
 
 	if( is_array($reps) ){
 		foreach( $reps as $k=>$v ){
-			$body = str_replace('{$'.$k.'}',$v,$body);
+			$body = str_replace('{$'.$k.'}', $v, $body);
 		}
 	}
 
@@ -419,7 +418,7 @@ function email_template($email, $subject, $reps, $headers, $language='en')
 	$body = preg_replace('/{\$[A-Za-z0-9]+}/', '', $body);
 
 	if( $from_email ){
-		$headers.="From: ".$from_email."\n";
+		$headers .= "From: ".$from_email."\n";
 	}
 
 	//fix for outlook clipping new lines
@@ -467,6 +466,8 @@ function error($error){
 
 function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 {
+	global $db_connection;
+	
 	switch ($errno)
 	{
 		case E_USER_WARNING:
@@ -481,26 +482,20 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 		case E_PARSE:
 		case E_CORE_ERROR:
 		case E_COMPILE_ERROR:
-
 			global $query, $db_config;
 
-			if( substr($errstr,0,3)=='SQL' ){
-				if($db_config['mysqli']){
-					$ERRNO = mysqli_errno();
-					$ERROR = mysqli_error();
-				}else{
-					$ERRNO = mysql_errno();
-					$ERROR = mysql_error();
-				}
+			if( mysqli_error($db_connection) ){
+				$ERRNO = mysqli_errno($db_connection);
+				$ERROR = mysqli_error($db_connection);
 				$errstr .= "\nMySQL error: $ERRNO : $ERROR";
 			}else{
 				$query = NULL;
 			}
 
-			$url='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+			$url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
 			if( $_SERVER['QUERY_STRING'] ) {
-				$url.='?'.$_SERVER['QUERY_STRING'];
+				$url .= '?'.$_SERVER['QUERY_STRING'];
 			}
 
 			$errorstring .= "<p>Fatal Error: $errstr (# $errno).</p>\n";
@@ -570,13 +565,8 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 
 function escape($string)
 {
-	global $db_config;
-
-	if($db_config['mysqli']){
-		return mysqli_real_escape_string($string);
-	}else{
-		return mysql_real_escape_string($string);
-	}
+	global $db_connection;
+	return mysqli_real_escape_string($db_connection, $string);
 }
 
 function escape_strip($string)
@@ -1292,59 +1282,32 @@ function spaced($str) // also see underscored
 	return str_replace('_',' ',$str);
 }
 
-function sql_insert_id(){
-	global $db_config;
-
-	if($db_config['mysqli']){
-		return mysqli_insert_id();
-	}else{
-		return mysql_insert_id();
-	}
+function sql_insert_id() {
+	global $db_connection;
+	return mysqli_insert_id($db_connection);
 }
 
-function sql_num_rows(){
-	global $db_config;
-
-	if($db_config['mysqli']){
-		return mysqli_num_rows();
-	}else{
-		return mysql_num_rows();
-	}
+function sql_num_rows($result) {
+	return mysqli_num_rows($result);
 }
 
 function sql_query($query,$single=false)
 {
 	global $db_config, $db_connection;
 
-	if($db_config['mysqli']){
-		$result = mysqli_query($db_connection, $query);
+	$result = mysqli_query($db_connection, $query);
 
-	    if( $result===false ){
-	        throw new Exception(mysqli_error());
-	    }
+    if( $result===false ){
+        throw new Exception(mysqli_error());
+    }
 
-		$return_array = array();
-		while ($row = mysqli_fetch_assoc($result)) {
-			array_push($return_array, $row);
-		}
-		mysqli_free_result($result);
-
-	    return $single ? $return_array[0] : $return_array;
-	}else{
-		$result = mysql_query($query);
-
-	    if( !$result ){
-	        throw new Exception(mysql_error());
-	    }
-
-		$return_array = array();
-		while ($row = mysql_fetch_assoc($result)) {
-			array_push($return_array, $row);
-		}
-		mysql_free_result($result);
-
-	    return $single ? $return_array[0] : $return_array;
+	$return_array = array();
+	while ($row = mysqli_fetch_assoc($result)) {
+		array_push($return_array, $row);
 	}
+	mysqli_free_result($result);
+
+    return $single ? $return_array[0] : $return_array;
 }
 
 function str_to_pagename($page_name){

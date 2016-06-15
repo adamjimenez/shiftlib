@@ -872,18 +872,18 @@ class cms{
 
 		$indent = '';
 		for( $i=0; $i<$depth; $i++ ){
-			$indent .= '  ';
+			$indent .= '-';
 		}
 
 		$parents = array();
 		foreach($rows as $row){
-			if( $row['id'] == $this->id ){
+			if( $row['id'] === $this->id and $section === $this->section ){
 				continue;
 			}
 
-			$parents[$row['id']] = $indent.$row[$label];
+			$parents[$row['id']] = $indent.' '.$row[$label];
 
-			$children = $this->get_children($section,$parent_field,$row['id'],$depth+1);
+			$children = $this->get_children($section, $parent_field, $row['id'], $depth+1);
 
 			if( count($children) ){
 				$parents = $parents + $children;
@@ -1016,36 +1016,35 @@ class cms{
 			case 'combo':
 			case 'select-distance':
 			case 'radio':
-				if( $type!=='combo' ){
+				if($type=='radio') {
 					$vars['options'][$name] = $this->get_options($name, $where);
-				}
-
-				if( $type=='radio' ){
-		?>
-				<? if( is_assoc_array($vars['options'][$name]) ){ ?>
-					<? foreach( $vars['options'][$name] as $k=>$v ){ ?>
-					<label><input type="radio" name="<?=$field_name;?>" value="<?=$k;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( isset($value) and $k==$value ){ ?>checked="checked"<? } ?>  <?=$attribs;?>> <?=$v;?> &nbsp;</label><?=$separator;?>
-					<? } ?>
-				<? }else{ ?>
-					<? foreach( $vars['options'][$name] as $k=>$v ){ ?>
-					<label><input type="radio" name="<?=$field_name;?>" value="<?=$v;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( isset($value) and $v==$value ){ ?>checked="checked"<? } ?> <?=$attribs;?>> <?=$v;?> &nbsp;</label> <?=$separator;?>
-					<? } ?>
-				<? } ?>
-			<?
-				}elseif( $type=='combo' ){
+					
+					$assoc = is_assoc_array($vars['options'][$name]);
+					foreach( $vars['options'][$name] as $k=>$v ) { 
+						$val = $assoc ? $k : $v; 
+					?>
+					<label><input type="radio" name="<?=$field_name;?>" value="<?=$val;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( isset($value) and $val==$value ){ ?>checked="checked"<? } ?>  <?=$attribs;?>> <?=$v;?> &nbsp;</label><?=$separator;?>
+					<? 
+					}
+				} elseif($type=='combo') {
 			?>
 				<input type="text" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?> value="<?=$value;?>" autocomplete="off" class="combo">
 			<?
-				}else{
-			?>
-			<select name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
-			<option value=""><?=$placeholder ? $placeholder : 'Choose';?></option>
-				<?=html_options($vars['options'][$name], $value);?>
-			</select>
-			<?
+				} else {
+					if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
+					?>
+					<div class="chained" data-name="<?=$field_name;?>" data-section="<?=$vars['options'][$name];?>" data-value="<?=$value;?>"></div>
+					<?
+					} else {
+						$vars['options'][$name] = $this->get_options($name, $where);
+					?>
+					<select name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
+					<option value=""><?=$placeholder ?: 'Choose';?></option>
+						<?=html_options($vars['options'][$name], $value);?>
+					</select>
+					<?
+					}
 				}
-			?>
-		<?php
 			break;
 			case 'select-multiple':
 			case 'checkboxes':
@@ -1472,12 +1471,7 @@ class cms{
 		}
 
 		if( !is_array($vars['options'][$name]) ){
-			//$join_id=array_search('id',$vars['fields'][$vars['options'][$name]]);
-
-			//$vars['options'][$name]=get_options(underscored($vars['options'][$name]),underscored(key($vars['fields'][$vars['options'][$name]])),NULL,$join_id);
-
-
-			$table=underscored($vars['options'][$name]);
+			$table = underscored($vars['options'][$name]);
 
 			foreach( $vars['fields'][$vars['options'][$name]] as $k=>$v ){
 				if( $v!='separator' ){
@@ -1490,9 +1484,8 @@ class cms{
 
 			$cols = '';
 			if( is_array($raw_option) ){
-				$db_field_name=$this->db_field_name($vars['options'][$name], $field);
-
-				$cols .= "".underscored($db_field_name)." AS `".underscored($field)."`"."\n";
+				$db_field_name = $this->db_field_name($vars['options'][$name], $field);
+				$cols .= underscored($db_field_name)." AS `".underscored($field)."`"."\n";
 			}else{
 				$cols .= '`'.underscored($field).'`';
 			}
@@ -1536,7 +1529,7 @@ class cms{
 				$parent_field = array_search('parent',$vars['fields'][$vars['options'][$name]]);
 
 				if( $parent_field !== false ){
-					$options = $this->get_children($vars['options'][$name],$parent_field);
+					$options = $this->get_children($vars['options'][$name], $parent_field);
 				}else{
 					$where_str = '';
 					if($where){
@@ -1558,7 +1551,6 @@ class cms{
 
 			$vars['options'][$name]=$options;
 		}elseif( is_object($strs) ){
-
 			if( is_assoc_array($vars['options'][$name]) ){
 				foreach( $vars['options'][$name] as $k=>$v ){
 					if($strs->$v){
@@ -1577,7 +1569,6 @@ class cms{
 
 				$vars['options'][$name] = $new_options;
 			}
-
 		}
 
 		return $vars['options'][$name];
@@ -2077,17 +2068,26 @@ class cms{
 				}elseif( $v=='textarea' and !$auth->user['admin'] ){
 				    $data[$name] = strip_tags($data[$name]);
 				}elseif( $v=='editor' ){
-					$dom = new DOMDocument();
+					$doc = new DOMDocument();
+					$doc->loadHTML("<div>".$data[$name]."</div>");
 					
-					$dom->loadHTML($data[$name], LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);
+					$container = $doc->getElementsByTagName('div')->item(0);
+					$container = $container->parentNode->removeChild($container);
+					while ($doc->firstChild) {
+					    $doc->removeChild($doc->firstChild);
+					}
 					
-					$script = $dom->getElementsByTagName('script');
+					while ($container->firstChild ) {
+					    $doc->appendChild($container->firstChild);
+					}
+					
+					$script = $doc->getElementsByTagName('script');
 					
 					foreach($script as $item) {
 						$item->parentNode->removeChild($item); 
 					}
 					
-					$data[$name] = $dom->saveHTML();
+					$data[$name] = $doc->saveHTML();
 				}
 
 				if( is_array($data[$name]) ){

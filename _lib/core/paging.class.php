@@ -83,8 +83,8 @@ class paging {
 
 			$this->rows = sql_query($this->query);
 
-			$count = mysql_fetch_array(mysql_query("SELECT FOUND_ROWS()"));
-			$this->total = $count[0];
+			$count = sql_query("SELECT FOUND_ROWS()", 1);
+			$this->total = current($count);
 		}else{
 			$this->total = count($query);
 		}
@@ -257,12 +257,7 @@ class paging {
 
 	function do_query()
 	{
-		$select = mysql_query($this->query);
-
-        if( !$select ){
-            throw new Exception(mysql_error());
-        }
-
+		$select = sql_query($this->query);
 		return $select;
 	}
 

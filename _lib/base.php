@@ -59,24 +59,11 @@ require_once(dirname(__FILE__).'/core/common.php');
 include($root_folder.'/_inc/config.php');
 
 if( $db_config['user'] or $db_connection ){
-	$cms=new cms;
+	$cms = new cms;
 
 	if( !$db_connection ){
-		if($db_config['mysqli']){
-			$db_connection = mysqli_connect($db_config['host'],$db_config['user'],$db_config['pass'], $db_config['name']) or trigger_error("SQL", E_USER_ERROR);
-
-			/* check connection */
-			if (mysqli_connect_errno()) {
-				printf("Connect failed: %s\n", mysqli_connect_error());
-    			exit();
-			}
-		}else{
-			$db_connection = mysql_connect($db_config['host'],$db_config['user'],$db_config['pass']) or trigger_error("SQL", E_USER_ERROR);
-
-			mysql_set_charset('utf8', $db_connection);
-
-			mysql_select_db($db_config['name']) or trigger_error("SQL", E_USER_ERROR);
-		}
+		$db_connection = mysqli_connect($db_config['host'],$db_config['user'],$db_config['pass'],$db_config['name']) or trigger_error("SQL", E_USER_ERROR);
+		mysqli_set_charset($db_connection, 'utf8');;
 	}
 
     $auth = new auth();

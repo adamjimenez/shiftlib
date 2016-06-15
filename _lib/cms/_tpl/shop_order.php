@@ -93,6 +93,11 @@ if( !$order ){
 
             <strong>Payment Method:</strong>
             <?=$order['method'];?><br><br>
+            
+            <? if($order['txn_id']){ ?>
+            <strong>Txn id:</strong>
+            <?=$order['txn_id'];?><br><br>
+            <? } ?>
 
     		<? if( $order['event_date'] ){ ?>
     			<p>Event date: <strong><?=dateformat('d/m/Y', $order['event_date']);?></strong></p>
