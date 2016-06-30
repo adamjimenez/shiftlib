@@ -210,16 +210,30 @@ jQuery(document).ready(function() {
 
 <form method="get" id="search_form">
 <input type="hidden" name="option" value="<?=$this->section;?>" />
+
+<div class="top-row">
+	
+	<div id="basic" class="search-container">
+		<input class="search-field form-control" type="text" name="s" id="s" value="<?=$_GET['s'];?>" tabindex="1" placeholder="Search">
+		<button type="submit" class="btn btn-default" tabindex="5">Search <?=ucfirst($this->section);?></button>
+		
+		<a href="#" class="btn btn-default" onclick="toggle_advanced(true); return false;">Advanced search</a><br />
+		
+	</div>
+	
+	
+	<div class="imp-exp-container">
+		<a class="btn btn-primary" href="javascript:;" onclick="toggle_import()">Import</a>
+		<a class="btn btn-primary" href="?option=<?=$_GET['option'];?>&export_all=1">Export all</a>
+	</div>
+	
+	
+</div>
+
 <table width="100%">
 <tr>
 	<td>
-		<div id="basic">
-			<input style="width:170px" type="text" name="s" id="s" value="<?=$_GET['s'];?>" tabindex="1" placeholder="Search">
-			<button type="submit" tabindex="5">Search <?=ucfirst($this->section);?></button>
-			<p  style="font-size:8px; line-height:9px; display:inline-block;">
-			<a href="#" onclick="toggle_advanced(true); return false;">Advanced search</a><br />
-			</p>
-		</div>
+		
 
 		<? if( $parent_field ){ ?>
 		<h3>
@@ -257,9 +271,7 @@ jQuery(document).ready(function() {
 		</h3>
 		<? } ?>
 	</td>
-	<td style="text-align:right;">
-		<a href="javascript:;" onclick="toggle_import()">Import</a> | <a href="?option=<?=$_GET['option'];?>&export_all=1">Export all</a>
-	</td>
+
 </table>
 
 
