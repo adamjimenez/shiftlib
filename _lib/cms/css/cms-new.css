@@ -200,7 +200,7 @@ tr.result_selected td{
 	}
 }
 
-/* END OLD STYLES */ 
+/* END OLD STYLES */
 
 
 
@@ -217,7 +217,7 @@ body {
 	margin: 0;
 	background: #F0F3F4 !important;
 	font-family: 'Roboto', sans-serif;
-	
+
 }
 
 .header-row {
@@ -239,11 +239,11 @@ body {
 	text-align: center;
 }
 .logobox a {
-	
+
 	text-decoration: none;
 	color: #fff;
 	font-size: 18px;
-	
+
 }
 .logobox a:hover {
 	text-decoration: none;
@@ -257,8 +257,8 @@ body {
 	font-size: 18px;
 	color: #223224;
 	height: 50px;
-	
-	
+
+
 }
 .right-opts .name {
 	padding: 10px;
@@ -280,21 +280,21 @@ body {
 	color: #223224;
 }
 .wrapper {
-	
+
 	min-height: 100%;
 	position: relative;
 	overflow: hidden;
 }
 
 .inner {
-	
+
 	float: left;
 	width: auto;
 	margin: 100px;
-	
+
 }
 .content-wrapper {
-	
+
 	min-height: 900px;
 	z-index: 500;
 	margin-left: 250px;
@@ -307,7 +307,7 @@ body {
 	padding: 15px;
 	margin: 80px 25px 20px 25px;
 	background: #FFF;
-	
+
 	border-radius: 5px;
 	box-sizing: border-box;
 -webkit-box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
@@ -315,7 +315,7 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 
 }
 #current a {
-	color: #66A63A;	
+	color: #66A63A;
 }
 #current {
 	background: #152316;
@@ -342,7 +342,7 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	float: left;
 	margin: 25px 0 0 0;
 	padding: 0;
-	
+
 }
 .leftcol ul li {
 	float: left;
@@ -362,7 +362,7 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 }
 
 .leftcol ul li a {
-	
+
 	padding: 12px 5px 12px 15px;
 	display: block;
 	transition: all 0.3s linear;
@@ -372,11 +372,11 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 .leftcol ul li a:hover {
 	text-decoration: none;
 	transition: all 0.3s linear;
-	color: #66A63A;	
+	color: #66A63A;
 }
 
 .mob-nav-icon {
-	
+
 	float: left;
 	width: 50px;
 	height: 50px;
@@ -397,7 +397,7 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	transition: margin 0.4s linear;
 }
 .nav-hdn {
-	
+
 	margin-left: -250px;
 	transition: margin 0.4s linear;
 }
@@ -409,4 +409,32 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 
 #sections h3{
 	margin: 0;
+}
+
+.prefs-save-btn {
+	float: left;
+	margin: -5px 20px;
+}
+.showpasswordlabel {
+
+	float: left;
+	width: 150px;
+	margin: 15px 0;
+	clear: both;
+	text-align: right;
+	height: 34px;
+
+}
+.showpasswordcheckbox {
+	margin-top: 3px !important;
+	float: left;
+
+}
+.showpasswordlabel span {
+	float: left;
+	margin-left: 3px;
+	margin-top: -2px;
+	font-weight: normal;
+	color: #000;
+
 }
