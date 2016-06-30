@@ -213,12 +213,18 @@ jQuery(document).ready(function() {
 <table width="100%">
 <tr>
 	<td>
-		<div id="basic">
-			<input style="width:170px" type="text" name="s" id="s" value="<?=$_GET['s'];?>" tabindex="1" placeholder="Search">
-			<button type="submit" tabindex="5">Search <?=ucfirst($this->section);?></button>
-			<p  style="font-size:8px; line-height:9px; display:inline-block;">
-			<a href="#" onclick="toggle_advanced(true); return false;">Advanced search</a><br />
-			</p>
+		<div id="basic" class="searchrow">
+			<input class="searchbtn form-control" type="text" name="s" id="s" value="<?=$_GET['s'];?>" tabindex="1" placeholder="Search">
+			<button type="submit" tabindex="5" class="btn btn-default">Search <?=ucfirst($this->section);?></button>
+
+			<a href="#" onclick="toggle_advanced(true); return false;" class="btn btn-primary">Advanced search</a>
+
+
+			<div style="text-align:right;float: right;">
+				<a href="javascript:;" onclick="toggle_import()" class="btn btn-default">Import</a>
+				<a href="?option=<?=$_GET['option'];?>&export_all=1" class="btn btn-default">Export all</a>
+			</div>
+
 		</div>
 
 		<? if( $parent_field ){ ?>
@@ -257,9 +263,7 @@ jQuery(document).ready(function() {
 		</h3>
 		<? } ?>
 	</td>
-	<td style="text-align:right;">
-		<a href="javascript:;" onclick="toggle_import()">Import</a> | <a href="?option=<?=$_GET['option'];?>&export_all=1">Export all</a>
-	</td>
+
 </table>
 
 
