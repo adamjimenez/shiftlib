@@ -553,7 +553,7 @@ jQuery(document).ready(function() {
 		<legend>With all results</legend>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="export" value="1" />
-			<button type="submit">Export</button>
+			<button  class="btn btn-default" type="submit">Export</button>
 		</form>
 		<? /*
 		<? if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
