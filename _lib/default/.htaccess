@@ -6,5 +6,9 @@ RewriteBase /
 #RewriteCond %{HTTP_HOST} !^www.domain.co.uk$ [NC]
 #RewriteRule ^(.*)$ http://www.domain.co.uk/$1 [L,R=301]
 
+# rewrite template urls
+RewriteRule _tpl/(.*)\.php $1 [L,QSA,R=301]
+
+# rewrite files that don't exist to shiftlib
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule (.*) _lib/default.php [L,QSA]

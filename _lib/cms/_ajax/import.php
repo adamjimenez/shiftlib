@@ -95,12 +95,12 @@ if( !$errors ){
         						}
 
         						/*
-        						mysql_query("INSERT INTO `".escape($vars['options'][$k])."`
+        						sql_query("INSERT INTO `".escape($vars['options'][$k])."`
         							SET
         								`".key($vars['fields'][$vars['options'][$k]])."`='".escape(trim($v))."'
-        						") or trigger_error("SQL", E_USER_ERROR);
+        						");
 
-        						$v=mysql_insert_id();
+        						$v=sql_insert_id();
         						*/
         					}
         				}else{
@@ -176,74 +176,6 @@ if( !$errors ){
 
             send_msg($startedAt, $result);
 
-        	/*
-        	if( $row['id'] ){
-        		$result=mysql_query("SELECT * FROM `$table`
-        			WHERE
-        				id='".escape(trim($row['id']))."'
-        		") or trigger_error("SQL", E_USER_ERROR);
-
-        		if( mysql_num_rows($result) ){
-        			mysql_query("UPDATE `$table` SET
-        				$query
-        				WHERE
-        					id='".escape(trim($row['id']))."'
-        				LIMIT 1
-        			") or trigger_error("SQL", E_USER_ERROR);
-        		}
-
-        		$id=$row['id'];
-        	}else{
-        		mysql_query("INSERT INTO `$table` SET
-        			$query
-        		");
-
-        		$id=mysql_insert_id();
-        	}
-
-        	foreach( $row as $k=>$v ){
-
-        		if( $vars['fields'][$_POST['section']][$k]=='select-multiple' or $vars['fields'][$_POST['section']][$k]=='checkboxes' ){
-        			if( !is_array($vars['options'][$k]) ){
-        				if( !is_numeric($v) ){
-        					$values=explode("\n", $v);
-
-        					foreach( $values as $value ){
-        						reset($vars['fields'][$vars['options'][$k]]);
-
-        						$row=sql_query("SELECT id FROM `".escape($vars['options'][$k])."`
-        							WHERE
-        								`".underscored(key($vars['fields'][$vars['options'][$k]]))."`='".escape(trim($value))."'"
-        						);
-
-        						if( count($row) ){
-        							$v=$row[0]['id'];
-        						}else{
-        							mysql_query("INSERT INTO `".escape($vars['options'][$k])."`
-        								SET
-        									`".key($vars['fields'][$vars['options'][$k]])."`='".escape(trim($value))."'
-        							") or trigger_error("SQL", E_USER_ERROR);
-
-        							$v=mysql_insert_id();
-        						}
-
-        						if( $id ){
-        							mysql_query("INSERT INTO cms_multiple_select SET
-        								`section`='".escape($_POST['section'])."',
-        								`field`='".escape($k)."',
-        								`item`='".escape($id)."',
-        								`value`='".escape($v)."'
-        							") or trigger_error("SQL", E_USER_ERROR);
-        						}
-        					}
-        				}else{
-        					$v=$v;
-        				}
-        			}else{
-        			}
-        		}
-        	}
-            */
 		}
 
 		$i++;

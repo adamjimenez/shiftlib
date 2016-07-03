@@ -1,8 +1,8 @@
 <?
 // configure these
-$default_width=320;
-$default_height=240;
-$quality=85;
+$default_width = 320;
+$default_height = 240;
+$quality = 85;
 
 // end configure
 $max_width = (isset($_GET['w'])) ? $_GET['w'] : $default_width;
@@ -36,12 +36,12 @@ function thumb_img($img,$dimensions,$output=true,$margin=false)
 		$padding_top=($dimensions[1]-$new_height)/2;
 
 		imagecopy($dest, $img, $padding_left, $padding_top, 0, 0, $new_width, $new_height);
-		$img=$dest;
+		$img = $dest;
 	}
 
 	if( $output ){
 		header("Content-type: image/jpeg");
-		imagejpeg($img,NULL,85);
+		imagejpeg($img, NULL, 85);
 	}else{
 		return $img;
 	}
@@ -49,12 +49,15 @@ function thumb_img($img,$dimensions,$output=true,$margin=false)
 
 require_once(dirname(__FILE__).'/../base.php');
 
+if (!$_GET['f']) {
+	die('no file');
+}
+
 //$auth->check_admin();
 
-$select = mysql_query("SELECT * FROM files WHERE
+$row = sql_query("SELECT * FROM files WHERE
 	id='".addslashes($_GET['f'])."'
-");
-$row = mysql_fetch_array($select);
+", 1);
 
 if( $vars['files']['dir'] ){
     $video_types=array('f4v','mp4');
@@ -67,7 +70,7 @@ if( $vars['files']['dir'] ){
 }
 
 $img = imagecreatefromstring($row['data']);
-$img = thumb_img($img,array($max_width,$max_height),false);
+$img = thumb_img($img,array($max_width, $max_height), false);
 
 switch( file_ext($row['name']) ){
 	case 'jpg':

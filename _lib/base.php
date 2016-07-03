@@ -62,7 +62,7 @@ if( $db_config['user'] or $db_connection ){
 	$cms = new cms;
 
 	if( !$db_connection ){
-		$db_connection = mysqli_connect($db_config['host'],$db_config['user'],$db_config['pass'],$db_config['name']) or trigger_error("SQL", E_USER_ERROR);
+		$db_connection = mysqli_connect($db_config['host'], $db_config['user'], $db_config['pass'], $db_config['name']) or trigger_error("SQL", E_USER_ERROR);
 		mysqli_set_charset($db_connection, 'utf8');;
 	}
 

@@ -275,7 +275,11 @@ class auth{
 	{
 		//$_SESSION['error'] = $error;
 
-	    print json_encode($this->errors);
+        if($_POST['f']=='html'){
+            redirect($this->login);
+        }else{
+            print json_encode($this->errors);
+        }
         exit;
 	}
 
@@ -305,7 +309,7 @@ class auth{
 
 		$reps = $_POST;
 
-		if( $this->activation_required ){
+		if( $this->email_activation ){
 			//activation code
 			$code = substr(md5(rand(0,10000)), 0, 10);
 

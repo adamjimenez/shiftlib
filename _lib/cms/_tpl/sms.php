@@ -16,8 +16,8 @@ $sms = new $sms_config['provider']($sms_config['username'], $sms_config['passwor
 $credits = $sms->quota(); //we need to obtain this somehow
 
 //sms templates
-$select=mysql_query("SELECT * FROM sms_templates ORDER BY subject");
-while( $row=mysql_fetch_array($select) ){
+$rows = sql_query("SELECT * FROM sms_templates ORDER BY subject");
+foreach($rows as $row) {
 	$opts['sms_template'][$row['id']]=$row['subject'];
 	$sms_templates[$row['id']]=$row;
 }

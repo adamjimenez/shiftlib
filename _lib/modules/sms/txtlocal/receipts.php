@@ -8,11 +8,11 @@ $result_opts=array(
 );
 
 if( $_POST['number'] and $_POST['status'] ){	
-	mysql_query("UPDATE texts_sent SET
+	sql_query("UPDATE texts_sent SET
 		result='".escape($result_opts[$_POST['status']])."'
 		WHERE
 			id='".escape($_POST['customID'])."'
-	") or trigger_error("SQL", E_USER_ERROR);
+	");
 	
 	/*
 	foreach( $_POST as $k=>$v ){

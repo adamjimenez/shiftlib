@@ -1282,6 +1282,11 @@ function spaced($str) // also see underscored
 	return str_replace('_',' ',$str);
 }
 
+function sql_affected_rows() {
+	global $db_connection;
+	return mysqli_affected_rows($db_connection);
+}
+
 function sql_insert_id() {
 	global $db_connection;
 	return mysqli_insert_id($db_connection);

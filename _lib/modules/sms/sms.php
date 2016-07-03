@@ -14,22 +14,21 @@ class sms{
 		
 		if( !$custom ){
 			foreach( $user_ids as $id ){
-				$select=mysql_query("SELECT * FROM ".$this->table." 
+				$users[] = sql_query("SELECT * FROM ".$this->table." 
 					WHERE 
 						id='".escape($id)."'
-					") or trigger_error("SQL", E_USER_ERROR);
-				$users[]=mysql_fetch_array($select);
+					", 1);
 			}
 		}else{
 			$users=$user_ids;
 		}
 		
-		mysql_query("INSERT INTO texts SET
+		sql_query("INSERT INTO texts SET
 			date=NOW(),
 			message='".escape($message)."'
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 		
-		$this->text_id=mysql_insert_id();
+		$this->text_id = sql_insert_id();
 	
 		foreach( $users as $user ){	
 			$msg=$message;
@@ -40,12 +39,12 @@ class sms{
 			
 			//die($msg);
 		
-			mysql_query("INSERT INTO texts_sent SET
+			sql_query("INSERT INTO texts_sent SET
 				text='".escape($this->text_id)."',
 				mobile='".escape($user['id'])."'
-			") or trigger_error("SQL", E_USER_ERROR);
+			");
 			
-			$this->sent_id=mysql_insert_id();
+			$this->sent_id = sql_insert_id();
 	
 			$result=$this->send_sms($user['mobile'], $msg);
 		}
