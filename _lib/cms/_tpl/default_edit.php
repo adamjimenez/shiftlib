@@ -227,8 +227,8 @@ foreach( $languages as $language ){
 <table width="100%">
 <tr>
 	<td>
-    <button type="submit" class="btn btn-success">Save</button>
-  	<button type="button" class="btn btn-danger" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
+    		<button type="submit" class="btn btn-success">Save</button>
+  		<button type="button" class="btn btn-danger" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
 	</td>
 </tr>
 </table>
