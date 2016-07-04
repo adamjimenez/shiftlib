@@ -115,7 +115,7 @@ $(function() {
 <table width="100%">
 <tr>
 	<td>
-    <div class="top-row">
+    		<div class="top-row">
 			<button type="submit" class="btn btn-success">Save</button>
 			<button type="button" class="btn btn-danger" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
 		</div>
