@@ -473,3 +473,13 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	margin-bottom: 20px;
 
 }
+.sorting-arrows {
+	text-align: left;
+	width: 37px;
+}
+.sorting-arrows i {
+	float: left;
+}
+.sorting-arrows i:first-child {
+	margin-right: 5px;
+}

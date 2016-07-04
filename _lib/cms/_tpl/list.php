@@ -63,7 +63,7 @@ foreach( $where as $k=>$v ){
 <tbody id="items_<?=underscored($this->section);?>">
 <tr>
 	<? if( $sortable ){ ?>
-		<th width="16" style="text-align:center;">
+		<th class="sorting-arrows">
 			<i class="fa fa-arrow-up"></i>
 			<i class="fa fa-arrow-down"></i>
 		</th>
@@ -321,4 +321,3 @@ foreach( $vars['content'] as $v){
 	<td width="33%" style="text-align:right;"><?=$p->items_per_page();?>&nbsp;</td>
 </tr>
 </table>
-
