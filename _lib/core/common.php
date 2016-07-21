@@ -1,5 +1,5 @@
 <?php
-$debug_ip='';
+$debug_ip = '';
 
 error_reporting(E_ALL ^ E_NOTICE);
 ini_set('error_reporting', E_ALL ^ E_NOTICE);
@@ -467,7 +467,7 @@ function error($error){
 function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 {
 	global $db_connection;
-	
+
 	switch ($errno)
 	{
 		case E_USER_WARNING:
@@ -1546,7 +1546,7 @@ function video_info($url) {
 	}else{
 		$data['url'] = $url;
 	}
-	
+
 	if (ends_with($data['url'], '.mp4')) {
 		$data['tag'] = '<video controls>
 		    <source src="'.$data['url'].'" type="video/mp4">
