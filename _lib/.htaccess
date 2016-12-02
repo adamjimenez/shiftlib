@@ -14,6 +14,7 @@ RewriteEngine off
 php_value max_input_vars 5000
 php_value upload_max_filesize 30M
 php_value post_max_size 30M
+#php_value memory_limit 256M
 </IfModule>
 
 ExpiresActive on

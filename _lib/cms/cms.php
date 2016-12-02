@@ -277,8 +277,8 @@ class cms{
 				$field_name = underscored($name);
 
 				if(
-					( isset($conditions[$name]) and $conditions[$name]!=='' ) or
-					( isset($conditions[$field_name]) and $conditions[$field_name]!=='' )
+					( isset($conditions[$name]) ) or
+					( isset($conditions[$field_name]) )
 				){
 					$value = $conditions[$name] ? $conditions[$name] : $conditions[$field_name];
 
@@ -317,6 +317,7 @@ class cms{
 						case 'date':
 						case 'datetime':
 						case 'timestamp':
+						case 'month':
 						    if(!$conditions['func'][$field_name]){
 						        $conditions['func'][$field_name] = '=';
 						    }
@@ -381,8 +382,14 @@ class cms{
 							}
 						break;
 						default:
+							if( $conditions['func'][$field_name]=='!=' ){
+								$operator = '!=';
+							}else{
+								$operator = 'LIKE';
+							}
+
 							$value = str_replace('*','%',$value);
-							$where[] = "T_$table.".$field_name." LIKE '".escape($value)."'";
+							$where[] = "T_$table.".$field_name." ".$operator." '".escape($value)."'";
 						break;
 					}
 				}
@@ -523,16 +530,12 @@ class cms{
 			if( !$order ){
 				if( $sortable ){
 					$order = 'T_'.$table.'.position';
-				}else if( in_array('date', $vars['fields'][$section]) ){
-					$field_date = array_search('date', $vars['fields'][$section]);
+				}else if( ($field_date = array_search('date', $vars['fields'][$section]))!==false and in_array($field_date, $vars['labels'][$section]) ){
 					$order = 'T_'.$table.'.'.underscored($field_date);
 					$asc = false;
-				}else if( in_array('timestamp', $vars['fields'][$section]) ){
-					$field_date = array_search('timestamp', $vars['fields'][$section]);
+				}else if( ($field_date = array_search('timestamp', $vars['fields'][$section]))!==false and in_array($field_date, $vars['labels'][$section]) ){
 					$order = 'T_'.$table.'.'.underscored($field_date);
 					$asc = false;
-				}else if( in_array('date', $vars['fields'][$section]) ){
-					$order = 'T_'.$table.'.date';
 				}else{
 					$label = $vars['labels'][$section][0];
 
@@ -940,6 +943,10 @@ class cms{
 			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
 		<?php
 			break;
+			case 'hidden':
+		?>
+			<input type="hidden" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
+		<?php
 			case 'int':
 		?>
 			<input type="number" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
@@ -1003,7 +1010,7 @@ class cms{
 				<?=$file['name'];?>
 				<a href="javascript:;" onClick="clearFile('<?=$field_name;?>')">clear</a>
 			<? }else{ ?>
-				<input type="file" id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> />
+				<input type="file" id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?> />
 			<? } ?>
 		<?php
 			break;
@@ -1223,6 +1230,11 @@ class cms{
 			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
+			case 'month':
+		?>
+			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+		<?php
+			break;
 			case 'dob':
 		?>
 			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
@@ -1429,6 +1441,10 @@ class cms{
 			}
 
 			$value = $value.' (<?=$age;?>)';
+		}elseif( $type=='month' ){
+			if( $value!='0000-00-00' and $value!='' ){
+				$value=dateformat('F Y',$value);
+			}
 		}elseif( $type == 'datetime' ){
 			if( $value!='0000-00-00 00:00:00' ){
 				$date = explode(' ', $value);
@@ -1608,8 +1624,9 @@ class cms{
 
 		if( file_exists('_tpl/admin/'.underscored($_GET['option']).'.php') ){
 			$this->template(underscored($_GET['option']).'.php');
-		}elseif( method_exists($this,$_GET['option']) ){
-			$this->$_GET['option']();
+		}elseif( method_exists($this, $_GET['option']) ){
+			$method = (string)$_GET['option'];
+			$this->$method();
 		}elseif( isset($_GET['option']) ){
 			$this->default_section($_GET['option']);
 		}else{
@@ -1847,7 +1864,7 @@ class cms{
 		}
 
 		foreach( $field_arr as $k=>$v ){
-			if( $v=='id' or $v=='related' or $v=='timestamp' or $v=='separator' or $v=='translated-from' or $v=='hidden' or $v=='polygon' ){
+			if( $v=='id' or $v=='related' or $v=='timestamp' or $v=='separator' or $v=='translated-from' or $v=='polygon' ){
 				continue;
 			}
 
@@ -1924,6 +1941,11 @@ class cms{
 					if( $data[$name] ){
 						$parts = explode('/',$data[$name]);
 						$data[$name] = $parts[2].'-'.$parts[1].'-'.$parts[0];
+					}
+				}elseif( $v=='month' ){
+					if( $data[$name] ){
+						$parts = explode('/',$data[$name]);
+						$data[$name] = $parts[1].'-'.$parts[0].'-01';
 					}
 				}elseif( $v=='file' ){
 					if( $_FILES[$name]['error']=='UPLOAD_ERR_OK' ){

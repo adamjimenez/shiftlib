@@ -165,6 +165,7 @@ $field_opts=array(
 	'datetime',
 	'timestamp',
 	'dob',
+	'month',
 	'file',
 	'files',
 	'phpupload',

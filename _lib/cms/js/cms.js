@@ -199,7 +199,7 @@ function initForms()
 						//show first error
 						var tab, node;
 
-						node=this[firstError];
+						node = this[firstError];
 
 						if( node ){
 							while( node=node.parentNode ){
@@ -220,9 +220,7 @@ function initForms()
 						}
 
 						//focus field
-						if( this[firstError] ){
-							this[firstError].focus();
-						}
+						$(this).find('[name='+returned[0]+']:first').focus();
 					}
 
 					//remove error messages
@@ -299,12 +297,50 @@ function initForms()
     		yearRange: '-100y:c+nn',
     		maxDate: '-1d'
     	});
+
+    	//month
+    	jQuery('input.month').datepicker({
+	        dateFormat: "mm/yy",
+	        changeMonth: true,
+	        changeYear: true,
+	        showButtonPanel: true,
+            onClose: function(dateText, inst) {
+				function isDonePressed(){
+					return ($('#ui-datepicker-div').html().indexOf('ui-datepicker-close ui-state-default ui-priority-primary ui-corner-all ui-state-hover') > -1);
+				}
+
+				if (isDonePressed()){
+					var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+					var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+					$(this).datepicker('setDate', new Date(year, month, 1)).trigger('change');
+                    
+					$('.date-picker').focusout(); //Added to remove focus from datepicker input box on selecting date
+                }
+            },
+			beforeShow: function(input, inst) {
+				if ((datestr = $(this).val()).length > 0) {
+					year = datestr.substring(datestr.length-4, datestr.length);
+					month = datestr.substring(0, 2);
+					$(this).datepicker('option', 'defaultDate', new Date(year, month-1, 1));
+					$(this).datepicker('setDate', new Date(year, month-1, 1));
+				}
+
+				setTimeout(function() {
+					$(".ui-datepicker-calendar").hide();
+                }, 1);
+            },
+            onChangeMonthYear: function() {
+				setTimeout(function() {
+					$(".ui-datepicker-calendar").hide();
+                }, 1);
+            }
+        });
     }
 
 	//maps
 	if( jQuery('input.map').length ){
 	    var maps = [];
-		google.load("maps", "3", {other_params: "sensor=false", "callback" : function(){
+		google.load("maps", "3", {other_params: "sensor=false&key="+$('input.map').data('key'), "callback" : function(){
 			jQuery.each(jQuery('input.map'), function() {
 				div = document.createElement("div");
 				div.style.width='600px';
@@ -352,7 +388,7 @@ function initForms()
 					var points = $(this).data('points');
 					var name = this.name;
 
-					for (i in points) {
+					for (var i in points) {
 						var point = points[i];
 
 						lat = point.coords[0];

@@ -163,7 +163,14 @@ foreach( $languages as $language ){
 		<table border="1" cellspacing="0" cellpadding="5" width="100%">
 		<?
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
-			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','hidden','deleted')) ){
+			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','deleted')) ){
+				continue;
+			}
+			
+			if ($type=='hidden') {
+			?>
+				<?=$this->get_field($name);?>
+			<?
 				continue;
 			}
 

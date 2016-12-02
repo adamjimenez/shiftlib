@@ -31,7 +31,7 @@ if( in_array('select-distance',$vars['fields'][$this->section]) ){
 //bulk delete
 if( $_POST['action']=='export' ){
 	foreach( $_POST['items'] as $item ){
-		$vars['content'][]=$this->get($this->section,$item);
+		$vars['content'][] = $this->get($this->section,$item);
 	}
 
 	$i=0;
@@ -40,11 +40,10 @@ if( $_POST['action']=='export' ){
 			$j=0;
 			foreach($row as $k=>$v){
 				$data.='"'.$k.'",';
-
 				$headings[$j]=$k;
 			}
-			$data=substr($data,0,-1);
-			$data.="\n";
+			$data = substr($data,0,-1);
+			$data .= "\n";
 
 			$j++;
 		}
@@ -74,29 +73,26 @@ if( $_POST['action']=='delete' ){
 
 if( $_POST['action']=='email' ){
 	if( $_POST['select_all_pages'] ){
-		$users=$this->get($this->section,$_GET);
+		$users = $this->get($this->section,$_GET);
 	}else{
 		$_POST['items'];
 
-		$users=array();
+		$users = array();
 		foreach( $_POST['items'] as $v ){
-			$users[]=$this->get($this->section,$v);
+			$users[] = $this->get($this->section,$v);
 		}
 	}
 
 	require(dirname(__FILE__).'/shiftmail.php');
 }elseif( isset($_POST['custom_button']) ){
 	global $content;
-	$content=$this->get($this->section,$_GET);
-
+	$content = $this->get($this->section,$_GET);
 	$cms_buttons[$_POST['custom_button']]['handler']();
 }elseif( $_POST['sms'] ){
-	$users=$this->get($this->section,$_GET);
-
+	$users = $this->get($this->section,$_GET);
 	require(dirname(__FILE__).'/sms.php');
 }elseif( $_POST['shiftmail'] ){
-	$users=$this->get($this->section,$_GET);
-
+	$users = $this->get($this->section,$_GET);
 	require(dirname(__FILE__).'/shiftmail.php');
 }else{
 	if( $_POST['select_all_pages'] and $_POST['section'] and $_POST['action']=='delete' ){
@@ -104,25 +100,42 @@ if( $_POST['action']=='email' ){
 	}
 
 	if( $_POST['export'] or $_GET['export_all'] ){
-		set_time_limit(0);
+		set_time_limit(300);
+		ob_end_clean();
 
-		$conditions=$_POST['export'] ? $_GET : NULL;
+		$conditions = $_POST['export'] ? $_GET : NULL;
+		$sql = $this->conditions_to_sql($this->section, $conditions);
+		$table = underscored($this->section);
+		$field_id = in_array('id',$vars['fields'][$this->section]) ? array_search('id',$vars['fields'][$this->section]) : 'id';
 
-		$rows = $this->get($this->section, $conditions);
+		$query = "SELECT *
+		FROM `$table` T_$table
+			".$sql['joins']."
+		".$sql['where_str']."
+		GROUP BY
+			T_".$table.".".$field_id."
+		".$sql['having_str']."
+		";
+		
+		global $db_connection;
+		$result = mysqli_query($db_connection, $query);
+		
+	    if( $result===false ){
+	        throw new Exception(mysqli_error());
+	    }
 
 		header('Pragma: cache');
 		header('Content-Type: text/comma-separated-values; charset=UTF-8');
 		header('Content-Disposition: attachment; filename="'.$this->section.'.csv"');
 
 		$i=0;
-		foreach($rows as $row){
+		while ($row = mysqli_fetch_assoc($result)) {
 			$data='';
 
 			if($i==0){
 				$j=0;
 				foreach($row as $k=>$v){
 					$data.='"'.$k.'",';
-
 					$headings[$j]=$k;
 				}
 				$data = substr($data,0,-1);
@@ -130,23 +143,22 @@ if( $_POST['action']=='email' ){
 
 				$j++;
 			}
-			$j=0;
+			$j = 0;
 			foreach($row as $k=>$v){
 			    if(is_array($v)){
-			    	$data.='"'.str_replace('"', '""', serialize($v)).'",';
+			    	$data .= '"'.str_replace('"', '""', serialize($v)).'",';
 			    }else{
-			    	$data.='"'.str_replace('"', '""', $v).'",';
+			    	$data .= '"'.str_replace('"', '""', $v).'",';
 			    }
 
 				$j++;
 			}
-			$data=substr($data,0,-1);
-			$data.="\n";
+			$data = substr($data,0,-1);
+			$data .= "\n";
 			$i++;
 
 			print($data);
 		}
-
 
 		exit();
 	}
@@ -170,16 +182,16 @@ if( $_POST['action']=='email' ){
 		exit;
 	}
 
-	$limit=($sortable) ? NULL : 25;
+	$limit = ($sortable) ? NULL : 25;
 
-	$first_field_type=$vars['fields'][$this->section][$vars['labels'][$this->section][0]];
+	$first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
 
-	$asc=($first_field_type=='date' or $first_field_type=='timestamp') ? false : true;
+	$asc = ($first_field_type=='date' or $first_field_type=='timestamp') ? false : true;
 
-	$conditions=$_GET;
+	$conditions = $_GET;
 
 	if( in_array('parent',$vars['fields'][$this->section]) ){
-		$parent_field=array_search('parent',$vars['fields'][$this->section]);
+		$parent_field = array_search('parent',$vars['fields'][$this->section]);
 	}
 
 	if( $parent_field and !$conditions[underscored($parent_field)] ){
@@ -191,7 +203,7 @@ if( $_POST['action']=='email' ){
 	}
 
 	$vars['content'] = $this->get($this->section, $conditions, $limit, NULL, $asc, 'list');
-	$p=$this->p;
+	$p = $this->p;
 
 	foreach( $vars['fields'][$this->section] as $field=>$type ){
 		if( $type == 'position' or $type == 'id' ){
@@ -395,7 +407,7 @@ jQuery(document).ready(function() {
 					</select>
 				</td>
 			</tr>
-			<? }elseif( $type == 'date' or $type=='timestamp' ){ ?>
+			<? }elseif( $type == 'date' or $type=='timestamp' or $type=='month' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>

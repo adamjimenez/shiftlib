@@ -1,4 +1,12 @@
 <?
+require_once(dirname(__FILE__).'/../base.php');
+
+$auth->check_login();
+
+if( $auth->user['admin']!=1 and !$auth->user['privileges']['uploads'] ){
+	die('access denied');
+}
+
 // configure these
 $default_width = 320;
 $default_height = 240;
@@ -47,13 +55,9 @@ function thumb_img($img,$dimensions,$output=true,$margin=false)
 	}
 }
 
-require_once(dirname(__FILE__).'/../base.php');
-
 if (!$_GET['f']) {
 	die('no file');
 }
-
-//$auth->check_admin();
 
 $row = sql_query("SELECT * FROM files WHERE
 	id='".addslashes($_GET['f'])."'

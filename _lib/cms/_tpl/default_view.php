@@ -151,7 +151,7 @@ window.onload=init;
 		}
 		?>
 
-		<? if( $section and in_array('id', $vars['fields'][$this->section]) ){ ?>
+		<? if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
 		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>">&laquo; Back to <?=ucfirst($section);?></a>
 		&nbsp;
 		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ ?>
@@ -415,6 +415,13 @@ foreach( $languages as $language ){
 		?>
 			<?=$value;?>
 		<?
+		}elseif( $type == 'month' ){
+			if( $value!='0000-00-00' and $value!='' ){
+				$value=dateformat('F Y',$value);
+			}
+		?>
+			<?=$value;?>
+		<?
 		}elseif( $type=='dob' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$age=age($value);
@@ -646,7 +653,7 @@ if( is_array($vars['subsections'][$this->section]) ){
 <?
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
 ?>
-	<li><a href="javascript:;" target="subsection_<?=$count;?>" class="tab" onclick="return false;"><?=ucfirst($subsection);?></a></li>
+		<li><a id="tab_<?=$count;?>" href="javascript:;" target="subsection_<?=$count;?>" class="tab" onclick="return false;"><?=ucfirst($subsection);?></a></li>
 <?
 	}
 ?>
@@ -666,8 +673,7 @@ if( is_array($vars['subsections'][$this->section]) ){
 
     		if( in_array('position', $vars['fields'][$this->section]) ){
     			//$order = 'position';
-    			$asc = true;
-    			$limit = NULL;
+    			$limit = null;
     		}else{
     			$label = $vars['labels'][$this->section][0];
 
@@ -694,6 +700,9 @@ if( is_array($vars['subsections'][$this->section]) ){
     		}
 
     		$qs = http_build_query($qs);
+    		
+    		$first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
+			$asc = ($first_field_type=='date' or $first_field_type=='timestamp') ? false : true;
 
 			$order = null;
     		$vars['content'] = $this->get($subsection, $conditions, $limit, $order, $asc, $table);
@@ -712,6 +721,10 @@ if( is_array($vars['subsections'][$this->section]) ){
 	?>
 	</div>
 </div>
+
+<script>
+	$('#tab_<?=$count;?>').text('<?=ucfirst($subsection);?> (<?=$p->total;?>)');
+</script>
 
 
 <?

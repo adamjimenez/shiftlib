@@ -3,6 +3,10 @@ require_once(dirname(__FILE__).'/../base.php');
 
 $auth->check_login();
 
+if( $auth->user['admin']!=1 and !$auth->user['privileges']['uploads'] ){
+	die('access denied');
+}
+
 $row = sql_query("SELECT * FROM files WHERE 
 	id='".addslashes($_GET['f'])."'
 ", 1);

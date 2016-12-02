@@ -624,6 +624,7 @@ function form_to_db($type)
 		break;
 		case 'date':
 		case 'dob':
+		case 'month':
 			return 'DATE';
 		break;
 		case 'time':
@@ -1296,7 +1297,7 @@ function sql_num_rows($result) {
 	return mysqli_num_rows($result);
 }
 
-function sql_query($query,$single=false)
+function sql_query($query, $single=false)
 {
 	global $db_config, $db_connection;
 

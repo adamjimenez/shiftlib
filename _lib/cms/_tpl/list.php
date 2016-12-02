@@ -199,6 +199,14 @@ foreach( $vars['content'] as $v){
 				?>
 					<?=$value;?>
 				<?
+				}elseif( $vars['fields'][$this->section][$k] == 'month' ){
+					if( $value!='0000-00-00' ){
+						$date = explode(' ',$value);
+						$value = dateformat('F Y',$date[0]).' '.$date[1];
+					}
+				?>
+					<?=$value;?>
+				<?
 				}elseif( $vars['fields'][$this->section][$k] == 'dob' ){
 				?>
 					<? if( $value!='0000-00-00' ){ ?>

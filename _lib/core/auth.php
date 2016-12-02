@@ -131,7 +131,11 @@ class auth{
 			$result = $this->register();
 
 			if($result===true) {
-				redirect($this->register_success);
+				if ($_POST['redirect']) {
+					redirect($_POST['redirect']);
+				} else {
+					redirect($this->register_success);
+				}
 			}else{
 				print $result;
 				exit;
