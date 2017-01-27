@@ -448,7 +448,7 @@ class shop{
 
 		//order items
 		foreach( $this->basket as $item ){
-			sql_query("INSERT INTO order_items SET
+			sql_query("INSERT IGNORE INTO order_items SET
 				`order`='".addslashes($this->oid)."',
 				product='".addslashes($item['product'])."',
 				variation='".addslashes($item['variation'])."',

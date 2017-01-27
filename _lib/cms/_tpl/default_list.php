@@ -206,7 +206,7 @@ if( $_POST['action']=='email' ){
 	$p = $this->p;
 
 	foreach( $vars['fields'][$this->section] as $field=>$type ){
-		if( $type == 'position' or $type == 'id' ){
+		if( $type == 'position' ){
 			continue;
 		}
 
@@ -339,7 +339,7 @@ jQuery(document).ready(function() {
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
-					<select name="<?=$name;?>">
+					<select name="<?=$name;?>[]" multiple size="4">
 					<option value=""></option>
 					<?=html_options($options,$_GET[$field_name]);?>
 					</select>

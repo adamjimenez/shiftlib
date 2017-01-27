@@ -347,10 +347,15 @@ class auth{
 
 		if( $this->register_login ){
 			$_SESSION[$this->cookie_prefix.'_email'] = $_POST['email'];
-			$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
+			
+			if( $this->hash_password ){
+				$_SESSION[$this->cookie_prefix.'_password'] = $this->create_hash($_POST['password']);
+			} else {
+				$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
+			}
 		}
 
-		return true;
+		return $id;
 	}
 
 	function update_details()

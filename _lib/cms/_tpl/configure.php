@@ -1157,7 +1157,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         if( in_array('id',$fields) ){
         	$source.='<div>';
         $source.='
-        <? foreach( $'.underscored($section).'_items as $v ){ ?>
+        <? foreach( $items as $v ){ ?>
         	<a href="?id=<?=$v[\'id\'];?>"><?=$v[\'heading\'];?></a><br>
         <? } ?>
         </div>
@@ -1167,7 +1167,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         $source.='<div>
         ';
         foreach( $fields as $k=>$v ){
-        	$source.="\t".$k.': <?=$'.underscored($section).'[\''.$k.'\'];?><br>'."\n";
+        	$source.="\t".$k.': <?=$content[\''.$k.'\'];?><br>'."\n";
         }
         $source.='
         </div>

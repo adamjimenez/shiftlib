@@ -65,7 +65,7 @@ if( !$errors ){
         	foreach( $row as $k=>$v ){
         		$field_name=underscored($k);
 
-        		if( $k=='id' or $k=='related' or $k=='position' ){
+        		if( $k=='related' or $k=='position' ){
         			continue;
         		}
 
@@ -150,27 +150,38 @@ if( !$errors ){
         	$query=substr($query,0,-2);
         	$where=substr($where,0,-4);
 
-    		$qry="SELECT id FROM `$table` WHERE
-    			$where
-    			LIMIT 1
-    		";
-
-            $row = sql_query($qry, 1);
+			if($data['id']) {
+				$row_id = $data['id'];
+				$_POST["update"] = 1;
+			} else {
+	    		$qry="SELECT id FROM `$table` WHERE
+	    			$where
+	    			LIMIT 1
+	    		";
+	
+	            $row = sql_query($qry, 1);
+	            $row_id = $row['id'];
+			}
 
         	//CMS SAVE
-        	$cms->set_section($_POST['section'], $row['id']);
+        	$cms->set_section($_POST['section'], $row_id);
 
         	if( $_POST["validate"] and count($cms->validate($data)) ){
         		$result=0;
         	}else{
-        		if( $row['id'] ){
-        			$result=2;
-        		}else{
-        			$result=1;
-        		}
 
-                if( !$row['id'] or $_POST["update"] ){
+                if( !$row_id or $_POST["update"] ){
             	    $id = $cms->save($data);
+            	    
+            	    if ($id) {
+		        		if( $row_id ){
+		        			$result = 2;
+		        		}else{
+		        			$result = 1;
+		        		}
+            	    } else {
+		        		$result = 0;
+            	    }
                 }
         	}
 

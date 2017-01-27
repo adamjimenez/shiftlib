@@ -291,8 +291,19 @@ class cms{
 							}else{
 								$operator = '=';
 							}
-
-							$where[] = "T_$table.".$field_name." ".$operator." '".escape($value)."'";
+							
+							if (is_array($value)) {
+								$or = '(';
+								foreach( $conditions[$field_name] as $k=>$v ){
+									$or .= "T_$table.".$field_name." ".$operator." '".escape($v)."' OR ";
+								}
+								$or = substr($or, 0, -4);
+								$or.=')';
+	
+								$where[] = $or;
+							} else {
+								$where[] = "T_$table.".$field_name." ".$operator." '".escape($value)."'";
+							}
 						break;
 						case 'select-multiple':
 						case 'checkboxes':
@@ -1455,10 +1466,11 @@ class cms{
 				$date = explode(' ', $value);
 				$value = dateformat('d/m/Y',$date[0]).' '.$date[1];
 			}
-		}elseif( $type == 'number' ){ ?>
+		}elseif( $type == 'number' ){
+		?>
 			<?=number_format($value, 2);?>
-
-		<? }elseif( $type == 'rating' ){
+		<? 
+		}elseif( $type == 'rating' ){
 		?>
 			<select name="<?=$field_name;?>" class="rating" disabled="disabled">
 			    <option value="">Choose</option>
@@ -1597,17 +1609,19 @@ class cms{
 		if( !$auth ){
 			die('database settings not configured');
 		}
+		
+		$option = $_GET['option'];
 
-		if( $_GET['option'] != 'login' ){
+		if( $_GET['option']!='login' ){
 			$auth->check_admin();
 		}
 
 		if(
             $auth->user['admin']==2 and
-            $_GET['option'] and $_GET['option']!='preferences' and
+            $_GET['option'] and $option!='preferences' and
             $_GET['option']!='logout' and
             $_GET['option']!='login' and
-            !array_key_exists($_GET['option'],$auth->user['privileges'])
+            !array_key_exists($option, $auth->user['privileges'])
         ){
 			die('access denied');
 		}
@@ -1622,13 +1636,12 @@ class cms{
 
 		$this->language='en';
 
-		if( file_exists('_tpl/admin/'.underscored($_GET['option']).'.php') ){
-			$this->template(underscored($_GET['option']).'.php');
-		}elseif( method_exists($this, $_GET['option']) ){
-			$method = (string)$_GET['option'];
-			$this->$method();
-		}elseif( isset($_GET['option']) ){
-			$this->default_section($_GET['option']);
+		if( file_exists('_tpl/admin/'.underscored($option).'.php') ){
+			$this->template(underscored($option).'.php');
+		}elseif( method_exists($this, $option) ){
+			$this->$option();
+		}elseif( isset($option) ){
+			$this->default_section($option);
 		}else{
 			$this->main();
 		}
@@ -2128,11 +2141,15 @@ class cms{
 	function save($data)
 	{
 		global $vars, $languages, $auth;
-		
-		$this->trigger_event('beforeSave', $data);
 
 		if( !isset($data) ){
 			$data = $_POST;
+		}
+
+		$result = $this->trigger_event('beforeSave', array('data'=>$data));
+		
+		if (is_array($result)) {
+			$data = $result;
 		}
 
 		if( count($languages) and !in_array('en', $languages) ){

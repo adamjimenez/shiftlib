@@ -519,6 +519,7 @@ function initForms()
                     readonly: readonly
                 }).bind('rated', function (event, value) {
                     var field = $(this).prev();
+                    field.val(value);
 
                     if( field.attr('data-section') ){
                         jQuery.ajax('/_lib/cms/_ajax/rating.php', {

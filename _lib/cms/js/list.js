@@ -253,7 +253,7 @@ function checkForm()
         console.log(data);
         results[data.msg]++;
 
-        $('#progress').html('invalid: '+results[0]+'<br>imported: '+results[1]+'<br>duplicate: '+results[2]+'<br><br>');
+        $('#progress').html('invalid: '+results[0]+'<br>imported: '+results[1]+'<br>updated: '+results[2]+'<br><br>');
 	}, false);
 
 	source.addEventListener('error', function(event) {

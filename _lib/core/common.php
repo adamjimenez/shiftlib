@@ -640,17 +640,17 @@ function form_to_db($type)
 			return 'POINT';
 		break;
 		case 'language':
-			return 'VARCHAR( 32 )';
+			return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
 			//$query.='`translated_from` INT NOT NULL';
 		break;
 		case 'select':
 		case 'radio':
 		case 'combo':
-			return 'VARCHAR( 64 )';
+			return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
 			//$query.='`translated_from` INT NOT NULL';
 		break;
 		default:
-			return 'VARCHAR( 140 )';
+			return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
 		break;
 	}
 }
