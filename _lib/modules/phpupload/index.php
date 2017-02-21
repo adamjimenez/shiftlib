@@ -181,8 +181,8 @@ if( $_GET["cmd"] ){
                         $thumb_medium = image($file['id'], 98 , 76, false);
 
                         if( $thumb ){
-                            $file['thumb'] = $thumb;
-                            $file['thumb_medium'] = $thumb_medium;
+                            $file['thumb'] = $thumb.'?m='.filemtime($path.$file['id']);
+                            $file['thumb_medium'] = $thumb_medium.'?m='.filemtime($path.$file['id']);
                         }else{
                             $file['thumb'] = 'images/file_thumb.png';
                             $file['thumb_medium'] = 'images/file_thumb_medium.png';
@@ -302,6 +302,20 @@ if( $_GET["cmd"] ){
             }
         break;
 
+        case 'rotateLeft':
+        case 'rotateRight':
+            if( $_POST["file"] ){
+                $angle = ($_GET["cmd"] == 'rotateLeft') ? 90 : -90;
+                
+                $img = imagecreatefromfile($path.$_POST["file"]);
+                
+                // rotate the image by $angle degrees
+                $rotated = imagerotate($img, $angle, 0);
+                
+                $result['success'] = imagefile($rotated, $path.$_POST['file']);
+            }
+        break;
+
         default:
             print $_SERVER['REQUEST_METHOD'];
         break;
@@ -332,6 +346,8 @@ if( $_GET["cmd"] ){
     <link rel="stylesheet" type="text/css" href="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/resources/css/ext-all-gray.css" />
     <script type="text/javascript" src="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/bootstrap.js"></script>
     <!--ext end -->
+    
+	<? load_js(array('fontawesome')); ?>
 
     <link rel="stylesheet" type="text/css" href="js/ux/container/ButtonSegment.css" />
     <link rel="stylesheet" type="text/css" href="js/ux/grid/feature/Tileview.css" />

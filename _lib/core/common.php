@@ -28,6 +28,45 @@ if (get_magic_quotes_gpc()) {
     array_walk_recursive($_REQUEST, 'stripslashes_gpc');
 }
 
+function imagecreatefromfile($path) {
+	$info = getimagesize($path);
+
+	switch( $info['mime'] ){
+		case 'image/jpeg':
+			$img = imagecreatefromjpeg($path);
+		break;
+		case 'image/png':
+			$img = imagecreatefrompng($path);
+			//imagealphablending($img, true);
+            imagesavealpha($img, true);
+		break;
+		case 'image/gif':
+			$img = imagecreatefromgif($path);
+		break;
+		default:
+			return false;
+
+			$img = imagecreatefromstring(file_get_contents($path));
+	    break;
+	}
+	
+	return $img;
+}
+
+function imagefile($img, $path) {
+	$ext = file_ext($path);
+	
+	if( $ext=='gif' ){
+		$result = imagegif($img, $path);
+	}elseif( $ext=='png' ){
+		$result = imagepng($img, $path);
+	}else{
+		$result = imagejpeg($img, $path, 90);
+	}
+	
+	return $result;
+}
+
 function image($file, $w, $h, $attribs=true, $crop=false)
 {
     $file = trim($file);
@@ -84,28 +123,10 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			$img = null;
 			$ext = file_ext($image_path);
 
-			$info = getimagesize($image_path);
-
-			switch( $info['mime'] ){
-				case 'image/jpeg':
-					$img = imagecreatefromjpeg($image_path);
-					$ext = 'jpg';
-				break;
-				case 'image/png':
-					$img = imagecreatefrompng($image_path);
-					$ext = 'png';
-					//imagealphablending($img, true);
-                    imagesavealpha($img, true);
-				break;
-				case 'image/gif':
-					$img = imagecreatefromgif($image_path);
-					$ext = 'gif';
-				break;
-				default:
-					return false;
-
-					$img = imagecreatefromstring(file_get_contents($image_path));
-			    break;
+			$img = imagecreatefromfile($image_path);
+			
+			if (!$img) {
+				return false;
 			}
 
 			// If an image was successfully loaded, test the image for size
@@ -1512,6 +1533,18 @@ function validate($fields, $required, $array=true)
 	}else{
 		return implode("\n",$errors);
 	}
+}
+
+function wget($url) {
+	$ch = curl_init();
+	
+	// set url 
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+	$data = curl_exec($ch);
+	curl_close($ch);
+	
+	return $data;
 }
 
 //deprecated, use video_info instead

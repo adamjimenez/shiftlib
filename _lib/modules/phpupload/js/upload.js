@@ -423,7 +423,7 @@ Ext.onReady(function(){
                     //rename
                     Ext.getCmp('renameButton').handler.call();
                 }
-            },{
+            }, {
                 xtype: 'button',
                 id: 'downloadButton',
                 text: 'Download',
@@ -431,6 +431,54 @@ Ext.onReady(function(){
                 handler: function() {
                     var file = view.getSelectionModel().getSelection()[0].get('id');
                     window.open('index.php?download='+file);
+                }
+            }, {
+                xtype: 'button',
+                id: 'rotateLeftButton',
+                text: '<i class="fa fa-undo"></i>',
+                disabled: true,
+                handler: function() {
+                    var file = view.getSelectionModel().getSelection()[0].get('id');
+                    
+                    Ext.Ajax.request({
+                        url: 'index.php?cmd=rotateLeft',
+                        method: 'POST',
+                        //headers: { 'Content-Type': 'application/json' },
+                        params : {
+                            file: file
+                        },
+                        success: function(conn, response, options, eOpts) {
+                            store.load();
+                        },
+                        failure: function(conn, response, options, eOpts) {
+                            // TODO get the 'msg' from the json and display it
+                            console.log('rotate error');
+                        }
+                    });
+                }
+            }, {
+                xtype: 'button',
+                id: 'rotateRightButton',
+                text: '<i class="fa fa-repeat"></i>',
+                disabled: true,
+                handler: function() {
+                    var file = view.getSelectionModel().getSelection()[0].get('id');
+                    
+                    Ext.Ajax.request({
+                        url: 'index.php?cmd=rotateRight',
+                        method: 'POST',
+                        //headers: { 'Content-Type': 'application/json' },
+                        params : {
+                            file: file
+                        },
+                        success: function(conn, response, options, eOpts) {
+                            store.load();
+                        },
+                        failure: function(conn, response, options, eOpts) {
+                            // TODO get the 'msg' from the json and display it
+                            console.log('rotate error');
+                        }
+                    });
                 }
             }, '->', {
                 xtype: 'textfield',
@@ -509,16 +557,22 @@ Ext.onReady(function(){
                     Ext.getCmp('deleteButton').enable();
                     Ext.getCmp('renameButton').enable();
                     Ext.getCmp('downloadButton').enable();
+                    Ext.getCmp('rotateLeftButton').enable();
+                    Ext.getCmp('rotateRightButton').enable();
                     Ext.getCmp('chooseButton').enable();
                 }else if( l>1 ){
                     Ext.getCmp('deleteButton').enable();
                     Ext.getCmp('renameButton').disable();
                     Ext.getCmp('downloadButton').disable();
+                    Ext.getCmp('rotateLeftButton').disable();
+                    Ext.getCmp('rotateRightButton').disable();
                     Ext.getCmp('chooseButton').enable();
                 }else{
                     Ext.getCmp('deleteButton').disable();
                     Ext.getCmp('renameButton').disable();
                     Ext.getCmp('downloadButton').disable();
+                    Ext.getCmp('rotateLeftButton').disable();
+                    Ext.getCmp('rotateRightButton').disable();
                     Ext.getCmp('chooseButton').disable();
                 }
             },
