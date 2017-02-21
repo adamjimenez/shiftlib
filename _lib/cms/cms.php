@@ -478,6 +478,45 @@ class cms{
 			$having_str = "HAVING \n".substr($having_str,0,-5);
 		}
 
+		if( in_array('select',$vars['fields'][$section]) or in_array('combo',$vars['fields'][$section]) or in_array('radio',$vars['fields'][$section]) ){
+			$selects = array_keys($vars['fields'][$section], "select");
+			$radios = array_keys($vars['fields'][$section], "radio");
+			$combos = array_keys($vars['fields'][$section], "combo");
+
+			$keys = array_merge($selects, $radios, $combos);
+
+			foreach( $keys as $key ){
+				if( !is_array($vars['options'][$key]) ){
+					$option_table = underscored($vars['options'][$key]);
+
+					$join_id = array_search('id',$vars['fields'][$vars['options'][$key]]);
+
+					$joins .= "
+						LEFT JOIN $option_table T_".underscored($key)." ON T_".underscored($key).".$join_id=T_$table.".underscored($key)."
+					";
+
+					//$option=key($vars['fields'][$vars['options'][$key]]);
+
+					foreach( $vars['fields'][$vars['options'][$key]] as $k=>$v ){
+						if( $v != 'separator' ){
+							$option = $k;
+							break;
+						}
+					}
+
+					$type = $vars['fields'][$vars['options'][$key]][$option];
+
+					if( is_array($type) ){
+						$db_field_name=$this->db_field_name($vars['options'][$key],$option);
+
+						$cols .= ",".$db_field_name." AS `".underscored($key)."_label`"."\n";
+					}else{
+						$cols .= ",T_".underscored($key).".".underscored($option)." AS '".underscored($key)."_label'";
+					}
+				}
+			}
+		}
+
 		return array(
 		    'where_str' => $where_str,
 		    'having_str' => $having_str,
@@ -586,45 +625,6 @@ class cms{
             $having_str = $sql['having_str'];
             $joins = $sql['joins'];
             $cols = $sql['cols'];
-
-			if( in_array('select',$vars['fields'][$section]) or in_array('combo',$vars['fields'][$section]) or in_array('radio',$vars['fields'][$section]) ){
-				$selects = array_keys($vars['fields'][$section], "select");
-				$radios = array_keys($vars['fields'][$section], "radio");
-				$combos = array_keys($vars['fields'][$section], "combo");
-
-				$keys = array_merge($selects, $radios, $combos);
-
-				foreach( $keys as $key ){
-					if( !is_array($vars['options'][$key]) ){
-						$option_table = underscored($vars['options'][$key]);
-
-						$join_id = array_search('id',$vars['fields'][$vars['options'][$key]]);
-
-						$joins .= "
-							LEFT JOIN $option_table T_".underscored($key)." ON T_".underscored($key).".$join_id=T_$table.".underscored($key)."
-						";
-
-						//$option=key($vars['fields'][$vars['options'][$key]]);
-
-						foreach( $vars['fields'][$vars['options'][$key]] as $k=>$v ){
-							if( $v != 'separator' ){
-								$option = $k;
-								break;
-							}
-						}
-
-						$type = $vars['fields'][$vars['options'][$key]][$option];
-
-						if( is_array($type) ){
-							$db_field_name=$this->db_field_name($vars['options'][$key],$option);
-
-							$cols .= ",".$db_field_name." AS `".underscored($key)."_label`"."\n";
-						}else{
-							$cols .= ",T_".underscored($key).".".underscored($option)." AS '".underscored($key)."_label'";
-						}
-					}
-				}
-			}
 
 			$query = "SELECT
 			$cols
@@ -907,7 +907,7 @@ class cms{
 		return $parents;
 	}
 
-	function get_field($name, $attribs='', $separator='', $where = false)
+	function get_field($name, $attribs='', $separator=null, $where = false)
 	{
 		global $vars, $id, $strs, $cms_config;
 
@@ -1165,7 +1165,7 @@ class cms{
                 foreach( $vars['options'][$name] as  $k=>$v ){
                     $val = $is_assoc ? $k : $v;
                 ?>
-    			    <label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( $readonly ){ ?>readonly<? } ?> <? if( in_array($val, $value) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><?=$separator ? $separator : '<br>';?>
+    			    <label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( $readonly ){ ?>readonly<? } ?> <? if( in_array($val, $value) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><?=!is_null($separator) ? $separator : '<br>';?>
 				<?
                 }
             }
@@ -1262,7 +1262,7 @@ class cms{
 				$date=explode(' ',$value);
 			}
 		?>
-			<input type="text" class="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? dateformat('d/m/Y',$date[0]) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? dateformat('d/m/Y',$date[0]) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 			<input type="text" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? $date[1] : '00:00:00';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:60px;"';?> />
 		<?php
 			break;
