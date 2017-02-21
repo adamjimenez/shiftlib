@@ -141,4 +141,4 @@ if( !$order ){
 ?>
 
 <br>
-<a href="?option=orders&cust=<?=$order['customer'];?>">Back to orders</a>
+<a href="?option=shop_orders&cust=<?=$order['customer'];?>">Back to orders</a>
