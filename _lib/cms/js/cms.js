@@ -541,8 +541,9 @@ function initForms()
 	//tinymce4
     var tinymce_url = '//cdn.tinymce.com/4/';
 	if( jQuery('textarea.tinymce').length ){
-        jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
-            $('textarea.tinymce').tinymce({
+        jQuery.getScript(tinymce_url+"tinymce.min.js").done(function(){
+            tinymce.init({
+            	selector: 'textarea',
                 script_url: tinymce_url+'tinymce.min.js',
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
