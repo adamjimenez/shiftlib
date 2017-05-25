@@ -543,7 +543,7 @@ function initForms()
 	if( jQuery('textarea.tinymce').length ){
         jQuery.getScript(tinymce_url+"tinymce.min.js").done(function(){
             tinymce.init({
-            	selector: 'textarea',
+            	selector: 'textarea.tinymce',
                 script_url: tinymce_url+'tinymce.min.js',
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
