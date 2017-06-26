@@ -103,7 +103,7 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 		    $cached .= $dirname.'/';
 		}
 
-		$cache_name = preg_replace("/[^A-Za-z0-9\-\.\/]/", '', basename(urldecode($file)));
+		$cache_name = preg_replace("/[^A-Za-z0-9\-\.]/", '', urldecode($file));
 
 		$cached .= $w.'x'.$h.($crop ? '(1)': '').'-'.$cache_name;
 
@@ -277,6 +277,23 @@ function analytics($id){
     <?
 }
 
+function array_orderby()
+{
+    $args = func_get_args();
+    $data = array_shift($args);
+    foreach ($args as $n => $field) {
+        if (is_string($field)) {
+            $tmp = array();
+            foreach ($data as $key => $row)
+                $tmp[$key] = $row[$field];
+            $args[$n] = $tmp;
+            }
+    }
+    $args[] = &$data;
+    call_user_func_array('array_multisort', $args);
+    return array_pop($args);
+}
+
 function basename_safe($path)
 {
 	if( mb_strrpos($path, '/')!==false ){
@@ -289,7 +306,7 @@ function basename_safe($path)
 function calc_grids($pcodeA, $lat = false)
 {
 	$pos = strpos($pcodeA,' ');
-	if($pos){
+	if($pos) {
 		$pcodeA = substr($pcodeA, 0, $pos);
 	}
 
@@ -308,6 +325,17 @@ function calc_grids($pcodeA, $lat = false)
 	}else{
 		return false;
 	}
+}
+
+function calc_distance($postcode_a, $postcode_b) {
+	if ($postcode_a == $postcode_b) {
+		return 0;
+	}
+	
+	$grid_a = calc_grids($postcode_a);
+	$grid_b = calc_grids($postcode_b);
+	
+	return round(sqrt(pow($grid_a[0]-$grid_b[0],2)+pow($grid_a[1]-$grid_b[1],2)) * 0.000621371192);
 }
 
 function check_table($table,$fields){
@@ -1511,7 +1539,7 @@ function validate($fields, $required, $array=true)
 				}
 			break;
 			case 'postcode':
-				if( !format_postcode($fields[$v]) ){
+				if( $fields[$v]=='' or ((!$fields['country'] or $fields['country']=='UK') and !format_postcode($fields[$v])) ){
 					$errors[]=$v;
 				}
 			break;
