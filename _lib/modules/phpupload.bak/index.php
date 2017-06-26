@@ -1,4 +1,7 @@
 <?php
+$ext_version = '4.1.1';
+//$ext_version = '4.2.0';
+
 require(dirname(__FILE__).'/../../../_lib/base.php');
 
 function get_all_headers()
@@ -57,7 +60,7 @@ if( $_GET["func"] == 'preview' ){
     exit;
 }
 
-if( $_FILES ){
+if( $_POST["filename"] ){
     // Make sure file is not cached (as it happens for example on iOS devices)
     header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
     header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -200,43 +203,71 @@ if( $_GET["cmd"] ){
         break;
 
         case 'delete':
-            if( !is_dir($path.$_GET['name']) ){
-                if( unlink($path.$_GET['name']) ){
-                    $result[] = array(
-                        'success'=>true
-                    );
-                } else {
-                    $result[] = array(
-                        'message'=>'delete failed',
-                        'success'=>false
-                    );
-                }
-            } else {
-                if( rmdir($path.$_GET['name']) ){
-                    $result[] = array(
-                        'success'=>true
-                    );
-                } else {
-                    $result[] = array(
-                        'message'=>'delete failed',
-                        'success'=>false
-                    );
+            if( $file['id'] ){
+                $files = array($file);
+            }
+
+            foreach( $files as $file ){
+                if( $file['leaf'] ){
+                    if( unlink($path.$file['id']) ){
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'success'=>true
+                        );
+                    }else{
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'message'=>'delete failed',
+                            'success'=>false
+                        );
+                    }
+                }else{
+                    if( rmdir($path.$file['id']) ){
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'success'=>true
+                        );
+                    }else{
+                        $result[] = array(
+                            'data'=>array(
+                                'id'=>$file["id"],
+                                'name'=>$file["id"]
+                            ),
+                            'message'=>'delete failed',
+                            'success'=>false
+                        );
+                    }
                 }
             }
         break;
 
         case 'create':
             //new folder
-            if( $_GET["name"] ){
-                if( mkdir($path.$_GET["name"]) ){
+            if( $file["id"]==null and $file["name"] ){
+                if( mkdir($path.$file["name"]) ){
                     $result = array(
-                        'name'=>$file["name"],
+                        'data'=>array(
+                            'id'=>$file["name"],
+                            'name'=>$file["name"]
+                        ),
                         'message'=>'created folder',
                         'success'=>true
                     );
                 }else{
                     $result = array(
-                        'name'=>$file["name"],
+                        'data'=>array(
+                            'id'=>$file["name"],
+                            'name'=>$file["name"]
+                        ),
                         'message'=>'couldn\'t create folder',
                         'success'=>false
                     );
@@ -244,18 +275,26 @@ if( $_GET["cmd"] ){
             }
         break;
 
-        case 'rename':
+        case 'update':
             //rename
             //print_r($file);
-            if( $_GET["name"] and $_GET["newname"] ){
+            if( $file["name"] and $file['id'] ){
                 //rename
-                if( rename($path.$_GET['name'], $path.$_GET['newname']) ){
+                if( rename($path.$file['id'], $path.$file['name']) ){
                     $result[] = array(
+                        'data'=>array(
+                            'id'=>$file["name"],
+                            'name'=>$file["name"]
+                        ),
                         'message'=>'rename successful',
                         'success'=>true
                     );
                 }else{
                     $result[] = array(
+                        'data'=>array(
+                            'id'=>$file["id"],
+                            'name'=>$file["id"]
+                        ),
                         'message'=>'rename failed',
                         'success'=>false
                     );
@@ -265,15 +304,15 @@ if( $_GET["cmd"] ){
 
         case 'rotateLeft':
         case 'rotateRight':
-            if( $_GET["name"] ){
+            if( $_POST["file"] ){
                 $angle = ($_GET["cmd"] == 'rotateLeft') ? 90 : -90;
                 
-                $img = imagecreatefromfile($path.$_GET["name"]);
+                $img = imagecreatefromfile($path.$_POST["file"]);
                 
                 // rotate the image by $angle degrees
                 $rotated = imagerotate($img, $angle, 0);
                 
-                $result['success'] = imagefile($rotated, $path.$_GET['name']);
+                $result['success'] = imagefile($rotated, $path.$_POST['file']);
             }
         break;
 
@@ -303,14 +342,20 @@ if( $_GET["cmd"] ){
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.html5.js"></script>
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.flash.js"></script>
 
-	<? load_js(array('fontawesome', 'jqueryui')); ?>
-	
-    <script type="text/javascript" src="js/basicMenu/ui.basicMenu.js"></script>
-    <link rel="stylesheet" type="text/css" href="js/basicMenu/ui.basicMenu.css">
-	
-    <script type="text/javascript" src="phpupload.js"></script>
+    <!--ext start -->
+    <link rel="stylesheet" type="text/css" href="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/resources/css/ext-all-gray.css" />
+    <script type="text/javascript" src="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/bootstrap.js"></script>
+    <!--ext end -->
+    
+	<? load_js(array('fontawesome')); ?>
 
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="js/ux/container/ButtonSegment.css" />
+    <link rel="stylesheet" type="text/css" href="js/ux/grid/feature/Tileview.css" />
+
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+
+    <script type="text/javascript" src="js/LabelEditor.js"></script>
+    <script type="text/javascript" src="js/upload.js"></script>
 </head>
 <body>
 </body>
