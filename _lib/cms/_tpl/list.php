@@ -258,6 +258,15 @@ foreach( $vars['content'] as $v){
 					<?=image($value,100,100);?><br />
 					<label><?=$value;?></label>
 				<?
+				}elseif( $vars['fields'][$this->section][$k]=='phpuploads' ){
+					$images = explode("\n", $value);
+					
+					foreach($images as $image) {
+				?>
+					<?=image(trim($image), 100, 100);?><br />
+					<label><?=$image;?></label><br>
+				<?
+					}
 				}elseif( $vars['fields'][$this->section][$k]=='textarea' ){
 				?>
 					<?=truncate($value,100);?>
