@@ -14,7 +14,9 @@ Adds a keynav and jquery ui styling
 			// select
 			this.select = function (event) {
 				var li = $(this).parent();
-				li.parent().children().removeClass('ui-state-active');
+				if (!event.ctrlKey) {
+					li.parent().children().removeClass('ui-state-active');
+				}
 				li.addClass('ui-state-active');
 		
 				// scroll
