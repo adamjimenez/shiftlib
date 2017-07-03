@@ -1,3 +1,14 @@
+/*
+TODO
+multiselect delete
+file size
+last modified
+file sort
+search filter
+list view
+toolbar layout
+*/
+
 var callback = function(files){
 	var URL = config.root+files[0];
 	top.tinymce.activeEditor.windowManager.getParams().oninsert(URL);
@@ -16,7 +27,7 @@ $(function() {
 		<button type="button" class="rotate_left" disabled><i class="fa fa-undo" aria-hidden="true"></i></button>\
 		<button type="button" class="rotate_right" disabled><i class="fa fa-repeat" aria-hidden="true"></i></button>\
 		<button type="button" class="refresh"><i class="fa fa-refresh" aria-hidden="true"></i></button>\
-		<button type="button" class="up" disabled><i class="fa fa-level-up" aria-hidden="true"></i></button>\
+		<button type="button" class="level_up" disabled><i class="fa fa-level-up" aria-hidden="true"></i></button>\
 	</div>\
 	<div id="uploads">\
 	<ul></ul>\
@@ -114,14 +125,14 @@ $(function() {
 	
 	function check_buttons() {
 		if(path) {
-			$('.up').removeAttr('disabled');
+			$('.level_up').removeAttr('disabled');
 		} else {
-			$('.up').attr('disabled');
+			$('.level_up').attr('disabled', 'disabled');
 		}
 		
 		$('.delete, .rename, .download, .rotate_left, .rotate_right').attr('disabled', 'disabled');
 
-		if($('#uploads .ui-state-active a').length) {
+		if($('#uploads .ui-state-active a').length===1) {
 			var leaf = $('#uploads .ui-state-active a').data('leaf');
 			
 			if (leaf) {
@@ -210,7 +221,7 @@ $(function() {
 		window.open('index.php?download=' + name);
 	});
 	
-	$('.up').click(function() {
+	$('.level_up').click(function() {
 		var pos = location.hash.lastIndexOf('/');
 		
 		if( pos == -1 ){
