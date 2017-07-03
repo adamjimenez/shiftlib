@@ -4,29 +4,27 @@ require(dirname(__FILE__).'/../../../_lib/base.php');
 function get_all_headers()
 {
     $headers = '';
-   foreach ($_SERVER as $name => $value)
-   {
-       if (substr($name, 0, 5) == 'HTTP_')
-       {
+    foreach ($_SERVER as $name => $value) {
+       if (substr($name, 0, 5) == 'HTTP_') {
            $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
        }
-   }
+    }
    return $headers;
 }
 
 //check user permissions
 $auth->check_login();
 
-if( $auth->user and $upload_config['user_uploads'] ){
+if($auth->user and $upload_config['user_uploads']) {
     $upload_config['user']=$auth->user['id'];
-}elseif( $auth->user['admin']!=1 and $auth->user['privileges']['uploads']!=2 ){
+} elseif($auth->user['admin']!=1 and $auth->user['privileges']['uploads']!=2) {
 	die('Permission denied.');
 }
 
 $root = $upload_config['upload_dir'].$upload_config['user'];
 
 //append slash
-if( substr($root, -1)!=='/' ){
+if(substr($root, -1)!=='/') {
     $root .= '/';
 }
 
@@ -34,21 +32,21 @@ $upload_config['root'] = '/'.$root;
 
 $path = $root;
 
-if( $_GET["path"] ){
+if($_GET["path"]) {
     $path .= $_GET["path"].'/';
 
-    if( !file_exists($path) ){
+    if(!file_exists($path)) {
         mkdir($path);
     }
 }
 
 $request = get_all_headers();
 
-if( $request["path"] ){
+if($request["path"]) {
     $path .= $request["path"];
 }
 
-if( $_GET["func"] == 'preview' ){
+if($_GET["func"] == 'preview') {
 	$image = image($_GET["file"], $_GET["w"], $_GET["h"], false);
     if( $image ){
     	header("Content-type: image/jpeg");
@@ -57,7 +55,7 @@ if( $_GET["func"] == 'preview' ){
     exit;
 }
 
-if( $_FILES ){
+if($_FILES) {
     // Make sure file is not cached (as it happens for example on iOS devices)
     header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
     header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -149,42 +147,48 @@ if( $_FILES ){
     die('{"jsonrpc" : "2.0", "result" : null, "id" : "id", "success": true}');
 }
 
-if($_GET["download"]){
+if($_GET["download"]) {
 	header("Content-Type: application/octet-stream");
 	header("Content-Disposition: attachment; filename=\"".rawurldecode($_GET['download']).'"');
 	print file_get_contents($path.$_GET['download']);
     exit;
 }
 
-if( $_GET["cmd"] ){
+if($_GET["cmd"]) {
     $file = json_decode(file_get_contents('php://input'), true);
 
     switch($_GET["cmd"]){
         case 'get':
             $files = array();
 
+            $max_files = 500;
+            $i = 0;
             foreach (glob($path.'*') as $pathname) {
+                if ($i>=$max_files) {
+                    break;
+                }
+                
     			$filename = basename($pathname);
-    			if($filename!='.' and $filename!='..'){
+    			if($filename!='.' and $filename!='..') {
         		    $file = array();
                     $file['name'] = $filename;
                     $file['leaf'] = !is_dir($pathname);
                     $file['id'] = substr($pathname, strlen($root));
 
-                    if( !is_dir($pathname) ){
+                    if(!is_dir($pathname)) {
                         //$file['url'] = '/uploads/'.$file['id'];
 
                         $thumb = image($file['id'], 50 , 39, false);
                         $thumb_medium = image($file['id'], 98 , 76, false);
 
-                        if( $thumb ){
+                        if($thumb) {
                             $file['thumb'] = $thumb.'?m='.filemtime($path.$file['id']);
                             $file['thumb_medium'] = $thumb_medium.'?m='.filemtime($path.$file['id']);
-                        }else{
+                        } else {
                             $file['thumb'] = 'images/file_thumb.png';
                             $file['thumb_medium'] = 'images/file_thumb_medium.png';
                         }
-                    }else{
+                    } else {
                         $file['thumb'] = 'images/folder_thumb.png';
                         $file['thumb_medium'] = 'images/folder_thumb_medium.png';
                     }
@@ -194,14 +198,15 @@ if( $_GET["cmd"] ){
 
                     $files[] = $file;
     			}
+    			$i++;
     		}
 
             $result['files'] = $files;
         break;
 
         case 'delete':
-            if( !is_dir($path.$_GET['name']) ){
-                if( unlink($path.$_GET['name']) ){
+            if(!is_dir($path.$_GET['name'])) {
+                if(unlink($path.$_GET['name'])) {
                     $result[] = array(
                         'success'=>true
                     );
@@ -212,7 +217,7 @@ if( $_GET["cmd"] ){
                     );
                 }
             } else {
-                if( rmdir($path.$_GET['name']) ){
+                if(rmdir($path.$_GET['name'])) {
                     $result[] = array(
                         'success'=>true
                     );
@@ -227,14 +232,14 @@ if( $_GET["cmd"] ){
 
         case 'create':
             //new folder
-            if( $_GET["name"] ){
-                if( mkdir($path.$_GET["name"]) ){
+            if($_GET["name"]) {
+                if(mkdir($path.$_GET["name"])) {
                     $result = array(
                         'name'=>$file["name"],
                         'message'=>'created folder',
                         'success'=>true
                     );
-                }else{
+                } else {
                     $result = array(
                         'name'=>$file["name"],
                         'message'=>'couldn\'t create folder',
@@ -247,14 +252,14 @@ if( $_GET["cmd"] ){
         case 'rename':
             //rename
             //print_r($file);
-            if( $_GET["name"] and $_GET["newname"] ){
+            if($_GET["name"] and $_GET["newname"]) {
                 //rename
-                if( rename($path.$_GET['name'], $path.$_GET['newname']) ){
+                if(rename($path.$_GET['name'], $path.$_GET['newname'])) {
                     $result[] = array(
                         'message'=>'rename successful',
                         'success'=>true
                     );
-                }else{
+                } else {
                     $result[] = array(
                         'message'=>'rename failed',
                         'success'=>false
@@ -265,7 +270,7 @@ if( $_GET["cmd"] ){
 
         case 'rotateLeft':
         case 'rotateRight':
-            if( $_GET["name"] ){
+            if($_GET["name"]) {
                 $angle = ($_GET["cmd"] == 'rotateLeft') ? 90 : -90;
                 
                 $img = imagecreatefromfile($path.$_GET["name"]);
