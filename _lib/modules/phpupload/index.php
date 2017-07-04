@@ -160,11 +160,30 @@ if($_GET["cmd"]) {
     switch($_GET["cmd"]){
         case 'get':
             $files = array();
+            
+            $paths = glob($path.'*');
+            usort($paths, function ($a, $b) {
+                $aIsDir = is_dir($a);
+                $bIsDir = is_dir($b);
+                if ($aIsDir === $bIsDir)
+                    return strnatcasecmp($a, $b); // both are dirs or files
+                elseif ($aIsDir && !$bIsDir)
+                    return -1; // if $a is dir - it should be before $b
+                elseif (!$aIsDir && $bIsDir)
+                    return 1; // $b is dir, should be before $a
+            });
 
-            $max_files = 500;
+            $start = $_GET['current'] ?: 0;
+            $max_files = 50;
             $i = 0;
-            foreach (glob($path.'*') as $pathname) {
-                if ($i>=$max_files) {
+            foreach ($paths as $pathname) {
+    			$i++;
+    			
+                if ($i<=$start) {
+                    continue;
+                }
+                
+                if ($i>($start+$max_files)) {
                     break;
                 }
                 
@@ -198,9 +217,10 @@ if($_GET["cmd"]) {
 
                     $files[] = $file;
     			}
-    			$i++;
     		}
-
+    		
+            $result['current'] = $start+$max_files;
+            $result['total'] = count($paths);
             $result['files'] = $files;
         break;
 
@@ -315,7 +335,7 @@ if($_GET["cmd"]) {
 	
     <script type="text/javascript" src="phpupload.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="phpupload.css">
 </head>
 <body>
 </body>

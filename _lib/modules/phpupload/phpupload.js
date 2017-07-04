@@ -13,11 +13,14 @@ var callback = function(files){
 	var URL = config.root+files[0];
 	top.tinymce.activeEditor.windowManager.getParams().oninsert(URL);
 	top.tinymce.activeEditor.windowManager.close();
-	
 	return;
 };
 
 $(function() {
+	var current = 0;
+	var total = 0;
+	var loading = false;
+	
 	$('<div id="toolbar">\
 		<button type="button" id="pickfiles" class="upload">Upload files</button>\
 		<button type="button" class="delete" disabled>Delete</button>\
@@ -80,9 +83,25 @@ $(function() {
 	
 	// list files
 	function refresh() {
+		clear();
+		load();
+	}
+	function clear() {
+		current = 0;
+		total = 0;
+		$('#uploads ul').html('');
+	}
+	function load() {
+		if (loading) {
+			console.log('already loading');
+			return;
+		}
+		
+		loading = true;
+		
 		$.ajax({
 			dataType: "json",
-			url: '?cmd=get&path='+path,
+			url: '?cmd=get&path='+path+'&current='+current,
 			success: function(data) {
 				// get selected
 				var name = $('#uploads .ui-state-active a').data('name');
@@ -102,13 +121,13 @@ $(function() {
 					return 0;
 				});
 				
-				$('#uploads ul').html('');
+				//$('#uploads ul').html('');
 				var thumb;
 				data.files.forEach(function(item) {
 					thumb = item.leaf ? item.thumb : 'images/folder_thumb.png';
 					$('<li>\
 						<a href="javascript:void(0);" data-name="' + item.name + '" data-leaf="' + item.leaf + '">\
-							<img src="' + thumb + '?mtime=' + Date.now() + '">\
+							<img src="' + thumb + '">\
 							' + item.name + '\
 						</a>\
 					</li>'
@@ -119,6 +138,10 @@ $(function() {
 				if (name) {
 					$('#uploads a[data-name="' + name + '"]').trigger('click');
 				}
+				
+				current = data.current;
+				total = data.total;
+				loading = false;
 			}
 		});
 	}
@@ -259,6 +282,15 @@ $(function() {
 		refresh();
 		check_buttons();
 	};
+	
+	$(window).scroll(function() {
+		if($(window).scrollTop() + $(window).height() > $(document).height()-1000) {
+			// load some more
+			if (current < total) {
+				load();
+			}
+		}
+	});
 	
 	var path = location.hash.substr(1);
 	
