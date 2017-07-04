@@ -209,7 +209,7 @@ class shop{
 						name='".escape($arr[0])."' AND
 						value='".escape($arr[1])."' AND
 						product='".$v['product']."'
-					");
+					", 1);
 
 					if( $row ){
 						$this->basket[$k]['cost']+=$row['cost'];
