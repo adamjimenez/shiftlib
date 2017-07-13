@@ -62,6 +62,10 @@ textarea.tinymce{
 	height:400px !important;
 }
 
+.mce-notification {
+	display: none;
+}
+
 button{
 	font-size:11px;
 	margin:0;
