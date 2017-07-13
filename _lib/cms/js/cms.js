@@ -539,11 +539,10 @@ function initForms()
 	}
 
 	//tinymce4
-    var tinymce_url = '//cdn.tinymce.com/4/';
+    var tinymce_url = '//cloud.tinymce.com/stable/';
 	if( jQuery('textarea.tinymce').length ){
-        jQuery.getScript(tinymce_url+"tinymce.min.js").done(function(){
-            tinymce.init({
-            	selector: 'textarea.tinymce',
+        jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
+            $('textarea.tinymce').tinymce({
                 script_url: tinymce_url+'tinymce.min.js',
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
