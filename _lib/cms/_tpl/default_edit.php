@@ -26,6 +26,14 @@ if( $this->id and $section and in_array('id',$vars['fields'][$this->section]) ){
 	$cancel_url='?option='.$this->section;
 }
 
+$qs_arr = $_GET;
+unset($qs_arr['option']);
+unset($qs_arr['view']);
+unset($qs_arr['edit']);
+unset($qs_arr['id']);
+$qs = http_build_query($qs_arr);
+$cancel_url .= '&'.$qs;
+
 if( count($languages) ){
 	$languages=array_merge(array('en'),$languages);
 }else{
@@ -59,7 +67,7 @@ if( isset($_POST['save']) ){
 				}
 
 				$_SESSION['message']='The item has been saved';
-				redirect($return_url);
+				redirect($return_url.'&'.$qs);
 			}
 			exit;
 		}else{

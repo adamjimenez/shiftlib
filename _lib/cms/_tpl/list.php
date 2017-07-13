@@ -83,10 +83,16 @@ foreach( $where as $k=>$v ){
 		}
 	?>
 		<th>
+			<?
+			$label = $vars['label'][$this->section][$k];
+			if(!$label) {
+				$label = ucfirst(str_replace('_', ' ', $k));
+			}
+			?>
 			<?=(
 				$sortable or
 				( $vars['fields'][$this->section][$k] == 'select-multiple' or $vars['fields'][$this->section][$k]=='checkboxes' )
-			) ? ucfirst($k) : $p->col($order, ucfirst($k));?>
+			) ? ucfirst($label) : $p->col($order, ucfirst($label));?>
 		</th>
 	<?
 	}

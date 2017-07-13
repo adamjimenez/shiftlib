@@ -133,7 +133,14 @@ window.onload=init;
 <tr>
     <td>
 		<?
-		$qs=array();
+		$qs_arr = $_GET;
+		unset($qs_arr['option']);
+		unset($qs_arr['view']);
+		unset($qs_arr['id']);
+		$qs = http_build_query($qs_arr);
+		
+		/*
+		$qs = array();
 		foreach( $vars['fields'][$this->section] as $k=>$v ){
 			if( ($v=='select' or $v=='radio') and $_GET[$k] ){
 				$qs[$k]=$_GET[$k];
@@ -141,6 +148,8 @@ window.onload=init;
 			}
 		}
 		$qs = http_build_query($qs);
+		print $qs;
+		*/
 
 		$section='';
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
@@ -151,13 +160,13 @@ window.onload=init;
 		}
 		?>
 
-		<? if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
-		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>">&laquo; Back to <?=ucfirst($section);?></a>
+		<? /*if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
+		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($section);?></a>
 		&nbsp;
-		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ ?>
-		<a href="?option=<?=$this->section;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
+		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ */?>
+		<a href="?option=<?=$this->section;?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
 		&nbsp;
-		<? } ?>
+		<? /*}*/ ?>
 
         <button type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
 
