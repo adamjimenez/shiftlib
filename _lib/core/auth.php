@@ -301,12 +301,13 @@ class auth{
 		    return 1;
 		}
 
+		$password = $_POST['password'];
 		if( $this->generate_password ){
-			$_POST['password'] = generate_password();
+			$password = generate_password();
 		}
 
 		if( $this->hash_password ){
-			$_POST['password'] = $this->create_hash($_POST['password']);
+			$password = $this->create_hash($password);
 		}
 
 		$id = $cms->save();
@@ -325,7 +326,7 @@ class auth{
 				LIMIT 1
 			");
 
-			$reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/activate?user='.$id.'&code='.$code;
+			$reps['link'] = 'https://'.$_SERVER["HTTP_HOST"].'/activate?user='.$id.'&code='.$code;
 		}
 
         $reps['domain'] = $_SERVER["HTTP_HOST"];
@@ -335,9 +336,9 @@ class auth{
 		if( $this->registration_notification ){
 			global $from_email;
 
-			$headers = "From: ".$from_email."\n";
+			$headers="From: ".$from_email."\n";
 
-			$msg = 'New user registration:
+			$msg='New user registration:
 			http://'.$_SERVER['HTTP_HOST'].'/admin?option=users&view=true&id='.$id;
 
 			$msg = str_replace("\t", '', $msg);
@@ -347,7 +348,7 @@ class auth{
 
 		if( $this->register_login ){
 			$_SESSION[$this->cookie_prefix.'_email'] = $_POST['email'];
-			$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
+			$_SESSION[$this->cookie_prefix.'_password'] = $password;
 		}
 
 		return true;
