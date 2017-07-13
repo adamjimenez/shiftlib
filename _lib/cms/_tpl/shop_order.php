@@ -123,6 +123,7 @@ if( !$order ){
     		Change status to:
     		<select name="status">
     			<option value=""></option>
+    			<option value="paid">paid</option>
     			<option value="dispatched">dispatched</option>
     			<option value="refunded">refunded</option>
     		</select>
