@@ -144,7 +144,8 @@ if($_FILES) {
     }
 
     // Return Success JSON-RPC response
-    die('{"jsonrpc" : "2.0", "result" : null, "id" : "id", "success": true}');
+    $result['file'] = $filePath;
+    print json_encode($result);
 }
 
 if($_GET["download"]) {
@@ -174,7 +175,7 @@ if($_GET["cmd"]) {
             });
 
             $start = $_GET['current'] ?: 0;
-            $max_files = 50;
+            $max_files = 500;
             $i = 0;
             foreach ($paths as $pathname) {
     			$i++;
@@ -198,18 +199,19 @@ if($_GET["cmd"]) {
                         //$file['url'] = '/uploads/'.$file['id'];
 
                         $thumb = image($file['id'], 50 , 39, false);
-                        $thumb_medium = image($file['id'], 98 , 76, false);
+                        //$thumb_medium = image($file['id'], 98 , 76, false);
 
                         if($thumb) {
-                            $file['thumb'] = $thumb.'?m='.filemtime($path.$file['id']);
-                            $file['thumb_medium'] = $thumb_medium.'?m='.filemtime($path.$file['id']);
+                            $file['thumb'] = $thumb;
+                            //$file['thumb'] = $thumb.'?m='.filemtime($path.$file['id']);
+                            //$file['thumb_medium'] = $thumb_medium.'?m='.filemtime($path.$file['id']);
                         } else {
                             $file['thumb'] = 'images/file_thumb.png';
-                            $file['thumb_medium'] = 'images/file_thumb_medium.png';
+                            //$file['thumb_medium'] = 'images/file_thumb_medium.png';
                         }
                     } else {
                         $file['thumb'] = 'images/folder_thumb.png';
-                        $file['thumb_medium'] = 'images/folder_thumb_medium.png';
+                        //$file['thumb_medium'] = 'images/folder_thumb_medium.png';
                     }
 
                     $file['size'] = filesize($pathname);

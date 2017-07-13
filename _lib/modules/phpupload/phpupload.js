@@ -31,6 +31,8 @@ $(function() {
 		<button type="button" class="rotate_right" disabled><i class="fa fa-repeat" aria-hidden="true"></i></button>\
 		<button type="button" class="refresh"><i class="fa fa-refresh" aria-hidden="true"></i></button>\
 		<button type="button" class="level_up" disabled><i class="fa fa-level-up" aria-hidden="true"></i></button>\
+		<button type="button" class="enter" disabled>OK</button>\
+		<input type="text" name="search" class="search">\
 	</div>\
 	<div id="uploads">\
 	<ul></ul>\
@@ -73,8 +75,13 @@ $(function() {
 				document.getElementById('console').innerHTML += "\nError #" + err.code + ": " + err.message;
 			},
 			
-			UploadComplete: function() {
-				refresh();
+			UploadComplete: function(up, files) {
+				refresh(function() {
+					files.forEach(function(item) {
+						var el = $('#uploads a[data-name="' + item.name + '"]');
+						$(el).click().get(0).scrollIntoView();
+					});
+				});
 			}
 	    }
 	});
@@ -82,16 +89,16 @@ $(function() {
 	uploader.init();
 	
 	// list files
-	function refresh() {
+	function refresh(callback) {
 		clear();
-		load();
+		load(callback);
 	}
 	function clear() {
 		current = 0;
 		total = 0;
 		$('#uploads ul').html('');
 	}
-	function load() {
+	function load(callback) {
 		if (loading) {
 			console.log('already loading');
 			return;
@@ -142,6 +149,10 @@ $(function() {
 				current = data.current;
 				total = data.total;
 				loading = false;
+				
+				if (callback) {
+					callback();
+				}
 			}
 		});
 	}
@@ -153,16 +164,18 @@ $(function() {
 			$('.level_up').attr('disabled', 'disabled');
 		}
 		
-		$('.delete, .rename, .download, .rotate_left, .rotate_right').attr('disabled', 'disabled');
+		$('.delete, .rename, .download, .rotate_left, .rotate_right .enter').attr('disabled', 'disabled');
 
 		if($('#uploads .ui-state-active a').length===1) {
 			var leaf = $('#uploads .ui-state-active a').data('leaf');
 			
 			if (leaf) {
-				$('.delete, .rename, .download, .rotate_left, .rotate_right').removeAttr('disabled');
+				$('.delete, .rename, .download, .rotate_left, .rotate_right .enter').removeAttr('disabled');
 			} else {
 				$('.delete, .rename').removeAttr('disabled');
 			}
+		} else {
+			$('.enter').removeAttr('disabled');
 		}
 	}
 	
@@ -254,13 +267,7 @@ $(function() {
 		}
 	});
 	
-	$("#uploads ul").basicMenu({
-		select: function (event, ui) {
-			check_buttons();
-		}
-	});
-	
-	var name = $('body').on('dblclick', '#uploads a', function() {
+	$('.enter').click(function() {
 		var name = $('#uploads .ui-state-active a').data('name');
 		var leaf = $('#uploads .ui-state-active a').data('leaf');
 		
@@ -272,10 +279,43 @@ $(function() {
 			location.hash = name;
 		} else {
 			var files = [];
-			files.push(name);
+			
+			$('#uploads .ui-state-active a').each(function(item) {
+				var name = $(this).data('name');
+				var leaf = $(this).data('leaf');
+				
+				if (path) {
+					name = path + '/' + name;
+				}
+				
+				files.push(name);
+			});
+			
 			callback(files);
 		}
 	});
+	
+	$("#uploads ul").basicMenu({
+		select: function (event, ui) {
+			check_buttons();
+		}
+	});
+	
+	$('.search').keyup(function() {
+		var val = $(this).val().toLowerCase();
+		
+		$('#uploads li a').each(function(item) {
+			var name = $(this).data('name').toLowerCase();
+			
+			if (name.indexOf(val)===-1) {
+				$(this).parent().hide();
+			} else {
+				$(this).parent().show();
+			}
+		});
+	});
+	
+	var name = $('body').on('dblclick', '#uploads a', function() { $('.enter').click(); });
 
 	window.onhashchange = function(){
 		path = location.hash.substr(1);
