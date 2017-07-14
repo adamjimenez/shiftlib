@@ -487,3 +487,15 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 .sorting-arrows i:first-child {
 	margin-right: 5px;
 }
+
+.ui-dialog-titlebar-close {
+ padding:0 !important;
+ overflow: hidden;
+}
+
+.ui-dialog-titlebar-close:after {
+ content: '\f00d';
+ font-family: FontAwesome;
+ width: 20px;
+ height: 20px;
+}
