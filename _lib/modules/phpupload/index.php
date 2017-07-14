@@ -164,6 +164,8 @@ if($_GET["cmd"]) {
             
             $paths = glob($path.'*');
             usort($paths, function ($a, $b) {
+                $a = strtolower($a);
+                $b = strtolower($b);
                 $aIsDir = is_dir($a);
                 $bIsDir = is_dir($b);
                 if ($aIsDir === $bIsDir)

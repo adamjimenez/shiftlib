@@ -1,10 +1,8 @@
 /*
 TODO
-multiselect delete
 file size
 last modified
 file sort
-search filter
 list view
 toolbar layout
 */
@@ -20,6 +18,7 @@ $(function() {
 	var current = 0;
 	var total = 0;
 	var loading = false;
+	var dialog;
 	
 	$('<div id="toolbar">\
 		<button type="button" id="pickfiles" class="upload">Upload files</button>\
@@ -70,17 +69,67 @@ $(function() {
 			FilesAdded: function(up, files) {
 				uploader.start();
 			},
-	 
+
+			UploadProgress: function(up, file) {
+				if (!$('#dialog').length) {
+					$('<div id="dialog" title="File Upload">\
+						<div class="progress-label">Uploading...</div>\
+						<div id="progressbar"></div>\
+					</div>').appendTo('body');
+					
+					dialog = $( "#dialog" ).dialog({
+						dialogClass: "no-close",
+						autoOpen: false,
+						closeOnEscape: false,
+						resizable: false,
+						modal: true/*,
+						buttons: dialogButtons,
+						open: function() {
+							progressTimer = setTimeout( progress, 2000 );
+						},
+						beforeClose: function() {
+							downloadButton.button( "option", {
+								disabled: false,
+								label: "Start Download"
+							});
+						}*/
+					});
+					
+					dialog.dialog( "open" );
+				}
+				
+				$( function() {
+					$( "#progressbar" ).progressbar({
+						value: file.percent,
+						change: function() {
+							$( ".progress-label" ).text( "Current Progress: " + $( "#progressbar" ).progressbar( "value" ) + "%" );
+						},
+						complete: function() {
+							$( ".progress-label" ).text( "Complete!" );
+							dialog.dialog( "close" );
+						}
+					});
+				} );
+			},
+
 			Error: function(up, err) {
 				document.getElementById('console').innerHTML += "\nError #" + err.code + ": " + err.message;
+				$('#dialog').remove();
 			},
 			
-			UploadComplete: function(up, files) {
+			UploadComplete: function(uploader, files) {
+				$('#dialog').remove();
 				refresh(function() {
+					$('#uploads .ui-state-active').removeClass('ui-state-active');
 					files.forEach(function(item) {
 						var el = $('#uploads a[data-name="' + item.name + '"]');
-						$(el).click().get(0).scrollIntoView();
+						console.log(item.name);
+						$(el).parent().addClass('ui-state-active').get(0).scrollIntoView();
 					});
+					check_buttons();
+					
+					//clear upload queue
+					uploader.splice();
 				});
 			}
 	    }
@@ -131,7 +180,7 @@ $(function() {
 				//$('#uploads ul').html('');
 				var thumb;
 				data.files.forEach(function(item) {
-					thumb = item.leaf ? item.thumb : 'images/folder_thumb.png';
+					thumb = item.leaf ? 'images/file_thumb.png' : 'images/folder_thumb.png';
 					$('<li>\
 						<a href="javascript:void(0);" data-name="' + item.name + '" data-leaf="' + item.leaf + '">\
 							<img src="' + thumb + '">\
@@ -174,6 +223,8 @@ $(function() {
 			} else {
 				$('.delete, .rename').removeAttr('disabled');
 			}
+		} else if($('#uploads .ui-state-active a').length>1) {
+			$('.delete').removeAttr('disabled');
 		} else {
 			$('.enter').removeAttr('disabled');
 		}
@@ -197,15 +248,26 @@ $(function() {
 		}
 	});
 	
+	var confirmDelete = false;
 	$('.delete').click(function() {
-		var r = confirm("Are you sure?");
-		if (r) {
-			var name = $('#uploads .ui-state-active a').data('name');
+		if (!confirmDelete) {
+			confirmDelete = confirm("Are you sure?");
+		}
+		
+		if (confirmDelete) {
+			var el = $('#uploads .ui-state-active a').first();
+			var name = el.data('name');
 			$.ajax({
 				dataType: "json",
 				url: '?cmd=delete&name='+name+'&path='+path,
 				success: function(data) {
-					refresh();
+					el.parent().remove();
+					if($('#uploads .ui-state-active a').length===0) {
+						refresh();
+						confirmDelete = false;
+					} else {
+						$('.delete').click();
+					}
 				}
 			});
 		}
