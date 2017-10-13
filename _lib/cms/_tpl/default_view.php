@@ -18,14 +18,32 @@ if( isset($_POST['custom_button']) ){
     $content = $this->get($this->section, $_GET['id']);
 }
 
-//subsections delete
-if( $_POST['action']=='delete' ){
-    $this->delete_items($_POST['section'],$_POST['items']);
+// get all items
+if ($_POST['select_all_pages']) {
+	$conditions = array();
+	foreach( $vars['fields'][$_POST['section']] as $k=>$v ){
+		if( ($v=='select' or $v=='combo' or $v=='radio') and $vars['options'][$k]==$_GET['option'] ){
+			$conditions[$k] = escape($this->id);
+			break;
+		}
+	}
+
+	$items = $this->get($_POST['section'], $conditions);
+	
+	$_POST['items'] = array();
+	foreach($items as $v) {
+		$_POST['items'][] = $v['id'];
+	}
 }
 
-//subsections delete all
-if( $_POST['select_all_pages'] and $_POST['section'] and $_POST['action']=='delete' ){
-	$this->delete_all_pages($_POST['section']); //FIXME - should only delete related items
+//bulk export
+if( $_POST['action']=='export' ){
+	$this->export_items($_POST['section'], $_POST['items']);
+}
+
+//subsections delete
+if( $_POST['action']=='delete' ){
+    $this->delete_items($_POST['section'], $_POST['items']);
 }
 
 //save privileges
@@ -168,13 +186,13 @@ window.onload=init;
 		&nbsp;
 		<? /*}*/ ?>
 
-        <button type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
+        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
 
 
 		<? if( $vars['settings'][$this->section]['sms'] and is_numeric($content['mobile']) ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="sms" value="1">
-			<button type="submit">Send SMS text</button>
+			<button class="btn btn-default" type="submit">Send SMS text</button>
 		</form>
 		<? } ?>
 
@@ -186,11 +204,11 @@ window.onload=init;
 		}
 		?>
 
-		&nbsp;&nbsp;&nbsp;
+		&nbsp;
 
         <form method="post" style="display:inline;">
-        <input type="hidden" name="delete" value="1">
-        <button type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
+	        <input type="hidden" name="delete" value="1">
+	        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
         </form>
 	</td>
     <td style="text-align: right;">

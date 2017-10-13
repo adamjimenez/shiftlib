@@ -220,7 +220,7 @@ function initForms()
 						}
 
 						//focus field
-						$(this).find('[name='+returned[0]+']:first').focus();
+						$(this).find('[name="'+returned[0]+'"]:first').focus();
 					}
 
 					//remove error messages
@@ -336,6 +336,24 @@ function initForms()
             }
         });
     }
+    
+	//combobox
+	if( jQuery('input.time').length ){
+		jQuery("head").append("<link>");
+		var css = jQuery("head").children(":last");
+		css.attr({
+			rel:  "stylesheet",
+			type: "text/css",
+			href: "//cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.css"
+		});
+		
+		jQuery.getScript("//cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.js").done(function(){
+			$('input.time').timepicker({ 
+				'scrollDefault': 'now',
+				'timeFormat': 'H:i:s'
+				});
+		});
+	}
 
 	//maps
 	if( jQuery('input.map').length ){
@@ -539,7 +557,7 @@ function initForms()
 	}
 
 	//tinymce4
-    var tinymce_url = '//cloud.tinymce.com/stable/';
+    var tinymce_url = '//cloud.tinymce.com/dev/'; // changed to dev from stable for bugfix in 4.7
 	if( jQuery('textarea.tinymce').length ){
         jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
             $('textarea.tinymce').tinymce({
@@ -638,10 +656,14 @@ function initForms()
             });
         });
 	}
-
-	//files
-	if( jQuery('ul.files').length ){
+	
+	if ($.ui && $.ui.sortable) {
+		//files
 		jQuery('ul.files').sortable();
+		
+		jQuery('.checkboxes').sortable({
+			axis: 'y',
+		});
 	}
 
 	//combo
@@ -676,6 +698,9 @@ function initForms()
 				
 				// the choose option will use the value from the previous select
 				var chooseValue = select.prev('select').val();
+				if (!chooseValue) {
+					chooseValue = '';
+				}
 				select.append('<option value="'+chooseValue+'">Choose</option>');
 				
 				// add options

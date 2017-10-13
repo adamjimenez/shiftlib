@@ -194,6 +194,7 @@ $field_opts=array(
 	'deleted',
 	'id',
 	'separator',
+	'sql',
 	'array',
 );
 
@@ -244,7 +245,7 @@ function loop_fields($field_arr) // should be anonymous function
 
 			//drop fields
 			if( !$_POST['vars']['fields'][$count['sections']][$count['fields']] ){
-				if( $v=='id' or $v=='separator' ){ //don't drop id!
+				if( $v=='id' or $v=='separator' or $v=='sql'  ){ //don't drop id!
 					continue;
 				}
 

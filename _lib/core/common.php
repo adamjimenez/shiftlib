@@ -79,11 +79,20 @@ function image($file, $w, $h, $attribs=true, $crop=false)
         $file = 'http:'.$file;
         return $file;
     }
-
-    //no resize
-    if( !$w and !$h and !starts_with($file, 'http') ){
-        $path = '/uploads/'.$file;
+    
+    if (is_numeric($file)) {
+    	/*
+    	$row = sql_query("SELECT * FROM files WHERE
+			id='".addslashes($_GET['f'])."'
+		", 1);
+		*/
+		$file = 'files/'.$file;
     }
+    
+	//no resize
+	if( !$w and !$h and !starts_with($file, 'http') ){
+	    $path = '/uploads/'.$file;
+	}
 
 	if( !$path ){
 		if(
@@ -646,6 +655,7 @@ function form_to_db($type)
 		case 'select-multiple':
 		case 'checkboxes':
 		case 'separator':
+		case 'sql':
 		case 'array':
 		break;
 		case 'textarea':
@@ -725,13 +735,13 @@ function format_mobile($mobile)
 
 function format_postcode($postcode)
 {
-	$postcode=strtoupper($postcode);
+	$postcode = strtoupper($postcode);
 
 	if( !strstr($postcode,' ') ){
-		$part1=substr($postcode,0,-3);
-		$part2=substr($postcode,-3);
+		$part1 = substr($postcode,0,-3);
+		$part2 = substr($postcode,-3);
 
-		$postcode=$part1.' '.$part2;
+		$postcode = $part1.' '.$part2;
 	}
 
 	if( is_postcode($postcode) ){
@@ -984,7 +994,17 @@ function is_odd($number)
 
 function is_postcode($code)
 {
-	return preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code);
+	if (!preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code)){
+		return false;
+	}
+	
+	if (table_exists('postcodes')) {
+		if (calc_grids($code)===false) {
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 function is_tel($string)
@@ -1177,10 +1197,8 @@ function load_js($libs)
 	}
 
 	if( $deps['fontawesome'] ){
-		//$fontawesome_version = '3.2.1';
-		$fontawesome_version = '4.0.3';
 	?>
-		<link href="//netdna.bootstrapcdn.com/font-awesome/<?=$fontawesome_version;?>/css/font-awesome.min.css" rel="stylesheet">
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 	<?
 	}
 }

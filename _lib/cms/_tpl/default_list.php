@@ -28,43 +28,9 @@ if( in_array('select-distance',$vars['fields'][$this->section]) ){
 	$opts['distance'][array_search('select-distance',$vars['fields'][$this->section])]='specified '.array_search('select-distance',$vars['fields'][$this->section]);
 }
 
-//bulk delete
+//bulk export
 if( $_POST['action']=='export' ){
-	foreach( $_POST['items'] as $item ){
-		$vars['content'][] = $this->get($this->section,$item);
-	}
-
-	$i=0;
-	foreach( $vars['content'] as $row ){
-		if($i==0){
-			$j=0;
-			foreach($row as $k=>$v){
-				$data.='"'.$k.'",';
-				$headings[$j]=$k;
-			}
-			$data = substr($data,0,-1);
-			$data .= "\n";
-
-			$j++;
-		}
-		$j=0;
-		foreach($row as $k=>$v){
-			//$v=str_replace("\n","\r\n",$v);
-
-			$data.='"'.str_replace('"','',$v).'",';
-
-			$j++;
-		}
-		$data=substr($data,0,-1);
-		$data.="\n";
-		$i++;
-	}
-
-	header('Pragma: cache');
-	header('Content-Type: text/comma-separated-values; charset=UTF-8');
-	header('Content-Disposition: attachment; filename="'.$this->section.'.csv"');
-
-	die($data);
+	$this->export_items($this->section, $_POST['items']);
 }
 
 if( $_POST['action']=='delete' ){
@@ -114,8 +80,7 @@ if( $_POST['action']=='email' ){
 		".$sql['where_str']."
 		GROUP BY
 			T_".$table.".".$field_id."
-		".$sql['having_str']."
-		";
+		".$sql['having_str'];
 		
 		global $db_connection;
 		$result = mysqli_query($db_connection, $query);
@@ -418,7 +383,7 @@ jQuery(document).ready(function() {
 						</select>
 					</div>
 					<div style="float:left">
-						<input type="text" id="<?=$name;?>" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" class="date" />
+						<input type="text" id="<?=$name;?>" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" data-type="date" />
 					</div>
 				</td>
 			</tr>
@@ -565,7 +530,7 @@ jQuery(document).ready(function() {
 		<legend>With all results</legend>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="export" value="1" />
-			<button  class="btn btn-default" type="submit">Export</button>
+			<button class="btn btn-default" type="submit">Export</button>
 		</form>
 		<? /*
 		<? if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
@@ -581,13 +546,13 @@ jQuery(document).ready(function() {
 		<? if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="shiftmail" value="1">
-			<button type="submit">Email</button>
+			<button class="btn btn-default" type="submit">Email</button>
 		</form>
 		<? } ?>
 		<? if( $vars['settings'][$this->section]['sms'] ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="sms" value="1">
-			<button type="submit">SMS</button>
+			<button class="btn btn-default" type="submit">SMS</button>
 		</form>
 		<? } ?>
 		<?

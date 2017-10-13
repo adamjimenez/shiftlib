@@ -111,7 +111,7 @@ $blog = new blog(
 			<? if( count($article_categories) ){ ?>
 			Posted in:
 			<? foreach( $article_categories as $k=>$c ){ ?>
-				<a href="/category/<?=$c['page_name'];?>"><?=$c['category'];?></a>
+				<a href="/blog/category/<?=$c['page_name'];?>"><?=$c['category'];?></a>
 				<? if( $k<count($article_categories)-1 ){ ?>
 				,
 				<? } ?>

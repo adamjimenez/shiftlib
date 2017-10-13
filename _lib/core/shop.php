@@ -73,7 +73,7 @@ class shop{
 			$this->guest['address2']=$_POST['address2'];
 			$this->guest['city']=$_POST['city'];
 			$this->guest['county']=$_POST['county'];
-			$this->guest['postcode']=$_POST['postcode'];
+			$this->guest['postcode']=format_postcode($_POST['postcode']);
 			$this->guest['comments']=$_POST['comments'];
 
 			$_SESSION['guest'] = $this->guest;
@@ -877,11 +877,118 @@ class shop{
 
 		return $this->complete_order($oid,$ref,'worldpay');
 	}
-
-	function complete_order($oid,$ref,$method)
-	{
+	
+	function send_confirmation($oid) {
 		global $debug, $admin_email;
+		
+		$order = sql_query("SELECT * FROM orders WHERE id='".escape($oid)."'", 1);
+		
+		$items = sql_query("SELECT * FROM order_items WHERE `order`='".$order['id']."'");
 
+		$details='';
+		foreach( $items as $k=>$item ){
+			$details.=$item['name'].' x '.$item['quantity'].' @ £'.$item['cost']."\n"
+			.$item['extras']."\n\n";
+		}
+
+		try {
+			$reps = array_merge($order, array(
+				'oid'=>$order['id'],
+				'order_id'=>$order['id'],
+				'details'=>$details,
+				'delivery'=>'£'.number_format($order['delivery'], 2),
+				'vat'=>'£'.number_format($order['vat'],2),
+				'total'=>'£'.number_format($order['total'],2),
+				'event_date'=>dateformat('d-m-Y', $order['event_date']),
+				'note'=>$order['note'],
+			));
+
+			if(!$this->disable_confirmation_email){
+				email_template($order['email'], 'Order Confirmation', $reps);
+				email_template($this->paypal_email, 'Order Confirmation', $reps);
+			}
+
+			email_template($admin_email, 'Order Confirmation', $reps);
+		} catch (Exception $e) {
+			$msg='';
+
+			if( $debug or $this->test ){
+				$msg.='DEBUG MODE - THIS IS NOT A REAL TRANSACTION'."\n\n";
+			}
+
+			// send out confirmation emails
+			$msg.='Thank you for your order. Please find details of your order below:'."\n\n";
+
+			$msg.='Payment method: ';
+			$msg.=''.$method.''."\n\n";
+
+			$msg.='Payment status: ';
+			$msg.=$status."\n\n";
+
+			$msg.='Order ref: ';
+			$msg.=$order['id']."\n\n";
+
+			$msg.='Name'."\n";
+			$msg.='====='."\n";
+			$msg.=$order['name']."\n\n";
+
+			$msg.='Address'."\n";
+			$msg.='========'."\n";
+			$msg.=$order['address']."\n";
+			$msg.=$order['postcode']."\n\n";
+
+			if( $order['comments'] ){
+				$msg.='Comments'."\n";
+		    	$msg.='========'."\n";
+				$msg.=$order['comments']."\n\n";
+			}
+
+			$msg.='Items'."\n";
+			$msg.='======'."\n";
+			$msg.=$details."\n";
+
+			$msg.='Delivery:'."\n";
+			$msg.='£'.$order['delivery']."\n\n";
+
+			if( $order['offer'] ){
+				$msg.='Offer:'."\n";
+				$msg.=$order['offer']."\n\n";
+			}
+			if( $order['discount'] ){
+				$msg.='Discount:'."\n";
+				$msg.='£'.number_format($order['discount'],2)."\n\n";
+			}
+
+			if( $order['vat'] ){
+				$msg.='Vat:'."\n";
+				$msg.='£'.number_format($order['vat'],2)."\n\n";
+			}
+
+			$msg.='Total: ';
+			$msg.='£'.number_format($order['total'],2)."\n\n";
+
+			if( $order['event_date'] ){
+				$msg.='Event date:'."\n";
+				$msg.=dateformat('d-m-Y',$order['event_date'])."\n\n";
+			}
+
+			//confirmation email
+			mail($admin_email, 'Order Placed', $msg, $this->headers);
+
+			if(!$this->disable_confirmation_email){
+				mail($order['email'], 'Order Confirmation', $msg, $this->headers);
+
+				if( $this->cc ){
+					$this->headers.="Cc: ".$this->cc."\n";
+				}
+
+				mail($this->paypal_email,'Order Placed',$msg,$this->headers);
+			}
+		}
+	}
+
+	function complete_order($oid, $ref, $method)
+	{
 		// check if invoice has been paid
 		$order = sql_query("SELECT * FROM orders WHERE id='".escape($oid)."'", 1);
 
@@ -895,109 +1002,7 @@ class shop{
 				sql_query("UPDATE orders SET test='1' WHERE id='".$order['id']."' LIMIT 1");
 			}
 
-			$items=sql_query("SELECT * FROM order_items WHERE `order`='".$order['id']."'");
-
-			$details='';
-			foreach( $items as $k=>$item ){
-				$details.=$item['name'].' x '.$item['quantity'].' @ £'.$item['cost']."\n"
-				.$item['extras']."\n\n";
-			}
-
-			try {
-				$reps = array_merge($order, array(
-					'method'=>$method,
-					'status'=>$status,
-					'oid'=>$order['id'],
-					'order_id'=>$order['id'],
-					'details'=>$details,
-					'delivery'=>'£'.number_format($order['delivery'], 2),
-					'vat'=>'£'.number_format($order['vat'],2),
-					'total'=>'£'.number_format($order['total'],2),
-					'event_date'=>dateformat('d-m-Y', $order['event_date']),
-				));
-
-				if(!$this->disable_confirmation_email){
-					email_template($order['email'], 'Order Confirmation', $reps);
-					email_template($this->paypal_email, 'Order Confirmation', $reps);
-				}
-
-				email_template($admin_email, 'Order Confirmation', $reps);
-			} catch (Exception $e) {
-				$msg='';
-
-				if( $debug or $this->test ){
-					$msg.='DEBUG MODE - THIS IS NOT A REAL TRANSACTION'."\n\n";
-				}
-
-				// send out confirmation emails
-				$msg.='Thank you for your order. Please find details of your order below:'."\n\n";
-
-				$msg.='Payment method: ';
-				$msg.=''.$method.''."\n\n";
-
-				$msg.='Payment status: ';
-				$msg.=$status."\n\n";
-
-				$msg.='Order ref: ';
-				$msg.=$order['id']."\n\n";
-
-				$msg.='Name'."\n";
-				$msg.='====='."\n";
-				$msg.=$order['name']."\n\n";
-
-				$msg.='Address'."\n";
-				$msg.='========'."\n";
-				$msg.=$order['address']."\n";
-				$msg.=$order['postcode']."\n\n";
-
-				if( $order['comments'] ){
-					$msg.='Comments'."\n";
-			    	$msg.='========'."\n";
-					$msg.=$order['comments']."\n\n";
-				}
-
-				$msg.='Items'."\n";
-				$msg.='======'."\n";
-				$msg.=$details."\n";
-
-				$msg.='Delivery:'."\n";
-				$msg.='£'.$order['delivery']."\n\n";
-
-				if( $order['offer'] ){
-					$msg.='Offer:'."\n";
-					$msg.=$order['offer']."\n\n";
-				}
-				if( $order['discount'] ){
-					$msg.='Discount:'."\n";
-					$msg.='£'.number_format($order['discount'],2)."\n\n";
-				}
-
-				if( $order['vat'] ){
-					$msg.='Vat:'."\n";
-					$msg.='£'.number_format($order['vat'],2)."\n\n";
-				}
-
-				$msg.='Total: ';
-				$msg.='£'.number_format($order['total'],2)."\n\n";
-
-				if( $order['event_date'] ){
-					$msg.='Event date:'."\n";
-					$msg.=dateformat('d-m-Y',$order['event_date'])."\n\n";
-				}
-
-				//confirmation email
-				mail($admin_email, 'Order Placed', $msg, $this->headers);
-
-				if(!$this->disable_confirmation_email){
-					mail($order['email'], 'Order Confirmation', $msg, $this->headers);
-
-					if( $this->cc ){
-						$this->headers.="Cc: ".$this->cc."\n";
-					}
-
-					mail($this->paypal_email,'Order Placed',$msg,$this->headers);
-				}
-			}
+			$this->send_confirmation($oid);
 
 			//empty basket
 			sql_query("DELETE FROM basket WHERE user='".$order['customer']."'");

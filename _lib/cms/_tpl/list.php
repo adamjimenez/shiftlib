@@ -25,19 +25,19 @@ function delete_selected(){
 }
 
 function email_selected(){
-	document.getElementById('action').value='email';
+	$('.action').val('email');
 	return true;
 }
 
 function export_selected(){
-	document.getElementById('action').value='export';
+	$('.action').val('export');
 	return true;
 }
 </script>
 
 <div class="box" style="clear:both;">
 <form method="post" id="cms_list_<?=underscored($this->section);?>" class="cms_list">
-<input type="hidden" class="section" name="section" value="<?=underscored($this->section);?>">
+<input type="hidden" class="section" name="section" value="<?=$this->section;?>">
 <input type="hidden" class="action" name="action" id="action" value="">
 <input type="hidden" class="select_all_pages" name="select_all_pages" value="0">
 <?

@@ -133,6 +133,10 @@ class auth{
 			if($result===true) {
 				if ($_POST['redirect']) {
 					redirect($_POST['redirect']);
+				} else if ($_SESSION['request']) {
+					$request = $_SESSION['request'];
+					unset($_SESSION['request']);
+					redirect($request);
 				} else {
 					redirect($this->register_success);
 				}
@@ -292,6 +296,8 @@ class auth{
 		global $cms;
 
 		$cms->set_section($this->table);
+		
+		$data = $_POST;
 
 		$errors = $cms->validate();
 
@@ -301,16 +307,16 @@ class auth{
 		    return 1;
 		}
 
-		$password = $_POST['password'];
+		$data['password'] = $_POST['password'];
 		if( $this->generate_password ){
-			$password = generate_password();
+			$data['password'] = generate_password();
 		}
 
 		if( $this->hash_password ){
-			$password = $this->create_hash($password);
+			$data['password'] = $this->create_hash($data['password']);
 		}
 
-		$id = $cms->save();
+		$id = $cms->save($data);
 
 		$reps = $_POST;
 
@@ -348,7 +354,7 @@ class auth{
 
 		if( $this->register_login ){
 			$_SESSION[$this->cookie_prefix.'_email'] = $_POST['email'];
-			$_SESSION[$this->cookie_prefix.'_password'] = $password;
+			$_SESSION[$this->cookie_prefix.'_password'] = $data['password'];
 		}
 
 		return true;

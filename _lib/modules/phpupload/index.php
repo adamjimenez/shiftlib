@@ -36,7 +36,8 @@ if($_GET["path"]) {
     $path .= $_GET["path"].'/';
 
     if(!file_exists($path)) {
-        mkdir($path);
+        //mkdir($path);
+        $result['success'] = false;
     }
 }
 
@@ -81,6 +82,14 @@ if($_FILES) {
     //$fileName = isset($_REQUEST["name"]) ? $_REQUEST["name"] : uniqid("file_");
 
     $fileName = $_FILES["file"]['name'] ?: $_POST['filename'];
+    
+    if (!in_array(file_ext($fileName), $upload_config["allowed_exts"])) {
+        $result['success'] = false;
+        $result['error'] = 'File type not allowed';
+        print json_encode($result);
+        exit;
+    }
+    
     $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
     $chunking = isset($_REQUEST["offset"]) && isset($_REQUEST["total"]);
 
@@ -146,6 +155,7 @@ if($_FILES) {
     // Return Success JSON-RPC response
     $result['file'] = $filePath;
     print json_encode($result);
+    exit;
 }
 
 if($_GET["download"]) {
@@ -257,7 +267,7 @@ if($_GET["cmd"]) {
         case 'create':
             //new folder
             if($_GET["name"]) {
-                if(mkdir($path.$_GET["name"])) {
+                if(mkdir($path.trim($_GET["name"]))) {
                     $result = array(
                         'name'=>$file["name"],
                         'message'=>'created folder',
@@ -303,6 +313,9 @@ if($_GET["cmd"]) {
                 $rotated = imagerotate($img, $angle, 0);
                 
                 $result['success'] = imagefile($rotated, $path.$_GET['name']);
+                
+                unlink($root.'cache/'.$_GET['path'].'/'.$_GET['name']);
+                image($_GET['path'].'/'.$_GET['name'], 50 , 39, false);
             }
         break;
 
@@ -333,6 +346,7 @@ if($_GET["cmd"]) {
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.flash.js"></script>
 
 	<? load_js(array('fontawesome', 'jqueryui')); ?>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.js"></script>
 	
     <script type="text/javascript" src="js/basicMenu/ui.basicMenu.js"></script>
     <link rel="stylesheet" type="text/css" href="js/basicMenu/ui.basicMenu.css">

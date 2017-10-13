@@ -83,6 +83,7 @@ function file_ext( filename ){
         $('iframe#uploadFrame').load(function(){
             //set callback in iframe
             document.getElementById('uploadFrame').contentWindow.callback = function(files){
+                console.log(files)
                 if(field){
                     if( field.prop("tagName")==='INPUT' ){
                         $(field).next().find('ul li').remove();

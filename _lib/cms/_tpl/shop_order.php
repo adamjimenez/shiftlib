@@ -76,6 +76,8 @@ if( !$order ){
     		<?=$order['comments'];?><br><br>
     		<strong>Details:</strong><br>
     		<?=nl2br(htmlentities($details));?><br>
+    		<strong>Note:</strong>
+    		<?=$order['note'];?><br><br>
     		<strong>Delivery:</strong>
     		&pound;<?=$order['delivery'];?><br>
 

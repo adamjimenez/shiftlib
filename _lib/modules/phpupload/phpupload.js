@@ -69,6 +69,41 @@ $(function() {
 			FilesAdded: function(up, files) {
 				uploader.start();
 			},
+			
+			FileUploaded: function(up, file, obj) {
+				var result = JSON.parse(obj.response);
+				
+				if (result.error) {
+					
+					$(function () {
+						$('body').append('<div id="warning"><h2>'+file.name+'</h2><p>'+result.error+'</p></div>');
+					    $("#warning").dialog({
+					        autoOpen: false,
+					        draggable: false,
+					        resizable: false,
+					        show: {
+					            effect: 'fade',
+					            duration: 2000
+					        },
+					        hide: {
+					            effect: 'fade',
+					            duration: 2000
+					        },
+					        open: function(){
+					            $(this).dialog('close');
+					        },
+					        close: function(){
+					            $(this).dialog('destroy');
+					            $('#warning').remove();
+					        }
+					    });
+					    
+					    $(".ui-dialog-titlebar").remove();
+					    
+					    $("#warning").dialog("open");
+					});
+				}
+			},
 
 			UploadProgress: function(up, file) {
 				if (!$('#dialog').length) {
@@ -102,11 +137,12 @@ $(function() {
 					$( "#progressbar" ).progressbar({
 						value: file.percent,
 						change: function() {
-							$( ".progress-label" ).text( "Current Progress: " + $( "#progressbar" ).progressbar( "value" ) + "%" );
+							$( ".progress-label" ).text( file.name + ' ' + $( "#progressbar" ).progressbar( "value" ) + "%" );
 						},
 						complete: function() {
 							$( ".progress-label" ).text( "Complete!" );
 							dialog.dialog( "close" );
+							$( "#dialog" ).remove();
 						}
 					});
 				} );
@@ -123,8 +159,9 @@ $(function() {
 					$('#uploads .ui-state-active').removeClass('ui-state-active');
 					files.forEach(function(item) {
 						var el = $('#uploads a[data-name="' + item.name + '"]');
-						console.log(item.name);
-						$(el).parent().addClass('ui-state-active').get(0).scrollIntoView();
+						if($(el).parent().get(0)) {
+							$(el).parent().addClass('ui-state-active').get(0).scrollIntoView();
+						}
 					});
 					check_buttons();
 					
@@ -160,7 +197,7 @@ $(function() {
 			url: '?cmd=get&path='+path+'&current='+current,
 			success: function(data) {
 				// get selected
-				var name = $('#uploads .ui-state-active a').data('name');
+				var name = String($('#uploads .ui-state-active a').data('name'));
 				
 				// sort folders first then alphabetically
 				data.files.sort(function(a, b) {
@@ -180,11 +217,11 @@ $(function() {
 				//$('#uploads ul').html('');
 				var thumb;
 				data.files.forEach(function(item) {
-					thumb = item.leaf ? 'images/file_thumb.png' : 'images/folder_thumb.png';
+					thumb = item.leaf ? item.thumb : 'images/folder_thumb.png';
 					$('<li>\
 						<a href="javascript:void(0);" data-name="' + item.name + '" data-leaf="' + item.leaf + '">\
-							<img src="' + thumb + '">\
-							' + item.name + '\
+							<img class="lazy" data-original="' + thumb + '">\
+							<span>' + item.name + '</span>\
 						</a>\
 					</li>'
 					).appendTo('#uploads ul');
@@ -199,8 +236,13 @@ $(function() {
 				total = data.total;
 				loading = false;
 				
-				if (callback) {
-					callback();
+				if (current < total) {
+					load(callback);
+				} else {
+					$("img.lazy").lazyload();
+					if (callback) {
+						callback();
+					}
 				}
 			}
 		});
@@ -213,13 +255,13 @@ $(function() {
 			$('.level_up').attr('disabled', 'disabled');
 		}
 		
-		$('.delete, .rename, .download, .rotate_left, .rotate_right .enter').attr('disabled', 'disabled');
+		$('.delete, .rename, .download, .rotate_left, .rotate_right, .enter').attr('disabled', 'disabled');
 
 		if($('#uploads .ui-state-active a').length===1) {
 			var leaf = $('#uploads .ui-state-active a').data('leaf');
 			
 			if (leaf) {
-				$('.delete, .rename, .download, .rotate_left, .rotate_right .enter').removeAttr('disabled');
+				$('.delete, .rename, .download, .rotate_left, .rotate_right, .enter').removeAttr('disabled');
 			} else {
 				$('.delete, .rename').removeAttr('disabled');
 			}
@@ -256,17 +298,23 @@ $(function() {
 		
 		if (confirmDelete) {
 			var el = $('#uploads .ui-state-active a').first();
-			var name = el.data('name');
+			var name = String(el.data('name'));
 			$.ajax({
+				method: "GET",
 				dataType: "json",
-				url: '?cmd=delete&name='+name+'&path='+path,
+				url: '',
+				data: {
+					cmd: 'delete',
+					name: name,
+					path: path
+				},
 				success: function(data) {
 					el.parent().remove();
 					if($('#uploads .ui-state-active a').length===0) {
 						refresh();
 						confirmDelete = false;
 					} else {
-						$('.delete').click();
+						setTimeout(function() {$('.delete').click();}, 200);
 					}
 				}
 			});
@@ -274,44 +322,53 @@ $(function() {
 	});
 	
 	$('.rotate_left').click(function() {
-		var name = $('#uploads .ui-state-active a').data('name');
+		var name = String($('#uploads .ui-state-active a').data('name'));
 		$.ajax({
 			dataType: "json",
 			url: '?cmd=rotateLeft&name='+name+'&path='+path,
 			success: function(data) {
-				refresh();
+				var el = $('#uploads .ui-state-active a img');
+				el.attr('src', el.data('original')+'?t='+Date.now());
 			}
 		});
 	});
 	
 	$('.rotate_right').click(function() {
-		var name = $('#uploads .ui-state-active a').data('name');
+		var name = String($('#uploads .ui-state-active a').data('name'));
 		$.ajax({
 			dataType: "json",
 			url: '?cmd=rotateRight&name='+name+'&path='+path,
 			success: function(data) {
-				refresh();
+				var el = $('#uploads .ui-state-active a img');
+				el.attr('src', el.data('original')+'?t='+Date.now());
 			}
 		});
 	});
 	
 	$('.rename').click(function() {
-		var name = $('#uploads .ui-state-active a').data('name');
+		var name = String($('#uploads .ui-state-active a').data('name'));
 		var newname = prompt("New name", name);
 		
 		if (newname !== null) {
 			$.ajax({
+				method: "GET",
 				dataType: "json",
-				url: '?cmd=rename&name='+name+'&newname='+newname+'&path='+path,
+				url: '',
+				data: {
+					cmd: 'rename',
+					name: name,
+					newname: newname,
+					path: path
+				},
 				success: function(data) {
-					refresh();
+					$('#uploads a[data-name="' + name + '"]').attr('data-name', newname).data(name, newname).children('span').text(newname);
 				}
 			});
 		}
 	});
 	
 	$('.download').click(function() {
-		var name = $('#uploads .ui-state-active a').data('name');
+		var name = String($('#uploads .ui-state-active a').data('name'));
 		
 		if (path) {
 			name = path + '/' + name;
@@ -330,7 +387,7 @@ $(function() {
 	});
 	
 	$('.enter').click(function() {
-		var name = $('#uploads .ui-state-active a').data('name');
+		var name = String($('#uploads .ui-state-active a').data('name'));
 		var leaf = $('#uploads .ui-state-active a').data('leaf');
 		
 		if (path) {
@@ -338,12 +395,12 @@ $(function() {
 		}
 		
 		if (!leaf) {
-			location.hash = name;
+			location.hash = encodeURIComponent(name);
 		} else {
 			var files = [];
 			
 			$('#uploads .ui-state-active a').each(function(item) {
-				var name = $(this).data('name');
+				var name = String($(this).data('name'));
 				var leaf = $(this).data('leaf');
 				
 				if (path) {
@@ -367,7 +424,7 @@ $(function() {
 		var val = $(this).val().toLowerCase();
 		
 		$('#uploads li a').each(function(item) {
-			var name = $(this).data('name').toLowerCase();
+			var name = String($(this).data('name')).toLowerCase();
 			
 			if (name.indexOf(val)===-1) {
 				$(this).parent().hide();
@@ -377,14 +434,22 @@ $(function() {
 		});
 	});
 	
+	$('body').keydown(function(e) {
+		if (e.ctrlKey && e.key==='a') {
+			$('#uploads li').addClass('ui-state-active');
+			e.preventDefault();
+		}
+	});
+	
 	var name = $('body').on('dblclick', '#uploads a', function() { $('.enter').click(); });
 
 	window.onhashchange = function(){
-		path = location.hash.substr(1);
+		path = decodeURIComponent(location.hash.substr(1));
 		refresh();
 		check_buttons();
 	};
 	
+	/*
 	$(window).scroll(function() {
 		if($(window).scrollTop() + $(window).height() > $(document).height()-1000) {
 			// load some more
@@ -393,8 +458,9 @@ $(function() {
 			}
 		}
 	});
+	*/
 	
-	var path = location.hash.substr(1);
+	var path = decodeURIComponent(location.hash.substr(1));
 	
 	refresh();
 	check_buttons();

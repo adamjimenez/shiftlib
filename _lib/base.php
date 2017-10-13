@@ -4,7 +4,7 @@
 
 $admin_email = $_SERVER['SERVER_ADMIN'];
 
-function __autoload($class) {
+spl_autoload_register(function($class) {
     switch( $class ){
         case 'paging':
             require(dirname(__FILE__).'/core/paging.class.php');
@@ -48,7 +48,7 @@ function __autoload($class) {
     }
 
     //trigger_error('no such class: '.$class, E_USER_ERROR);
-}
+});
 
 
 //symlinked dir?

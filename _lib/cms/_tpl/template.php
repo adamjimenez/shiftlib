@@ -143,6 +143,15 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 			<section class="content">
 			<div>
 				<div class="col-sm-12">
+					<?
+					if ($_SESSION['message']) {
+					?>
+					<div id="cms_message"><?=$_SESSION['message'];?></div>
+					<?
+						unset($_SESSION['message']);
+					}
+					?>
+					
 					<?=$include_content;?>
 				</div>
 			</div>
