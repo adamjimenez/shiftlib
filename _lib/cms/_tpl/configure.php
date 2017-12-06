@@ -14,13 +14,6 @@ $cms_multiple_select_fields=array(
 	'value'=>'text',
 );
 
-$cms_privileges_fields=array(
-	'user'=>'int',
-	'section'=>'text',
-	'access'=>'int',
-	'id'=>'id',
-);
-
 //section templates
 $section_templates['multiple pages']=array(
 	'heading'=>'text',
@@ -196,6 +189,7 @@ $field_opts=array(
 	'separator',
 	'sql',
 	'array',
+	'color',
 );
 
 foreach( $vars['fields'] as $section=>$fields ){
@@ -293,7 +287,7 @@ if( $_POST['save'] ){
 	}
 
 	check_table('cms_multiple_select',$cms_multiple_select_fields);
-	check_table('cms_privileges',$cms_privileges_fields);
+	check_table('cms_privileges',$this->cms_privileges_fields);
 
 	$count['sections']=0;
 	$count['fields']=0;

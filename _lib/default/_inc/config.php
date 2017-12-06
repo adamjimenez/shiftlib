@@ -30,6 +30,7 @@ $auth_config["forgot_success"]="index";
 
 //automatically generate a password
 $auth_config["generate_password"]=true;
+$auth_config["hash_password"]=true;
 
 //use a secret term to encrypt cookies
 $auth_config["secret_phrase"]="asdagre3";
@@ -115,6 +116,8 @@ $vars["fields"]["users"]=array(
 	'city'=>'text',
 	'postcode'=>'text',
 	'tel'=>'text',
+	'code'=>'text',
+	'code expire'=>'datetime',
 	"admin"=>"select",
 	"id"=>"id",
 );

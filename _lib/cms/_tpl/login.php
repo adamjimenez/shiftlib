@@ -180,7 +180,7 @@ if( $auth->user['admin'] ){
       
       
       <button>login</button>
-      <p class="message"><input type="checkbox" name="remember" value="1" checked="checked"> Remember me?</p>
+      <p class="message"><input type="checkbox" name="remember" value="1"> Remember me?</p>
     </form>
   </div>
 </div>

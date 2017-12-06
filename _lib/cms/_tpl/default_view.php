@@ -435,6 +435,10 @@ foreach( $languages as $language ){
 		<? }elseif( $type == 'phpuploads' ){ ?>
             <textarea name="<?=$field_name;?>" class="upload" readonly="true"><?=$value;?></textarea>
 		<?
+		}elseif( $type == 'color' ){
+		?>
+			<input type="color" value="<?=$value;?>" disabled >
+		<?
 		}elseif( $type == 'date' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$value=dateformat('d/m/Y',$value);
@@ -578,15 +582,7 @@ if(
 	underscored($this->section)==$auth->table and
 	( $content['admin']==2 or $content['admin']==3 )
  ){
-	$cms_privileges_fields=array(
-		'user'=>'int',
-		'section'=>'text',
-		'access'=>'int',
-		'filter'=>'text',
-		'id'=>'id',
-	);
-
- 	check_table('cms_privileges', $cms_privileges_fields);
+ 	check_table('cms_privileges', $this->cms_privileges_fields);
 
 	$rows = sql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'");
 	foreach($rows as $row){

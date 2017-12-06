@@ -380,7 +380,7 @@ class cms{
 								$parts = explode('/',$value);
 								$value = $parts[2].'-'.$parts[1].'-'.$parts[0];
 
-								$where[] = "T_$table.".$field_name." ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d',$value))."'";
+								$where[] = "DATE_FORMAT(T_$table.".$field_name.", '%Y-%m-%d') ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d', $value))."'";
 							}
 						break;
 						case 'dob':
@@ -413,9 +413,9 @@ class cms{
 							}
 						break;
 						case 'postcode':
-							if( format_postcode($value) and is_numeric($conditions['func'][$field_name]) ){
-								$grids = calc_grids(format_postcode($value));
-								
+							if( calc_grids($value) and is_numeric($conditions['func'][$field_name]) ){
+								$grids = calc_grids($value);
+
 								if ($grids) {
 									$cols .= ",
 									(
@@ -918,7 +918,7 @@ class cms{
 					}else{
 						$join_id = array_search('id',$vars['fields'][$vars['options'][$field]]);
 
-						$row = sql_query("SELECT `".key($vars['fields'][$vars['options'][$field]])."` FROM `".escape(underscored($vars['options'][$field]))."` WHERE $join_id='".escape($value)."'");
+						$row = sql_query("SELECT `".underscored(key($vars['fields'][$vars['options'][$field]]))."` FROM `".escape(underscored($vars['options'][$field]))."` WHERE $join_id='".escape($value)."'");
 						$value = '<a href="?option='.escape($vars['options'][$field]).'&view=true&id='.$value.'">'.reset($row[0]).'</a>';
 					}
 				}else{
@@ -1302,6 +1302,11 @@ class cms{
 			case 'phpuploads':
 		?>
             <textarea name="<?=$field_name;?>" class="upload"><?=$value;?></textarea>
+		<?php
+			break;
+			case 'color':
+		?>
+			<input type="color"  name="<?=$field_name;?>" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> size="6" <?=$attribs;?> />
 		<?php
 			break;
 			case 'date':
@@ -1698,9 +1703,11 @@ class cms{
 		$this->inline = false;
 
 		//load blog handlers
+		/*
 		if( $vars['fields']['blog'] ){
 		    $blog = new blog;
 		}
+		*/
 
 		$this->language='en';
 
@@ -1845,6 +1852,13 @@ class cms{
 					break;
 					case 'tel':
 						if( $data[$name] and !is_tel($data[$name]) ){
+							$errors[] = $name;
+							continue;
+						}
+					break;
+					case 'int':
+					case 'decimal':
+						if( $data[$name] and !is_numeric($data[$name]) ){
 							$errors[] = $name;
 							continue;
 						}
@@ -2017,12 +2031,16 @@ class cms{
 					$parts = explode(' ', $data[$name]);
 					
 					$date_parts = explode('/', $parts[0]);
-					$date = $parts[2].'-'.$parts[1].'-'.$parts[0];
+					$date = $date_parts[2].'-'.$date_parts[1].'-'.$date_parts[0];
 
 					if ($data['time']) {
 						$data[$name] = $date.' '.$data['time'][$name];
 					} else if($parts[1]) {
 						$data[$name] = $date.' '.$parts[1];
+						
+						if(strlen($parts[1])==5) {
+							$data[$name] .= ':00';
+						}
 					}
 				}elseif( $v=='date' or $v=='dob' ){
 					if( $data[$name] ){
@@ -2038,12 +2056,12 @@ class cms{
 					if( $_FILES[$name]['error']=='UPLOAD_ERR_OK' ){
 						check_table('files', $this->file_fields);
 
-						$content = file_get_contents($_FILES[$name]['tmp_name']);
+						$size = filesize($_FILES[$name]['tmp_name']);
 
 						$result = sql_query("INSERT INTO files SET
 							date=NOW(),
 							name='".escape($_FILES[$name]['name'])."',
-							size='".escape( strlen($content) )."',
+							size='".escape($size)."',
 							type='".escape($_FILES[$name]['type'])."'
 						");
 
@@ -2055,11 +2073,10 @@ class cms{
 						}
 
 						if( $vars['files']['dir'] ){
-							file_put_contents($vars['files']['dir'].$data[$name],$content) or
-								trigger_error("Can't save ".$vars['files']['dir'].$data[$name], E_ERROR);
+							rename($_FILES[$name]['tmp_name'], $vars['files']['dir'].$data[$name]);
 						}else{
 							sql_query("UPDATE files SET
-								data='".escape($content)."'
+								data='".escape(file_get_contents($_FILES[$name]['tmp_name']))."'
 								WHERE
 									id='".escape($data[$name])."'
 							");

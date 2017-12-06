@@ -648,6 +648,12 @@ function file_size($size)
 	return round($size).substr(' KMGT', $si, 1);
 }
 
+function number_abbr($size)
+{
+	for($si = 0; $size >= 1000; $size /= 1000, $si++);
+	return round($size).substr(' KMBT', $si, 1);
+}
+
 function form_to_db($type)
 {
 	switch($type){
@@ -706,6 +712,10 @@ function form_to_db($type)
 		case 'radio':
 		case 'combo':
 			return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+			//$query.='`translated_from` INT NOT NULL';
+		break;
+		case 'color':
+			return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
 			//$query.='`translated_from` INT NOT NULL';
 		break;
 		default:
@@ -1061,23 +1071,10 @@ function load_js($libs)
 	<?php
 	}
 
-	if( $deps['prototype'] ){
-	?>
-		<script src="//ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js" type="text/javascript"></script>
-	<?php
-	}
-
 	if( $deps['jquery'] ){
 	?>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-		<?php
-		if( $deps['prototype'] ){
-		?>
-		<script type="text/javascript">
-		jQuery.noConflict();
-		</script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<?php
-		}
 	}
 
 	if( $deps['cms'] ){
@@ -1232,10 +1229,8 @@ function make_timestamp($string)
     return $time;
 }
 
-function mysql2csv($query,$filename='data')
+function array_to_csv_file($rows, $filename='data')
 {
-	$rows = sql_query($query);
-
 	$i=0;
 	foreach($rows as $row){
 		if($i==0){
@@ -1348,6 +1343,20 @@ function sec2hms ($sec, $padHours = false)
 function spaced($str) // also see underscored
 {
 	return str_replace('_',' ',$str);
+}
+
+function cache_query($query, $single=false, $expire=3600) {
+	$memcache = new Memcache;
+	$memcache->connect('localhost', 11211) or trigger_error("Could not connect", E_USER_ERROR);
+	
+	$result = $memcache->get(md5($query));
+	
+	if (!$result) {
+		$result = sql_query($query);
+		$memcache->set(md5($query), $result, false, $expire) or trigger_error("Failed to save data at the server", E_USER_ERROR);
+	}
+	
+    return $single ? $result[0] : $result;
 }
 
 function sql_affected_rows() {

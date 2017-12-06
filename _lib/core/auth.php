@@ -128,6 +128,9 @@ class auth{
 		}
 
 		if( $_POST['register'] ){
+			global $cms_handlers;
+			include('_inc/custom.php');
+			
 			$result = $this->register();
 
 			if($result===true) {
@@ -300,6 +303,10 @@ class auth{
 		$data = $_POST;
 
 		$errors = $cms->validate();
+		
+		if (isset($data['confirm']) and $data['confirm']!=$data['password']) {
+			$errors[] = 'password passwords do not match';
+		}
 
 		if( $errors ){
             return json_encode($errors);
@@ -450,7 +457,7 @@ class auth{
 				LIMIT 1
 			");
 
-	        $reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/forgot?u='.$user['id'].'&code='.$code;
+	        $reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/forgot?user='.$user['id'].'&code='.$code;
 		}else{
 			if( !$user['password'] ){
 				$password = generate_password();
