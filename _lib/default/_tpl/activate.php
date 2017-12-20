@@ -64,7 +64,6 @@ if( $_GET['user'] ){
         		<div class="row">
         			<div class="col-sm-12 markettop">
     					<h2 class="acctitle">Thanks for verifiying your email</h2>
-    					<p>Go back to <a href="/">Business Agent</a>.</p>
     				</div>
     			</div>
     		</div>

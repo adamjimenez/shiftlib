@@ -1229,11 +1229,11 @@ function make_timestamp($string)
     return $time;
 }
 
-function array_to_csv_file($rows, $filename='data')
+function array_to_csv_file($rows, $filename='data', $add_header=true)
 {
 	$i=0;
 	foreach($rows as $row){
-		if($i==0){
+		if($i==0 and $add_header){
 			foreach($row as $k=>$v){
 				$data.="\"$k\",";
 			}
