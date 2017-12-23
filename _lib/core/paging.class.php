@@ -11,7 +11,7 @@ $content=sql_query($p->query);
 */
 
 class paging {
-    function paging( $query, $int_num_result=NULL, $order=NULL, $asc=true, $prefix, $num_pages=10 )
+    function paging( $query, $int_num_result=NULL, $order=NULL, $asc=true, $prefix='', $num_pages=10 )
 	{
 		$this->num_pages = $num_pages;
 

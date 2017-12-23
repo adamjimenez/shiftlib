@@ -67,7 +67,7 @@ function imagefile($img, $path) {
 	return $result;
 }
 
-function image($file, $w, $h, $attribs=true, $crop=false)
+function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 {
     $file = trim($file);
 
@@ -376,7 +376,7 @@ function clean($string)
 	return strip_tags($string);
 }
 
-function current_tab( $tab, $class )
+function current_tab( $tab, $class='' )
 {
 	global $sections, $request;
 
@@ -434,7 +434,7 @@ function shutdown()
 	}
 }
 
-function email_template($email, $subject, $reps, $headers, $language='en')
+function email_template($email, $subject=null, $reps=null, $headers=null, $language='en')
 {
 	global $from_email, $email_templates, $cms, $lang;
 

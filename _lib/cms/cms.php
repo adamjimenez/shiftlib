@@ -261,7 +261,7 @@ class cms{
 		$this->trigger_event('delete', array($ids));
 	}
 
-	function conditions_to_sql($section, $conditions=NULL, $num_results, $cols){
+	function conditions_to_sql($section, $conditions=null, $num_results=null, $cols=null){
 	    global $vars;
 
 	    //debug($conditions);
@@ -795,7 +795,7 @@ class cms{
 		}
 	}
 
-	function set_section($section, $id, $editable_fields)
+	function set_section($section, $id=null, $editable_fields=null)
 	{
 		global $vars, $languages;
 
@@ -1787,7 +1787,7 @@ class cms{
         }
 	}
 
-	function validate($data)
+	function validate($data=null)
 	{
 		global $vars, $languages, $strs;
 
@@ -2229,7 +2229,7 @@ class cms{
 		}
 	}
 
-	function save($data)
+	function save($data=null)
 	{
 		global $vars, $languages, $auth;
 

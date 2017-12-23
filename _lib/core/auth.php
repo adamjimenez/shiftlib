@@ -412,7 +412,7 @@ class auth{
 		$this->update_success=true;
 	}
 
-	function forgot_password($email) //invoked by $_POST['forgot_password']
+	function forgot_password($email=null) //invoked by $_POST['forgot_password']
 	{
 	    if(!$email){
 	        $email = $_POST['email'];

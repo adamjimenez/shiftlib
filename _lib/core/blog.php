@@ -1,6 +1,6 @@
 <?
 class blog{
-    function blog($options){
+    function blog($options=null){
 		global $cms, $sections, $vars, $from_email, $opts;
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
