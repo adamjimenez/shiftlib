@@ -1760,7 +1760,7 @@ class cms{
 		$result = $mail->send(array($to), 'mail');
 	}
 
-	function submit($notify, $other_errors = array()){
+	function submit($notify=null, $other_errors = array()){
 		global $vars;
 
         $errors = $this->validate();
