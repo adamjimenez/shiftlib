@@ -982,7 +982,7 @@ function is_domain($domain){
 		return false;
 	}
 
-	preg_match_all("^((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^", $domain, $matches);
+	preg_match_all("^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}^", $domain, $matches);
 
 	return $matches[0][0] == $domain;
 }
