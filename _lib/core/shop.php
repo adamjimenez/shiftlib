@@ -229,7 +229,7 @@ class shop{
 		$this->vat=$this->subtotal*$this->vat_rate;
 	}
 
-	function add_to_basket($product,$quantity=1,$buy_now=false,$variation_id,$extras_arr)
+	function add_to_basket($product,$quantity=1,$buy_now=false,$variation_id=null,$extras_arr=null)
 	{
 		global $auth;
 
