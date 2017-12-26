@@ -1722,7 +1722,7 @@ class cms{
 		}
 	}
 
-	function notify($subject, $to){
+	function notify($subject=null, $to=null){
 		global $vars, $from_email;
 
 		if(!$subject or is_numeric($subject)){
