@@ -41,11 +41,13 @@ if($_GET["path"]) {
     }
 }
 
+/*
 $request = get_all_headers();
 
 if($request["path"]) {
     $path .= $request["path"];
 }
+*/
 
 if($_GET["func"] == 'preview') {
 	$image = image($_GET["file"], $_GET["w"], $_GET["h"], false);
