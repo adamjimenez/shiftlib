@@ -1,3 +1,5 @@
+var global = window; // fix bug with tinymce
+
 function debug(log_txt) {
     if (window.console !== undefined) {
         console.log(log_txt);
