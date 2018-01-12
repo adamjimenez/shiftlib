@@ -768,7 +768,12 @@ class auth{
 
 		$row = sql_query("SELECT * FROM ".$this->table." WHERE admin>0 LIMIT 1", 1);
 		if( !$row ){
-			sql_query("INSERT INTO ".$this->table." SET email='admin', password='123', admin='1'");
+			$default_pass = '123';
+			if ($this->hash_password) {
+				$default_pass = $this->create_hash($default_pass);
+			}
+			
+			sql_query("INSERT INTO ".$this->table." SET email='admin', password='".$default_pass."', admin='1'");
 		}
 
 		if( !$this->user['admin'] ){
