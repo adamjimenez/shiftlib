@@ -377,13 +377,16 @@ jQuery(document).ready(function() {
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
 					<div style="float:left">
-						<select name="func[<?=$field_name;?>]">
-						<option value=""></option>
-						<?=html_options(array('='=>'On','>'=>'After','<'=>'Before'),$_GET['func'][$field_name]);?>
-						</select>
+						From&nbsp;
 					</div>
 					<div style="float:left">
-						<input type="text" id="<?=$name;?>" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" data-type="date" />
+						<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" data-type="date" />
+					</div>
+					<div style="float:left">
+						&nbsp;To&nbsp;
+					</div>
+					<div style="float:left">
+						<input type="text" name="end[<?=$field_name;?>]" value="<?=$_GET['end'][$field_name];?>" size="8" data-type="date" />
 					</div>
 				</td>
 			</tr>

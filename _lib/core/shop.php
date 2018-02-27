@@ -141,7 +141,7 @@ class shop{
 		$this->delivery=0;
 		$this->get_basket();
 
-		if( $_SESSION['code'] ){
+		if( $_SESSION['code'] and table_exists('promo_codes') ){
 			//lookup discount
 			$promo = sql_query("SELECT * FROM promo_codes WHERE code='".escape($_SESSION['code'])."'", 1);
 

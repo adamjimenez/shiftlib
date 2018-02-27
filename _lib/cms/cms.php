@@ -376,6 +376,14 @@ class cms{
 
 							if( $conditions['func'][$field_name] == 'month' ){
 								$where[] = "date_format(".$field_name.", '%m%Y') = '".escape($value)."'";
+							} else if($conditions[$field_name] and $conditions['end'][$field_name]) {
+								$parts = explode('/',$conditions[$field_name]);
+								$start = $parts[2].'-'.$parts[1].'-'.$parts[0];
+								
+								$parts = explode('/',$conditions['end'][$field_name]);
+								$end = $parts[2].'-'.$parts[1].'-'.$parts[0];
+								
+								$where[] = "($field_name > '".$start."' AND $field_name < '".$end."')";
 							}elseif( $conditions['func'][$field_name] ){
 								$parts = explode('/',$value);
 								$value = $parts[2].'-'.$parts[1].'-'.$parts[0];
@@ -1326,7 +1334,7 @@ class cms{
 			break;
 			case 'time':
 		?>
-			<input type="text" class="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value!='00:00:00') ? substr($value,0,-3) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:60px;"';?> />
+			<input type="text" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value!='00:00:00') ? substr($value,0,-3) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ?: ' size="10" style="width:60px;"';?> />
 		<?php
 			break;
 			case 'datetime':

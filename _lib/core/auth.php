@@ -57,6 +57,8 @@ class auth{
 
 		$this->errors=array();
 		$this->expiry = 60;
+		
+		$this->check_login_attempts = true;
 
 		foreach( $auth_config as $k=>$v ){
 			$this->$k=$v;
@@ -255,6 +257,10 @@ class auth{
 
 	function failed_login_attempt($email,$password)
 	{
+		if (!$auth_config['check_login_attempts']) {
+			return false;
+		}
+		
 		check_table('login_attempts', $this->login_attempts_fields );
 
 		sql_query("INSERT INTO login_attempts SET
@@ -266,6 +272,10 @@ class auth{
 
 	function check_login_attempts()
 	{
+		if (!$auth_config['check_login_attempts']) {
+			return false;
+		}
+		
 		check_table('login_attempts', $this->login_attempts_fields );
 
 		sql_query("DELETE FROM login_attempts WHERE
@@ -762,7 +772,6 @@ class auth{
 
 		if( !table_exists($this->table) ){
 			check_table($this->table, $vars['fields'][$this->table]);
-
 			sql_query("ALTER TABLE `users` ADD UNIQUE `email` ( `email` )");
 		}
 

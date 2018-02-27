@@ -267,7 +267,6 @@ $(function() {
 			}
 		} else if($('#uploads .ui-state-active a').length>1) {
 			$('.delete').removeAttr('disabled');
-		} else {
 			$('.enter').removeAttr('disabled');
 		}
 	}

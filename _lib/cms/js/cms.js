@@ -96,6 +96,12 @@ function showProgress(on){
 function initForms()
 {
 	//validation
+	jQuery.each(jQuery('form.validate'), function() {
+		if (jQuery('*[type=file], *[type=files]',this).length) {
+			$(this).attr('enctype', 'multipart/form-data');
+		}
+	});
+	
 	jQuery('form.validate').bind('submit', function(evt) {
 		evt.preventDefault();
 		evt.stopPropagation();
@@ -320,7 +326,7 @@ function initForms()
 	}
     
 	//combobox
-	if( jQuery('input.time').length ){
+	if( jQuery("input[data-type='time']").length ){
 		jQuery("head").append("<link>");
 		var css = jQuery("head").children(":last");
 		css.attr({
@@ -330,7 +336,7 @@ function initForms()
 		});
 		
 		jQuery.getScript("//cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.js").done(function(){
-			$('input.time').timepicker({ 
+			$("input[data-type='time']").timepicker({ 
 				'scrollDefault': 'now',
 				'timeFormat': 'H:i:s'
 				});

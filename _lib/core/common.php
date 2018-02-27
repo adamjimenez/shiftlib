@@ -398,7 +398,7 @@ function datediff($endDate, $beginDate)
 	return $end_date - $start_date;
 }
 
-function dateformat( $format, $date, $uk=true )
+function dateformat( $format, $date=null, $uk=true )
 {
     if( $date=='0000-00-00' ){
 		return false;
@@ -1375,7 +1375,7 @@ function sql_num_rows($result) {
 
 function sql_query($query, $single=false)
 {
-	global $db_config, $db_connection;
+	global $db_connection;
 
 	$result = mysqli_query($db_connection, $query);
 
