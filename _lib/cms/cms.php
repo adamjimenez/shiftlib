@@ -488,7 +488,8 @@ class cms{
                                 $type == 'textarea' or
                                 $type == 'email' or
                                 $type == 'mobile' or
-                                $type == 'select'
+                                $type == 'select' or
+                                $type == 'id'
                             ) &&
                             !in_array($name, $vars["non_searchable"][$section])
                         ){
@@ -1113,7 +1114,7 @@ class cms{
 					foreach( $vars['options'][$name] as $k=>$v ) { 
 						$val = $assoc ? $k : $v; 
 					?>
-					<label><input type="radio" name="<?=$field_name;?>" value="<?=$val;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( isset($value) and $val==$value ){ ?>checked="checked"<? } ?>  <?=$attribs;?>> <?=$v;?> &nbsp;</label><?=$separator;?>
+					<label <?=$attribs;?>><input type="radio" name="<?=$field_name;?>" value="<?=$val;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( isset($value) and $val==$value ){ ?>checked="checked"<? } ?> <?=$attribs;?>> <?=$v;?> &nbsp;</label><?=$separator;?>
 					<? 
 					}
 				} elseif($type=='combo') {
@@ -1425,22 +1426,17 @@ class cms{
 		}elseif( $type == 'file' ){
 			if( $value ){
 				$file = sql_query("SELECT * FROM files WHERE id='".escape($value)."'");
-		?>
-				<?
+
 				$image_types = array('jpg','jpeg','gif','png');
 				if( in_array(file_ext($file[0]['name']),$image_types) ){
-				?>
-				<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
-				<? } ?>
-				<a href="/_lib/cms/file.php?f=<?=$file[0]['id'];?>"><?=$file[0]['name'];?></a> <span style="font-size:9px;"><?=file_size($file[0]['size']);?></span>
+					$value = '<img src="/_lib/cms/file_preview.php?f='.$file[0]['id'].'&w=320&h=240" id="'.$name.'_thumb" /><br />';
+				}
+				$value .= '<a href="/_lib/cms/file.php?f='.$file[0]['id'].'">'.$file[0]['name'].'</a> <span style="font-size:9px;">'.file_size($file[0]['size']).'</span>';
 
-				<?
 				$doc_types = array('pdf','doc','docx','xls','tiff');
 				if( in_array(file_ext($file[0]['name']),$doc_types) ){
-				?>
-				<a href="http://docs.google.com/viewer?url=<?=rawurlencode('http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'&auth_user='.$_SESSION[$auth->cookie_prefix.'_email'].'&auth_pw='.md5($auth->secret_phrase.$_SESSION[$auth->cookie_prefix.'_password']));?>" target="_blank">(view)</a>
-				<? } ?>
-		<?
+					$value .= '<a href="http://docs.google.com/viewer?url='.rawurlencode('http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'&auth_user='.$_SESSION[$auth->cookie_prefix.'_email'].'&auth_pw='.md5($auth->secret_phrase.$_SESSION[$auth->cookie_prefix.'_password'])).'" target="_blank">(view)</a>';
+				}
 			}
 		}elseif( $type == 'phpupload' ){ ?>
 			<img src="/_lib/modules/phpupload/?func=preview&file=<?=$value;?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
