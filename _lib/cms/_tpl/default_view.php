@@ -512,21 +512,21 @@ foreach( $languages as $language ){
 //logs
 if( table_exists('cms_logs') ){
 	if( $_GET['option']=='users' ){
-		$logs=sql_query("SELECT *,L.date FROM cms_logs L
+		$logs = sql_query("SELECT *,L.date FROM cms_logs L
 			INNER JOIN users U ON L.user=U.id
 			WHERE
 				user='".escape($_GET['id'])."'
 			ORDER BY L.date DESC
-			LIMIT 5
+			LIMIT 10
 		");
 	}else{
-		$logs=sql_query("SELECT *,L.date FROM cms_logs L
+		$logs = sql_query("SELECT *,L.date FROM cms_logs L
 			INNER JOIN users U ON L.user=U.id
 			WHERE
 				section='".escape($this->section)."' AND
 				item='".escape($_GET['id'])."'
 			ORDER BY L.date DESC
-			LIMIT 5
+			LIMIT 20
 		");
 	}
 
@@ -560,7 +560,7 @@ if( table_exists('cms_logs') ){
 		$name = $v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
 ?>
 <p>
-	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=dateformat('d-m-Y H:i:s',$v['date']);?></strong><br>
+	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=$v['date'];?></strong><br>
 	<?=nl2br($v['details']);?>
 </p>
 <br>
