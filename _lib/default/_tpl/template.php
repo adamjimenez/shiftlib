@@ -3,10 +3,10 @@
 <head>
     <title><?=$title;?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <? if($meta_description){ ?>
+    <?php if($meta_description){ ?>
     <meta name="Description" content="<?=$meta_description;?>" />
-    <? } ?>
-    <? load_js(array('cms', 'bootstrap')); ?>
+    <?php } ?>
+    <?php load_js(array('cms', 'bootstrap')); ?>
 
 	<style>
     body {
@@ -31,15 +31,15 @@
             </div>
             <div class="collapse navbar-collapse">
     		<div>
-    			<? if( $auth->user ){ ?>
+    			<?php if( $auth->user ){ ?>
     			<?=$auth->user['email'];?>
     			| <a href="/account">Account</a> | <a href="/logout">Sign out</a>
-    			<? }else{ ?>
+    			<?php }else{ ?>
     			<a href="/login">Sign in</a>
-    			<? } ?>
+    			<?php } ?>
     		</div>
                 <ul class="nav navbar-nav">
-		<li<? current_tab('index'); ?>><a href="/" title="Home">Home</a></li>
+		<li<?=current_tab('index'); ?>><a href="/" title="Home">Home</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>

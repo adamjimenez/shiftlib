@@ -1,4 +1,4 @@
-<?
+<?php
 if( $_GET['user'] ){
 	//check code
 	$user = sql_query("SELECT id FROM users
@@ -84,7 +84,7 @@ if( $_GET['user'] ){
 		</div>
 	</div>
 	
-<?
+<?php
 }else{
 ?>
 
@@ -118,7 +118,7 @@ if( $_GET['user'] ){
 </div>
 
 
-<? } } else { ?>
+<?php } } else { ?>
 
 <div id="header">
 </div>
@@ -154,6 +154,6 @@ if( $_GET['user'] ){
 	</div>
 </div>
 
-<?
+<?php
 }
 ?>

@@ -1,4 +1,4 @@
-<?
+<?php
 //require_once('_lib/blog.php');
 $blog = new blog(
     array('blog_index'=>0)
@@ -14,11 +14,11 @@ $blog = new blog(
 	<div id="sidebar">
 		<h2>Categories</h2>
 		<ul class="categories">
-		<?
+		<?php
 		foreach( $blog->categories as $k=>$v ){
 		?>
 			<li><a href="/category/<?=$v['page_name'];?>"><?=$v['category'];?></a></li>
-		<?
+		<?php
 		}
 		?>
 		</ul>
@@ -27,24 +27,17 @@ $blog = new blog(
 
 		<h2>Archive</h2>
 
-		<?
+		<?php
 		$archive_opts=array();
 		foreach( $blog->months as $k=>$v ){
 			$archive_opts[dateformat('Y/m',$v['date'])]=dateformat('F Y',$v['date']);
 		}
 		?>
 
-        <? /*
-		<select id="archive" name="archive" onchange="location.href='/blog/'+this.options[this.selectedIndex].value">
-			<option value=""></option>
-			<?=html_options($archive_opts, $sections[1].'/'.$sections[2]); ?>
-		</select>
-        */ ?>
-
         <ul>
-            <? foreach( $archive_opts as $k=>$v ){ ?>
+            <?php foreach( $archive_opts as $k=>$v ){ ?>
             <li><a href="/<?=$k;?>"><?=$v;?></a></li>
-            <? } ?>
+            <?php } ?>
         </ul>
 
 		<p></p>
@@ -53,7 +46,7 @@ $blog = new blog(
 	</div>
 	<!--/sidebar-->
 
-	<?
+	<?php
 
 	foreach( $blog->content as $k=>$v ){
 		$comments=sql_query("SELECT * FROM comments WHERE blog='".escape($v['id'])."'");
@@ -87,40 +80,40 @@ $blog = new blog(
 				<h1><?=$v['heading'];?></h1>
                 <p>
 					<?=$v['copy'];?>
-					<?
+					<?php
 					if( !$blog->article ){
                     ?>
 					<a href="/<?=$v['page name'] ?: $v['id'];?>">Continue reading...</a>
-					<?
+					<?php
 					}
 					?>
 				</p>
 			</div>
 			<!--/article-->
 
-		<?
+		<?php
 		if( $blog->article ){
 			$author=$cms->get('users',$v['user'],1);
 		?>
 		<div class="clear"></div>
 		<p class="posted">
-			<? if($author['name']){ ?>
+			<?php if($author['name']){ ?>
 			By:<a href="#"><?=$author['name'];?> <?=$author['surname'];?></a> |
-			<? } ?>
+			<?php } ?>
 
-			<? if( count($article_categories) ){ ?>
+			<?php if( count($article_categories) ){ ?>
 			Posted in:
-			<? foreach( $article_categories as $k=>$c ){ ?>
+			<?php foreach( $article_categories as $k=>$c ){ ?>
 				<a href="/blog/category/<?=$c['page_name'];?>"><?=$c['category'];?></a>
-				<? if( $k<count($article_categories)-1 ){ ?>
+				<?php if( $k<count($article_categories)-1 ){ ?>
 				,
-				<? } ?>
-			<? } ?>
-			<? } ?>
+				<?php } ?>
+			<?php } ?>
+			<?php } ?>
 		</p>
 		<p>&nbsp;</p>
         <div class="clear"></div>
-		<?
+		<?php
 		}
 		?>
 
@@ -131,19 +124,19 @@ $blog = new blog(
 	<!--/blog-info-->
 
 
-	<?
+	<?php
 	if( $blog->article ){
 	?>
 
     <div class="commentsHolder">
     <h2 class="comments">Comments</h2>
 
-	<?
+	<?php
 	if( count($comments) ){
 	?>
 	<form method="post">
 		<a name="comments"></a>
-	<?
+	<?php
 	}
 
 	foreach( $comments as $k=>$v ){
@@ -152,16 +145,16 @@ $blog = new blog(
 		<div style="border: 1px solid #cccccc; padding:10px; margin:10px 0;"> <a name="comment-<?=$v['id'];?>"></a>
 			<?=nl2br($v['comment']);?><br />
 			<em><strong>
-			<? if( $v['website'] ){ ?>
+			<?php if( $v['website'] ){ ?>
 			    <a href="<?=$v['website'];?>" rel="nofollow"><?=$v['name'];?></a>
-			<? }else{ ?>
+			<?php }else{ ?>
 			    <?=$v['name'];?>
-			<? } ?>
+			<?php } ?>
 			</strong>
             on <?=dateformat('d/m/Y',$v['date']);?>
 			</em>
 			</div>
-			<?
+			<?php
 			}
 	}
 	?>
@@ -199,7 +192,7 @@ $blog = new blog(
 	</div>
 	<!--/commentsHolder-->
 
-	<?
+	<?php
 	}
 }
 ?>

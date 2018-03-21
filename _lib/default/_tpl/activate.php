@@ -1,4 +1,4 @@
-<?
+<?php
 if($auth->user['active']){
 	if( $_SESSION['request'] ){
 		$request = $_SESSION['request'];
@@ -68,7 +68,7 @@ if( $_GET['user'] ){
     			</div>
     		</div>
     	</div>
-		<?
+		<?php
 		}
 	}else{
 	?>
@@ -82,7 +82,7 @@ if( $_GET['user'] ){
 			</div>
 		</div>
 	</div>
-	<?
+	<?php
 	}
 }else{
     ?>
@@ -92,18 +92,18 @@ if( $_GET['user'] ){
     			<div class="col-sm-12">
 					<h1>Verify your account</h1>
 					<p>Please check your email to verify your account.</p>
-					<? if($_POST['resend']){ ?>
+					<?php if($_POST['resend']){ ?>
 					<p>Message re-sent</p>
-					<? }else{ ?>
+					<?php }else{ ?>
 					<form method="post">
 						<input type="hidden" name="resend" value="1">
 						<button type="submit" class="btn btn-listsub">Resend email</button>
 					</form>
-					<? } ?>
+					<?php } ?>
 				</div>
 			</div>
 		</div>
 	</div>
-    <?
+    <?php
 }
 ?>
