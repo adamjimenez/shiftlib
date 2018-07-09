@@ -15,14 +15,14 @@ $cms_multiple_select_fields=array(
 );
 
 //section templates
-$section_templates['multiple pages']=array(
+$section_templates['pages']=array(
 	'heading'=>'text',
 	'copy'=>'editor',
-	'position'=>'position',
+	'page name'=>'page-name',
 	'id'=>'id',
 );
 
-$section_templates['single page']=array(
+$section_templates['page']=array(
 	'heading'=>'text',
 	'copy'=>'editor',
 	'meta description'=>'textarea',
@@ -286,8 +286,8 @@ if( $_POST['save'] ){
 		die('Error: config file is not writable: '.$config_file);
 	}
 
-	check_table('cms_multiple_select',$cms_multiple_select_fields);
-	check_table('cms_privileges',$this->cms_privileges_fields);
+	check_table('cms_multiple_select', $cms_multiple_select_fields);
+	check_table('cms_privileges', $this->cms_privileges_fields);
 
 	$count['sections']=0;
 	$count['fields']=0;
