@@ -12,6 +12,17 @@ $id = $content['id'];
 
 //print_r($content);
 
+$has_logs = table_exists('cms_logs');
+
+$has_priveleges = false;
+if (
+	$auth->user['admin']==1 and
+	underscored($this->section)==$auth->table and
+	($content['admin']==2 or $content['admin']==3)
+) {
+	$has_priveleges = true;
+}
+
 if( isset($_POST['custom_button']) ){
     $cms_buttons[$_POST['custom_button']]['handler']($_GET['id']);
 
@@ -509,167 +520,7 @@ foreach( $languages as $language ){
 
 
 <?
-//logs
-if( table_exists('cms_logs') ){
-	if( $_GET['option']=='users' ){
-		$logs = sql_query("SELECT *,L.date FROM cms_logs L
-			INNER JOIN users U ON L.user=U.id
-			WHERE
-				user='".escape($_GET['id'])."'
-			ORDER BY L.date DESC
-			LIMIT 10
-		");
-	}else{
-		$logs = sql_query("SELECT *,L.date FROM cms_logs L
-			INNER JOIN users U ON L.user=U.id
-			WHERE
-				section='".escape($this->section)."' AND
-				item='".escape($_GET['id'])."'
-			ORDER BY L.date DESC
-			LIMIT 20
-		");
-	}
-
-	if( count($logs) ){
-?>
-<br>
-<br>
-<h3>Log</h3>
-<div style="max-height: 200px; overflow: scroll; background: #fff;">
-<?
-	foreach( $logs as $k=>$v ){
-		switch( $v['task'] ){
-			case 'edit':
-				$action='edited';
-			break;
-			case 'delete':
-				$action='deleted';
-			break;
-			case 'add':
-				$action='created';
-			break;
-		}
-
-		if( $_GET['option']=='users' and $vars['fields'][$v['section']] ){
-			$item_table = underscored($v['section']);
-			$item = sql_query("SELECT * FROM `$item_table` WHERE id='".escape($v['item'])."'", 1);
-			$label = $vars['labels'][$v['section']];
-			$item_name = $item[$label];
-		}
-
-		$name = $v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
-?>
-<p>
-	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=$v['date'];?></strong><br>
-	<?=nl2br($v['details']);?>
-</p>
-<br>
-<br>
-<? 	} ?>
-</div>
-
-<br />
-<br />
-<?
-	}
-}
-?>
-
-<?
-//privileges
-if(
-	$auth->user['admin']==1 and
-	underscored($this->section)==$auth->table and
-	( $content['admin']==2 or $content['admin']==3 )
- ){
- 	check_table('cms_privileges', $this->cms_privileges_fields);
-
-	$rows = sql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'");
-	foreach($rows as $row){
-		$privileges[$row['section']]=$row;
-	}
-?>
-<h2>Privileges</h2>
-<form method="post">
-<table class="box" width="100%">
-<tr>
-	<th>Section</th>
-	<th>
-		Access<br>
-		<a href="#" id="privileges_none">None</a>,
-		<a href="#" id="privileges_read">Read</a>,
-		<a href="#" id="privileges_write">Write</a>
-	</th>
-	<th>Filter</th>
-</tr>
-<?
-	foreach( $vars["fields"] as $section=>$fields ){
-?>
-<tr>
-	<td><?=$section;?></td>
-	<td>
-		<select name="privileges[<?=$section;?>]" class="privileges">
-			<option value=""></option>
-			<?=html_options(array(1=>'Read',2=>'Write'),$privileges[$section]['access']);?>
-		</select>
-	</td>
-	<td>
-		<input type="text" id="filters_<?=underscored($section);?>" name="filters[<?=$section;?>]" value="<?=$privileges[$section]['filter'];?>" />
-		<button type="button" onclick="choose_filter('<?=$section;?>');">Choose Filter</button>
-	</td>
-</tr>
-<?
-	}
-?>
-<tr>
-	<td>Email Templates</td>
-	<td>
-		<select name="privileges[email_templates]" class="privileges">
-			<option value=""></option>
-			<?=html_options(array(1=>'Read',2=>'Write'),$privileges['uploads']['access']);?>
-		</select>
-	</td>
-</tr>
-<tr>
-	<td>Uploads</td>
-	<td>
-		<select name="privileges[uploads]" class="privileges">
-			<option value=""></option>
-			<?=html_options(array(1=>'Read',2=>'Write'),$privileges['uploads']['access']);?>
-		</select>
-	</td>
-</tr>
-<tr>
-	<td colspan="2" align="right">
-		<button type="submit">Save</button>
-	</td>
-</tr>
-</table>
-</form>
-<br />
-<script>
-$('#privileges_none').click(function(){
-	$('select.privileges').val('0');
-	return false;
-});
-
-$('#privileges_read').click(function(){
-	$('select.privileges').val('1');
-	return false;
-});
-
-$('#privileges_write').click(function(){
-	$('select.privileges').val('2');
-	return false;
-});
-</script>
-<?
-}
-?>
-
-
-<?
-if( is_array($vars['subsections'][$this->section]) ){
+if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleges ){
 ?>
 	<br>
 	<ul class="tabs">
@@ -680,6 +531,12 @@ if( is_array($vars['subsections'][$this->section]) ){
 <?
 	}
 ?>
+	<? if ($has_priveleges) { ?>
+		<li><a id="tab_priveleges" href="javascript:;" target="subsection_priveleges" class="tab" onclick="return false;">Priveleges</a></li>
+	<? } ?>
+	<? if ($has_logs) { ?>
+		<li><a id="tab_logs" href="javascript:;" target="subsection_logs" class="tab" onclick="return false;">Logs</a></li>
+	<? } ?>
 	</ul>
 <?
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
@@ -745,13 +602,188 @@ if( is_array($vars['subsections'][$this->section]) ){
 	</div>
 </div>
 
+
 <script>
 	$('#tab_<?=$count;?>').text('<?=ucfirst($subsection);?> (<?=$p->total;?>)');
 </script>
 
-
 <?
 	}
+?>
+
+<? if ($has_priveleges) { ?>
+	<div style="display:none;" id="subsection_priveleges">
+	    <div class="box" style="clear:both;">
+		<?
+		//privileges
+		if(
+			$auth->user['admin']==1 and
+			underscored($_GET['option'])==$auth->table and
+			( $content['admin']==2 or $content['admin']==3 )
+		 ){
+		 	check_table('cms_privileges', $this->cms_privileges_fields);
+		
+			$rows = sql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'");
+			foreach($rows as $row){
+				$privileges[$row['section']]=$row;
+			}
+		?>
+		<form method="post">
+		<table class="box" width="100%">
+		<tr>
+			<th>Section</th>
+			<th>
+				Access<br>
+				<a href="#" id="privileges_none">None</a>,
+				<a href="#" id="privileges_read">Read</a>,
+				<a href="#" id="privileges_write">Write</a>
+			</th>
+			<th>Filter</th>
+		</tr>
+		<?
+			foreach( $vars["fields"] as $section=>$fields ){
+		?>
+		<tr>
+			<td><?=$section;?></td>
+			<td>
+				<select name="privileges[<?=$section;?>]" class="privileges">
+					<option value=""></option>
+					<?=html_options(array(1=>'Read',2=>'Write'),$privileges[$section]['access']);?>
+				</select>
+			</td>
+			<td>
+				<input type="text" id="filters_<?=underscored($section);?>" name="filters[<?=$section;?>]" value="<?=$privileges[$section]['filter'];?>" />
+				<button type="button" onclick="choose_filter('<?=$section;?>');">Choose Filter</button>
+			</td>
+		</tr>
+		<?
+			}
+		?>
+		<tr>
+			<td>Email Templates</td>
+			<td>
+				<select name="privileges[email_templates]" class="privileges">
+					<option value=""></option>
+					<?=html_options(array(1=>'Read',2=>'Write'),$privileges['uploads']['access']);?>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>Uploads</td>
+			<td>
+				<select name="privileges[uploads]" class="privileges">
+					<option value=""></option>
+					<?=html_options(array(1=>'Read',2=>'Write'),$privileges['uploads']['access']);?>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="right">
+				<button type="submit">Save</button>
+			</td>
+		</tr>
+		</table>
+		</form>
+		<br />
+		<script>
+		$('#privileges_none').click(function(){
+			$('select.privileges').val('0');
+			return false;
+		});
+		
+		$('#privileges_read').click(function(){
+			$('select.privileges').val('1');
+			return false;
+		});
+		
+		$('#privileges_write').click(function(){
+			$('select.privileges').val('2');
+			return false;
+		});
+		</script>
+		<?
+		}
+		?>
+		</div>
+	</div>
+<? } ?>
+
+<? if ($has_logs) { ?>
+	<div style="display:none;" id="subsection_logs">
+	    <div class="box" style="clear:both;">
+			<?
+				if( $_GET['option']=='users' ){
+					$query = "SELECT *,L.date FROM cms_logs L
+						INNER JOIN users U ON L.user=U.id
+						WHERE
+							user='".escape($_GET['id'])."'
+						ORDER BY L.date DESC
+					";
+				}else{
+					$query = "SELECT *,L.date FROM cms_logs L
+						INNER JOIN users U ON L.user=U.id
+						WHERE
+							section='".escape($_GET['option'])."' AND
+							item='".escape($id)."'
+						ORDER BY L.date DESC
+					";
+				}
+				
+				$p = new paging($query, 20);
+				
+				$logs = sql_query($p->query);
+			
+				if( count($logs) ){
+			?>
+			<div style="overflow: scroll; background: #fff;">
+			<?
+				foreach( $logs as $k=>$v ){
+					switch( $v['task'] ){
+						case 'edit':
+							$action='edited';
+						break;
+						case 'delete':
+							$action='deleted';
+						break;
+						case 'add':
+							$action='created';
+						break;
+					}
+			
+					if( $_GET['option']=='users' ){
+						$item_table = underscored($v['section']);
+						
+						if ($vars['fields'][$v['section']]) {
+							$item = sql_query("SELECT * FROM `$item_table` WHERE id='".escape($v['item'])."'", 1);
+							$label = key($vars['fields'][$v['section']]);
+							$item_name = $item[$label];
+						}
+					}
+			
+					$name = $v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
+			?>
+			<p>
+				<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=$v['date'];?></strong><br>
+				<?=nl2br($v['details']);?>
+			</p>
+			<br>
+			<br>
+			<? } ?>
+			<p>
+				<?=$p->get_paging();?>
+			</p>
+			</div>
+			
+			<br />
+			<br />
+			<?
+				}
+			?>
+		</div>
+	</div>
+<? } ?>
+
+<?
 }
 
 }
