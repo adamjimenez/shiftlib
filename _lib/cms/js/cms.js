@@ -6,6 +6,29 @@ function debug(log_txt) {
     }
 }
 
+function timeSince(timeStamp) {
+	if (typeof timeStamp === "string") {
+		timeStamp = new Date(timeStamp);
+	}
+	
+	var now = new Date();
+	var secondsPast = (now.getTime() - timeStamp.getTime() ) / 1000;
+		
+	if(secondsPast <= 86400){
+		var hour = timeStamp.getHours();
+		hour = ("0" + hour).slice(-2);
+		var min = timeStamp.getMinutes();
+		min = ("0" + min).slice(-2);
+		return hour + ':' + min;
+	}
+	if(secondsPast > 86400){
+		day = timeStamp.getDate();
+		month = timeStamp.toDateString().match(/ [a-zA-Z]*/)[0].replace(" ","");
+		year = timeStamp.getFullYear() == now.getFullYear() ? "" :  " "+timeStamp.getFullYear();
+		return day + " " + month + year;
+	}
+}
+
 (function($) {
     //needed to include input file
     $.fn.serializeAll = function() {
@@ -152,11 +175,11 @@ function initForms()
 							var error;
 
 							if( pos===-1 ){
-								field=returned[i];
-								error='Required';
+								field = returned[i];
+								error = 'required';
 							}else{
-								field=returned[i].substring(0,pos);
-								error=returned[i].substring(pos+1);
+								field = returned[i].substring(0, pos);
+								error = returned[i].substring(pos + 1);
 							}
 
 							var parent='';
@@ -292,14 +315,14 @@ function initForms()
 	//datefields
     if( jQuery().datepicker ){
     	jQuery("input[data-type='date']").datepicker({
-    		dateFormat: 'dd/mm/yy',
-    		altFormat: 'dd/mm/yy'
+    		dateFormat: 'yy-mm-dd',
+    		altFormat: 'yy-mm-dd'
     	});
 
     	//dob
     	jQuery("input[data-type='dob']").datepicker({
-    		dateFormat: 'dd/mm/yy',
-    		altFormat: 'dd/mm/yy',
+    		dateFormat: 'yy-mm-dd',
+    		altFormat: 'yy-mm-dd',
     		changeMonth : true,
     		changeYear : true,
     		yearRange: '-100y:c+nn',
