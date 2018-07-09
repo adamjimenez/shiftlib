@@ -86,13 +86,16 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 			<ul>
 				<?
 				foreach( $vars['sections'] as $section){
+					preg_match('/([a-zA-Z0-9\-\s]+)/', $section, $matches);
+					$option = trim($matches[1]);
+								
 					if( $section=='-' ){
 				?>
 						<hr>
 				<?
-					}elseif( $auth->user['admin']==1 or $auth->user['privileges'][$section] ){
+					}elseif( $auth->user['admin']==1 or $auth->user['privileges'][$option] ){
 				?>
-					<li <? if($section==$_GET['option']){ ?>id="current"<? } ?>><a href="?option=<?=$section;?>" title="<?=ucfirst($section);?>"><?=ucfirst($section);?></a></li>
+					<li <? if($option==$_GET['option']){ ?>id="current"<? } ?>><a href="?option=<?=$option;?>" title="<?=ucfirst($section);?>"><?=ucfirst($section);?></a></li>
 				<?
 					}
 				}
@@ -140,6 +143,15 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 			<section class="content">
 			<div>
 				<div class="col-sm-12">
+					<?
+					if ($_SESSION['message']) {
+					?>
+					<div id="cms_message"><?=$_SESSION['message'];?></div>
+					<?
+						unset($_SESSION['message']);
+					}
+					?>
+					
 					<?=$include_content;?>
 				</div>
 			</div>

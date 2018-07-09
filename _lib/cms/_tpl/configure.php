@@ -14,13 +14,6 @@ $cms_multiple_select_fields=array(
 	'value'=>'text',
 );
 
-$cms_privileges_fields=array(
-	'user'=>'int',
-	'section'=>'text',
-	'access'=>'int',
-	'id'=>'id',
-);
-
 //section templates
 $section_templates['multiple pages']=array(
 	'heading'=>'text',
@@ -165,6 +158,7 @@ $field_opts=array(
 	'datetime',
 	'timestamp',
 	'dob',
+	'month',
 	'file',
 	'files',
 	'phpupload',
@@ -193,7 +187,9 @@ $field_opts=array(
 	'deleted',
 	'id',
 	'separator',
+	'sql',
 	'array',
+	'color',
 );
 
 foreach( $vars['fields'] as $section=>$fields ){
@@ -243,7 +239,7 @@ function loop_fields($field_arr) // should be anonymous function
 
 			//drop fields
 			if( !$_POST['vars']['fields'][$count['sections']][$count['fields']] ){
-				if( $v=='id' or $v=='separator' ){ //don't drop id!
+				if( $v=='id' or $v=='separator' or $v=='sql'  ){ //don't drop id!
 					continue;
 				}
 
@@ -290,19 +286,8 @@ if( $_POST['save'] ){
 		die('Error: config file is not writable: '.$config_file);
 	}
 
-	/*
-	if( $_POST['live_site'] or !$_POST['db_config']['dev_host'] ){
-		$result = mysql_connect($_POST['db_config']['host'],$_POST['db_config']['user'],$_POST['db_config']['pass']);
-		mysql_select_db($_POST['db_config']['name']) or trigger_error("SQL", E_USER_ERROR);
-	}else{
-		mysql_connect($_POST['db_config']['dev_host'],$_POST['db_config']['dev_user'],$_POST['db_config']['dev_pass']) or trigger_error("SQL", E_USER_ERROR);
-		mysql_select_db($_POST['db_config']['dev_name']) or trigger_error("SQL", E_USER_ERROR);
-	}
-	*/
-
 	check_table('cms_multiple_select',$cms_multiple_select_fields);
-	check_table('cms_privileges',$cms_privileges_fields);
-	//mysql_query(" ALTER TABLE `cms_multiple_select` ADD UNIQUE `section_field_item_value` ( `section` , `field` , `item` , `value` )  ");
+	check_table('cms_privileges',$this->cms_privileges_fields);
 
 	$count['sections']=0;
 	$count['fields']=0;
@@ -467,6 +452,7 @@ $auth_config["generate_password"]='.str_to_bool($_POST['auth_config']['generate_
 $auth_config["hash_password"]='.str_to_bool($_POST['auth_config']['hash_password']).';
 
 //activation_required
+$auth_config["email_activation"]='.str_to_bool($_POST['auth_config']['email_activation']).';
 $auth_config["activation_required"]='.str_to_bool($_POST['auth_config']['activation_required']).';
 
 //auto login on register
@@ -1166,7 +1152,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         if( in_array('id',$fields) ){
         	$source.='<div>';
         $source.='
-        <? foreach( $'.underscored($section).'_items as $v ){ ?>
+        <? foreach( $items as $v ){ ?>
         	<a href="?id=<?=$v[\'id\'];?>"><?=$v[\'heading\'];?></a><br>
         <? } ?>
         </div>
@@ -1176,7 +1162,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         $source.='<div>
         ';
         foreach( $fields as $k=>$v ){
-        	$source.="\t".$k.': <?=$'.underscored($section).'[\''.$k.'\'];?><br>'."\n";
+        	$source.="\t".$k.': <?=$content[\''.$k.'\'];?><br>'."\n";
         }
         $source.='
         </div>
@@ -1426,6 +1412,10 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>hash passwords</th>
         			<td><input type="checkbox" name="auth_config[hash_password]" value="1" <? if( $auth_config['hash_password'] ){ ?> checked<? } ?>></td>
+        		</tr>
+        		<tr>
+        			<th>email activation</th>
+        			<td><input type="checkbox" name="auth_config[email_activation]" value="1" <? if( $auth_config['email_activation'] ){ ?> checked<? } ?>></td>
         		</tr>
         		<tr>
         			<th>activation required</th>

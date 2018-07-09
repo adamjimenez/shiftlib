@@ -1,3 +1,5 @@
+var global = window; // fix bug with tinymce
+
 function debug(log_txt) {
     if (window.console !== undefined) {
         console.log(log_txt);
@@ -94,6 +96,12 @@ function showProgress(on){
 function initForms()
 {
 	//validation
+	jQuery.each(jQuery('form.validate'), function() {
+		if (jQuery('*[type=file], *[type=files]',this).length) {
+			$(this).attr('enctype', 'multipart/form-data');
+		}
+	});
+	
 	jQuery('form.validate').bind('submit', function(evt) {
 		evt.preventDefault();
 		evt.stopPropagation();
@@ -199,7 +207,7 @@ function initForms()
 						//show first error
 						var tab, node;
 
-						node=this[firstError];
+						node = this[firstError];
 
 						if( node ){
 							while( node=node.parentNode ){
@@ -220,9 +228,7 @@ function initForms()
 						}
 
 						//focus field
-						if( this[firstError] ){
-							this[firstError].focus();
-						}
+						$(this).find('[name="'+returned[0]+'"]:first').focus();
 					}
 
 					//remove error messages
@@ -300,11 +306,47 @@ function initForms()
     		maxDate: '-1d'
     	});
     }
+    
+	//month
+	if( jQuery('input.month').length ){
+		jQuery("head").append("<link>");
+		var css = jQuery("head").children(":last");
+		css.attr({
+			rel:  "stylesheet",
+			type: "text/css",
+			href: "https://cdn.jsdelivr.net/npm/jquery-ui-month-picker@3.0.4/src/MonthPicker.css"
+		});
+
+		jQuery.getScript("https://cdn.jsdelivr.net/npm/jquery-ui-month-picker@3.0.4/src/MonthPicker.js").done(function(){
+			$('input.month').MonthPicker({ 
+				Button: false,
+				MonthFormat: 'yy-mm'
+			});
+		});
+	}
+    
+	//combobox
+	if( jQuery("input[data-type='time']").length ){
+		jQuery("head").append("<link>");
+		var css = jQuery("head").children(":last");
+		css.attr({
+			rel:  "stylesheet",
+			type: "text/css",
+			href: "//cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.css"
+		});
+		
+		jQuery.getScript("//cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.js").done(function(){
+			$("input[data-type='time']").timepicker({ 
+				'scrollDefault': 'now',
+				'timeFormat': 'H:i:s'
+				});
+		});
+	}
 
 	//maps
 	if( jQuery('input.map').length ){
 	    var maps = [];
-		google.load("maps", "3", {other_params: "sensor=false", "callback" : function(){
+		google.load("maps", "3", {other_params: "sensor=false&key="+$('input.map').data('key'), "callback" : function(){
 			jQuery.each(jQuery('input.map'), function() {
 				div = document.createElement("div");
 				div.style.width='600px';
@@ -352,7 +394,7 @@ function initForms()
 					var points = $(this).data('points');
 					var name = this.name;
 
-					for (i in points) {
+					for (var i in points) {
 						var point = points[i];
 
 						lat = point.coords[0];
@@ -483,6 +525,7 @@ function initForms()
                     readonly: readonly
                 }).bind('rated', function (event, value) {
                     var field = $(this).prev();
+                    field.val(value);
 
                     if( field.attr('data-section') ){
                         jQuery.ajax('/_lib/cms/_ajax/rating.php', {
@@ -502,7 +545,7 @@ function initForms()
 	}
 
 	//tinymce4
-    var tinymce_url = '//cdn.tinymce.com/4/';
+    var tinymce_url = '//cloud.tinymce.com/dev/'; // changed to dev from stable for bugfix in 4.7
 	if( jQuery('textarea.tinymce').length ){
         jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
             $('textarea.tinymce').tinymce({
@@ -601,10 +644,14 @@ function initForms()
             });
         });
 	}
-
-	//files
-	if( jQuery('ul.files').length ){
+	
+	if ($.ui && $.ui.sortable) {
+		//files
 		jQuery('ul.files').sortable();
+		
+		jQuery('.checkboxes').sortable({
+			axis: 'y',
+		});
 	}
 
 	//combo
@@ -639,6 +686,9 @@ function initForms()
 				
 				// the choose option will use the value from the previous select
 				var chooseValue = select.prev('select').val();
+				if (!chooseValue) {
+					chooseValue = '';
+				}
 				select.append('<option value="'+chooseValue+'">Choose</option>');
 				
 				// add options

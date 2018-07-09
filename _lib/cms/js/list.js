@@ -13,7 +13,7 @@ $(function() {
                 $(_this).find('tr.select_all_row').show();
     		}else{
                 $(_this).find('input[name="items[]"]:checked').trigger('click');
-                _this.select_all_pages_el.value(0);
+                _this.select_all_pages_el.val(0);
             	$(_this).find('tr.select_all_row').hide();
             	$(_this).find('tr.clear_all_row').hide();
     		}
@@ -253,7 +253,7 @@ function checkForm()
         console.log(data);
         results[data.msg]++;
 
-        $('#progress').html('invalid: '+results[0]+'<br>imported: '+results[1]+'<br>duplicate: '+results[2]+'<br><br>');
+        $('#progress').html('invalid: '+results[0]+'<br>imported: '+results[1]+'<br>updated: '+results[2]+'<br><br>');
 	}, false);
 
 	source.addEventListener('error', function(event) {

@@ -25,19 +25,19 @@ function delete_selected(){
 }
 
 function email_selected(){
-	document.getElementById('action').value='email';
+	$('.action').val('email');
 	return true;
 }
 
 function export_selected(){
-	document.getElementById('action').value='export';
+	$('.action').val('export');
 	return true;
 }
 </script>
 
 <div class="box" style="clear:both;">
 <form method="post" id="cms_list_<?=underscored($this->section);?>" class="cms_list">
-<input type="hidden" class="section" name="section" value="<?=underscored($this->section);?>">
+<input type="hidden" class="section" name="section" value="<?=$this->section;?>">
 <input type="hidden" class="action" name="action" id="action" value="">
 <input type="hidden" class="select_all_pages" name="select_all_pages" value="0">
 <?
@@ -63,7 +63,7 @@ foreach( $where as $k=>$v ){
 <tbody id="items_<?=underscored($this->section);?>">
 <tr>
 	<? if( $sortable ){ ?>
-		<th width="16" style="text-align:center;">
+		<th class="sorting-arrows">
 			<i class="fa fa-arrow-up"></i>
 			<i class="fa fa-arrow-down"></i>
 		</th>
@@ -83,10 +83,16 @@ foreach( $where as $k=>$v ){
 		}
 	?>
 		<th>
+			<?
+			$label = $vars['label'][$this->section][$k];
+			if(!$label) {
+				$label = ucfirst(str_replace('_', ' ', $k));
+			}
+			?>
 			<?=(
 				$sortable or
 				( $vars['fields'][$this->section][$k] == 'select-multiple' or $vars['fields'][$this->section][$k]=='checkboxes' )
-			) ? ucfirst($k) : $p->col($order, ucfirst($k));?>
+			) ? ucfirst($label) : $p->col($order, ucfirst($label));?>
 		</th>
 	<?
 	}
@@ -199,6 +205,14 @@ foreach( $vars['content'] as $v){
 				?>
 					<?=$value;?>
 				<?
+				}elseif( $vars['fields'][$this->section][$k] == 'month' ){
+					if( $value!='0000-00-00' ){
+						$date = explode(' ',$value);
+						$value = dateformat('F Y',$date[0]).' '.$date[1];
+					}
+				?>
+					<?=$value;?>
+				<?
 				}elseif( $vars['fields'][$this->section][$k] == 'dob' ){
 				?>
 					<? if( $value!='0000-00-00' ){ ?>
@@ -250,6 +264,15 @@ foreach( $vars['content'] as $v){
 					<?=image($value,100,100);?><br />
 					<label><?=$value;?></label>
 				<?
+				}elseif( $vars['fields'][$this->section][$k]=='phpuploads' ){
+					$images = explode("\n", $value);
+					
+					foreach($images as $image) {
+				?>
+					<?=image(trim($image), 100, 100);?><br />
+					<label><?=$image;?></label><br>
+				<?
+					}
 				}elseif( $vars['fields'][$this->section][$k]=='textarea' ){
 				?>
 					<?=truncate($value,100);?>
@@ -321,4 +344,3 @@ foreach( $vars['content'] as $v){
 	<td width="33%" style="text-align:right;"><?=$p->items_per_page();?>&nbsp;</td>
 </tr>
 </table>
-

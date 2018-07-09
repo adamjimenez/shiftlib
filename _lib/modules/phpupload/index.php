@@ -1,35 +1,30 @@
 <?php
-$ext_version = '4.1.1';
-//$ext_version = '4.2.0';
-
 require(dirname(__FILE__).'/../../../_lib/base.php');
 
 function get_all_headers()
 {
     $headers = '';
-   foreach ($_SERVER as $name => $value)
-   {
-       if (substr($name, 0, 5) == 'HTTP_')
-       {
+    foreach ($_SERVER as $name => $value) {
+       if (substr($name, 0, 5) == 'HTTP_') {
            $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
        }
-   }
+    }
    return $headers;
 }
 
 //check user permissions
 $auth->check_login();
 
-if( $auth->user and $upload_config['user_uploads'] ){
+if($auth->user and $upload_config['user_uploads']) {
     $upload_config['user']=$auth->user['id'];
-}elseif( $auth->user['admin']!=1 and $auth->user['privileges']['uploads']!=2 ){
+} elseif($auth->user['admin']!=1 and $auth->user['privileges']['uploads']!=2) {
 	die('Permission denied.');
 }
 
 $root = $upload_config['upload_dir'].$upload_config['user'];
 
 //append slash
-if( substr($root, -1)!=='/' ){
+if(substr($root, -1)!=='/') {
     $root .= '/';
 }
 
@@ -37,21 +32,24 @@ $upload_config['root'] = '/'.$root;
 
 $path = $root;
 
-if( $_GET["path"] ){
+if($_GET["path"]) {
     $path .= $_GET["path"].'/';
 
-    if( !file_exists($path) ){
-        mkdir($path);
+    if(!file_exists($path)) {
+        //mkdir($path);
+        $result['success'] = false;
     }
 }
 
+/*
 $request = get_all_headers();
 
-if( $request["path"] ){
+if($request["path"]) {
     $path .= $request["path"];
 }
+*/
 
-if( $_GET["func"] == 'preview' ){
+if($_GET["func"] == 'preview') {
 	$image = image($_GET["file"], $_GET["w"], $_GET["h"], false);
     if( $image ){
     	header("Content-type: image/jpeg");
@@ -60,7 +58,7 @@ if( $_GET["func"] == 'preview' ){
     exit;
 }
 
-if( $_POST["filename"] ){
+if($_FILES) {
     // Make sure file is not cached (as it happens for example on iOS devices)
     header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
     header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -86,6 +84,14 @@ if( $_POST["filename"] ){
     //$fileName = isset($_REQUEST["name"]) ? $_REQUEST["name"] : uniqid("file_");
 
     $fileName = $_FILES["file"]['name'] ?: $_POST['filename'];
+    
+    if (!in_array(file_ext($fileName), $upload_config["allowed_exts"])) {
+        $result['success'] = false;
+        $result['error'] = 'File type not allowed';
+        print json_encode($result);
+        exit;
+    }
+    
     $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
     $chunking = isset($_REQUEST["offset"]) && isset($_REQUEST["total"]);
 
@@ -149,47 +155,77 @@ if( $_POST["filename"] ){
     }
 
     // Return Success JSON-RPC response
-    die('{"jsonrpc" : "2.0", "result" : null, "id" : "id", "success": true}');
+    $result['file'] = $filePath;
+    print json_encode($result);
+    exit;
 }
 
-if($_GET["download"]){
+if($_GET["download"]) {
 	header("Content-Type: application/octet-stream");
 	header("Content-Disposition: attachment; filename=\"".rawurldecode($_GET['download']).'"');
 	print file_get_contents($path.$_GET['download']);
     exit;
 }
 
-if( $_GET["cmd"] ){
+if($_GET["cmd"]) {
     $file = json_decode(file_get_contents('php://input'), true);
 
     switch($_GET["cmd"]){
         case 'get':
             $files = array();
+            
+            $paths = glob($path.'*');
+            usort($paths, function ($a, $b) {
+                $a = strtolower($a);
+                $b = strtolower($b);
+                $aIsDir = is_dir($a);
+                $bIsDir = is_dir($b);
+                if ($aIsDir === $bIsDir)
+                    return strnatcasecmp($a, $b); // both are dirs or files
+                elseif ($aIsDir && !$bIsDir)
+                    return -1; // if $a is dir - it should be before $b
+                elseif (!$aIsDir && $bIsDir)
+                    return 1; // $b is dir, should be before $a
+            });
 
-            foreach (glob($path.'*') as $pathname) {
+            $start = $_GET['current'] ?: 0;
+            $max_files = 500;
+            $i = 0;
+            foreach ($paths as $pathname) {
+    			$i++;
+    			
+                if ($i<=$start) {
+                    continue;
+                }
+                
+                if ($i>($start+$max_files)) {
+                    break;
+                }
+                
     			$filename = basename($pathname);
-    			if($filename!='.' and $filename!='..'){
+    			if($filename!='.' and $filename!='..') {
         		    $file = array();
                     $file['name'] = $filename;
                     $file['leaf'] = !is_dir($pathname);
                     $file['id'] = substr($pathname, strlen($root));
 
-                    if( !is_dir($pathname) ){
+                    if(!is_dir($pathname)) {
                         //$file['url'] = '/uploads/'.$file['id'];
 
                         $thumb = image($file['id'], 50 , 39, false);
-                        $thumb_medium = image($file['id'], 98 , 76, false);
+                        //$thumb_medium = image($file['id'], 98 , 76, false);
 
-                        if( $thumb ){
+                        if($thumb) {
                             $file['thumb'] = $thumb;
-                            $file['thumb_medium'] = $thumb_medium;
-                        }else{
+                            //$file['thumb'] = $thumb.'?m='.filemtime($path.$file['id']);
+                            //$file['thumb_medium'] = $thumb_medium.'?m='.filemtime($path.$file['id']);
+                        } else {
                             $file['thumb'] = 'images/file_thumb.png';
-                            $file['thumb_medium'] = 'images/file_thumb_medium.png';
+                            //$file['thumb_medium'] = 'images/file_thumb_medium.png';
                         }
-                    }else{
+                    } else {
                         $file['thumb'] = 'images/folder_thumb.png';
-                        $file['thumb_medium'] = 'images/folder_thumb_medium.png';
+                        //$file['thumb_medium'] = 'images/folder_thumb_medium.png';
                     }
 
                     $file['size'] = filesize($pathname);
@@ -198,76 +234,50 @@ if( $_GET["cmd"] ){
                     $files[] = $file;
     			}
     		}
-
+    		
+            $result['current'] = $start+$max_files;
+            $result['total'] = count($paths);
             $result['files'] = $files;
         break;
 
         case 'delete':
-            if( $file['id'] ){
-                $files = array($file);
-            }
-
-            foreach( $files as $file ){
-                if( $file['leaf'] ){
-                    if( unlink($path.$file['id']) ){
-                        $result[] = array(
-                            'data'=>array(
-                                'id'=>$file["id"],
-                                'name'=>$file["id"]
-                            ),
-                            'success'=>true
-                        );
-                    }else{
-                        $result[] = array(
-                            'data'=>array(
-                                'id'=>$file["id"],
-                                'name'=>$file["id"]
-                            ),
-                            'message'=>'delete failed',
-                            'success'=>false
-                        );
-                    }
-                }else{
-                    if( rmdir($path.$file['id']) ){
-                        $result[] = array(
-                            'data'=>array(
-                                'id'=>$file["id"],
-                                'name'=>$file["id"]
-                            ),
-                            'success'=>true
-                        );
-                    }else{
-                        $result[] = array(
-                            'data'=>array(
-                                'id'=>$file["id"],
-                                'name'=>$file["id"]
-                            ),
-                            'message'=>'delete failed',
-                            'success'=>false
-                        );
-                    }
+            if(!is_dir($path.$_GET['name'])) {
+                if(unlink($path.$_GET['name'])) {
+                    $result[] = array(
+                        'success'=>true
+                    );
+                } else {
+                    $result[] = array(
+                        'message'=>'delete failed',
+                        'success'=>false
+                    );
+                }
+            } else {
+                if(rmdir($path.$_GET['name'])) {
+                    $result[] = array(
+                        'success'=>true
+                    );
+                } else {
+                    $result[] = array(
+                        'message'=>'delete failed',
+                        'success'=>false
+                    );
                 }
             }
         break;
 
         case 'create':
             //new folder
-            if( $file["id"]==null and $file["name"] ){
-                if( mkdir($path.$file["name"]) ){
+            if($_GET["name"]) {
+                if(mkdir($path.trim($_GET["name"]))) {
                     $result = array(
-                        'data'=>array(
-                            'id'=>$file["name"],
-                            'name'=>$file["name"]
-                        ),
+                        'name'=>$file["name"],
                         'message'=>'created folder',
                         'success'=>true
                     );
-                }else{
+                } else {
                     $result = array(
-                        'data'=>array(
-                            'id'=>$file["name"],
-                            'name'=>$file["name"]
-                        ),
+                        'name'=>$file["name"],
                         'message'=>'couldn\'t create folder',
                         'success'=>false
                     );
@@ -275,30 +285,39 @@ if( $_GET["cmd"] ){
             }
         break;
 
-        case 'update':
+        case 'rename':
             //rename
             //print_r($file);
-            if( $file["name"] and $file['id'] ){
+            if($_GET["name"] and $_GET["newname"]) {
                 //rename
-                if( rename($path.$file['id'], $path.$file['name']) ){
+                if(rename($path.$_GET['name'], $path.$_GET['newname'])) {
                     $result[] = array(
-                        'data'=>array(
-                            'id'=>$file["name"],
-                            'name'=>$file["name"]
-                        ),
                         'message'=>'rename successful',
                         'success'=>true
                     );
-                }else{
+                } else {
                     $result[] = array(
-                        'data'=>array(
-                            'id'=>$file["id"],
-                            'name'=>$file["id"]
-                        ),
                         'message'=>'rename failed',
                         'success'=>false
                     );
                 }
+            }
+        break;
+
+        case 'rotateLeft':
+        case 'rotateRight':
+            if($_GET["name"]) {
+                $angle = ($_GET["cmd"] == 'rotateLeft') ? 90 : -90;
+                
+                $img = imagecreatefromfile($path.$_GET["name"]);
+                
+                // rotate the image by $angle degrees
+                $rotated = imagerotate($img, $angle, 0);
+                
+                $result['success'] = imagefile($rotated, $path.$_GET['name']);
+                
+                unlink($root.'cache/'.$_GET['path'].'/'.$_GET['name']);
+                image($_GET['path'].'/'.$_GET['name'], 50 , 39, false);
             }
         break;
 
@@ -328,18 +347,15 @@ if( $_GET["cmd"] ){
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.html5.js"></script>
     <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.flash.js"></script>
 
-    <!--ext start -->
-    <link rel="stylesheet" type="text/css" href="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/resources/css/ext-all-gray.css" />
-    <script type="text/javascript" src="https://extjs.cachefly.net/ext-<?=$ext_version;?>-gpl/bootstrap.js"></script>
-    <!--ext end -->
+	<? load_js(array('fontawesome', 'jqueryui')); ?>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.js"></script>
+	
+    <script type="text/javascript" src="js/basicMenu/ui.basicMenu.js"></script>
+    <link rel="stylesheet" type="text/css" href="js/basicMenu/ui.basicMenu.css">
+	
+    <script type="text/javascript" src="phpupload.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="js/ux/container/ButtonSegment.css" />
-    <link rel="stylesheet" type="text/css" href="js/ux/grid/feature/Tileview.css" />
-
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
-
-    <script type="text/javascript" src="js/LabelEditor.js"></script>
-    <script type="text/javascript" src="js/upload.js"></script>
+    <link rel="stylesheet" type="text/css" href="phpupload.css">
 </head>
 <body>
 </body>

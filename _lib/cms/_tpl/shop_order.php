@@ -76,6 +76,8 @@ if( !$order ){
     		<?=$order['comments'];?><br><br>
     		<strong>Details:</strong><br>
     		<?=nl2br(htmlentities($details));?><br>
+    		<strong>Note:</strong>
+    		<?=$order['note'];?><br><br>
     		<strong>Delivery:</strong>
     		&pound;<?=$order['delivery'];?><br>
 
@@ -123,6 +125,7 @@ if( !$order ){
     		Change status to:
     		<select name="status">
     			<option value=""></option>
+    			<option value="paid">paid</option>
     			<option value="dispatched">dispatched</option>
     			<option value="refunded">refunded</option>
     		</select>
@@ -141,4 +144,4 @@ if( !$order ){
 ?>
 
 <br>
-<a href="?option=orders&cust=<?=$order['customer'];?>">Back to orders</a>
+<a href="?option=shop_orders&cust=<?=$order['customer'];?>">Back to orders</a>

@@ -18,14 +18,32 @@ if( isset($_POST['custom_button']) ){
     $content = $this->get($this->section, $_GET['id']);
 }
 
-//subsections delete
-if( $_POST['action']=='delete' ){
-    $this->delete_items($_POST['section'],$_POST['items']);
+// get all items
+if ($_POST['select_all_pages']) {
+	$conditions = array();
+	foreach( $vars['fields'][$_POST['section']] as $k=>$v ){
+		if( ($v=='select' or $v=='combo' or $v=='radio') and $vars['options'][$k]==$_GET['option'] ){
+			$conditions[$k] = escape($this->id);
+			break;
+		}
+	}
+
+	$items = $this->get($_POST['section'], $conditions);
+	
+	$_POST['items'] = array();
+	foreach($items as $v) {
+		$_POST['items'][] = $v['id'];
+	}
 }
 
-//subsections delete all
-if( $_POST['select_all_pages'] and $_POST['section'] and $_POST['action']=='delete' ){
-	$this->delete_all_pages($_POST['section']); //FIXME - should only delete related items
+//bulk export
+if( $_POST['action']=='export' ){
+	$this->export_items($_POST['section'], $_POST['items']);
+}
+
+//subsections delete
+if( $_POST['action']=='delete' ){
+    $this->delete_items($_POST['section'], $_POST['items']);
 }
 
 //save privileges
@@ -133,7 +151,14 @@ window.onload=init;
 <tr>
     <td>
 		<?
-		$qs=array();
+		$qs_arr = $_GET;
+		unset($qs_arr['option']);
+		unset($qs_arr['view']);
+		unset($qs_arr['id']);
+		$qs = http_build_query($qs_arr);
+		
+		/*
+		$qs = array();
 		foreach( $vars['fields'][$this->section] as $k=>$v ){
 			if( ($v=='select' or $v=='radio') and $_GET[$k] ){
 				$qs[$k]=$_GET[$k];
@@ -141,6 +166,8 @@ window.onload=init;
 			}
 		}
 		$qs = http_build_query($qs);
+		print $qs;
+		*/
 
 		$section='';
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
@@ -151,21 +178,21 @@ window.onload=init;
 		}
 		?>
 
-		<? if( $section and in_array('id', $vars['fields'][$this->section]) ){ ?>
-		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>">&laquo; Back to <?=ucfirst($section);?></a>
+		<? /*if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
+		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($section);?></a>
 		&nbsp;
-		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ ?>
-		<a href="?option=<?=$this->section;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
+		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ */?>
+		<a href="?option=<?=$this->section;?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
 		&nbsp;
-		<? } ?>
+		<? /*}*/ ?>
 
-        <button type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
+        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
 
 
 		<? if( $vars['settings'][$this->section]['sms'] and is_numeric($content['mobile']) ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="sms" value="1">
-			<button type="submit">Send SMS text</button>
+			<button class="btn btn-default" type="submit">Send SMS text</button>
 		</form>
 		<? } ?>
 
@@ -177,11 +204,11 @@ window.onload=init;
 		}
 		?>
 
-		&nbsp;&nbsp;&nbsp;
+		&nbsp;
 
         <form method="post" style="display:inline;">
-        <input type="hidden" name="delete" value="1">
-        <button type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
+	        <input type="hidden" name="delete" value="1">
+	        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
         </form>
 	</td>
     <td style="text-align: right;">
@@ -408,9 +435,20 @@ foreach( $languages as $language ){
 		<? }elseif( $type == 'phpuploads' ){ ?>
             <textarea name="<?=$field_name;?>" class="upload" readonly="true"><?=$value;?></textarea>
 		<?
+		}elseif( $type == 'color' ){
+		?>
+			<input type="color" value="<?=$value;?>" disabled >
+		<?
 		}elseif( $type == 'date' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$value=dateformat('d/m/Y',$value);
+			}
+		?>
+			<?=$value;?>
+		<?
+		}elseif( $type == 'month' ){
+			if( $value!='0000-00-00' and $value!='' ){
+				$value=dateformat('F Y',$value);
 			}
 		?>
 			<?=$value;?>
@@ -474,21 +512,21 @@ foreach( $languages as $language ){
 //logs
 if( table_exists('cms_logs') ){
 	if( $_GET['option']=='users' ){
-		$logs=sql_query("SELECT *,L.date FROM cms_logs L
+		$logs = sql_query("SELECT *,L.date FROM cms_logs L
 			INNER JOIN users U ON L.user=U.id
 			WHERE
 				user='".escape($_GET['id'])."'
 			ORDER BY L.date DESC
-			LIMIT 5
+			LIMIT 10
 		");
 	}else{
-		$logs=sql_query("SELECT *,L.date FROM cms_logs L
+		$logs = sql_query("SELECT *,L.date FROM cms_logs L
 			INNER JOIN users U ON L.user=U.id
 			WHERE
 				section='".escape($this->section)."' AND
 				item='".escape($_GET['id'])."'
 			ORDER BY L.date DESC
-			LIMIT 5
+			LIMIT 20
 		");
 	}
 
@@ -522,7 +560,7 @@ if( table_exists('cms_logs') ){
 		$name = $v['name'] ? $v['name'].' '.$v['surname'] : $v['email'];
 ?>
 <p>
-	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=dateformat('d-m-Y H:i:s',$v['date']);?></strong><br>
+	<strong><a href="?option=<?=$v['section'];?>&view=true&id=<?=$v['item'];?>"><?=$item_name;?></a> <?=ucfirst($action);?> by <a href="?option=users&view=true&id=<?=$v['user'];?>"><?=$name;?></a> on <?=$v['date'];?></strong><br>
 	<?=nl2br($v['details']);?>
 </p>
 <br>
@@ -544,15 +582,7 @@ if(
 	underscored($this->section)==$auth->table and
 	( $content['admin']==2 or $content['admin']==3 )
  ){
-	$cms_privileges_fields=array(
-		'user'=>'int',
-		'section'=>'text',
-		'access'=>'int',
-		'filter'=>'text',
-		'id'=>'id',
-	);
-
- 	check_table('cms_privileges', $cms_privileges_fields);
+ 	check_table('cms_privileges', $this->cms_privileges_fields);
 
 	$rows = sql_query("SELECT * FROM cms_privileges WHERE user='".$this->id."'");
 	foreach($rows as $row){
@@ -646,7 +676,7 @@ if( is_array($vars['subsections'][$this->section]) ){
 <?
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
 ?>
-	<li><a href="javascript:;" target="subsection_<?=$count;?>" class="tab" onclick="return false;"><?=ucfirst($subsection);?></a></li>
+		<li><a id="tab_<?=$count;?>" href="javascript:;" target="subsection_<?=$count;?>" class="tab" onclick="return false;"><?=ucfirst($subsection);?></a></li>
 <?
 	}
 ?>
@@ -666,8 +696,7 @@ if( is_array($vars['subsections'][$this->section]) ){
 
     		if( in_array('position', $vars['fields'][$this->section]) ){
     			//$order = 'position';
-    			$asc = true;
-    			$limit = NULL;
+    			$limit = null;
     		}else{
     			$label = $vars['labels'][$this->section][0];
 
@@ -694,6 +723,9 @@ if( is_array($vars['subsections'][$this->section]) ){
     		}
 
     		$qs = http_build_query($qs);
+    		
+    		$first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
+			$asc = ($first_field_type=='date' or $first_field_type=='timestamp') ? false : true;
 
 			$order = null;
     		$vars['content'] = $this->get($subsection, $conditions, $limit, $order, $asc, $table);
@@ -712,6 +744,10 @@ if( is_array($vars['subsections'][$this->section]) ){
 	?>
 	</div>
 </div>
+
+<script>
+	$('#tab_<?=$count;?>').text('<?=ucfirst($subsection);?> (<?=$p->total;?>)');
+</script>
 
 
 <?

@@ -57,6 +57,8 @@ class auth{
 
 		$this->errors=array();
 		$this->expiry = 60;
+		
+		$this->check_login_attempts = true;
 
 		foreach( $auth_config as $k=>$v ){
 			$this->$k=$v;
@@ -128,10 +130,21 @@ class auth{
 		}
 
 		if( $_POST['register'] ){
+			global $cms_handlers;
+			include('_inc/custom.php');
+			
 			$result = $this->register();
 
 			if($result===true) {
-				redirect($this->register_success);
+				if ($_POST['redirect']) {
+					redirect($_POST['redirect']);
+				} else if ($_SESSION['request']) {
+					$request = $_SESSION['request'];
+					unset($_SESSION['request']);
+					redirect($request);
+				} else {
+					redirect($this->register_success);
+				}
 			}else{
 				print $result;
 				exit;
@@ -244,6 +257,10 @@ class auth{
 
 	function failed_login_attempt($email,$password)
 	{
+		if (!$auth_config['check_login_attempts']) {
+			return false;
+		}
+		
 		check_table('login_attempts', $this->login_attempts_fields );
 
 		sql_query("INSERT INTO login_attempts SET
@@ -255,6 +272,10 @@ class auth{
 
 	function check_login_attempts()
 	{
+		if (!$auth_config['check_login_attempts']) {
+			return false;
+		}
+		
 		check_table('login_attempts', $this->login_attempts_fields );
 
 		sql_query("DELETE FROM login_attempts WHERE
@@ -275,7 +296,11 @@ class auth{
 	{
 		//$_SESSION['error'] = $error;
 
-	    print json_encode($this->errors);
+        if($_POST['f']=='html'){
+            redirect($this->login);
+        }else{
+            print json_encode($this->errors);
+        }
         exit;
 	}
 
@@ -284,8 +309,14 @@ class auth{
 		global $cms;
 
 		$cms->set_section($this->table);
+		
+		$data = $_POST;
 
 		$errors = $cms->validate();
+		
+		if (isset($data['confirm']) and $data['confirm']!=$data['password']) {
+			$errors[] = 'password passwords do not match';
+		}
 
 		if( $errors ){
             return json_encode($errors);
@@ -293,19 +324,20 @@ class auth{
 		    return 1;
 		}
 
+		$data['password'] = $_POST['password'];
 		if( $this->generate_password ){
-			$_POST['password'] = generate_password();
+			$data['password'] = generate_password();
 		}
 
 		if( $this->hash_password ){
-			$_POST['password'] = $this->create_hash($_POST['password']);
+			$data['password'] = $this->create_hash($data['password']);
 		}
 
-		$id = $cms->save();
+		$id = $cms->save($data);
 
 		$reps = $_POST;
 
-		if( $this->activation_required ){
+		if( $this->email_activation ){
 			//activation code
 			$code = substr(md5(rand(0,10000)), 0, 10);
 
@@ -317,7 +349,7 @@ class auth{
 				LIMIT 1
 			");
 
-			$reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/activate?user='.$id.'&code='.$code;
+			$reps['link'] = 'https://'.$_SERVER["HTTP_HOST"].'/activate?user='.$id.'&code='.$code;
 		}
 
         $reps['domain'] = $_SERVER["HTTP_HOST"];
@@ -327,9 +359,9 @@ class auth{
 		if( $this->registration_notification ){
 			global $from_email;
 
-			$headers = "From: ".$from_email."\n";
+			$headers="From: ".$from_email."\n";
 
-			$msg = 'New user registration:
+			$msg='New user registration:
 			http://'.$_SERVER['HTTP_HOST'].'/admin?option=users&view=true&id='.$id;
 
 			$msg = str_replace("\t", '', $msg);
@@ -339,7 +371,7 @@ class auth{
 
 		if( $this->register_login ){
 			$_SESSION[$this->cookie_prefix.'_email'] = $_POST['email'];
-			$_SESSION[$this->cookie_prefix.'_password'] = $_POST['password'];
+			$_SESSION[$this->cookie_prefix.'_password'] = $data['password'];
 		}
 
 		return true;
@@ -390,7 +422,7 @@ class auth{
 		$this->update_success=true;
 	}
 
-	function forgot_password($email) //invoked by $_POST['forgot_password']
+	function forgot_password($email=null) //invoked by $_POST['forgot_password']
 	{
 	    if(!$email){
 	        $email = $_POST['email'];
@@ -435,7 +467,7 @@ class auth{
 				LIMIT 1
 			");
 
-	        $reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/forgot?u='.$user['id'].'&code='.$code;
+	        $reps['link'] = 'http://'.$_SERVER["HTTP_HOST"].'/forgot?user='.$user['id'].'&code='.$code;
 		}else{
 			if( !$user['password'] ){
 				$password = generate_password();
@@ -740,13 +772,17 @@ class auth{
 
 		if( !table_exists($this->table) ){
 			check_table($this->table, $vars['fields'][$this->table]);
-
 			sql_query("ALTER TABLE `users` ADD UNIQUE `email` ( `email` )");
 		}
 
 		$row = sql_query("SELECT * FROM ".$this->table." WHERE admin>0 LIMIT 1", 1);
 		if( !$row ){
-			sql_query("INSERT INTO ".$this->table." SET email='admin', password='123', admin='1'");
+			$default_pass = '123';
+			if ($this->hash_password) {
+				$default_pass = $this->create_hash($default_pass);
+			}
+			
+			sql_query("INSERT INTO ".$this->table." SET email='admin', password='".$default_pass."', admin='1'");
 		}
 
 		if( !$this->user['admin'] ){

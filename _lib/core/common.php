@@ -1,5 +1,5 @@
 <?php
-$debug_ip='';
+$debug_ip = '';
 
 error_reporting(E_ALL ^ E_NOTICE);
 ini_set('error_reporting', E_ALL ^ E_NOTICE);
@@ -28,7 +28,46 @@ if (get_magic_quotes_gpc()) {
     array_walk_recursive($_REQUEST, 'stripslashes_gpc');
 }
 
-function image($file, $w, $h, $attribs=true, $crop=false)
+function imagecreatefromfile($path) {
+	$info = getimagesize($path);
+
+	switch( $info['mime'] ){
+		case 'image/jpeg':
+			$img = imagecreatefromjpeg($path);
+		break;
+		case 'image/png':
+			$img = imagecreatefrompng($path);
+			//imagealphablending($img, true);
+            imagesavealpha($img, true);
+		break;
+		case 'image/gif':
+			$img = imagecreatefromgif($path);
+		break;
+		default:
+			return false;
+
+			$img = imagecreatefromstring(file_get_contents($path));
+	    break;
+	}
+	
+	return $img;
+}
+
+function imagefile($img, $path) {
+	$ext = file_ext($path);
+	
+	if( $ext=='gif' ){
+		$result = imagegif($img, $path);
+	}elseif( $ext=='png' ){
+		$result = imagepng($img, $path);
+	}else{
+		$result = imagejpeg($img, $path, 90);
+	}
+	
+	return $result;
+}
+
+function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 {
     $file = trim($file);
 
@@ -40,11 +79,20 @@ function image($file, $w, $h, $attribs=true, $crop=false)
         $file = 'http:'.$file;
         return $file;
     }
-
-    //no resize
-    if( !$w and !$h and !starts_with($file, 'http') ){
-        $path = '/uploads/'.$file;
+    
+    if (is_numeric($file)) {
+    	/*
+    	$row = sql_query("SELECT * FROM files WHERE
+			id='".addslashes($_GET['f'])."'
+		", 1);
+		*/
+		$file = 'files/'.$file;
     }
+    
+	//no resize
+	if( !$w and !$h and !starts_with($file, 'http') ){
+	    $path = '/uploads/'.$file;
+	}
 
 	if( !$path ){
 		if(
@@ -64,7 +112,7 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 		    $cached .= $dirname.'/';
 		}
 
-		$cache_name = preg_replace("/[^A-Za-z0-9\-\.\/]/", '', basename(urldecode($file)));
+		$cache_name = preg_replace("/[^A-Za-z0-9\-\.]/", '', urldecode($file));
 
 		$cached .= $w.'x'.$h.($crop ? '(1)': '').'-'.$cache_name;
 
@@ -84,28 +132,10 @@ function image($file, $w, $h, $attribs=true, $crop=false)
 			$img = null;
 			$ext = file_ext($image_path);
 
-			$info = getimagesize($image_path);
-
-			switch( $info['mime'] ){
-				case 'image/jpeg':
-					$img = imagecreatefromjpeg($image_path);
-					$ext = 'jpg';
-				break;
-				case 'image/png':
-					$img = imagecreatefrompng($image_path);
-					$ext = 'png';
-					//imagealphablending($img, true);
-                    imagesavealpha($img, true);
-				break;
-				case 'image/gif':
-					$img = imagecreatefromgif($image_path);
-					$ext = 'gif';
-				break;
-				default:
-					return false;
-
-					$img = imagecreatefromstring(file_get_contents($image_path));
-			    break;
+			$img = imagecreatefromfile($image_path);
+			
+			if (!$img) {
+				return false;
 			}
 
 			// If an image was successfully loaded, test the image for size
@@ -256,6 +286,23 @@ function analytics($id){
     <?
 }
 
+function array_orderby()
+{
+    $args = func_get_args();
+    $data = array_shift($args);
+    foreach ($args as $n => $field) {
+        if (is_string($field)) {
+            $tmp = array();
+            foreach ($data as $key => $row)
+                $tmp[$key] = $row[$field];
+            $args[$n] = $tmp;
+            }
+    }
+    $args[] = &$data;
+    call_user_func_array('array_multisort', $args);
+    return array_pop($args);
+}
+
 function basename_safe($path)
 {
 	if( mb_strrpos($path, '/')!==false ){
@@ -268,7 +315,7 @@ function basename_safe($path)
 function calc_grids($pcodeA, $lat = false)
 {
 	$pos = strpos($pcodeA,' ');
-	if($pos){
+	if($pos) {
 		$pcodeA = substr($pcodeA, 0, $pos);
 	}
 
@@ -287,6 +334,17 @@ function calc_grids($pcodeA, $lat = false)
 	}else{
 		return false;
 	}
+}
+
+function calc_distance($postcode_a, $postcode_b) {
+	if ($postcode_a == $postcode_b) {
+		return 0;
+	}
+	
+	$grid_a = calc_grids($postcode_a);
+	$grid_b = calc_grids($postcode_b);
+	
+	return round(sqrt(pow($grid_a[0]-$grid_b[0],2)+pow($grid_a[1]-$grid_b[1],2)) * 0.000621371192);
 }
 
 function check_table($table,$fields){
@@ -318,7 +376,7 @@ function clean($string)
 	return strip_tags($string);
 }
 
-function current_tab( $tab, $class )
+function current_tab( $tab, $class='' )
 {
 	global $sections, $request;
 
@@ -340,7 +398,7 @@ function datediff($endDate, $beginDate)
 	return $end_date - $start_date;
 }
 
-function dateformat( $format, $date, $uk=true )
+function dateformat( $format, $date=null, $uk=true )
 {
     if( $date=='0000-00-00' ){
 		return false;
@@ -376,7 +434,7 @@ function shutdown()
 	}
 }
 
-function email_template($email, $subject, $reps, $headers, $language='en')
+function email_template($email, $subject=null, $reps=null, $headers=null, $language='en')
 {
 	global $from_email, $email_templates, $cms, $lang;
 
@@ -467,7 +525,7 @@ function error($error){
 function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 {
 	global $db_connection;
-	
+
 	switch ($errno)
 	{
 		case E_USER_WARNING:
@@ -590,6 +648,12 @@ function file_size($size)
 	return round($size).substr(' KMGT', $si, 1);
 }
 
+function number_abbr($size)
+{
+	for($si = 0; $size >= 1000; $size /= 1000, $si++);
+	return round($size).substr(' KMBT', $si, 1);
+}
+
 function form_to_db($type)
 {
 	switch($type){
@@ -597,6 +661,7 @@ function form_to_db($type)
 		case 'select-multiple':
 		case 'checkboxes':
 		case 'separator':
+		case 'sql':
 		case 'array':
 		break;
 		case 'textarea':
@@ -624,6 +689,7 @@ function form_to_db($type)
 		break;
 		case 'date':
 		case 'dob':
+		case 'month':
 			return 'DATE';
 		break;
 		case 'time':
@@ -639,17 +705,21 @@ function form_to_db($type)
 			return 'POINT';
 		break;
 		case 'language':
-			return 'VARCHAR( 32 )';
+			return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
 			//$query.='`translated_from` INT NOT NULL';
 		break;
 		case 'select':
 		case 'radio':
 		case 'combo':
-			return 'VARCHAR( 64 )';
+			return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+			//$query.='`translated_from` INT NOT NULL';
+		break;
+		case 'color':
+			return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
 			//$query.='`translated_from` INT NOT NULL';
 		break;
 		default:
-			return 'VARCHAR( 140 )';
+			return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
 		break;
 	}
 }
@@ -675,13 +745,13 @@ function format_mobile($mobile)
 
 function format_postcode($postcode)
 {
-	$postcode=strtoupper($postcode);
+	$postcode = strtoupper($postcode);
 
 	if( !strstr($postcode,' ') ){
-		$part1=substr($postcode,0,-3);
-		$part2=substr($postcode,-3);
+		$part1 = substr($postcode,0,-3);
+		$part2 = substr($postcode,-3);
 
-		$postcode=$part1.' '.$part2;
+		$postcode = $part1.' '.$part2;
 	}
 
 	if( is_postcode($postcode) ){
@@ -912,7 +982,7 @@ function is_domain($domain){
 		return false;
 	}
 
-	preg_match_all("^((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})^", $domain, $matches);
+	preg_match_all("^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}^", $domain, $matches);
 
 	return $matches[0][0] == $domain;
 }
@@ -934,7 +1004,17 @@ function is_odd($number)
 
 function is_postcode($code)
 {
-	return preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code);
+	if (!preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code)){
+		return false;
+	}
+	
+	if (table_exists('postcodes')) {
+		if (calc_grids($code)===false) {
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 function is_tel($string)
@@ -991,23 +1071,10 @@ function load_js($libs)
 	<?php
 	}
 
-	if( $deps['prototype'] ){
-	?>
-		<script src="//ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js" type="text/javascript"></script>
-	<?php
-	}
-
 	if( $deps['jquery'] ){
 	?>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-		<?php
-		if( $deps['prototype'] ){
-		?>
-		<script type="text/javascript">
-		jQuery.noConflict();
-		</script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<?php
-		}
 	}
 
 	if( $deps['cms'] ){
@@ -1127,10 +1194,8 @@ function load_js($libs)
 	}
 
 	if( $deps['fontawesome'] ){
-		//$fontawesome_version = '3.2.1';
-		$fontawesome_version = '4.0.3';
 	?>
-		<link href="//netdna.bootstrapcdn.com/font-awesome/<?=$fontawesome_version;?>/css/font-awesome.min.css" rel="stylesheet">
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 	<?
 	}
 }
@@ -1164,13 +1229,11 @@ function make_timestamp($string)
     return $time;
 }
 
-function mysql2csv($query,$filename='data')
+function array_to_csv_file($rows, $filename='data', $add_header=true)
 {
-	$rows = sql_query($query);
-
 	$i=0;
 	foreach($rows as $row){
-		if($i==0){
+		if($i==0 and $add_header){
 			foreach($row as $k=>$v){
 				$data.="\"$k\",";
 			}
@@ -1282,6 +1345,25 @@ function spaced($str) // also see underscored
 	return str_replace('_',' ',$str);
 }
 
+function cache_query($query, $single=false, $expire=3600) {
+	$memcache = new Memcache;
+	$memcache->connect('localhost', 11211) or trigger_error("Could not connect", E_USER_ERROR);
+	
+	$result = $memcache->get(md5($query));
+	
+	if (!$result) {
+		$result = sql_query($query);
+		$memcache->set(md5($query), $result, false, $expire) or trigger_error("Failed to save data at the server", E_USER_ERROR);
+	}
+	
+    return $single ? $result[0] : $result;
+}
+
+function sql_affected_rows() {
+	global $db_connection;
+	return mysqli_affected_rows($db_connection);
+}
+
 function sql_insert_id() {
 	global $db_connection;
 	return mysqli_insert_id($db_connection);
@@ -1291,9 +1373,9 @@ function sql_num_rows($result) {
 	return mysqli_num_rows($result);
 }
 
-function sql_query($query,$single=false)
+function sql_query($query, $single=false)
 {
-	global $db_config, $db_connection;
+	global $db_connection;
 
 	$result = mysqli_query($db_connection, $query);
 
@@ -1310,9 +1392,19 @@ function sql_query($query,$single=false)
     return $single ? $return_array[0] : $return_array;
 }
 
-function str_to_pagename($page_name){
+function str_to_pagename($page_name, $strip_slashes = true) {
     //remove odd chars
-    $page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
+    if ($strip_slashes) {
+    	$page_name = preg_replace("/[^\sA-Za-z0-9\.\->()]/", '', $page_name);
+    	
+    	//replace > with -
+    	$page_name = str_replace('>','-',$page_name);
+    } else {
+    	$page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
+    	
+    	//replace > with /
+    	$page_name = str_replace('>','/',$page_name);
+    }
 
     //replace > with /
     $page_name = str_replace('>','/',$page_name);
@@ -1484,7 +1576,7 @@ function validate($fields, $required, $array=true)
 				}
 			break;
 			case 'postcode':
-				if( !format_postcode($fields[$v]) ){
+				if( $fields[$v]=='' or ((!$fields['country'] or $fields['country']=='UK') and !format_postcode($fields[$v])) ){
 					$errors[]=$v;
 				}
 			break;
@@ -1506,6 +1598,18 @@ function validate($fields, $required, $array=true)
 	}else{
 		return implode("\n",$errors);
 	}
+}
+
+function wget($url) {
+	$ch = curl_init();
+	
+	// set url 
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+	$data = curl_exec($ch);
+	curl_close($ch);
+	
+	return $data;
 }
 
 //deprecated, use video_info instead
@@ -1541,7 +1645,7 @@ function video_info($url) {
 	}else{
 		$data['url'] = $url;
 	}
-	
+
 	if (ends_with($data['url'], '.mp4')) {
 		$data['tag'] = '<video controls>
 		    <source src="'.$data['url'].'" type="video/mp4">

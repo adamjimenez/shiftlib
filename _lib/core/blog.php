@@ -1,6 +1,6 @@
 <?
 class blog{
-    function blog($options){
+    function blog($options=null){
 		global $cms, $sections, $vars, $from_email, $opts;
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
@@ -48,7 +48,7 @@ class blog{
     			$tags[$k]['size'] = floor( ($v['count']/$tag_total)*30 ) +10;
     		}
 
-    		$this->tags = $this->subval_sort($tags,'tag');
+    		$this->tags = $this->subval_sort($tags,'size',false);
 		}
 
 		$limit=NULL;
@@ -239,12 +239,16 @@ class blog{
 		$opts['approve']=array('approve','delete','delete and block');
 	}
 
-	function subval_sort($a,$subkey)
+	function subval_sort($a, $subkey, $asc = true)
 	{
 		foreach($a as $k=>$v) {
 			$b[$k] = strtolower($v[$subkey]);
 		}
-		asort($b);
+		if ($asc) {
+			asort($b);
+		} else {
+			arsort($b);
+		}
 		foreach($b as $key=>$val) {
 			$c[] = $a[$key];
 		}

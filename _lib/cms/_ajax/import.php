@@ -65,7 +65,7 @@ if( !$errors ){
         	foreach( $row as $k=>$v ){
         		$field_name=underscored($k);
 
-        		if( $k=='id' or $k=='related' or $k=='position' ){
+        		if( $k=='related' or $k=='position' ){
         			continue;
         		}
 
@@ -95,12 +95,12 @@ if( !$errors ){
         						}
 
         						/*
-        						mysql_query("INSERT INTO `".escape($vars['options'][$k])."`
+        						sql_query("INSERT INTO `".escape($vars['options'][$k])."`
         							SET
         								`".key($vars['fields'][$vars['options'][$k]])."`='".escape(trim($v))."'
-        						") or trigger_error("SQL", E_USER_ERROR);
+        						");
 
-        						$v=mysql_insert_id();
+        						$v=sql_insert_id();
         						*/
         					}
         				}else{
@@ -150,100 +150,43 @@ if( !$errors ){
         	$query=substr($query,0,-2);
         	$where=substr($where,0,-4);
 
-    		$qry="SELECT id FROM `$table` WHERE
-    			$where
-    			LIMIT 1
-    		";
-
-            $row = sql_query($qry, 1);
+			if($data['id']) {
+				$row_id = $data['id'];
+				$_POST["update"] = 1;
+			} else {
+	    		$qry="SELECT id FROM `$table` WHERE
+	    			$where
+	    			LIMIT 1
+	    		";
+	
+	            $row = sql_query($qry, 1);
+	            $row_id = $row['id'];
+			}
 
         	//CMS SAVE
-        	$cms->set_section($_POST['section'], $row['id']);
+        	$cms->set_section($_POST['section'], $row_id);
 
         	if( $_POST["validate"] and count($cms->validate($data)) ){
         		$result=0;
         	}else{
-        		if( $row['id'] ){
-        			$result=2;
-        		}else{
-        			$result=1;
-        		}
 
-                if( !$row['id'] or $_POST["update"] ){
+                if( !$row_id or $_POST["update"] ){
             	    $id = $cms->save($data);
+            	    
+            	    if ($id) {
+		        		if( $row_id ){
+		        			$result = 2;
+		        		}else{
+		        			$result = 1;
+		        		}
+            	    } else {
+		        		$result = 0;
+            	    }
                 }
         	}
 
             send_msg($startedAt, $result);
 
-        	/*
-        	if( $row['id'] ){
-        		$result=mysql_query("SELECT * FROM `$table`
-        			WHERE
-        				id='".escape(trim($row['id']))."'
-        		") or trigger_error("SQL", E_USER_ERROR);
-
-        		if( mysql_num_rows($result) ){
-        			mysql_query("UPDATE `$table` SET
-        				$query
-        				WHERE
-        					id='".escape(trim($row['id']))."'
-        				LIMIT 1
-        			") or trigger_error("SQL", E_USER_ERROR);
-        		}
-
-        		$id=$row['id'];
-        	}else{
-        		mysql_query("INSERT INTO `$table` SET
-        			$query
-        		");
-
-        		$id=mysql_insert_id();
-        	}
-
-        	foreach( $row as $k=>$v ){
-
-        		if( $vars['fields'][$_POST['section']][$k]=='select-multiple' or $vars['fields'][$_POST['section']][$k]=='checkboxes' ){
-        			if( !is_array($vars['options'][$k]) ){
-        				if( !is_numeric($v) ){
-        					$values=explode("\n", $v);
-
-        					foreach( $values as $value ){
-        						reset($vars['fields'][$vars['options'][$k]]);
-
-        						$row=sql_query("SELECT id FROM `".escape($vars['options'][$k])."`
-        							WHERE
-        								`".underscored(key($vars['fields'][$vars['options'][$k]]))."`='".escape(trim($value))."'"
-        						);
-
-        						if( count($row) ){
-        							$v=$row[0]['id'];
-        						}else{
-        							mysql_query("INSERT INTO `".escape($vars['options'][$k])."`
-        								SET
-        									`".key($vars['fields'][$vars['options'][$k]])."`='".escape(trim($value))."'
-        							") or trigger_error("SQL", E_USER_ERROR);
-
-        							$v=mysql_insert_id();
-        						}
-
-        						if( $id ){
-        							mysql_query("INSERT INTO cms_multiple_select SET
-        								`section`='".escape($_POST['section'])."',
-        								`field`='".escape($k)."',
-        								`item`='".escape($id)."',
-        								`value`='".escape($v)."'
-        							") or trigger_error("SQL", E_USER_ERROR);
-        						}
-        					}
-        				}else{
-        					$v=$v;
-        				}
-        			}else{
-        			}
-        		}
-        	}
-            */
 		}
 
 		$i++;

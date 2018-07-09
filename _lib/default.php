@@ -1,21 +1,21 @@
 <?php
 /*
-	File:		default.php
-	Author:		Adam Jimenez
+File:		default.php
+Author:		Adam Jimenez
 */
 
 require_once(dirname(__FILE__).'/core/common.php');
 
 function add_components($html){
-    return preg_replace_callback('/{\$([A-Za-z0-9]+)}/', function($match) {
-        $include = $match[1];
-        return file_get_contents('http://'.$_SERVER['HTTP_HOST'].'/components/'.$include);
-    }, $html);
+	return preg_replace_callback('/{\$([A-Za-z0-9]+)}/', function($match) {
+		$include = $match[1];
+		return file_get_contents('http://'.$_SERVER['HTTP_HOST'].'/components/'.$include);
+	}, $html);
 }
 
 function get_tpl_catcher($request)
 {
-    global $tpl_config;
+	global $tpl_config;
 
 	if( !$tpl_config or !is_array($tpl_config['catchers']) ){
 		return false;
@@ -31,7 +31,7 @@ function get_tpl_catcher($request)
 
 function timer()
 {
-    global $auth;
+	global $auth;
 
 	if( !$auth->user['admin'] ){
 		return;
@@ -62,92 +62,92 @@ function stop(){
 }
 
 function parse_request(){
-    global $tpl_config;
+	global $tpl_config;
 
-    $script_url = rawurldecode($_SERVER['REQUEST_URI']);
-    $pos = strpos($script_url, '?');
+	$script_url = rawurldecode($_SERVER['REQUEST_URI']);
+	$pos = strpos($script_url, '?');
 
-    if($pos) {
-        $script_url = substr($script_url, 0, $pos);
-    }
+	if($pos) {
+		$script_url = substr($script_url, 0, $pos);
+	}
 
-    if( substr($script_url,-6)=='/index' ){ //redirect /index to /
-        redirect(substr($script_url,0,-5),true);
-    }
+	if( substr($script_url,-6)=='/index' ){ //redirect /index to /
+		redirect(substr($script_url,0,-5),true);
+	}
 
-    if( $script_url=='index' ){
-        redirect('/');
-    }
+	if( $script_url=='index' ){
+		redirect('/');
+	}
 
-    $request = $script_url ?: 'index';
+	$request = $script_url ?: 'index';
 
-    if( substr( $request, -1)=='/' ){
-    	$request.='index';
-    }
+	if( substr( $request, -1)=='/' ){
+		$request.='index';
+	}
 
-    //strip prepending slash
-    if( substr( $request,0,1)=='/' ){
-    	$request=(substr($request,1));
-    }
+	//strip prepending slash
+	if( substr( $request,0,1)=='/' ){
+		$request=(substr($request,1));
+	}
 
-    return $request;
+	return $request;
 }
 
 function get_include( $request ){
-    global $tpl_config, $root_folder, $catcher, $sections;
+	global $tpl_config, $root_folder, $catcher, $sections;
 
-    $include_file = false;
+	$include_file = false;
 
-    if( in_array($request, $tpl_config['catchers']) or file_exists($root_folder.'/_tpl/'.$request.'/index.php') ){
-    	redirect('/'.$request.'/', true);
-    }elseif( $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'] ){
-        $redirect = $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'];
-        redirect($redirect, true);
-    }elseif( file_exists($root_folder.'/_tpl/'.$request.'.php') ){
-        $include_file = $root_folder.'/_tpl/'.$request.'.php';
-	//check redirects
-    }elseif( $tpl_config['redirects'][$request] ){
-        $redirect = $tpl_config['redirects'][$request];
-        redirect($redirect, true);
-    }elseif( $catcher=get_tpl_catcher($request) ){
-    	$include_file = $root_folder.'/_tpl/'.$catcher.'.php';
-    }else{
-    	//check aliases
-    	if( $tpl_config['alias'][$request] ){
-    		$include_file=$root_folder.'/_tpl/'.$tpl_config['alias'][$request].'.php';
-    	}else{
-    		if( (file_exists('_tpl/'.$request) and !is_dir('_tpl/'.$request)) or $tpl_config['alias'][str_replace('.php','',$request)] ){
-    			$url='http://'.$_SERVER['SERVER_NAME'].'/'.str_replace('.php','',$request);
+	if( in_array($request, $tpl_config['catchers']) or file_exists($root_folder.'/_tpl/'.$request.'/index.php') ){
+		redirect('/'.$request.'/', true);
+	}elseif( $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'] ){
+		$redirect = $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'];
+		redirect($redirect, true);
+	}elseif( file_exists($root_folder.'/_tpl/'.$request.'.php') ){
+		$include_file = $root_folder.'/_tpl/'.$request.'.php';
+		//check redirects
+	}elseif( $tpl_config['redirects'][$request] ){
+		$redirect = $tpl_config['redirects'][$request];
+		redirect($redirect, true);
+	}elseif( $catcher=get_tpl_catcher($request) ){
+		$include_file = $root_folder.'/_tpl/'.$catcher.'.php';
+	}else{
+		//check aliases
+		if( $tpl_config['alias'][$request] ){
+			$include_file=$root_folder.'/_tpl/'.$tpl_config['alias'][$request].'.php';
+		}else{
+			if( (file_exists('_tpl/'.$request) and !is_dir('_tpl/'.$request)) or $tpl_config['alias'][str_replace('.php','',$request)] ){
+				$url='http://'.$_SERVER['SERVER_NAME'].'/'.str_replace('.php','',$request);
 
-    			unset($_GET['page']);
+				unset($_GET['page']);
 
-    			if( count($_GET) ){
-    				$url.='?'.http_build_query($_GET);
-    			}
+				if( count($_GET) ){
+					$url.='?'.http_build_query($_GET);
+				}
 
-    			redirect($url,true);
-    		}
+				redirect($url,true);
+			}
 
-    		//check alias folder
-    		if( $tpl_config['alias'][$request.'/index'] ){
-    			redirect("http://".$_SERVER['SERVER_NAME'].'/'.$request.'/',301);
-    		}
+			//check alias folder
+			if( $tpl_config['alias'][$request.'/index'] ){
+				redirect("http://".$_SERVER['SERVER_NAME'].'/'.$request.'/',301);
+			}
 
-    		//check if using urlencode
-            $decoded = urldecode($request);
-            if( !file_exists($request) and file_exists($decoded) ){
-                redirect('/'.$decoded);
-            }
+			//check if using urlencode
+			$decoded = urldecode($request);
+			if( !file_exists($request) and file_exists($decoded) ){
+				redirect('/'.$decoded);
+			}
 
-    		if( file_exists($root_folder.'/_inc/catch_all.php') ){
-    			$include_file = $root_folder.'/_inc/catch_all.php';
-    		}else{
-    			$trigger_404=true;
-    		}
-    	}
-    }
+			if( file_exists($root_folder.'/_inc/catch_all.php') ){
+				$include_file = $root_folder.'/_inc/catch_all.php';
+			}else{
+				$trigger_404=true;
+			}
+		}
+	}
 
-    return $include_file;
+	return $include_file;
 }
 
 //comes before base.php so that custom.php can use request variable
@@ -185,9 +185,9 @@ $time_start = microtime(true);
 //check for predefined pages
 switch( $request ){
 	case 'admin':
-	    if(!$cms){
-	        die('Error: db is not configured');
-	    }
+		if(!$cms){
+			die('Error: db is not configured');
+		}
 
 		$cms->admin();
 		exit;
@@ -212,9 +212,9 @@ $include_file = get_include($request);
 ob_start("ob_gzhandler");
 
 if( end($sections)=='template' ){
-    $trigger_404=true;
+	$trigger_404=true;
 }elseif( $include_file===false ){
-    $trigger_404=true;
+	$trigger_404=true;
 }elseif( $include_file ){
 	ob_start();
 	try {
@@ -277,7 +277,7 @@ if( $stop ){
 	$time_end = microtime(true);
 	$time = $time_end - $time_start;
 
-    if( $auth->user['admin'] and $_GET['time'] ){
+	if( $auth->user['admin'] and $_GET['time'] ){
 		echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0;">Loaded in '.number_format($time,3).' seconds</span>';
 	}
 }
@@ -285,10 +285,10 @@ if( $stop ){
 //log slow pages
 /*
 if( $time>1 ){
-	$body='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'?'.$_SERVER['QUERY_STRING']."\n";
-	$body.='time: '.$time;
+$body='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'?'.$_SERVER['QUERY_STRING']."\n";
+$body.='time: '.$time;
 
-	mail($admin_email,'Slow page', $body, $headers );
+mail($admin_email,'Slow page', $body, $headers );
 }
 */
 ?>

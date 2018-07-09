@@ -83,6 +83,7 @@ function file_ext( filename ){
         $('iframe#uploadFrame').load(function(){
             //set callback in iframe
             document.getElementById('uploadFrame').contentWindow.callback = function(files){
+                console.log(files)
                 if(field){
                     if( field.prop("tagName")==='INPUT' ){
                         $(field).next().find('ul li').remove();
@@ -129,7 +130,7 @@ function file_ext( filename ){
                         html += '<video width="320" height="240" src="/uploads/'+files[i]+'" controls="controls" preload="none"></video><br>';
                     }
 
-                    html += '<label class="label">'+files[i]+'</label>';
+                    html += '<label>'+files[i]+'</label>';
 
                     if( !readonly && files[i] ){
                         html += '&nbsp;<a href="javascript:;" class="clear">delete</a>';

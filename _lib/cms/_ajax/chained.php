@@ -30,14 +30,14 @@ $options = array();
 function get_items($value) {
 	global $options, $section, $field, $last_parent;
 	
-	$item = sql_query("SELECT parent FROM `".escape($section)."`
+	$item = sql_query("SELECT parent FROM `".escape(underscored($section))."`
 		WHERE 
 			id = '".escape($value)."'
 	", 1);
 
 	$parent = $item['parent'];
 	
-	$parents = sql_query("SELECT id, ".$field." FROM `".escape($section)."`
+	$parents = sql_query("SELECT id, ".$field." FROM `".escape(underscored($section))."`
 		WHERE 
 			parent = '".escape($parent)."'
 	");
@@ -61,7 +61,7 @@ function get_items($value) {
 if ($_GET['parent']) {
 	get_items($value);
 } else {
-	$parents = sql_query("SELECT id, ".$field." FROM `".escape($section)."`
+	$parents = sql_query("SELECT id, ".$field." FROM `".escape(underscored($section))."`
 		WHERE 
 			parent = '".escape($value)."'
 	");

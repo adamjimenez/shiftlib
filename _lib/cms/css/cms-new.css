@@ -62,11 +62,14 @@ textarea.tinymce{
 	height:400px !important;
 }
 
+.mce-notification {
+	display: none;
+}
+
 button{
 	font-size:11px;
 	margin:0;
 	padding:0 2px;
-	overflow:visible;
 }
 
 img{
@@ -87,7 +90,6 @@ img{
 	padding:3px 0px;
 	padding-left:10px;
 	font-size:12px;
-	overflow:hidden;
 	width:130px;
 }
 
@@ -212,7 +214,6 @@ html, body {
 body {
 	width: 100%;
 	height: 100%;
-	overflow-x: hidden;
 	padding: 0;
 	margin: 0;
 	background: #F0F3F4 !important;
@@ -280,10 +281,8 @@ body {
 	color: #223224;
 }
 .wrapper {
-
 	min-height: 100%;
 	position: relative;
-	overflow: hidden;
 }
 
 .inner {
@@ -298,14 +297,13 @@ body {
 	min-height: 900px;
 	z-index: 500;
 	margin-left: 250px;
-	margin-top: 50px;
 	transition: margin 0.4s linear;
 }
 
 .content {
 	min-height: 250px;
 	padding: 15px;
-	margin: 80px 25px 20px 25px;
+	padding-top: 80px;
 	background: #FFF;
 
 	border-radius: 5px;
@@ -323,7 +321,7 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 }
 .leftcol {
 	padding-top: 50px;
-	position: fixed;
+	position: absolute;
 	width: 250px;
 	/*background: #23527C;*/
 	/* BLUE background: #222D32;*/
@@ -338,7 +336,6 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 }
 
 .leftcol ul {
-	width: 250px;
 	float: left;
 	margin: 25px 0 0 0;
 	padding: 0;
@@ -346,7 +343,7 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 }
 .leftcol ul li {
 	float: left;
-	width: 250px;
+	width: 100%;
 	border-left: 5px solid #fff;
 	padding: 0;
 	list-style: none;
@@ -472,4 +469,25 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 	width: 100%;
 	margin-bottom: 20px;
 
+}
+.sorting-arrows {
+	text-align: left;
+	width: 37px;
+}
+.sorting-arrows i {
+	float: left;
+}
+.sorting-arrows i:first-child {
+	margin-right: 5px;
+}
+
+.ui-dialog-titlebar-close {
+ padding:0 !important;
+}
+
+.ui-dialog-titlebar-close:after {
+ content: '\f00d';
+ font-family: FontAwesome;
+ width: 20px;
+ height: 20px;
 }

@@ -3,10 +3,13 @@ require_once(dirname(__FILE__).'/../base.php');
 
 $auth->check_login();
 
-$select=mysql_query("SELECT * FROM files WHERE 
+if( $auth->user['admin']!=1 and !$auth->user['privileges']['uploads'] ){
+	die('access denied');
+}
+
+$row = sql_query("SELECT * FROM files WHERE 
 	id='".addslashes($_GET['f'])."'
-");
-$row=mysql_fetch_array($select);
+", 1);
 
 if( $vars['files']['dir'] ){
 	$row['data']=file_get_contents($vars['files']['dir'].$row['id']);

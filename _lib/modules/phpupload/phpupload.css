@@ -1,0 +1,17 @@
+#toolbar{
+	position: fixed;
+	background: #fff;
+	z-index: 100;
+	padding: 5px;
+	width: 100%;
+	top: 0;
+}
+
+#uploads{
+	position: relative;
+	top: 25px;
+}
+
+.no-close .ui-dialog-titlebar-close {
+	display: none;
+}
