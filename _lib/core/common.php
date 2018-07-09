@@ -528,13 +528,13 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 
 	switch ($errno)
 	{
-		case E_USER_WARNING:
 		case E_USER_NOTICE:
 		case E_WARNING:
 		case E_NOTICE:
 		case E_CORE_WARNING:
 		case E_COMPILE_WARNING:
 			break;
+		case E_USER_WARNING:
 		case E_USER_ERROR:
 		case E_ERROR:
 		case E_PARSE:
@@ -1019,7 +1019,7 @@ function is_postcode($code)
 
 function is_tel($string)
 {
-	return preg_match("/^[0-9\-]+$/", $string);
+	return preg_match("/^[0-9\-\s]+$/", $string);
 }
 
 function is_url($str)
@@ -1308,10 +1308,12 @@ function parse_links($text){
    return preg_replace_callback($pattern, $callback, $text);
 }
 
-function redirect($url,$_301=false) {
-	$http_response_code= ($_301) ? 301 : NULL;
+function redirect($url, $http_response_code = null) {
+	if ($http_response_code===true) {
+		$http_response_code = 301;
+	}
 
-	header("location:".$url,true,$http_response_code);
+	header("location:".$url, true, $http_response_code);
 	exit;
 }
 

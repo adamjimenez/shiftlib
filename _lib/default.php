@@ -99,16 +99,16 @@ function get_include( $request ){
 	$include_file = false;
 
 	if( in_array($request, $tpl_config['catchers']) or file_exists($root_folder.'/_tpl/'.$request.'/index.php') ){
-		redirect('/'.$request.'/', true);
+		redirect('/'.$request.'/', 301);
 	}elseif( $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'] ){
 		$redirect = $tpl_config['redirects']['http://'.$_SERVER['HTTP_HOST'].'/'];
-		redirect($redirect, true);
+		redirect($redirect, 301);
 	}elseif( file_exists($root_folder.'/_tpl/'.$request.'.php') ){
 		$include_file = $root_folder.'/_tpl/'.$request.'.php';
 		//check redirects
 	}elseif( $tpl_config['redirects'][$request] ){
 		$redirect = $tpl_config['redirects'][$request];
-		redirect($redirect, true);
+		redirect($redirect, 301);
 	}elseif( $catcher=get_tpl_catcher($request) ){
 		$include_file = $root_folder.'/_tpl/'.$catcher.'.php';
 	}else{
@@ -125,12 +125,12 @@ function get_include( $request ){
 					$url.='?'.http_build_query($_GET);
 				}
 
-				redirect($url,true);
+				redirect($url, 301);
 			}
 
 			//check alias folder
 			if( $tpl_config['alias'][$request.'/index'] ){
-				redirect("http://".$_SERVER['SERVER_NAME'].'/'.$request.'/',301);
+				redirect("http://".$_SERVER['SERVER_NAME'].'/'.$request.'/', 301);
 			}
 
 			//check if using urlencode
