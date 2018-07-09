@@ -2,6 +2,9 @@
 if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 	$_SESSION["warning"] = 'Warning: you are using the default password. <a href="?option=preferences">Change it</a>';
 }
+
+check_table('cms_filters', $this->cms_filters);
+$filters = sql_query("SELECT * FROM cms_filters WHERE user = '".escape($auth->user['id'])."'");
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -29,6 +32,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 
 	<? load_js(array('jqueryui', 'cms', 'google', 'lightbox', 'fontawesome', 'bootstrap')); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js"></script>
+	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
 	<!-- Ionicons -->
 	<link href="css/ionicons.min.css" rel="stylesheet" type="text/css" />
 	
@@ -47,7 +51,7 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 					<img src="/images/logo.gif" alt="Admin home" align="middle" style="padding:0 10px; max-height:50px;">
 				</a>
 				<?
-				}else{
+				} else {
 					$website=ucfirst(str_replace('www.','',$_SERVER['HTTP_HOST']));
 					$arr=explode('.',$website);
 	
@@ -96,6 +100,16 @@ if( $auth->user['email']=='admin' and $auth->user['password']=='123' ){
 					}elseif( $auth->user['admin']==1 or $auth->user['privileges'][$option] ){
 				?>
 					<li <? if($option==$_GET['option']){ ?>id="current"<? } ?>><a href="?option=<?=$option;?>" title="<?=ucfirst($section);?>"><?=ucfirst($section);?></a></li>
+					
+					<? 
+					foreach ($filters as $v) { 
+						if ($v['section'] != $option) {
+							continue;
+						}
+					?>
+						<li <? if($v['filter']==http_build_query($_GET)){ ?>id="current"<? } ?>><a href="?<?=$v['filter'];?>" title="<?=ucfirst($v['name']);?>">- <?=ucfirst($v['name']);?></a>
+						</li>
+					<? } ?>
 				<?
 					}
 				}

@@ -63,6 +63,13 @@ class cms{
 			'filter'=>'text',
 		);
 
+		$this->cms_filters = array(
+			'user'=>'text',
+			'section'=>'text',
+			'name'=>'text',
+			'filter'=>'text',
+		);
+
 		//built in extensions
 
 		global $cms_buttons, $auth, $vars;
@@ -358,7 +365,7 @@ class cms{
 
 							foreach( $conditions[$field_name] as $k=>$v ){
 							    $v = is_array($v) ? $v['value'] : $v;
-								$or .= "T_".$field_name.".value = '".escape($v)."' OR ";
+								$or .= "T_".$field_name.".value = '".escape($v)."' AND T_".$field_name.".field = '".escape($field_name)."' OR ";
 							}
 							$or = substr($or,0,-4);
 							$or .= ')';
@@ -377,17 +384,11 @@ class cms{
 							if( $conditions['func'][$field_name] == 'month' ){
 								$where[] = "date_format(".$field_name.", '%m%Y') = '".escape($value)."'";
 							} else if($conditions[$field_name] and $conditions['end'][$field_name]) {
-								$parts = explode('/',$conditions[$field_name]);
-								$start = $parts[2].'-'.$parts[1].'-'.$parts[0];
+								$start = $conditions[$field_name];
+								$end = $conditions['end'][$field_name];
 								
-								$parts = explode('/',$conditions['end'][$field_name]);
-								$end = $parts[2].'-'.$parts[1].'-'.$parts[0];
-								
-								$where[] = "($field_name > '".$start."' AND $field_name < '".$end."')";
+								$where[] = "(T_".$table.".$field_name > '".$start."' AND T_".$table.".$field_name < '".$end."')";
 							}elseif( $conditions['func'][$field_name] ){
-								$parts = explode('/',$value);
-								$value = $parts[2].'-'.$parts[1].'-'.$parts[0];
-
 								$where[] = "DATE_FORMAT(T_$table.".$field_name.", '%Y-%m-%d') ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d', $value))."'";
 							}
 						break;
@@ -486,6 +487,7 @@ class cms{
                             (
                                 $type == 'text' or
                                 $type == 'textarea' or
+                                $type == 'editor' or
                                 $type == 'email' or
                                 $type == 'mobile' or
                                 $type == 'select' or
@@ -507,8 +509,8 @@ class cms{
 
 									$or[] = "T_".underscored($name).".".underscored($option)." LIKE '%".escape($value)."%'";
 								}
-							}else{
-								$or[] = "T_$table.".underscored($name)." LIKE '%".escape($value)."%'";
+							} else {
+								$or[] = "T_$table.".underscored($name)." REGEXP '[[:<:]]".escape($value)."[[:>:]]'";
 							}
 						}
 					}
@@ -1320,22 +1322,22 @@ class cms{
 			break;
 			case 'date':
 		?>
-			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'month':
 		?>
-			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'dob':
 		?>
-			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? dateformat('d/m/Y',$value) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'time':
 		?>
-			<input type="text" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value!='00:00:00') ? substr($value,0,-3) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ?: ' size="10" style="width:60px;"';?> />
+			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value!='00:00:00') ? substr($value,0,-3) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ?: '';?> />
 		<?php
 			break;
 			case 'datetime':
@@ -1344,8 +1346,8 @@ class cms{
 				$date=explode(' ',$value);
 			}
 		?>
-			<input type="text" data-type="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? dateformat('d/m/Y',$date[0]) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
-			<input type="text" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? $date[1] : '00:00:00';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:60px;"';?> />
+			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? $date[0] : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : '';?> />
+			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? $date[1] : '00:00:00';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : '';?> />
 		<?php
 			break;
 			case 'number':
@@ -1429,9 +1431,9 @@ class cms{
 
 				$image_types = array('jpg','jpeg','gif','png');
 				if( in_array(file_ext($file[0]['name']),$image_types) ){
-					$value = '<img src="/_lib/cms/file_preview.php?f='.$file[0]['id'].'&w=320&h=240" id="'.$name.'_thumb" /><br />';
+					$value = '<img src="http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file_preview.php?f='.$file[0]['id'].'&w=320&h=240" id="'.$name.'_thumb" /><br />';
 				}
-				$value .= '<a href="/_lib/cms/file.php?f='.$file[0]['id'].'">'.$file[0]['name'].'</a> <span style="font-size:9px;">'.file_size($file[0]['size']).'</span>';
+				$value .= '<a href="http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'">'.$file[0]['name'].'</a> <span style="font-size:9px;">'.file_size($file[0]['size']).'</span>';
 
 				$doc_types = array('pdf','doc','docx','xls','tiff');
 				if( in_array(file_ext($file[0]['name']),$doc_types) ){
@@ -1687,7 +1689,7 @@ class cms{
 			die('database settings not configured');
 		}
 		
-		$option = $_GET['option'];
+		$option = $_GET['option'] ?: 'index';
 
 		if( $_GET['option']!='login' ){
 			$auth->check_admin();
@@ -1719,7 +1721,7 @@ class cms{
 			$this->template(underscored($option).'.php');
 		}elseif( method_exists($this, $option) ){
 			$this->$option();
-		}elseif( isset($option) ){
+		}elseif( $option!='index' ){
 			$this->default_section($option);
 		}else{
 			$this->main();
@@ -2032,30 +2034,12 @@ class cms{
 				if( $v=='url' and $data[$name]=='http://' ){
 					$data[$name] = '';
 				}elseif( $v=='datetime' ){
-					$parts = explode(' ', $data[$name]);
-					
-					$date_parts = explode('/', $parts[0]);
-					$date = $date_parts[2].'-'.$date_parts[1].'-'.$date_parts[0];
-
 					if ($data['time']) {
-						$data[$name] = $date.' '.$data['time'][$name];
-					} else if($parts[1]) {
-						$data[$name] = $date.' '.$parts[1];
-						
-						if(strlen($parts[1])==5) {
-							$data[$name] .= ':00';
-						}
+						$data[$name] .= ' '.$data['time'][$name].':00';
 					}
 				}elseif( $v=='date' or $v=='dob' ){
-					if( $data[$name] ){
-						$parts = explode('/',$data[$name]);
-						$data[$name] = $parts[2].'-'.$parts[1].'-'.$parts[0];
-					}
 				}elseif( $v=='month' ){
-					if( $data[$name] ){
-						$parts = explode('/',$data[$name]);
-						$data[$name] = $parts[1].'-'.$parts[0].'-01';
-					}
+					$data[$name] .= '-01';
 				}elseif( $v=='file' ){
 					if( $_FILES[$name]['error']=='UPLOAD_ERR_OK' ){
 						check_table('files', $this->file_fields);
@@ -2180,16 +2164,15 @@ class cms{
 				}elseif( $v=='mobile' ){
 					if( $data[$name] ){
 						$data[$name]=format_mobile($data[$name]);
-
 					}
 				}elseif( $v=='ip' ){
-				    if( $this->id ){
-				        continue;
+				    if( !$this->id ){
+						$data[$name] = $_SERVER["REMOTE_ADDR"];
+				    } else if (!$data[$name]) {
+				    	continue;
 				    }
-
-					$data[$name] = $_SERVER["REMOTE_ADDR"];
 				}elseif( $v=='page-name' ){
-					$data[$name] = str_to_pagename($data[$name]);
+					$data[$name] = str_to_pagename($data[$name], false);
 				}elseif( $v=='coords' ){
 					$this->query.="`$k`=GeomFromText('POINT(".escape($data[$name]).")'),\n";
 					continue;

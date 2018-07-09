@@ -28,6 +28,43 @@ if( in_array('select-distance',$vars['fields'][$this->section]) ){
 	$opts['distance'][array_search('select-distance',$vars['fields'][$this->section])]='specified '.array_search('select-distance',$vars['fields'][$this->section]);
 }
 
+// search filters
+check_table('cms_filters', $this->cms_filters);
+
+if ($_POST['delete_filter']) {
+	$qs = http_build_query($_GET);
+	
+	sql_query("DELETE FROM cms_filters WHERE
+		user = '".escape($auth->user['id'])."' AND
+		section = '".escape($this->section)."' AND
+		`filter` = '".escape($qs)."'
+	");
+}
+
+if( $_POST['save_filter'] ){
+	$qs = http_build_query($_GET);
+	
+	sql_query("INSERT INTO cms_filters SET
+		user = '".escape($auth->user['id'])."',
+		section = '".escape($this->section)."',
+		name = '".escape($_POST['save_filter'])."',
+		`filter` = '".escape($qs)."'
+	");
+}
+
+$filters = sql_query("SELECT * FROM cms_filters WHERE 
+	user = '".escape($auth->user['id'])."' AND
+	section = '".escape($this->section)."'
+");
+
+$filter_exists = false;
+$qs = http_build_query($_GET);
+foreach($filters as $v) {
+	if ($v['filter'] == $qs) {
+		$filter_exists = true;
+	}
+}
+
 //bulk export
 if( $_POST['action']=='export' ){
 	$this->export_items($this->section, $_POST['items']);
@@ -182,6 +219,20 @@ if( $_POST['action']=='email' ){
 <script type="text/javascript">
 jQuery(document).ready(function() {
 	jQuery('#file').on('change',changeFile);
+	
+	$('.save_filter').click(function() {
+		var filter = prompt('Save filter', 'New filter');
+		
+		if (filter != null) {
+			$('<form method="post"><input type="hidden" name="save_filter" value="'+filter+'"></form>').appendTo('body').submit();
+		}
+	});
+	
+	$('.delete_filter').click(function() {
+		if (window.confirm("Delete this filter?")) { 
+			$('<form method="post"><input type="hidden" name="delete_filter" value="1"></form>').appendTo('body').submit();
+		}
+	});
 });
 </script>
 
@@ -194,7 +245,17 @@ jQuery(document).ready(function() {
 		<input class="search-field form-control" type="text" name="s" id="s" value="<?=$_GET['s'];?>" tabindex="1" placeholder="Search">
 		<button type="submit" class="btn btn-default" tabindex="5">Search <?=ucfirst($this->section);?></button>
 		
-		<a href="#" class="btn btn-default" onclick="toggle_advanced(true); return false;">Advanced search</a><br />
+		<button type="button" class="btn btn-default" onclick="toggle_advanced(true); return false;">Advanced search</button>
+		
+		<? if (count($_GET>1)) { ?>
+			<? if ($filter_exists) { ?>
+			<button type="button" class="btn btn-default delete_filter">Delete filter</button>
+			<? } else { ?>
+			<button type="button" class="btn btn-default save_filter">Save filter</button>
+			<? } ?>
+		<? } ?>
+		
+		<br />
 		
 	</div>
 	
