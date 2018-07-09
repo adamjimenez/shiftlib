@@ -1,7 +1,7 @@
 <?
 class blog{
     function blog($options=null){
-		global $cms, $sections, $vars, $from_email, $opts;
+		global $cms, $sections, $vars, $from_email, $opts, $request;
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
 
@@ -11,7 +11,7 @@ class blog{
 
 		//categories
 		if( count($vars["fields"][$this->table_categories]) ){
-			$this->categories=sql_query("SELECT * FROM ".underscored($this->table_categories)."
+			$this->categories = sql_query("SELECT * FROM ".underscored($this->table_categories)."
 				ORDER BY category
 			");
 		}
@@ -28,7 +28,7 @@ class blog{
 		*/
 
 		//archive
-		$this->months=sql_query("SELECT date,date_format(date, '%m %Y') AS `month` FROM blog
+		$this->months = sql_query("SELECT date,date_format(date, '%m %Y') AS `month` FROM blog
 			WHERE
 				display=1 AND
 				date <= NOW()
@@ -84,6 +84,10 @@ class blog{
 			}else{
 	        	$conditions['func']['date'] = '<';
 	    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+	    		
+	    		if ($_GET['s']) {
+	    			$conditions['s'] = $_GET['s'];
+	    		}
 
 				$limit=6;
 			}
@@ -120,6 +124,31 @@ class blog{
 			if( !$_POST['blog'] ){
 				$errors[]='blog';
 			}
+			
+			global $recaptcha_secret;
+			
+			if ($recaptcha_secret) {
+				if( !$_POST['g-recaptcha-response'] ){
+					$errors[] = 'captcha';
+				} else {
+					$data = array(
+						'secret' => $recaptcha_secret,
+						'response' => $_POST['g-recaptcha-response']
+					);
+					
+					$verify = curl_init();
+					curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+					curl_setopt($verify, CURLOPT_POST, true);
+					curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
+					curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+					curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+					$response = curl_exec($verify);
+					
+					if (!$response['success']) {
+						$errors[] = 'captcha';
+					}
+				}
+			}
 
 			if( count( $errors ) ){
 				print json_encode($errors);
@@ -151,14 +180,16 @@ class blog{
 				Email: '.$_POST['email'].'
 				Website: '.$_POST['website'].'
 				Comment: '.$_POST['comment'].'
-				Link: http://'.$_SERVER['HTTP_HOST'].'/blog/'.$sections[($this->blog_index+1)].'/'.$sections[($this->blog_index+2)].'/#comment-'.$id;
+				Link: http://'.$_SERVER['HTTP_HOST'].'/'.$request.'/#comment-'.$id;
 
-				$msg=str_replace("\t",'',$msg);
+				$msg = str_replace("\t", '', $msg);
 
 				mail($from_email, 'New comment', $msg, $headers);
 
 				if( $options['thanks_page'] ){
 					redirect($options['thanks_page']);
+				} else {
+					$this->commented = true;
 				}
 			}
 		}
@@ -265,7 +296,7 @@ class blog{
 		");
 	}
 
-	function rss_feed(){
+	function rss_feed() {
         $news=sql_query("SELECT
         		id,
         		page_name,
@@ -295,7 +326,12 @@ class blog{
         	$summary->addAttribute('type', 'html');
 
         	$link=$entry->addChild('link');
-        	$link->addAttribute('href', 'http://'.$_SERVER['HTTP_HOST'].'/blog/'.$v['page_name']);
+        	$url = 'http://'.$_SERVER['HTTP_HOST'].'/';
+        	if($this->blog_index>0) {
+        		$url .= 'blog/';
+        	}
+        	$url .= $v['page_name'];
+        	$link->addAttribute('href', $url);
         }
 
         echo $xml->asXML();
