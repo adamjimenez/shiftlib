@@ -184,6 +184,7 @@ $field_opts=array(
 	'translated-from',
 	'parent',
 	'position',
+	'read',
 	'deleted',
 	'id',
 	'separator',
@@ -255,7 +256,7 @@ function loop_fields($field_arr) // should be anonymous function
 					$query="ALTER TABLE `$table` CHANGE `".underscored($k)."` `".underscored($new_name)."` ".$db_field." ";
 				}
 
-				if( $query ){
+				if( $query and $new_type!='hidden' ){
 					sql_query($query);
 				}
 
