@@ -214,7 +214,7 @@ body {
       
       
       <button>login</button>
-      <p class="message"><input type="checkbox" name="remember" value="1"> Remember me?</p>
+      <p class="message"><label><input type="checkbox" name="remember" value="1"> Remember me?</label></p>
     </form>
     
   </div>
