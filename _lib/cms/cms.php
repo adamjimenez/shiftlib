@@ -67,7 +67,7 @@ class cms{
 			'user'=>'text',
 			'section'=>'text',
 			'name'=>'text',
-			'filter'=>'text',
+			'filter'=>'textarea',
 		);
 
 		//built in extensions
@@ -365,7 +365,7 @@ class cms{
 
 							foreach( $conditions[$field_name] as $k=>$v ){
 							    $v = is_array($v) ? $v['value'] : $v;
-								$or .= "T_".$field_name.".value = '".escape($v)."' AND T_".$field_name.".field = '".escape($field_name)."' OR ";
+								$or .= "T_".$field_name.".value = '".escape($v)."' AND T_".$field_name.".field = '".escape($name)."' OR ";
 							}
 							$or = substr($or,0,-4);
 							$or .= ')';
@@ -629,7 +629,7 @@ class cms{
 				$vars['labels'][$section][] = key($vars['fields'][$section]);
 			}
 
-			$cols='';
+			$cols = '';
 			foreach( $vars['fields'][$section] as $k=>$v ){
 				if( $v!='select-multiple' and $v!='checkboxes' and $v!='separator' ){
 					//$cols.="\t"."T_$table.".underscored($k)." AS `".$k."`,"."\n";
@@ -696,17 +696,23 @@ class cms{
             $sql = $this->conditions_to_sql($sections, $conditions, $num_results, $cols);
 
             $where_str = $sql['where_str'];
+            $group_by_str = '';
             $having_str = $sql['having_str'];
             $joins = $sql['joins'];
             $cols = $sql['cols'];
+            
+            if($num_results===true) {
+            	$cols = 'COUNT(*) AS `count`';
+            } else {
+            	$group_by_str = "GROUP BY T_$table.$field_id";
+            }
 
 			$query = "SELECT
 			$cols
 			FROM `$table` T_$table
 				$joins
 			$where_str
-			GROUP BY
-				T_$table.$field_id
+			$group_by_str
 			$having_str
 			";
 			//debug($query);
@@ -718,9 +724,14 @@ class cms{
 			$limit = $sql['num_results'] ?: NULL;
 
             //require_once('_lib/paging.class.php');
-			$this->p = new paging( $query, $limit, $order, $asc, $prefix );
+			$this->p = new paging($query, $limit, $order, $asc, $prefix);
 
 			$content = $this->p->rows;
+			//debug($content);
+			
+			if( $num_results===true ){
+				return $content[0]['count'];
+			}
 
 			//spaced versions of field names for compatibility
 		    foreach( $content as $k=>$v ){
@@ -1040,10 +1051,7 @@ class cms{
 			break;
 			case 'coords':
 		?>
-			<input type="text" size="40" value="London, UK" />
-			<input type="button" value="Search" class="mapSearch" /><br />
-
-			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?> placeholder="coordinates">
+			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?> placeholder="coordinates">
 		<?php
 			break;
 			case 'email':
@@ -1558,7 +1566,7 @@ class cms{
 		<?
 		}elseif( $type == 'coords' ){
 		?>
-			<input type="hidden" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?>>
+			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?>>
 		<?
 		}
 

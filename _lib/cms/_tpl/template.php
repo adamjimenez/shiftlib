@@ -97,17 +97,37 @@ $filters = sql_query("SELECT * FROM cms_filters WHERE user = '".escape($auth->us
 				?>
 						<hr>
 				<?
-					}elseif( $auth->user['admin']==1 or $auth->user['privileges'][$option] ){
+					} elseif( $auth->user['admin']==1 or $auth->user['privileges'][$option] ) {
 				?>
-					<li <? if($option==$_GET['option']){ ?>id="current"<? } ?>><a href="?option=<?=$option;?>" title="<?=ucfirst($section);?>"><?=ucfirst($section);?></a></li>
+					<li <? if($option==$_GET['option']){ ?>id="current"<? } ?>>
+						<a href="?option=<?=$option;?>" title="<?=ucfirst($section);?>">
+							<?=ucfirst($section);?>
+							<? 
+							if(in_array('read', $vars['fields'][$section])) {
+								$unread = $this->get($section, array('read'=>0), true);
+								
+								if ($unread) {
+							?>
+								(<?=$unread;?>)
+							<? 
+								}
+							} 
+							?>
+						</a>
+					</li>
 					
 					<? 
 					foreach ($filters as $v) { 
 						if ($v['section'] != $option) {
 							continue;
 						}
+						
+						parse_str($v['filter'], $conditions);
+						$result = $this->get($v['section'], $conditions, true);
 					?>
-						<li <? if($v['filter']==http_build_query($_GET)){ ?>id="current"<? } ?>><a href="?<?=$v['filter'];?>" title="<?=ucfirst($v['name']);?>">- <?=ucfirst($v['name']);?></a>
+						<li <? if($v['filter']==http_build_query($_GET)){ ?>id="current"<? } ?>>
+							<a href="?<?=$v['filter'];?>" title="<?=ucfirst($v['name']);?>">- <?=ucfirst($v['name']);?> <? if ($result) { ?>(<?=$result;?>)<? } ?>
+							</a>
 						</li>
 					<? } ?>
 				<?
