@@ -66,6 +66,12 @@ $(function() {
             });
     	}
 
+        //custom buttons
+        $(this).find('button[data-custom]').on('click', function(e){
+            $(_this).find('input[name="custom_button"]').val($(this).data('custom'));
+            $(_this).submit();
+        });
+
     });
 });
 

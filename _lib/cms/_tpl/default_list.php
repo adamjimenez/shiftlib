@@ -87,19 +87,28 @@ if( $_POST['action']=='email' ){
 	}
 
 	require(dirname(__FILE__).'/shiftmail.php');
-}elseif( isset($_POST['custom_button']) ){
-	global $content;
-	$content = $this->get($this->section,$_GET);
-	$cms_buttons[$_POST['custom_button']]['handler']();
+}elseif( $_POST['custom_button'] ){
+	if( $_POST['select_all_pages'] or !$_POST['items'] ){
+		$items = $this->get($this->section, $_GET);
+	} else if($_POST['items']) {
+		$_POST['items'];
+
+		$items = array();
+		foreach( $_POST['items'] as $v ){
+			$items[] = $this->get($this->section, $v);
+		}
+	}
+	
+	$cms_buttons[$_POST['custom_button']]['handler']($items);
 }elseif( $_POST['sms'] ){
-	$users = $this->get($this->section,$_GET);
+	$users = $this->get($this->section, $_GET);
 	require(dirname(__FILE__).'/sms.php');
 }elseif( $_POST['shiftmail'] ){
-	$users = $this->get($this->section,$_GET);
+	$users = $this->get($this->section, $_GET);
 	require(dirname(__FILE__).'/shiftmail.php');
 }else{
 	if( $_POST['select_all_pages'] and $_POST['section'] and $_POST['action']=='delete' ){
-		$this->delete_all_pages($this->section,$_GET);
+		$this->delete_all_pages($this->section, $_GET);
 	}
 
 	if( $_POST['export'] or $_GET['export_all'] ){

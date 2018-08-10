@@ -1,5 +1,5 @@
 <?
-//check permissions
+// check permissions
 if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
 }
@@ -7,10 +7,14 @@ if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
 $this->set_section($this->section, $_GET['id']);
 $content = $this->content;
 
-//get id if it exists
+// get id if it exists
 $id = $content['id'];
 
-//print_r($content);
+// mark as read
+if ($content['read']==='0') {
+	$content['read'] = 1;
+	$this->save($content);
+}
 
 $has_logs = table_exists('cms_logs');
 
@@ -23,7 +27,7 @@ if (
 	$has_priveleges = true;
 }
 
-if( isset($_POST['custom_button']) ){
+if( $_POST['custom_button'] ){
     $cms_buttons[$_POST['custom_button']]['handler']($_GET['id']);
 
     $content = $this->get($this->section, $_GET['id']);
@@ -356,7 +360,7 @@ foreach( $languages as $language ){
 			<?=$value;?>
 			<a href="http://maps.google.co.uk/maps?f=q&source=s_q&hl=en&geocode=&q=<?=$value;?>" target="_blank">(view map)</a>
 		<? }elseif( $type == 'coords' ){ ?>
-			<input type="hidden" class="map" value="<?=htmlspecialchars(substr($value,6,-1));?>">
+			<?=htmlspecialchars(substr($value,6,-1));?>
 		<? }elseif( $type == 'textarea' ){ ?>
 			<?=nl2br(strip_tags($value));?>
 		<? }elseif( $type == 'editor' ){ ?>

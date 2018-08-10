@@ -15,6 +15,14 @@ if( !$qs ){
 
 		<button class="btn btn-default" type="submit" onclick="return export_selected();">Export</button>
 
+		<?
+		foreach( $cms_buttons as $k=>$button ){
+			if( $this->section==$button['section'] and $button['page']=='list' ){
+                require('submit.php');
+    		}
+    	}
+    	?>
+
 		<!--
 		<? if( $vars['settings'][$this->section]['sms'] ){ ?>
 		<button type="submit">Send SMS text</button>

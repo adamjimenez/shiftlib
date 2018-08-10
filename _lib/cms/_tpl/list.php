@@ -40,6 +40,7 @@ function export_selected(){
 <input type="hidden" class="section" name="section" value="<?=$this->section;?>">
 <input type="hidden" class="action" name="action" id="action" value="">
 <input type="hidden" class="select_all_pages" name="select_all_pages" value="0">
+<input type="hidden" name="custom_button" value="">
 <?
 if( $sortable ){
 ?>
@@ -118,7 +119,7 @@ if( count($vars['content']) ){
 <?
 foreach( $vars['content'] as $v){
 ?>
-<tr class="draggable list-row" id="tr_<?=$v['id'];?>">
+<tr class="draggable list-row" id="tr_<?=$v['id'];?>" <? if($v['read']==='0') { ?>style="font-weight: bold;"<? } ?>>
 	<? if( $sortable ){ ?>
 		<td valign="top"><div class="handle">&nbsp;</div></td>
 	<? } ?>
