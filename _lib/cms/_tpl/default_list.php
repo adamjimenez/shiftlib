@@ -200,13 +200,14 @@ if( $_POST['action']=='email' ){
 	$asc = ($first_field_type=='date' or $first_field_type=='timestamp') ? false : true;
 
 	$conditions = $_GET;
+	unset($conditions['option']);
 
 	if( in_array('parent',$vars['fields'][$this->section]) ){
 		$parent_field = array_search('parent',$vars['fields'][$this->section]);
 	}
 
-	if( $parent_field and !$conditions[underscored($parent_field)] ){
-		$conditions[underscored($parent_field)]=0;
+	if( $parent_field and !count($conditions) ){
+		$conditions[underscored($parent_field)] = 0;
 	}
 
 	foreach( $auth->user['filters'][$this->section] as $k=>$v ){
