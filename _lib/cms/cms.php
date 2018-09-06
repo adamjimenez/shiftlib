@@ -355,8 +355,8 @@ class cms{
 						break;
 						case 'select-multiple':
 						case 'checkboxes':
-							if( count($conditions[$field_name])==1 and !reset($conditions[$field_name]) ){
-								continue;
+							if( count($conditions[$field_name])==1 and !reset($conditions[$field_name]) ) {
+								$conditions[$field_name] = array($conditions[$field_name]);
 							}
 
 							$joins .= " LEFT JOIN cms_multiple_select T_".$field_name." ON T_".$field_name.".item=T_".$table.".".$field_id;
