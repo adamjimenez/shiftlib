@@ -88,6 +88,9 @@ class blog{
 	    		if ($_GET['s']) {
 	    			$conditions['s'] = $_GET['s'];
 	    		}
+	    		if ($_GET['w']) {
+	    			$conditions['w'] = $_GET['w'];
+	    		}
 
 				$limit=6;
 			}

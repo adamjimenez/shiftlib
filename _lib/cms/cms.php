@@ -476,8 +476,12 @@ class cms{
 				}
 			}
 
-			if( $conditions['s'] ){
-				$words = explode(' ',$conditions['s']);
+			if( $conditions['s'] or $conditions['w'] ){
+				if ($conditions['w']) {
+					$conditions['s'] = $conditions['w'];
+				}
+				
+				$words = explode(' ', $conditions['s']);
 
 				foreach( $words as $word ){
 					$or = array();
@@ -510,7 +514,11 @@ class cms{
 									$or[] = "T_".underscored($name).".".underscored($option)." LIKE '%".escape($value)."%'";
 								}
 							} else {
-								$or[] = "T_$table.".underscored($name)." REGEXP '[[:<:]]".escape($value)."[[:>:]]'";
+								if ($conditions['w']) {
+									$or[] = "T_$table.".underscored($name)." REGEXP '[[:<:]]".escape($value)."[[:>:]]'";
+								} else {
+									$or[] = "T_$table.".underscored($name)." LIKE '%".escape($value)."%'";
+								}
 							}
 						}
 					}
@@ -1351,11 +1359,11 @@ class cms{
 			case 'datetime':
 
 			if( $value ){
-				$date=explode(' ',$value);
+				$date = explode(' ', $value);
 			}
 		?>
 			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? $date[0] : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : '';?> />
-			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? $date[1] : '00:00:00';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : '';?> />
+			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? substr($date[1], 0, 5) : '00:00:00';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : '';?> />
 		<?php
 			break;
 			case 'number':
