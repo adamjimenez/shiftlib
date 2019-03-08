@@ -1,4 +1,4 @@
-<?
+<?php
 //check permissions
 if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
@@ -88,18 +88,21 @@ if( $_POST['action']=='email' ){
 
 	require(dirname(__FILE__).'/shiftmail.php');
 }elseif( $_POST['custom_button'] ){
-	if( $_POST['select_all_pages'] or !$_POST['items'] ){
-		$items = $this->get($this->section, $_GET);
-	} else if($_POST['items']) {
-		$_POST['items'];
-
-		$items = array();
-		foreach( $_POST['items'] as $v ){
-			$items[] = $this->get($this->section, $v);
+	if ($cms_buttons[$_POST['custom_button']]['page']=='list') {
+		if( $_POST['select_all_pages'] or !$_POST['items'] ){
+			$items = $this->get($this->section, $_GET);
+		} else if($_POST['items']) {
+			$_POST['items'];
+	
+			$items = array();
+			foreach( $_POST['items'] as $v ){
+				$items[] = $this->get($this->section, $v);
+			}
 		}
 	}
-	
-	$cms_buttons[$_POST['custom_button']]['handler']($items);
+	if($cms_buttons[$_POST['custom_button']]['handler']) {
+		$cms_buttons[$_POST['custom_button']]['handler']($items);
+	}
 }elseif( $_POST['sms'] ){
 	$users = $this->get($this->section, $_GET);
 	require(dirname(__FILE__).'/sms.php');
@@ -201,6 +204,13 @@ if( $_POST['action']=='email' ){
 
 	$conditions = $_GET;
 	unset($conditions['option']);
+	/*
+	foreach($_GET as $k=>$v) {
+		if (in_array($k, $vars['fields'][$this->section])) {
+			$conditions[$k] = $v;
+		}
+	}
+	*/
 
 	if( in_array('parent',$vars['fields'][$this->section]) ){
 		$parent_field = array_search('parent',$vars['fields'][$this->section]);
@@ -257,13 +267,13 @@ jQuery(document).ready(function() {
 		
 		<button type="button" class="btn btn-default" onclick="toggle_advanced(true); return false;">Advanced search</button>
 		
-		<? if (count($_GET>1)) { ?>
-			<? if ($filter_exists) { ?>
+		<?php if (count($_GET>1)) { ?>
+			<?php if ($filter_exists) { ?>
 			<button type="button" class="btn btn-default delete_filter">Delete filter</button>
-			<? } else { ?>
+			<?php } else { ?>
 			<button type="button" class="btn btn-default save_filter">Save filter</button>
-			<? } ?>
-		<? } ?>
+			<?php } ?>
+		<?php } ?>
 		
 		<br />
 		
@@ -283,10 +293,10 @@ jQuery(document).ready(function() {
 	<td>
 		
 
-		<? if( $parent_field ){ ?>
+		<?php if( $parent_field ){ ?>
 		<h3>
 			<a href="?option=<?=$this->section;?>">Root</a>
-			<?
+			<?php
 			if($_GET[$parent_field]){
 				$parent_id = $_GET[$parent_field];
 
@@ -312,12 +322,12 @@ jQuery(document).ready(function() {
 				foreach( $parents as $k=>$v ){
 			?>
 				&raquo; <a href="?option=<?=$this->section;?>&parent=<?=$k;?>"><?=$v;?></a>
-			<?
+			<?php
 				}
 			}
 			?>
 		</h3>
-		<? } ?>
+		<?php } ?>
 	</td>
 
 </table>
@@ -328,7 +338,7 @@ jQuery(document).ready(function() {
 		<fieldset>
 		<legend>Advanced search</legend>
 		<table class="box" border="0" cellspacing="0" cellpadding="3">
-		<?
+		<?php
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
 			if( in_array($name,$vars["non_searchable"][$this->section]) ){
 				continue;
@@ -338,14 +348,14 @@ jQuery(document).ready(function() {
 
 			$label=ucfirst(spaced($name));
 		?>
-			<? if( $type == 'file' ){ ?>
+			<?php if( $type == 'file' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
-					<input type="checkbox" name="<?=$field_name;?>" value="1" <? if( $_GET[$field_name] ){ ?>checked<? } ?> />
+					<input type="checkbox" name="<?=$field_name;?>" value="1" <?php if( $_GET[$field_name] ){ ?>checked<?php } ?> />
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'select' or $type=='radio' ){
 				$options = $vars['options'][$name];
 				if( !is_array($vars['options'][$name]) ){
@@ -381,7 +391,7 @@ jQuery(document).ready(function() {
 					</select>
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'select-multiple' ){
 				$value=array();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
@@ -411,7 +421,7 @@ jQuery(document).ready(function() {
 					</select>
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'checkboxes' ){
 				$value=array();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
@@ -423,17 +433,17 @@ jQuery(document).ready(function() {
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
                     <div style="max-height: 200px; width: 200px; overflow: scroll">
-    				<?
+    				<?php
     				$is_assoc = is_assoc_array($vars['options'][$name]);
                     foreach( $vars['options'][$name] as  $k=>$v ){
                         $val = $is_assoc ? $k : $v;
                     ?>
-					<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( in_array($k,$_GET[$field_name]) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><br />
-					<? } ?>
+					<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <?php if( in_array($k,$_GET[$field_name]) ){ ?>checked="checked"<?php } ?> /> <?=$v;?></label><br />
+					<?php } ?>
                     </div>
 				</td>
 			</tr>
-			<? }elseif( $type == 'checkbox' or $type == 'deleted' ){ ?>
+			<?php }elseif( $type == 'checkbox' or $type == 'deleted' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
@@ -443,7 +453,7 @@ jQuery(document).ready(function() {
 					</select>
 				</td>
 			</tr>
-			<? }elseif( $type == 'date' or $type=='timestamp' or $type=='month' ){ ?>
+			<?php }elseif( $type == 'date' or $type=='timestamp' or $type=='month' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
@@ -451,17 +461,17 @@ jQuery(document).ready(function() {
 						From&nbsp;
 					</div>
 					<div style="float:left">
-						<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" data-type="date" />
+						<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" data-type="date" autocomplete="off" />
 					</div>
 					<div style="float:left">
 						&nbsp;To&nbsp;
 					</div>
 					<div style="float:left">
-						<input type="text" name="end[<?=$field_name;?>]" value="<?=$_GET['end'][$field_name];?>" size="8" data-type="date" />
+						<input type="text" name="end[<?=$field_name;?>]" value="<?=$_GET['end'][$field_name];?>" size="8" data-type="date" autocomplete="off" />
 					</div>
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'dob' ){
 				for( $i=1; $i<=60; $i++ ){
 					$opts['age'][]=$i;
@@ -481,7 +491,7 @@ jQuery(document).ready(function() {
 					</select>
 				</td>
 			</tr>
-			<? }elseif( $type == 'postcode' ){ ?>
+			<?php }elseif( $type == 'postcode' ){ ?>
 			<tr>
 				<th align="left" valign="top">Distance from <?=$label;?></th>
 				<td>
@@ -494,7 +504,7 @@ jQuery(document).ready(function() {
 					<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="7">
 				</td>
 			</tr>
-			<? }elseif( $type == 'int' or $type=='decimal' ){ ?>
+			<?php }elseif( $type == 'int' or $type=='decimal' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
@@ -509,13 +519,13 @@ jQuery(document).ready(function() {
 					</div>
 				</td>
 			</tr>
-			<? }elseif( $type == 'text' or $type == 'hidden' or $type == 'email' or $type == 'mobile' or ($type=='id' and $vars["settings"][$this->section]['show_id']) ){ ?>
+			<?php }elseif( $type == 'text' or $type == 'hidden' or $type == 'email' or $type == 'mobile' or ($type=='id' and $vars["settings"][$this->section]['show_id']) ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td><input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="50"></td>
 			</tr>
-			<? } ?>
-		<? } ?>
+			<?php } ?>
+		<?php } ?>
 		</table>
 		<br />
 		<p align="center"><button type="submit">Search</button> &nbsp; <button type="button" onclick="toggle_advanced(false)">Cancel</button></p>
@@ -551,7 +561,7 @@ jQuery(document).ready(function() {
 			<th>&nbsp;</th>
 			<th>File column</th>
 		</tr>
-		<?
+		<?php
 		foreach( $fields as $field ){
 			if( $field=='email' ){
 				$style='font-weight:bold;';
@@ -560,7 +570,7 @@ jQuery(document).ready(function() {
 			}
 		?>
 		<tr>
-			<td width="100" style="<?=$style;?>"><?=$field;?><? if( $field=='email' ){ ?> *<? } ?></td>
+			<td width="100" style="<?=$style;?>"><?=$field;?><?php if( $field=='email' ){ ?> *<?php } ?></td>
 			<td width="100">should receive</td>
 			<td>
 				<select id="field_<?=$field;?>" name="fields[<?=$field;?>]" style="width:100px; font-weight:bold;">
@@ -568,7 +578,7 @@ jQuery(document).ready(function() {
 				</select>
 			</td>
 		</tr>
-		<? } ?>
+		<?php } ?>
 		</table>
 		<br />
 		<p>
@@ -594,7 +604,7 @@ jQuery(document).ready(function() {
 	<br />
 </div>
 
-<? require(dirname(__FILE__).'/list.php'); ?>
+<?php require(dirname(__FILE__).'/list.php'); ?>
 
 <br>
 <br>
@@ -606,8 +616,8 @@ jQuery(document).ready(function() {
 		<input type="hidden" name="export" value="1" />
 			<button class="btn btn-default" type="submit">Export</button>
 		</form>
-		<? /*
-		<? if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
+		<?php /*
+		<?php if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
 		<form method="get" style="display:inline" action="http://mail.shiftcreate.com/list/import_subscribers">
 		<input type="hidden" name="source_type" value="xml" />
 		<input type="hidden" name="crm_xml" value="http://<?=$_SERVER['HTTP_HOST'];?><?=$_SERVER['REQUEST_URI'];?>&xml=1" />
@@ -615,23 +625,23 @@ jQuery(document).ready(function() {
 		<input type="hidden" name="crm_password" value="<?=md5($auth->secret_phrase.$_SESSION[$auth->cookie_prefix.'_password']);?>" />
 			<button type="submit">ShiftMail</button>
 		</form>
-		<? } ?>
+		<?php } ?>
 		*/ ?>
-		<? if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
+		<?php if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="shiftmail" value="1">
 			<button class="btn btn-default" type="submit">Email</button>
 		</form>
-		<? } ?>
-		<? if( $vars['settings'][$this->section]['sms'] ){ ?>
+		<?php } ?>
+		<?php if( $vars['settings'][$this->section]['sms'] ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="sms" value="1">
 			<button class="btn btn-default" type="submit">SMS</button>
 		</form>
-		<? } ?>
-		<?
+		<?php } ?>
+		<?php
 		foreach( $cms_buttons as $k=>$button ){
-			if( $this->section==$button['section'] and $button['page']=='list' ){
+			if( $this->section==$button['section'] and $button['page']=='list-all' ){
                 require('includes/button.php');
     		}
     	}
@@ -657,6 +667,6 @@ $("#search_form").submit(function() {
 });
 </script>
 
-<?
+<?php
 }
 ?>

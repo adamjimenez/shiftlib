@@ -1,4 +1,4 @@
-<?
+<?php
 if( !count($vars['labels'][$this->section]) ){
     reset($vars['fields'][$this->section]);
 	$vars['labels'][$this->section][]=key($vars['fields'][$this->section]);
@@ -41,38 +41,38 @@ function export_selected(){
 <input type="hidden" class="action" name="action" id="action" value="">
 <input type="hidden" class="select_all_pages" name="select_all_pages" value="0">
 <input type="hidden" name="custom_button" value="">
-<?
+<?php
 if( $sortable ){
 ?>
 <input type="hidden" class="sortable" name="sortable" value="1">
-<?
+<?php
 }
 ?>
 
-<?
+<?php
 foreach( $where as $k=>$v ){
 ?>
 <input type="hidden" name="<?=$k;?>" value="<?=$v;?>">
-<?
+<?php
 }
 ?>
 
-<? require(dirname(__FILE__).'/includes/list_actions.php'); ?>
+<?php require(dirname(__FILE__).'/includes/list_actions.php'); ?>
 
 <div style="min-height:300px; background:#fff;">
 <table width="100%" cellspacing="0" cellpadding="5">
 <tbody id="items_<?=underscored($this->section);?>">
 <tr>
-	<? if( $sortable ){ ?>
+	<?php if( $sortable ){ ?>
 		<th class="sorting-arrows">
 			<i class="fa fa-arrow-up"></i>
 			<i class="fa fa-arrow-down"></i>
 		</th>
-	<? } ?>
+	<?php } ?>
 	<th width="20" valign="top" align="center" style="text-align:center;">
 		<input type="checkbox" class="toggle_select">
 	</th>
-	<?
+	<?php
 	foreach( $vars['labels'][$this->section] as $k ){
 		$order=underscored('T_'.underscored($this->section).'.'.$k);
 		if( $vars['fields'][$this->section][$k]=='select' or $vars['fields'][$this->section][$k]=='combo' or $vars['fields'][$this->section][$k]=='radio' ){
@@ -84,7 +84,7 @@ foreach( $where as $k=>$v ){
 		}
 	?>
 		<th>
-			<?
+			<?php
 			$label = $vars['label'][$this->section][$k];
 			if(!$label) {
 				$label = ucfirst(str_replace('_', ' ', $k));
@@ -95,13 +95,13 @@ foreach( $where as $k=>$v ){
 				( $vars['fields'][$this->section][$k] == 'select-multiple' or $vars['fields'][$this->section][$k]=='checkboxes' )
 			) ? ucfirst($label) : $p->col($order, ucfirst($label));?>
 		</th>
-	<?
+	<?php
 	}
 	?>
 
-	<? if( $parent_field ){ ?>
+	<?php if( $parent_field ){ ?>
 		<th>&nbsp;</th>
-	<? } ?>
+	<?php } ?>
 </tr>
 <tr class="select_all_row" style="display:none;">
 	<td align="center" colspan="20" bgcolor="#FFFF00" style="text-align:center; background:#FFFF00;">
@@ -113,18 +113,18 @@ foreach( $where as $k=>$v ){
 		<a href="javascript:;" class="clear_all_pages"><?=$p->total;?> items selected. Clear selection</a>
 	</td>
 </tr>
-<?
+<?php
 if( count($vars['content']) ){
 ?>
-<?
+<?php
 foreach( $vars['content'] as $v){
 ?>
-<tr class="draggable list-row" id="tr_<?=$v['id'];?>" <? if($v['read']==='0') { ?>style="font-weight: bold;"<? } ?>>
-	<? if( $sortable ){ ?>
+<tr class="draggable list-row" id="tr_<?=$v['id'];?>" <?php if($v['read']==='0') { ?>style="font-weight: bold;"<?php } ?>>
+	<?php if( $sortable ){ ?>
 		<td valign="top"><div class="handle">&nbsp;</div></td>
-	<? } ?>
+	<?php } ?>
 	<td width="20" valign="top" align="center" style="text-align:center;"><input type="checkbox" name="items[]" value="<?=$v['id'];?>"></td>
-	<?
+	<?php
 	if( is_array($vars['labels'][$this->section]) ){
 		foreach( $vars['labels'][$this->section] as $i=>$k ){
 			$value = $v[underscored($k)];
@@ -174,22 +174,22 @@ foreach( $vars['content'] as $v){
 				*/
 			}
 	?>
-		<td valign="top" <? if( $i==0 ){ ?>style="white-space:nowrap;"<? } ?>>
-			<? if( $i==0 ){ ?>
+		<td valign="top" <?php if( $i==0 ){ ?>style="white-space:nowrap;"<?php } ?>>
+			<?php if( $i==0 ){ ?>
 			<a href="?option=<?=$this->section;?>&view=true&id=<?=$v['id'];?>&<?=$qs;?>">
-			<? } ?>
-			<?
+			<?php } ?>
+			<?php
 			$value=trim($value);
 
 			if( $value!=='' ){
 				if( $vars['fields'][$this->section][$k]=='date' ){
 				?>
-					<? if( $value!='0000-00-00' ){ ?>
+					<?php if( $value!='0000-00-00' ){ ?>
 						<?=dateformat('d/m/Y',$value);?>
-					<? }else{ ?>
+					<?php }else{ ?>
 						&lt;blank&gt;
-					<? } ?>
-				<?
+					<?php } ?>
+				<?php
 				}elseif( $vars['fields'][$this->section][$k] == 'datetime' ){
 					if( $value!='0000-00-00 00:00:00' ){
 						$date=explode(' ',$value);
@@ -197,7 +197,7 @@ foreach( $vars['content'] as $v){
 					}
 				?>
 					<?=$value;?>
-				<?
+				<?php
 				}elseif( $vars['fields'][$this->section][$k] == 'timestamp' ){
 					if( $value!='0000-00-00 00:00:00' ){
 						$date=explode(' ',$value);
@@ -205,7 +205,7 @@ foreach( $vars['content'] as $v){
 					}
 				?>
 					<?=$value;?>
-				<?
+				<?php
 				}elseif( $vars['fields'][$this->section][$k] == 'month' ){
 					if( $value!='0000-00-00' ){
 						$date = explode(' ',$value);
@@ -213,58 +213,58 @@ foreach( $vars['content'] as $v){
 					}
 				?>
 					<?=$value;?>
-				<?
+				<?php
 				}elseif( $vars['fields'][$this->section][$k] == 'dob' ){
 				?>
-					<? if( $value!='0000-00-00' ){ ?>
+					<?php if( $value!='0000-00-00' ){ ?>
 						<?=dateformat('d/m/Y',$value);?> (<?=age($value);?>)
-					<? }else{ ?>
+					<?php }else{ ?>
 						&lt;blank&gt;
-					<? } ?>
-				<?
+					<?php } ?>
+				<?php
 				}elseif( $vars['fields'][$this->section][$k]=='file' ){
 					if( $value ){
 						$file=sql_query("SELECT * FROM files WHERE id='".escape($value)."'");
 					}
 				?>
-					<? if( $value ){ ?>
+					<?php if( $value ){ ?>
 
-					<?
+					<?php
 						$image_types=array('jpg','jpeg','gif','png');
 						if( in_array(file_ext($file[0]['name']),$image_types) ){
 					?>
 						<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=100&h=100" /><br />
-					<?
+					<?php
 						}
 					?>
 					<?=$file[0]['name'];?>
-					<? } ?>
-				<?
+					<?php } ?>
+				<?php
 				}elseif( $vars['fields'][$this->section][$k]=='select' or $vars['fields'][$this->section][$k]=='combo' or $vars['fields'][$this->section][$k]=='radio' ){
 					if( !is_array($vars['options'][$k]) ){
 						?>
 							<?=$v[underscored($k).'_label'];?>
-						<?
+						<?php
 					}else{
 						if( is_assoc_array($vars['options'][$k]) ){
 						?>
 							<?=$vars['options'][$k][$value];?>
-						<?
+						<?php
 						}else{
 						?>
 							<?=$value;?>
-						<?
+						<?php
 						}
 					}
 				}elseif( $vars['fields'][$this->section][$k]=='checkbox' ){
 				?>
 					<?=$value ? 'yes' : 'no';?>
-				<?
+				<?php
 				}elseif( $vars['fields'][$this->section][$k]=='phpupload' ){
 				?>
 					<?=image($value,100,100);?><br />
 					<label><?=$value;?></label>
-				<?
+				<?php
 				}elseif( $vars['fields'][$this->section][$k]=='phpuploads' ){
 					$images = explode("\n", $value);
 					
@@ -272,69 +272,69 @@ foreach( $vars['content'] as $v){
 				?>
 					<?=image(trim($image), 100, 100);?><br />
 					<label><?=$image;?></label><br>
-				<?
+				<?php
 					}
 				}elseif( $vars['fields'][$this->section][$k]=='textarea' ){
 				?>
 					<?=truncate($value,100);?>
 
-				<?
+				<?php
 				}else{
 				?>
 					<?=$value;?>
-				<?
+				<?php
 				}
 			}else{
 			?>
 			&lt;blank&gt;
-			<?
+			<?php
 			}
 			?>
-			<? if( $i==0 ){ ?>
+			<?php if( $i==0 ){ ?>
 			</a>
 			<a href="?option=<?=$this->section;?>&edit=true&id=<?=$v['id'];?>&<?=$qs;?>">
 			    <i class="fa fa-pencil-square-o"></i>
 			</a>
-			<? } ?>
+			<?php } ?>
 		</td>
-	<?
+	<?php
 		}
 	}
 	?>
 
-	<?
+	<?php
 	if( is_array($vars['cols'][$this->section]) ){
 		foreach( $vars['cols'][$this->section] as $title=>$link ){
 	?>
 		<td valign="top">
 			<a href="<?=$link;?><?=$v['id'];?>"><?=$title;?></a>
 		</td>
-	<?
+	<?php
 		}
 	}
 	?>
 
-	<? if( $parent_field ){ ?>
+	<?php if( $parent_field ){ ?>
 		<td valign="top">
 			<a href="?option=<?=$_GET['option'];?>&<?=underscored($parent_field);?>=<?=$v['id'];?>">Children</a>
 		</td>
-	<? } ?>
+	<?php } ?>
 </tr>
-<?
+<?php
 	}
 }else{
 ?>
 <tr>
 	<td colspan="20" align="center" style="text-align:center;">no results found</td>
 </tr>
-<?
+<?php
 }
 ?>
 </tbody>
 </table>
 </div>
 
-<? require(dirname(__FILE__).'/includes/list_actions.php'); ?>
+<?php require(dirname(__FILE__).'/includes/list_actions.php'); ?>
 
 </form>
 </div>

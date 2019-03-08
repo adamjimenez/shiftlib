@@ -77,28 +77,6 @@ $languages=array();
 
 $vars["change_prefs"]=false;
 
-$email_templates=array(
-	"Password Reminder"=>'Dear {$name},
-
-    You have requested a password reminder for your {$domain} member account.
-
-	Your password is: {$password}
-
-	Kind regards
-
-	The {$domain} Team',
-	"Registration Confirmation"=>'Dear {$name},
-
-    Thank you for registering as a member of {$domain}.
-
-    To login to your new member account, visit http://{$domain}/login and login using the following information:
-
-    Username: {$email}
-    Password: {$password}
-
-	Kind regards
-	The {$domain} Team',
-);
 $vars["email_templates"]=false;
 
 // sections in menu

@@ -258,7 +258,7 @@ class shop{
 					if( $k=='id' or $k=='product' or $k=='quantity' or $k=='image' or $k=='cost' or $k=='position' or $v=='' ){
 						continue;
 					}
-					$extras.=ucfirst(spaced($k)).': '.$v."\n";
+					$extras .= ucfirst(spaced($k)).': '.$v."\n";
 				}
 			}
 
@@ -887,8 +887,13 @@ class shop{
 
 		$details='';
 		foreach( $items as $k=>$item ){
-			$details.=$item['name'].' x '.$item['quantity'].' @ £'.$item['cost']."\n"
-			.$item['extras']."\n\n";
+			$details .= $item['name'].' x '.$item['quantity'].' £'.$item['cost'];
+			
+			if ($item['extras']) {
+				$details .= ' ('.$item['extras'].')';
+			}
+				
+			$details .= "\n";
 		}
 
 		try {

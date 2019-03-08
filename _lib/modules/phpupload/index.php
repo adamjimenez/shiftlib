@@ -152,7 +152,11 @@ if($_FILES) {
     if (!$chunking || filesize("{$filePath}.part") >= $_REQUEST["total"]) {
     	// Strip the temp .part suffix off
     	rename("{$filePath}.part", $filePath);
+    	
     }
+    
+    // rotate
+    imageorientationfix($filePath);
 
     // Return Success JSON-RPC response
     $result['file'] = $filePath;

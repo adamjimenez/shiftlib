@@ -1,4 +1,4 @@
-<?
+<?php
 if( $auth->user['admin'] ){
 	redirect('/admin');
 }
@@ -201,16 +201,16 @@ body {
     <form class="login-form validate" method="post" id="login_form" action="/admin?option=login">
         <input type="hidden" name="login" value="1">
       <input type="text" name="email" id="email" placeholder="username"/>
-          <? if( in_array('email',$auth->errors) ){ ?>
+          <?php if( in_array('email',$auth->errors) ){ ?>
               <p style="color:red;">Username is required</p>
               <br>
-          <? } ?>
+          <?php } ?>
           
       <input type="password" name="password" id="password" placeholder="password"/>
-      <? if( in_array('password',$auth->errors) ){ ?>
+      <?php if( in_array('password',$auth->errors) ){ ?>
       <p style="color:red;">Password is required</p>
       <br>
-      <? } ?>
+      <?php } ?>
       
       
       <button>login</button>

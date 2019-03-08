@@ -27,9 +27,9 @@ $(function() {
 		<button type="button" class="new_folder">New folder</button>\
 		<button type="button" class="download" disabled>Download</button>\
 		<button type="button" class="rotate_left" disabled><i class="fa fa-undo" aria-hidden="true"></i></button>\
-		<button type="button" class="rotate_right" disabled><i class="fa fa-repeat" aria-hidden="true"></i></button>\
-		<button type="button" class="refresh"><i class="fa fa-refresh" aria-hidden="true"></i></button>\
-		<button type="button" class="level_up" disabled><i class="fa fa-level-up" aria-hidden="true"></i></button>\
+		<button type="button" class="rotate_right" disabled><i class="fas fa-redo" aria-hidden="true"></i></button>\
+		<button type="button" class="refresh"><i class="fas fa-sync" aria-hidden="true"></i></button>\
+		<button type="button" class="level_up" disabled><i class="fas fa-level-up-alt" aria-hidden="true"></i></button>\
 		<button type="button" class="enter" disabled>OK</button>\
 		<input type="text" name="search" class="search">\
 	</div>\

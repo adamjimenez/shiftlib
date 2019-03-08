@@ -1,4 +1,4 @@
-<?
+<?php
 global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $live_site;
 
 function array_to_csv($array)
@@ -174,18 +174,18 @@ window.onload=init;
 <div class="box">
 <table id="options" width="400">
 <tbody>
-<?
+<?php
 foreach( $vars['options'] as $opt=>$val ){
 	$count['options']++;
 ?>
 <tr>
 	<th valign="top">
 		<input type="text" name="options[<?=$count['options'];?>][name]" value="<?=$opt;?>" /><br />
-		<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <? if(is_array($val)){ ?>checked="checked"<? } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
-		<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <? if(!is_array($val)){ ?>checked="checked"<? } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
+		<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <?php if(is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
+		<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <?php if(!is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
 	</th>
 	<td>
-		<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <? if(!is_array($val)){ ?>style="display:none;"<? } ?>><?
+		<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <?php if(!is_array($val)){ ?>style="display:none;"<?php } ?>><?php
 			if( is_assoc_array($val) ){
 				$options='';
 
@@ -198,12 +198,12 @@ foreach( $vars['options'] as $opt=>$val ){
 				print implode("\n",$val);
 			}
 		;?></textarea>
-		<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <? if(is_array($val)){ ?>style="display:none;"<? } ?>>
+		<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <?php if(is_array($val)){ ?>style="display:none;"<?php } ?>>
 			<?=html_options($section_opts,$val);?>
 		</select>
 	</td>
 </tr>
-<?
+<?php
 }
 ?>
 </tfoot>

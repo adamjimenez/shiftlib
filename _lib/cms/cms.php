@@ -1,21 +1,4 @@
 <?php
-function send_password_information()
-{
-	global $auth;
-
-	$user = sql_query("SELECT * FROM ".$auth->table." WHERE id='".escape($_GET['id'])."'", 1);
-
-	if( !$user ){
-		$_SESSION['message'] = 'Email address is not in use.';
-		return false;
-	}
-
-	$auth->forgot_success = false;
-	$auth->forgot_password($user['email']);
-
-	$_SESSION['message'] = 'Password details sent';
-}
-
 function send_email_preview(){
     global $auth, $cms;
 
@@ -75,13 +58,6 @@ class cms{
 		global $cms_buttons, $auth, $vars;
 
 		$cms_buttons[] = array(
-			'section'=>'users',
-			'page'=>'view',
-			'label'=>'Send Password Information',
-			'handler'=>'send_password_information'
-		);
-
-		$cms_buttons[] = array(
 			'section'=>'email templates',
 			'page'=>'view',
 			'label'=>'Send Preview',
@@ -131,7 +107,7 @@ class cms{
 			if($i==0){
 				$j=0;
 				foreach($row as $k=>$v){
-					$data.='"'.$k.'",';
+					$data.='"'.spaced($k).'",';
 					$headings[$j]=$k;
 				}
 				$data = substr($data,0,-1);
@@ -311,13 +287,13 @@ class cms{
 		if( is_numeric($id) ){
 			$where[] = "T_$table.".$field_id."='".escape($id)."'";
 		}
+		
+		if( in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id and !$conditions['id'] ){
+			$where[] = "T_$table.deleted = 0";
+		}
 
 		if( in_array('language', $vars['fields'][$section]) and $language=='en' ){
 			$where[] = "`translated_from`='0'";
-		}
-		
-		if( in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) ){
-			$where[] = "`deleted`='0'";
 		}
 
 		if( is_array($conditions) ){
@@ -387,10 +363,12 @@ class cms{
 								$start = $conditions[$field_name];
 								$end = $conditions['end'][$field_name];
 								
-								$where[] = "(T_".$table.".$field_name > '".$start."' AND T_".$table.".$field_name < '".$end."')";
+								$where[] = "(T_".$table.".$field_name >= '".$start."' AND T_".$table.".$field_name <= '".$end."')";
 							}elseif( $conditions['func'][$field_name] ){
 								$where[] = "DATE_FORMAT(T_$table.".$field_name.", '%Y-%m-%d') ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d', $value))."'";
 							}
+						break;
+						case 'time':
 						break;
 						case 'dob':
 							if( is_numeric($value) or is_numeric($conditions['func'][$field_name]) ){
@@ -558,7 +536,7 @@ class cms{
 			$having_str = "HAVING \n".substr($having_str,0,-5);
 		}
 
-		if( in_array('select',$vars['fields'][$section]) or in_array('combo',$vars['fields'][$section]) or in_array('radio',$vars['fields'][$section]) ){
+		if( in_array('select', $vars['fields'][$section]) or in_array('combo',$vars['fields'][$section]) or in_array('radio',$vars['fields'][$section]) ){
 			$selects = array_keys($vars['fields'][$section], "select");
 			$radios = array_keys($vars['fields'][$section], "radio");
 			$combos = array_keys($vars['fields'][$section], "combo");
@@ -569,7 +547,7 @@ class cms{
 				if( !is_array($vars['options'][$key]) ){
 					$option_table = underscored($vars['options'][$key]);
 
-					$join_id = array_search('id',$vars['fields'][$vars['options'][$key]]);
+					$join_id = array_search('id', $vars['fields'][$vars['options'][$key]]);
 
 					$joins .= "
 						LEFT JOIN $option_table T_".underscored($key)." ON T_".underscored($key).".$join_id=T_$table.".underscored($key)."
@@ -723,7 +701,10 @@ class cms{
 			$group_by_str
 			$having_str
 			";
-			//debug($query);
+			
+			if ($_GET['debug'] and $auth->user['admin']==1) {
+				debug($query);
+			}
 
 			if( $return_query===true ){
 				return $query;
@@ -1000,11 +981,9 @@ class cms{
 		return $parents;
 	}
 
-	function get_field($name, $attribs='', $separator=null, $where = false)
+	function get_field($name, $attribs='', $placeholder = '', $separator=null, $where = false)
 	{
 		global $vars, $id, $strs, $cms_config;
-
-		$placeholder = '';
 
 		if( $vars['fields'][$this->section][spaced($name)] ){
             $name = spaced($name);
@@ -1044,42 +1023,42 @@ class cms{
 			case 'page-name':
 			case 'tel':
 		?>
-			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
+			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'hidden':
 		?>
-			<input type="hidden" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
+			<input type="hidden" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'int':
 		?>
-			<input type="number" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
+			<input type="number" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'coords':
 		?>
-			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?> placeholder="coordinates">
+			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="50" <?=$attribs;?> placeholder="coordinates">
 		<?php
 			break;
 			case 'email':
 		?>
-			<input type="email" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs;?>>
+			<input type="email" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'url':
 		?>
-			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
+			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'postcode':
 		?>
-			<input type="text" name="<?=$field_name;?>" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> size="10" <?=$attribs;?>>
+			<input type="text" name="<?=$field_name;?>" value="<?=$value;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<?php } ?> size="10" <?=$attribs;?>>
 		<?php
 			break;
 			case 'mobile':
 		?>
-			<input type="text" name="<?=$field_name;?>" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> size="14" <?=$attribs;?>>
+			<input type="text" name="<?=$field_name;?>" value="<?=$value;?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="14" <?=$attribs;?>>
 		<?php
 			break;
 			case 'password':
@@ -1089,31 +1068,31 @@ class cms{
 			        $value = '';
 			    }
 		?>
-			<input type="password" name="<?=$field_name;?>" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
+			<input type="password" name="<?=$field_name;?>" value="<?=$value;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?>>
 		<?php
 			break;
 			case 'textarea':
 		?>
-			<textarea name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<? } ?> <?=$attribs ? $attribs : 'class="autogrow"';?>><?=$value;?></textarea>
+			<textarea name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $placeholder ){ ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs ? $attribs : 'class="autogrow"';?>><?=$value;?></textarea>
 		<?php
 			break;
 			case 'editor':
 				//$value = mb_detect_encoding($value, "UTF-8") == "UTF-8" ? $value : utf8_encode($value);
 		?>
-			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
+			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
 		<?php
 			break;
 			case 'file':
 				$file=sql_query("SELECT * FROM files WHERE id='".escape($value)."'",1);
 		?>
-			<? if( $value ){ ?>
+			<?php if( $value ){ ?>
 				<input type="hidden" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=$value;?>">
-				<? /*<a href="/_lib/cms/file.php?f=<?=$value;?>"><?=$file['name'];?></a> <?=file_size($file['size']);?> */?>
+				<?php /*<a href="/_lib/cms/file.php?f=<?=$value;?>"><?=$file['name'];?></a> <?=file_size($file['size']);?> */?>
 				<?=$file['name'];?>
 				<a href="javascript:;" onClick="clearFile('<?=$field_name;?>')">clear</a>
-			<? }else{ ?>
-				<input type="file" id="<?=$field_name;?>" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?> />
-			<? } ?>
+			<?php }else{ ?>
+				<input type="file" id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?> />
+			<?php } ?>
 		<?php
 			break;
 			case 'phpupload':
@@ -1132,26 +1111,26 @@ class cms{
 					foreach( $vars['options'][$name] as $k=>$v ) { 
 						$val = $assoc ? $k : $v; 
 					?>
-					<label <?=$attribs;?>><input type="radio" name="<?=$field_name;?>" value="<?=$val;?>" <? if( $readonly ){ ?>disabled<? } ?> <? if( isset($value) and $val==$value ){ ?>checked="checked"<? } ?> <?=$attribs;?>> <?=$v;?> &nbsp;</label><?=$separator;?>
-					<? 
+					<label <?=$attribs;?>><input type="radio" name="<?=$field_name;?>" value="<?=$val;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( isset($value) and $val==$value ){ ?>checked="checked"<?php } ?> <?=$attribs;?>> <?=$v;?> &nbsp;</label><?=$separator;?>
+					<?php 
 					}
 				} elseif($type=='combo') {
 			?>
-				<input type="text" name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?> value="<?=$value;?>" autocomplete="off" class="combo">
-			<?
+				<input type="text" name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?> value="<?=$value;?>" autocomplete="off" class="combo">
+			<?php
 				} else {
 					if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
 					?>
 					<div class="chained" data-name="<?=$field_name;?>" data-section="<?=$vars['options'][$name];?>" data-value="<?=$value;?>"></div>
-					<?
+					<?php
 					} else {
 						$vars['options'][$name] = $this->get_options($name, $where);
 					?>
-					<select name="<?=$field_name;?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?>>
+					<select name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?>>
 					<option value=""><?=$placeholder ?: 'Choose';?></option>
 						<?=html_options($vars['options'][$name], $value);?>
 					</select>
-					<?
+					<?php
 					}
 				}
 			break;
@@ -1241,13 +1220,13 @@ class cms{
 
 				if( $type == 'select-multiple' ){
 		?>
-			<select name="<?=$field_name;?>[]" multiple="multiple" <? if( $readonly ){ ?>disabled<? } ?> size="10" style="width:100%">
+			<select name="<?=$field_name;?>[]" multiple="multiple" <?php if( $readonly ){ ?>disabled<?php } ?> size="10" style="width:100%">
 				<?=html_options($vars['options'][$name], $value);?>
 			</select>
 		<?php
 			}else{
 		?>
-				<? /*
+				<?php /*
                 Select <a href="javascript:;" onclick="selectAll('<?=$field_name;?>');">All</a>, <a href="javascript:;" onclick="selectNone('<?=$field_name;?>');">None</a><br />
                 */
 
@@ -1258,8 +1237,8 @@ class cms{
                 foreach( $vars['options'][$name] as  $k=>$v ){
                     $val = $is_assoc ? $k : $v;
                 ?>
-    			    <li><label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( $readonly ){ ?>readonly<? } ?> <? if( in_array($val, $value) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label></li>
-				<?
+    			    <li><label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$val;?>" <?php if( $readonly ){ ?>readonly<?php } ?> <?php if( in_array($val, $value) ){ ?>checked="checked"<?php } ?> /> <?=$v;?></label></li>
+				<?php
                 }
                 
                 print '</ul>';
@@ -1283,7 +1262,7 @@ class cms{
 					$parents[$row['id']]=$row[$label];
 				}
 		?>
-				<select name="<?=$field_name;?>" <? if( $readonly ){ ?>readonly<? } ?>>
+				<select name="<?=$field_name;?>" <?php if( $readonly ){ ?>readonly<?php } ?>>
 				<option value=""></option>
 				<?=html_options($parents, $value);?>
 				</select>
@@ -1291,7 +1270,7 @@ class cms{
 			break;
 			case 'checkbox':
 		?>
-			<input type="checkbox" name="<?=$field_name;?>" value="1" <? if( $readonly ){ ?>disabled<? } ?> <? if( $value ){ ?>checked<? } ?>  <?=$attribs;?> />
+			<input type="checkbox" name="<?=$field_name;?>" value="1" <?php if( $readonly ){ ?>disabled<?php } ?> <?php if( $value ){ ?>checked<?php } ?>  <?=$attribs;?> />
 		<?php
 			break;
 			case 'files':
@@ -1302,26 +1281,29 @@ class cms{
 		?>
 
 			<ul class="files">
-				<?
+				<?php
 				if( is_array($value) ){
 					foreach( $value as $key=>$val ){
 						$file=sql_query("SELECT * FROM files WHERE id='".escape($val)."'");
 
 				?>
 				<li>
-				<? if( $file ){ ?>
-					<input type="hidden" name="<?=$field_name;?>[]" value="<?=$val;?>" <? if( $readonly ){ ?>readonly<? } ?>>
-					<a href="/_lib/cms/file.php?f=<?=$val;?>"><?=$file[0]['name'];?></a>
+				<?php if( $file ){ ?>
+					<input type="hidden" name="<?=$field_name;?>[]" value="<?=$val;?>" <?php if( $readonly ){ ?>readonly<?php } ?>>
+					<a href="/_lib/cms/file.php?f=<?=$val;?>">
+						<img src="/_lib/cms/file.php?f=<?=$val;?>" style="max-width: 100px; max-height: 100px;"><br>
+						<?=$file[0]['name'];?>
+					</a>
 					<a href="javascript:;" class="link" onClick="delItem(this)">Delete</a>
-				<? } ?>
+				<?php } ?>
 				</li>
-				<?
+				<?php
 					}
 				}
 				?>
 
 				<li>
-					<input type="file" name="<?=$field_name;?>[]" multiple="multiple" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs;?> />
+					<input type="file" name="<?=$field_name;?>[]" multiple="multiple" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?> />
 				</li>
 			</ul>
 		<?php
@@ -1333,27 +1315,27 @@ class cms{
 			break;
 			case 'color':
 		?>
-			<input type="color"  name="<?=$field_name;?>" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> size="6" <?=$attribs;?> />
+			<input type="color"  name="<?=$field_name;?>" value="<?=$value;?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="6" <?=$attribs;?> />
 		<?php
 			break;
 			case 'date':
 		?>
-			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> autocomplete="off" />
 		<?php
 			break;
 			case 'month':
 		?>
-			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'dob':
 		?>
-			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && $value!='0000-00-00') ? $value : '';?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
 		<?php
 			break;
 			case 'time':
 		?>
-			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value!='00:00:00') ? substr($value,0,-3) : '';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ?: '';?> />
+			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value!='00:00:00') ? substr($value,0,-3) : '';?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs ?: '';?> />
 		<?php
 			break;
 			case 'datetime':
@@ -1362,19 +1344,14 @@ class cms{
 				$date = explode(' ', $value);
 			}
 		?>
-			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? $date[0] : '';?>" <? if( $readonly ){ ?>disabled<? } ?> size="10" <?=$attribs ? $attribs : '';?> />
-			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? substr($date[1], 0, 5) : '00:00:00';?>" <? if( $readonly ){ ?>disabled<? } ?> <?=$attribs ? $attribs : '';?> />
-		<?php
-			break;
-			case 'number':
-		?>
-			<input type="text" name="<?=$field_name;?>" onKeyPress="return numbersonly(event)" value="<?=$value;?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?>>
+			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and $date[0]!='0000-00-00') ? $date[0] : '';?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : '';?> />
+			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and $date[1]!='00:00:00') ? substr($date[1], 0, 5) : '00:00:00';?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs ? $attribs : '';?> />
 		<?php
 			break;
 			case 'rating':
 			case 'avg-rating':
 		?>
-			<select name="<?=$field_name;?>" class="rating" data-section="<?=$this->section;?>" data-item="<?=$this->content['id'];?>" <? if($type=='avg-rating'){?>data-avg='data-avg'<?}?> <?=$attribs;?>>
+			<select name="<?=$field_name;?>" class="rating" data-section="<?=$this->section;?>" data-item="<?=$this->content['id'];?>" <?php if($type=='avg-rating'){?>data-avg='data-avg'<?php } ?> <?=$attribs;?>>
 			    <option value="">Choose</option>
 				<?=html_options($this->opts['rating'], $value, true);?>
 			</select>
@@ -1459,7 +1436,7 @@ class cms{
 		}elseif( $type == 'phpupload' ){ ?>
 			<img src="/_lib/modules/phpupload/?func=preview&file=<?=$value;?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
 			<label id="<?=$name;?>_label"><?=$value;?></label>
-		<?
+		<?php
 		}elseif( $type == 'select' or $type == 'combo' or $type == 'radio' or $type == 'select-distance' ){
 
 			if( !is_array($vars['options'][$name]) ){
@@ -1474,7 +1451,7 @@ class cms{
 				}
 			}
 		?>
-		<?
+		<?php
 		}elseif( $type == 'parent' ){
 			reset($vars['fields'][$this->section]);
 
@@ -1484,7 +1461,7 @@ class cms{
 
 			$value = '<a href="?option='.escape($this->section).'&view=true&id='.$value.'">'.($row[0][$field]).'</a>';
 		?>
-		<? }elseif( $type == 'checkbox' ){
+		<?php }elseif( $type == 'checkbox' ){
 			$value=$value ? 'Yes' : 'No';
 		}elseif( $type == 'files' ){
 
@@ -1493,33 +1470,35 @@ class cms{
 		}
 		?>
 				<ul id="<?=$name;?>_files" class="files">
-				<?
+				<?php
 				$count=0;
 
 				if( is_array($value) ){
-					foreach( $value as $key=>$val ){
+					$array = $value;
+					foreach( $array as $key=>$val ){
 						$count++;
 
-						if( $value ){
-							$file=sql_query("SELECT * FROM files WHERE id='".escape($val)."'");
+						if( $val ){
+							$file = sql_query("SELECT * FROM files WHERE id='".escape($val)."'");
 						}
-				?>
-				<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
-				<a href="/_lib/cms/file.php?f=<?=$file[0]['id'];?>"><?=$file[0]['name'];?></a><br />
-				<br />
-				<?
+						
+						if( in_array(file_ext($file[0]['name']),$image_types) ){
+							$value = '<img src="http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file_preview.php?f='.$file[0]['id'].'&w=320&h=240" id="'.$name.'_thumb" /><br />';
+						}
+						$value .= '<a href="http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'">'.$file[0]['name'].'</a> <span style="font-size:9px;">'.file_size($file[0]['size']).'</span><br><br>';
+				
 					}
 				}
 				?>
 				</ul>
-		<? }elseif( $type == 'phpuploads' ){
+		<?php }elseif( $type == 'phpuploads' ){
 
 			if( $value ){
 				$value = explode("\n", $value);
 			}
 		?>
 				<ul id="<?=$name;?>_files">
-				<?
+				<?php
 				$count=0;
 
 				if( is_array($value) ){
@@ -1530,12 +1509,12 @@ class cms{
 					<img src="/_lib/modules/phpupload/?func=preview&file=<?=$val;?>" id="file_<?=$name;?>_<?=$count;?>_thumb" /><br />
 					<label id="file_<?=$name;?>_<?=$count;?>_label"><?=$val;?></label>
 				</li>
-				<?
+				<?php
 					}
 				}
 				?>
 				</ul>
-		<?
+		<?php
 		}elseif( $type == 'date' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$value = dateformat('d/m/Y', $value);
@@ -1564,18 +1543,18 @@ class cms{
 		}elseif( $type == 'number' ){
 		?>
 			<?=number_format($value, 2);?>
-		<? 
+		<?php 
 		}elseif( $type == 'rating' ){
 		?>
 			<select name="<?=$field_name;?>" class="rating" disabled="disabled">
 			    <option value="">Choose</option>
 				<?=html_options($this->opts['rating'], $value, true);?>
 			</select>
-		<?
+		<?php
 		}elseif( $type == 'coords' ){
 		?>
-			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <? if( $readonly ){ ?>disabled<? } ?> size="50" <?=$attribs;?>>
-		<?
+			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="50" <?=$attribs;?>>
+		<?php
 		}
 
 		if( $return ){
@@ -1771,6 +1750,8 @@ class cms{
             $mail->setHeader('Reply-to', $_POST["email"]);
         }
 
+		$mail->setHTMLCharset('UTF-8');
+		$mail->setHeadCharset('UTF-8');
 		$mail->setHtml($msg);
 		$mail->setFrom('auto@'.$_SERVER["HTTP_HOST"]);
 		$mail->setSubject($subject);
@@ -1956,9 +1937,11 @@ class cms{
 		}
 
 		//antispam
+		/*
 		if( $data['nospam']!='1' ){
 		    $errors[] = 'nospam';
 		}
+		*/
 
 		if( count($errors) ){
 			$errors = array_values(array_unique($errors));
@@ -1969,7 +1952,7 @@ class cms{
 
 	function build_query($field_arr,$data)
 	{
-		global $vars, $languages,$auth;
+		global $vars, $languages, $auth;
 
 		$column_data = sql_query("SHOW COLUMNS FROM `".$this->table."`");
 
@@ -2022,10 +2005,12 @@ class cms{
 
 				if( $v=='password' ){
 				    //leave passwords blank to keep
+//print var_dump($data);exit;
+//print var_dump($name);exit;
+//print var_dump($auth->hash_password);exit;
 				    if($data[$name]==''){
 					    continue;
 				    }
-
             		if( $auth->hash_password ){
             			$data[$name] = $auth->create_hash($data[$name]);
             		}
@@ -2341,7 +2326,7 @@ class cms{
 					}
 					
 					foreach($updated_row as $k=>$v) {
-						if (isset($row[$k]) and $row[$k]!==$v) {
+						if ($row[$k] != $v) {
 							$details.= $k.'='.$v."\n";
 						}
 					}
@@ -2592,24 +2577,6 @@ class cms{
 
 			$this->template('email_templates_edit.php',true);
 		}
-	}
-
-	function preferences()
-	{
-		global $vars, $auth_config, $auth;
-
-		if( isset($_POST['save']) ){
-			if( $auth->user['admin']==1 ){
-				sql_query("UPDATE  ".$auth_config['table']." SET password='".addslashes($_POST['password'])."' WHERE id='".escape($auth->user['id'])."'");
-				$_SESSION['password']=$_POST['password'];
-
-				$_SESSION['message']='Password saved';
-			}else{
-				$_SESSION['message']='Permission denied';
-			}
-		}
-
-		$this->template('preferences.php',true);
 	}
 
 	function logout()

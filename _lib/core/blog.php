@@ -5,7 +5,7 @@ class blog{
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
 
-		$this->table_categories = $options['table_categories'] ?: 'categories';
+		$this->table_categories = $options['table_categories'] ?: 'blog_categories';
 
 		$this->category_field = array_search($this->table_categories, $opts);
 

@@ -23,7 +23,7 @@ class txtlocal extends sms
 
 		// Prepare data for POST request
 		$data = "uname=".$this->username."&pword=".$this->password."&message=".$message."&from=". $this->originator."&selectednums=".$selectednums."&info=".$info."&test=".$test."&custom=".$this->sent_id; // Send the POST request with cURL
-		$ch = curl_init('http://www.txtlocal.com/sendsmspost.php');
+		$ch = curl_init('https://www.txtlocal.com/sendsmspost.php');
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -48,12 +48,15 @@ class txtlocal extends sms
 	{
 		// Prepare data for POST request
 		$data = "uname=".$this->username."&pword=".$this->password; // Send the POST request with cURL
-		$ch = curl_init('http://www.txtlocal.com/getcredits.php');
+		$ch = curl_init('https://www.txtlocal.com/getcredits.php');
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$credits = curl_exec($ch); //This is the number of credits you have left
 		curl_close($ch);
+
+
+print var_dump($credits); exit;
 
 		return $credits;
 	}

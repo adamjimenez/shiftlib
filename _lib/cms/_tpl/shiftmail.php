@@ -1,4 +1,4 @@
-<?
+<?php
 global $mailer_config;
 
 require('_lib/modules/mailer/mailer.php');
@@ -67,7 +67,7 @@ if( $_POST['message'] ){
 }elseif( $_POST['users'] and count($_POST['users'])>$credits ){
 ?>
 <p>Insufficient credits. <a href="http://account.shiftcreate.com/order/?p=credits" target="_blank">Buy some more</a> or select fewer recipients.</p>
-<?
+<?php
 }else{
 
 ?>
@@ -80,7 +80,7 @@ email_templates=<?=json_encode($email_templates);?>;
 <h1>Send Email</h1>
 
 <p>Currently have <strong><?=$credits;?></strong> credits remaining</p>
-<p>About to send <?=count($valid_users);?> email<? if( count($users)>1 ){ ?>s<? } ?></p>
+<p>About to send <?=count($valid_users);?> email<?php if( count($users)>1 ){ ?>s<?php } ?></p>
 <br />
 
 <form method="post" id="form">
@@ -105,6 +105,6 @@ Message<br />
 </form>
 
 </div>
-<?
+<?php
 }
 ?>

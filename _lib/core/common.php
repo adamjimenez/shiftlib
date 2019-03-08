@@ -5,7 +5,7 @@ error_reporting(E_ALL ^ E_NOTICE);
 ini_set('error_reporting', E_ALL ^ E_NOTICE);
 
 if( $_SERVER['REMOTE_ADDR']==$debug_ip ){
-    ini_set('display_errors', '1');
+	ini_set('display_errors', '1');
 	ini_set('display_startup_errors', '1');
 }else{
 	ini_set('display_errors', '0');
@@ -18,14 +18,14 @@ register_shutdown_function('shutdown');
 ini_set('include_path', '.:/usr/share/pear/:');
 
 if (get_magic_quotes_gpc()) {
-    function stripslashes_gpc(&$value)
-    {
-        $value = stripslashes($value);
-    }
-    array_walk_recursive($_GET, 'stripslashes_gpc');
-    array_walk_recursive($_POST, 'stripslashes_gpc');
-    array_walk_recursive($_COOKIE, 'stripslashes_gpc');
-    array_walk_recursive($_REQUEST, 'stripslashes_gpc');
+	function stripslashes_gpc(&$value)
+	{
+		$value = stripslashes($value);
+	}
+	array_walk_recursive($_GET, 'stripslashes_gpc');
+	array_walk_recursive($_POST, 'stripslashes_gpc');
+	array_walk_recursive($_COOKIE, 'stripslashes_gpc');
+	array_walk_recursive($_REQUEST, 'stripslashes_gpc');
 }
 
 function imagecreatefromfile($path) {
@@ -38,7 +38,7 @@ function imagecreatefromfile($path) {
 		case 'image/png':
 			$img = imagecreatefrompng($path);
 			//imagealphablending($img, true);
-            imagesavealpha($img, true);
+			imagesavealpha($img, true);
 		break;
 		case 'image/gif':
 			$img = imagecreatefromgif($path);
@@ -47,10 +47,29 @@ function imagecreatefromfile($path) {
 			return false;
 
 			$img = imagecreatefromstring(file_get_contents($path));
-	    break;
+		break;
 	}
 	
 	return $img;
+}
+
+function imageorientationfix($path) {
+	$exif = exif_read_data($path);
+	$orientation = $exif['Orientation'];
+	
+	$img = imagecreatefromfile($path);
+	switch($orientation) {
+		case 3:
+			$img = imagerotate($img, 180, 0);
+		break;
+		case 6:
+			$img = imagerotate($img, -90, 0);
+		break;
+		case 8:
+			$img = imagerotate($img, 90, 0);
+		break;
+	}
+	return imagejpeg($img, $path, 90);
 }
 
 function imagefile($img, $path) {
@@ -69,35 +88,35 @@ function imagefile($img, $path) {
 
 function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 {
-    $file = trim($file);
+	$file = trim($file);
 
-    if( !$file ){
-        return false;
-    }
+	if( !$file ){
+		return false;
+	}
 
-    if( starts_with($file, '//') ){
-        $file = 'http:'.$file;
-        return $file;
-    }
-    
-    if (is_numeric($file)) {
-    	/*
-    	$row = sql_query("SELECT * FROM files WHERE
+	if( starts_with($file, '//') ){
+		$file = 'http:'.$file;
+		return $file;
+	}
+	
+	if (is_numeric($file)) {
+		/*
+		$row = sql_query("SELECT * FROM files WHERE
 			id='".addslashes($_GET['f'])."'
 		", 1);
 		*/
 		$file = 'files/'.$file;
-    }
-    
+	}
+	
 	//no resize
 	if( !$w and !$h and !starts_with($file, 'http') ){
-	    $path = '/uploads/'.$file;
+		$path = '/uploads/'.$file;
 	}
 
 	if( !$path ){
 		if(
-	        !file_exists('uploads/'.$file) and
-	        !starts_with($file, 'http')
+			!file_exists('uploads/'.$file) and
+			!starts_with($file, 'http')
 		){
 			return false;
 		}
@@ -109,7 +128,7 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 
 		$dirname = dirname(urlencode($file));
 		if( $dirname and !starts_with($file, 'http') ){
-		    $cached .= $dirname.'/';
+			$cached .= $dirname.'/';
 		}
 
 		$cache_name = preg_replace("/[^A-Za-z0-9\-\.]/", '', urldecode($file));
@@ -144,13 +163,13 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 				$width = imagesx($img);
 				$height = imagesy($img);
 
-                if( !$w and !$h ){
-                    $scale = 1;
-                }elseif( $crop ){
-				    $scale = max($max_width/$width, $max_height/$height);
-                }else{
-    			    $scale = min($max_width/$width, $max_height/$height);
-                }
+				if( !$w and !$h ){
+					$scale = 1;
+				}elseif( $crop ){
+					$scale = max($max_width/$width, $max_height/$height);
+				}else{
+					$scale = min($max_width/$width, $max_height/$height);
+				}
 
 				 // If the image is larger than the max shrink it
 				if ($scale < 1) {
@@ -158,11 +177,11 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 					$new_height = floor($scale*$height)-1;
 
 					// Create a new temporary image
-                    if( $crop ){
-    				    $tmp_img = imagecreatetruecolor($w, $h);
-                    }else{
-    				    $tmp_img = imagecreatetruecolor($new_width, $new_height);
-                    }
+					if( $crop ){
+						$tmp_img = imagecreatetruecolor($w, $h);
+					}else{
+						$tmp_img = imagecreatetruecolor($new_width, $new_height);
+					}
 
 					imagesavealpha($tmp_img, true);
 					imagealphablending($tmp_img, true);
@@ -189,7 +208,7 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 				$cache_image=true;
 			}else{
 				print 2;
-			    return false;
+				return false;
 			}
 
 			//check cache dir
@@ -228,9 +247,9 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 					$result = imagejpeg($img, $cached, $quality);
 				}
 
-                if( !$result ){
-                    //trigger_error("Can't write image ".$cached, E_USER_ERROR);
-                }
+				if( !$result ){
+					//trigger_error("Can't write image ".$cached, E_USER_ERROR);
+				}
 			}
 		}
 
@@ -238,8 +257,8 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 	}
 
 	if($attribs!==false){
-        $html = '<img src="http'.(($_SERVER['HTTPS']=='on')?'s':'').'://'.$_SERVER['HTTP_HOST'].$path.'" '.$attribs.' />';
-        echo $html;
+		$html = '<img src="http'.(($_SERVER['HTTPS']=='on')?'s':'').'://'.$_SERVER['HTTP_HOST'].$path.'" '.$attribs.' />';
+		echo $html;
 	}else{
 		return $path;
 	}
@@ -248,21 +267,21 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 //calculate age from dob
 function age($dob)
 {
-    $dob = strtotime($dob);
-    $y = date('Y', $dob);
+	$dob = strtotime($dob);
+	$y = date('Y', $dob);
 
-    if (($m = (date('m') - date('m', $dob))) < 0) {
-        $y++;
-    } elseif ($m == 0 && date('d') - date('d', $dob) < 0) {
-        $y++;
-    }
+	if (($m = (date('m') - date('m', $dob))) < 0) {
+		$y++;
+	} elseif ($m == 0 && date('d') - date('d', $dob) < 0) {
+		$y++;
+	}
 
-    return date('Y') - $y;
+	return date('Y') - $y;
 }
 
 function alert($error)
 {
-    //deprecated
+	//deprecated
 	$error=str_replace("\n",'\n',$error);
 
 	echo '<script type="text/javascript">
@@ -271,36 +290,38 @@ function alert($error)
 }
 
 function analytics($id){
-    ?>
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', '<?=$id;?>']);
-      _gaq.push(['_trackPageview']);
+	?>
+	<script type="text/javascript">
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', '<?=$id;?>']);
+	  _gaq.push(['_trackPageview']);
 
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
-    <?
+	  (function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+	</script>
+	<?php
 }
 
 function array_orderby()
 {
-    $args = func_get_args();
-    $data = array_shift($args);
-    foreach ($args as $n => $field) {
-        if (is_string($field)) {
-            $tmp = array();
-            foreach ($data as $key => $row)
-                $tmp[$key] = $row[$field];
-            $args[$n] = $tmp;
-            }
-    }
-    $args[] = &$data;
-    call_user_func_array('array_multisort', $args);
-    return array_pop($args);
+	$args = func_get_args();
+	$data = array_shift($args);
+	foreach ($args as $n => $field) {
+		if (is_string($field)) {
+			$tmp = array();
+			
+			foreach ($data as $key => $row)
+				$tmp[$key] = $row[$field];
+				
+			$args[$n] = $tmp;
+		}
+	}
+	$args[] = &$data;
+	call_user_func_array('array_multisort', $args);
+	return array_pop($args);
 }
 
 function basename_safe($path)
@@ -400,14 +421,14 @@ function datediff($endDate, $beginDate)
 
 function dateformat( $format, $date=null, $uk=true )
 {
-    if( $date=='0000-00-00' ){
+	if( $date=='0000-00-00' ){
 		return false;
 	}
 
-    //assume uk input format
-    if( $uk ){
-        $date = str_replace('/','-',$date);
-    }
+	//assume uk input format
+	if( $uk ){
+		$date = str_replace('/','-',$date);
+	}
 
 	return date( $format, make_timestamp($date) );
 }
@@ -417,13 +438,13 @@ function debug($var, $die=false)
 	global $auth;
 
 	if( $auth->user['admin'] ){
-	    print '<hr><pre>';
+		print '<hr><pre>';
 		print_r($var);
-	    print '</pre>';
+		print '</pre>';
 
-    	if( $die ){
-    		exit;
-    	}
+		if( $die ){
+			exit;
+		}
 	}
 }
 
@@ -510,11 +531,11 @@ function email_template($email, $subject=null, $reps=null, $headers=null, $langu
 }
 
 function starts_with($haystack, $needle){
-    return $needle === "" || strpos($haystack, $needle) === 0;
+	return $needle === "" || strpos($haystack, $needle) === 0;
 }
 
 function ends_with($haystack, $needle){
-    return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
+	return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
 }
 
 function error($error){
@@ -579,19 +600,19 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 			}
 
 			$images = array(
-			    'http://i.huffpost.com/gen/1735626/thumbs/o-GRUMPY-PHARRELL-facebook.jpg',
+				'http://i.huffpost.com/gen/1735626/thumbs/o-GRUMPY-PHARRELL-facebook.jpg',
 			);
 			shuffle($images);
 
 			//$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : current($images);
 
-    		echo '
-            <div style="text-align: center;">
-            <h2>Something went wrong</h2>
-            <p>The webmaster has been notified.</p>
-            <p><img src="'.$image.'"></p>
-            </div>
-            ';
+			echo '
+			<div style="text-align: center;">
+			<h2>Something went wrong</h2>
+			<p>The webmaster has been notified.</p>
+			<p><img src="'.$image.'"></p>
+			</div>
+			';
 
 			global $debug_ip, $auth;
 
@@ -607,11 +628,11 @@ function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
 			$body=$errorstring;
 			$body.='<pre>'.$var_dump.'</pre>';
 
-            global $admin_email;
+			global $admin_email;
 
-            if($admin_email){
-			    mail($admin_email, 'PHP Error '.$_SERVER['HTTP_HOST'], $body, $headers );
-            }
+			if($admin_email){
+				mail($admin_email, 'PHP Error '.$_SERVER['HTTP_HOST'], $body, $headers );
+			}
 
 			//error_log($errorstring, 1, $_SERVER['SERVER_ADMIN']);
 			die();
@@ -773,7 +794,7 @@ function generate_password($length=8)
 	while ($i < $length) {
 		// pick a random character from the possible ones
 		$password .= substr($possible, mt_rand(0, strlen($possible)-1), 1);
-        $i++;
+		$i++;
 	}
 
 	return $password;
@@ -821,15 +842,15 @@ function html($string)
 
 function html_options($opts, $selected=array(), $force_assoc = false, $disabled=array())
 {
-    $params = array(
-    	'options'=>$options,
+	$params = array(
+		'options'=>$options,
 		'values'=>$values,
 		'output'=>$output,
 		'selected'=>$selected,
-    	'disabled'=>$disabled,
+		'disabled'=>$disabled,
 	);
 
-    if( $force_assoc or is_assoc_array($opts) ){
+	if( $force_assoc or is_assoc_array($opts) ){
 		$params['options']=$opts;
 	}else{
 		$params['values']=$opts;
@@ -850,7 +871,7 @@ function html_options($opts, $selected=array(), $force_assoc = false, $disabled=
 				break;
 
 			case 'selected':
-    		case 'disabled':
+			case 'disabled':
 				$$_key = array_map('strval', array_values((array)$_val));
 				break;
 		}
@@ -882,7 +903,7 @@ function html_options_optoutput($key, $value, $selected, $disabled)
 			htmlspecialchars($key) . '"';
 		if (in_array((string)$key, $selected))
 			$_html_result .= ' selected="selected"';
-    	if (in_array((string)$key, $disabled))
+		if (in_array((string)$key, $disabled))
 			$_html_result .= ' disabled="disabled"';
 		$_html_result .= '>' .  ($value) . '</option>' . "\n";
 	} else {
@@ -950,30 +971,30 @@ function is_alphanumeric($string)
 }
 
 function is_animated($filename) {
-    if(!($fh = @fopen($filename, 'rb')))
-        return false;
-    $count = 0;
-    //an animated gif contains multiple "frames", with each frame having a
-    //header made up of:
-    // * a static 4-byte sequence (\x00\x21\xF9\x04)
-    // * 4 variable bytes
-    // * a static 2-byte sequence (\x00\x2C)
+	if(!($fh = @fopen($filename, 'rb')))
+		return false;
+	$count = 0;
+	//an animated gif contains multiple "frames", with each frame having a
+	//header made up of:
+	// * a static 4-byte sequence (\x00\x21\xF9\x04)
+	// * 4 variable bytes
+	// * a static 2-byte sequence (\x00\x2C)
 
-    // We read through the file til we reach the end of the file, or we've found
-    // at least 2 frame headers
-    while(!feof($fh) && $count < 2) {
-        $chunk = fread($fh, 1024 * 100); //read 100kb at a time
-        $count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00\x2C#s', $chunk, $matches);
-    }
+	// We read through the file til we reach the end of the file, or we've found
+	// at least 2 frame headers
+	while(!feof($fh) && $count < 2) {
+		$chunk = fread($fh, 1024 * 100); //read 100kb at a time
+		$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00\x2C#s', $chunk, $matches);
+	}
 
-    fclose($fh);
-    return $count > 1;
+	fclose($fh);
+	return $count > 1;
 }
 
 function is_assoc_array($var)
 {
    if (!is_array($var)) {
-       return false;
+	   return false;
    }
    return array_keys($var)!==range(0,sizeof($var)-1);
 }
@@ -990,7 +1011,7 @@ function is_domain($domain){
 
 function is_email($email)
 {
-    return filter_var($email, FILTER_VALIDATE_EMAIL);
+	return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
 // is valid national insurance number
@@ -1026,7 +1047,7 @@ function is_tel($string)
 function is_url($str)
 {
 	return preg_match('/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i', $str);
-    //return filter_var($email, FILTER_VALIDATE_URL);
+	//return filter_var($email, FILTER_VALIDATE_URL);
 }
 
 function load_js($libs)
@@ -1107,7 +1128,7 @@ function load_js($libs)
 
 	if( $deps['cycle2'] ){
 	?>
-		<? /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js" type="text/javascript"></script>*/ ?>
+		<?php /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js" type="text/javascript"></script>*/ ?>
 		<script src="/_lib/js/jquery.cycle2.js" type="text/javascript"></script>
 		<script src="/_lib/js/jquery.cycle2.carousel.js" type="text/javascript"></script>
 	<?php
@@ -1146,40 +1167,50 @@ function load_js($libs)
 	}
 
 	if( $deps['bootstrap'] ){
-	    //$version = '3.1.1';
-	    $version = '3.0.0';
+		//$version = '3.1.1';
+		$version = '3.0.0';
 	?>
-        <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap.min.css">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap.min.css">
 
-        <!-- Optional theme -->
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap-theme.min.css">
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap-theme.min.css">
 
-        <!-- Latest compiled and minified JavaScript -->
-        <script src="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/js/bootstrap.min.js"></script>
-    <?php
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/js/bootstrap.min.js"></script>
+	<?php
+	}
+
+	if( $deps['bootstrap4'] ){
+		//$version = '3.1.1';
+		$version = '4.0.0';
+	?>
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<?php
 	}
 
 	if( $deps['syntaxhighlighter'] ){
 	?>
 	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shCore.css" rel="stylesheet" type="text/css" />
 	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shThemeRDark.css" rel="stylesheet" type="text/css" />
-    <style>
-        .toolbar{
-            display: none;
-        }
+	<style>
+		.toolbar{
+			display: none;
+		}
 
-        pre,code{
-            white-space:pre-wrap;/*css-3*/
-            word-wrap:break-word;/*InternetExplorer5.5+*/
-        }
+		pre,code{
+			white-space:pre-wrap;/*css-3*/
+			word-wrap:break-word;/*InternetExplorer5.5+*/
+		}
 
-        .syntaxhighlighter{
-            padding: 10px;
-        }
-    </style>
-    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js" type="text/javascript"></script>
-    <script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shAutoloader.js" type="text/javascript"></script>
+		.syntaxhighlighter{
+			padding: 10px;
+		}
+	</style>
+	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js" type="text/javascript"></script>
+	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shAutoloader.js" type="text/javascript"></script>
 	<script>
 	SyntaxHighlighter.autoloader(
 	  'php //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPHP.js',
@@ -1187,47 +1218,52 @@ function load_js($libs)
 	  'css //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushCss.js'
 	);
 
-    $(function() {
-        SyntaxHighlighter.all();
-    });
-    </script>
-	<?
+	$(function() {
+		SyntaxHighlighter.all();
+	});
+	</script>
+	<?php
 	}
 
 	if( $deps['fontawesome'] ){
+		/*
 	?>
 		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-	<?
+	<?php
+		*/
+		?>
+    	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+		<?php
 	}
 }
 
 function make_timestamp($string)
 {
-    if(empty($string)) {
-        // use "now":
-        $time = time();
+	if(empty($string)) {
+		// use "now":
+		$time = time();
 
-    }elseif($string === '0000-00-00'){
-        return false;
-    } elseif (preg_match('/^\d{14}$/', $string)) {
-        // it is timestamp format of YYYYMMDDHHMMSS?
-        $time = mktime(substr($string, 8, 2),substr($string, 10, 2),substr($string, 12, 2),
-                       substr($string, 4, 2),substr($string, 6, 2),substr($string, 0, 4));
+	}elseif($string === '0000-00-00'){
+		return false;
+	} elseif (preg_match('/^\d{14}$/', $string)) {
+		// it is timestamp format of YYYYMMDDHHMMSS?
+		$time = mktime(substr($string, 8, 2),substr($string, 10, 2),substr($string, 12, 2),
+					   substr($string, 4, 2),substr($string, 6, 2),substr($string, 0, 4));
 
-    } elseif (is_numeric($string)) {
-        // it is a numeric string, we handle it as timestamp
-        $time = (int)$string;
+	} elseif (is_numeric($string)) {
+		// it is a numeric string, we handle it as timestamp
+		$time = (int)$string;
 
-    } else {
-        // strtotime should handle it
-        $time = strtotime($string);
-        if ($time == -1 || $time === false) {
-            // strtotime() was not able to parse $string, use "now":
-            //$time = time();
-            return false;
-        }
-    }
-    return $time;
+	} else {
+		// strtotime should handle it
+		$time = strtotime($string);
+		if ($time == -1 || $time === false) {
+			// strtotime() was not able to parse $string, use "now":
+			//$time = time();
+			return false;
+		}
+	}
+	return $time;
 }
 
 function array_to_csv_file($rows, $filename='data', $add_header=true)
@@ -1258,12 +1294,12 @@ function array_to_csv_file($rows, $filename='data', $add_header=true)
 }
 
 function num2alpha($n) {
-    $r = '';
-    for ($i = 1; $n >= 0 && $i < 10; $i++) {
-        $r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
-        $n -= pow(26, $i);
-    }
-    return $r;
+	$r = '';
+	for ($i = 1; $n >= 0 && $i < 10; $i++) {
+		$r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
+		$n -= pow(26, $i);
+	}
+	return $r;
 }
 
 function options($options,$selected='')
@@ -1292,18 +1328,18 @@ function options($options,$selected='')
 function parse_links($text){
    $pattern  = '#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))#';
    $callback = create_function('$matches', '
-       $url       = array_shift($matches);
-       $url_parts = parse_url($url);
+	   $url	   = array_shift($matches);
+	   $url_parts = parse_url($url);
 
-       $text = parse_url($url, PHP_URL_HOST) . parse_url($url, PHP_URL_PATH);
-       $text = preg_replace("/^www./", "", $text);
+	   $text = parse_url($url, PHP_URL_HOST) . parse_url($url, PHP_URL_PATH);
+	   $text = preg_replace("/^www./", "", $text);
 
-       $last = -(strlen(strrchr($text, "/"))) + 1;
-       if ($last < 0) {
-           $text = substr($text, 0, $last) . "&hellip;";
-       }
+	   $last = -(strlen(strrchr($text, "/"))) + 1;
+	   if ($last < 0) {
+		   $text = substr($text, 0, $last) . "&hellip;";
+	   }
 
-       return sprintf(\'<a rel="nowfollow" href="%s" target="_blank">%s</a>\', $url, $text);
+	   return sprintf(\'<a rel="nowfollow" href="%s" target="_blank">%s</a>\', $url, $text);
    ');
 
    return preg_replace_callback($pattern, $callback, $text);
@@ -1359,7 +1395,7 @@ function cache_query($query, $single=false, $expire=3600) {
 		$memcache->set(md5($query), $result, false, $expire) or trigger_error("Failed to save data at the server", E_USER_ERROR);
 	}
 	
-    return $single ? $result[0] : $result;
+	return $single ? $result[0] : $result;
 }
 
 function sql_affected_rows() {
@@ -1382,9 +1418,9 @@ function sql_query($query, $single=false)
 
 	$result = mysqli_query($db_connection, $query);
 
-    if( $result===false ){
-        throw new Exception(mysqli_error());
-    }
+	if( $result===false ){
+		throw new Exception(mysqli_error());
+	}
 
 	$return_array = array();
 	while ($row = mysqli_fetch_assoc($result)) {
@@ -1392,39 +1428,39 @@ function sql_query($query, $single=false)
 	}
 	mysqli_free_result($result);
 
-    return $single ? $return_array[0] : $return_array;
+	return $single ? $return_array[0] : $return_array;
 }
 
 function str_to_pagename($page_name, $strip_slashes = true) {
-    //remove odd chars
-    if ($strip_slashes) {
-    	$page_name = preg_replace("/[^\sA-Za-z0-9\.\->()]/", '', $page_name);
-    	
-    	//replace > with -
-    	$page_name = str_replace('>','-',$page_name);
-    } else {
-    	$page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
-    	
-    	//replace > with /
-    	$page_name = str_replace('>','/',$page_name);
-    }
+	//remove odd chars
+	if ($strip_slashes) {
+		$page_name = preg_replace("/[^\sA-Za-z0-9\.\->()]/", '', $page_name);
+		
+		//replace > with -
+		$page_name = str_replace('>','-',$page_name);
+	} else {
+		$page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
+		
+		//replace > with /
+		$page_name = str_replace('>','/',$page_name);
+	}
 
-    //replace > with /
-    $page_name = str_replace('>','/',$page_name);
+	//replace > with /
+	$page_name = str_replace('>','/',$page_name);
 
-    //lowercase
-    $page_name = strtolower($page_name);
+	//lowercase
+	$page_name = strtolower($page_name);
 
-    //trim
-    $page_name = trim($page_name);
+	//trim
+	$page_name = trim($page_name);
 
-    //replace spaces with dashes
-    $page_name = preg_replace("/\s+/", '-', $page_name);
+	//replace spaces with dashes
+	$page_name = preg_replace("/\s+/", '-', $page_name);
 
-    //trailing .
-    $page_name = rtrim($page_name, '.');
+	//trailing .
+	$page_name = rtrim($page_name, '.');
 
-    return $page_name;
+	return $page_name;
 }
 
 function table_exists($table)
@@ -1497,35 +1533,35 @@ function thumb($file,$max_width=200,$max_height=200,$default=NULL,$save=NULL,$ou
 }
 
 function time_elapsed($ptime) {
-    $etime = time() - make_timestamp($ptime);
+	$etime = time() - make_timestamp($ptime);
 
-    if ($etime < 1)
-    {
-        return '0 seconds';
-    }
+	if ($etime < 1)
+	{
+		return '0s';
+	}
 
-    $a = array( 12 * 30 * 24 * 60 * 60  =>  'year',
-                30 * 24 * 60 * 60       =>  'month',
-                24 * 60 * 60            =>  'day',
-                60 * 60                 =>  'hour',
-                60                      =>  'minute',
-                1                       =>  'second'
-                );
+	$a = array( 12 * 30 * 24 * 60 * 60  =>  'year',
+				30 * 24 * 60 * 60	   =>  'month',
+				24 * 60 * 60			=>  'day',
+				60 * 60				 =>  'h',
+				60					  =>  'm',
+				1					   =>  's'
+				);
 
-    foreach ($a as $secs => $str)
-    {
-        $d = $etime / $secs;
-        if ($d >= 1)
-        {
-            $r = round($d);
-            return $r . ' ' . $str . ($r > 1 ? 's' : '') . ' ago';
-        }
-    }
+	foreach ($a as $secs => $str)
+	{
+		$d = $etime / $secs;
+		if ($d >= 1)
+		{
+			$r = round($d);
+			return $r . $str . ($r > 1 ? '' : '');
+		}
+	}
 }
 
 function truncate($string, $max = 50, $rep = '..')
 {
-    $string = strip_tags($string);
+	$string = strip_tags($string);
 
 	if( strlen($string)>$max ){
 		$leave = $max - strlen($rep);
@@ -1607,6 +1643,7 @@ function wget($url) {
 	$ch = curl_init();
 	
 	// set url 
+	curl_setopt($ch, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
 	curl_setopt($ch, CURLOPT_URL, $url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -1618,8 +1655,8 @@ function wget($url) {
 
 //deprecated, use video_info instead
 function youtube_id_from_url($url) {
-    $info = video_info($url);
-    return $info['id'];
+	$info = video_info($url);
+	return $info['id'];
 }
 
 function video_info($url) {
@@ -1629,30 +1666,30 @@ function video_info($url) {
 		$data['source'] = 'vimeo';
 
 		$pattern = '/(https?:\/\/)?(www\.)?(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/';
-	    preg_match($pattern, $url, $matches);
+		preg_match($pattern, $url, $matches);
 
-	    $data['id'] = end($matches);
-	    $data['url'] = 'https://player.vimeo.com/video/'.$data['id'];
+		$data['id'] = end($matches);
+		$data['url'] = 'https://player.vimeo.com/video/'.$data['id'];
 
-	    //not working?
-	    $hash = json_decode(file_get_contents("http://vimeo.com/api/v2/video/".$data['id'].".json"), true);
-	    $data['thumb'] = $hash[0]['thumbnail_medium'];
+		//not working?
+		$hash = json_decode(file_get_contents("http://vimeo.com/api/v2/video/".$data['id'].".json"), true);
+		$data['thumb'] = $hash[0]['thumbnail_medium'];
 	}elseif(stristr($url, 'youtu')){
-    	$data['source']  = 'youtube';
+		$data['source']  = 'youtube';
 
-        $pattern = '#^(?:https?:)?(?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
-	    preg_match($pattern, $url, $matches);
+		$pattern = '#^(?:https?:)?(?://)?(?:www\.)?(?:youtu\.be/|youtube\.com(?:/embed/|/v/|/watch\?v=|/watch\?.+&v=))([\w-]{11})(?:.+)?$#x';
+		preg_match($pattern, $url, $matches);
 
-	    $data['id'] = (isset($matches[1])) ? $matches[1] : false;
-	    $data['thumb'] = 'https://img.youtube.com/vi/'.$data['id'].'/0.jpg';
-	    $data['url'] = 'https://www.youtube.com/embed/'.$data['id'].'?rel=0';
+		$data['id'] = (isset($matches[1])) ? $matches[1] : false;
+		$data['thumb'] = 'https://img.youtube.com/vi/'.$data['id'].'/0.jpg';
+		$data['url'] = 'https://www.youtube.com/embed/'.$data['id'].'?rel=0';
 	}else{
 		$data['url'] = $url;
 	}
 
 	if (ends_with($data['url'], '.mp4')) {
 		$data['tag'] = '<video controls>
-		    <source src="'.$data['url'].'" type="video/mp4">
+			<source src="'.$data['url'].'" type="video/mp4">
 		</video>';
 	} else {
 		$data['tag'] = '<iframe src="'.$data['url'].'" frameborder="0" allowfullscreen></iframe>';

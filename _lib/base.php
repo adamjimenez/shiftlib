@@ -67,6 +67,7 @@ if( $db_config['user'] or $db_connection ){
 	}
 
     $auth = new auth();
+    $auth->init();
 }elseif( $db_config!==false ){
     //prompt to configure connection
     require(dirname(__FILE__).'/cms/_tpl/db.php');

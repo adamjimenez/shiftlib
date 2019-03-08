@@ -84,14 +84,14 @@ if( !$errors ){
         						//CMS SAVE
         						$cms->set_section($vars['options'][$k]);
 
-        						$data = array(
+        						$option_data = array(
         							key($vars['fields'][$vars['options'][$k]])=>trim($v)
         						);
 
-        						if( count($cms->validate($data)) ){
+        						if( count($cms->validate($option_data)) ){
         							continue;
         						}else{
-        							$v=$cms->save($data);
+        							$v=$cms->save($option_data);
         						}
 
         						/*

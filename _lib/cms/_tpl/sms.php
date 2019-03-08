@@ -1,4 +1,4 @@
-<?
+<?php
 global $sms_config;
 
 require('_lib/modules/sms/sms.php');
@@ -56,11 +56,11 @@ if( $_POST['sms_message'] ){
 	?>
 	<p><a href="?option=texts&view=true&id=<?=$sms->text_id;?>">View text</a></p>
 	<p><a href="?<?=$_SERVER['QUERY_STRING'];?>">Go back</a></p>
-	<?
+	<?php
 }elseif( $_POST['users'] and count($_POST['users'])>$credits ){
 ?>
 <p>Insufficient credits. Buy some more or select fewer recipients.</p>
-<?
+<?php
 }else{
 
 ?>
@@ -162,7 +162,7 @@ Send this message:<br>
 <br>
 <h2>Recipients</h2>
 <table>
-<?
+<?php
 foreach( $valid_users as $v ){
 ?>
 <tr>
@@ -170,7 +170,7 @@ foreach( $valid_users as $v ){
 	<td><?=$v['name'];?></td>
 	<td><?=$v['mobile'];?></td>
 </tr>
-<?
+<?php
 }
 ?>
 </table><br>
@@ -180,6 +180,6 @@ foreach( $valid_users as $v ){
 </form>
 
 </div>
-<?
+<?php
 }
 ?>

@@ -1,4 +1,4 @@
-<?
+<?php
 if( $_GET['section'] ){
 	$this->section=$_GET['section'];
 }else{
@@ -24,7 +24,7 @@ window.opener.document.getElementById('filters_<?=underscored($_GET['section']);
 
 window.close();
 </script>
-<?
+<?php
 }
 ?>
 
@@ -37,7 +37,7 @@ window.close();
 		<fieldset>
 		<legend>Create filter</legend>
 		<table class="box" border="0" cellspacing="0" cellpadding="3">
-		<?
+		<?php
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
 			if( in_array($name,$vars["non_searchable"][$this->section]) ){
 				continue;
@@ -47,14 +47,14 @@ window.close();
 
 			$label=ucfirst(spaced($name));
 		?>
-			<? if( $type == 'file' ){ ?>
+			<?php if( $type == 'file' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
-					<input type="checkbox" name="<?=$field_name;?>" value="1" <? if( $_GET[$field_name] ){ ?>checked<? } ?> />
+					<input type="checkbox" name="<?=$field_name;?>" value="1" <?php if( $_GET[$field_name] ){ ?>checked<?php } ?> />
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'select' or $type=='radio' ){
 				$options=$vars['options'][$name];
 				if( !is_array($vars['options'][$name]) ){
@@ -90,7 +90,7 @@ window.close();
 					</select>
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'select-multiple' ){
 				$value=array();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
@@ -118,7 +118,7 @@ window.close();
 					</select>
 				</td>
 			</tr>
-			<?
+			<?php
 			}elseif( $type == 'checkboxes' ){
 				$value=array();
 				if( !is_array($vars['options'][$name]) and $vars['options'][$name]  ){
@@ -141,18 +141,18 @@ window.close();
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
-					<? if( is_assoc_array($vars['options'][$name]) ){ ?>
-						<? foreach( $vars['options'][$name] as  $k=>$v ){ ?>
-						<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$k;?>" <? if( in_array($k,$_GET[$field_name]) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><br />
-						<? } ?>
-					<? }else{ ?>
-						<? foreach( $vars['options'][$name] as  $k=>$v ){ ?>
-						<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$v;?>" <? if( in_array($v,$_GET[$field_name]) ){ ?>checked="checked"<? } ?> /> <?=$v;?></label><br />
-						<? } ?>
-					<? } ?>
+					<?php if( is_assoc_array($vars['options'][$name]) ){ ?>
+						<?php foreach( $vars['options'][$name] as  $k=>$v ){ ?>
+						<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$k;?>" <?php if( in_array($k,$_GET[$field_name]) ){ ?>checked="checked"<?php } ?> /> <?=$v;?></label><br />
+						<?php } ?>
+					<?php }else{ ?>
+						<?php foreach( $vars['options'][$name] as  $k=>$v ){ ?>
+						<label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$v;?>" <?php if( in_array($v,$_GET[$field_name]) ){ ?>checked="checked"<?php } ?> /> <?=$v;?></label><br />
+						<?php } ?>
+					<?php } ?>
 				</td>
 			</tr>
-			<? }elseif( $type == 'checkbox' ){ ?>
+			<?php }elseif( $type == 'checkbox' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
@@ -162,7 +162,7 @@ window.close();
 					</select>
 				</td>
 			</tr>
-			<? }elseif( $type == 'date' ){ ?>
+			<?php }elseif( $type == 'date' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
@@ -177,7 +177,7 @@ window.close();
 					</div>
 				</td>
 			</tr>
-			<? }elseif( $type == 'postcode' ){ ?>
+			<?php }elseif( $type == 'postcode' ){ ?>
 			<tr>
 				<th align="left" valign="top">Distance from <?=$label;?></th>
 				<td>
@@ -190,7 +190,7 @@ window.close();
 					<input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="7">
 				</td>
 			</tr>
-			<? }elseif( $type == 'int' ){ ?>
+			<?php }elseif( $type == 'int' ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td>
@@ -205,13 +205,13 @@ window.close();
 					</div>
 				</td>
 			</tr>
-			<? }elseif( $type == 'text' or $type == 'email' or $type == 'mobile' or ($type=='id' and $vars["settings"][$this->section]['show_id']) ){ ?>
+			<?php }elseif( $type == 'text' or $type == 'email' or $type == 'mobile' or ($type=='id' and $vars["settings"][$this->section]['show_id']) ){ ?>
 			<tr>
 				<th align="left" valign="top"><?=$label;?></th>
 				<td><input type="text" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="50"></td>
 			</tr>
-			<? } ?>
-		<? } ?>
+			<?php } ?>
+		<?php } ?>
 		</table>
 		<br />
 		<p align="center"><button type="submit">Create Filter</button> &nbsp; <button type="button" onclick="window.close();">Cancel</button></p>
@@ -222,6 +222,6 @@ window.close();
 </div>
 
 
-<?
+<?php
 exit;
 ?>

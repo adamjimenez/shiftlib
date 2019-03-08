@@ -1,4 +1,4 @@
-<?
+<?php
 //check permissions
 if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
@@ -91,11 +91,11 @@ if( $_GET["id"] ){
 ?>
 
 <script type="text/javascript">
-<?
+<?php
 if($this->components){
 ?>
 var components = <?=json_encode($this->components);?>;
-<?
+<?php
 }
 ?>
 
@@ -106,7 +106,7 @@ $(function() {
 
 	init_tabs();
 
-    $('form input:visible:first').focus();
+    $('form input:visible, form select:visible').first().focus();
 
     var phpupload_default_dir = '<?=$_GET["option"];?>/<?=$id;?>';
 });
@@ -131,7 +131,7 @@ $(function() {
 </tr>
 </table>
 
-<?
+<?php
 if( in_array('language',$vars['fields'][$this->section]) ){
 ?>
 <p>
@@ -140,7 +140,7 @@ Language:
 	<?=html_options($languages);?>
 </select>
 </p>
-<?
+<?php
 }else{
 	$languages=array('en');
 }
@@ -148,28 +148,28 @@ Language:
 foreach( $languages as $language ){
 	$this->language=$language;
 ?>
-	<div id="language_<?=$language;?>" <? if($language!='en'){ ?>style="display:none;"<? } ?> class="box">
+	<div id="language_<?=$language;?>" <?php if($language!='en'){ ?>style="display:none;"<?php } ?> class="box">
 
-		<?
+		<?php
 		if( in_array('separator',$vars['fields'][$this->section]) ){
 		?>
 		<ul class="tabs">
-		<?
+		<?php
 			foreach( $vars['fields'][$this->section] as $name=>$type ){
 				if( $type=='separator' ){
 				?>
 				<li><a href="javascript:;" target="section_<?=$name;?>" class="tab" onclick="return false;"><?=ucfirst($name);?></a></li>
-				<?
+				<?php
 				}
 			}
 		?>
 		</ul>
-		<?
+		<?php
 		}
 		?>
 
 		<table border="1" cellspacing="0" cellpadding="5" width="100%">
-		<?
+		<?php
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
 			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','deleted')) ){
 				continue;
@@ -178,7 +178,7 @@ foreach( $languages as $language ){
 			if ($type=='hidden') {
 			?>
 				<?=$this->get_field($name);?>
-			<?
+			<?php
 				continue;
 			}
 
@@ -196,12 +196,12 @@ foreach( $languages as $language ){
 			?>
 			</table>
 
-			<? if( $separator_open ){ ?>
+			<?php if( $separator_open ){ ?>
 			</div>
-			<? } ?>
+			<?php } ?>
 			<div style="display:none;" id="section_<?=$name;?>">
 			<table border="1" cellspacing="0" cellpadding="5" width="100%">
-			<?
+			<?php
 				$separator_open=true;
 				continue;
 			}
@@ -210,34 +210,34 @@ foreach( $languages as $language ){
 		<tr>
 			<th align="left" valign="top"><?=$label;?></th>
 			<td>
-				<?
+				<?php
 				if( is_array($type) ){
 					foreach( $type as $k=>$v ){
 				?>
 					<?=$k;?><br />
-					<? $this->get_field($k);?><br />
-				<?
+					<?php $this->get_field($k);?><br />
+				<?php
 					}
 				}else{
 				?>
-					<? $this->get_field($name);?>
-				<? } ?>
+					<?php $this->get_field($name);?>
+				<?php } ?>
 			</td>
 		</tr>
-		<? } ?>
+		<?php } ?>
 		</table>
-		<? if( $separator_open ){ ?>
+		<?php if( $separator_open ){ ?>
 		</div>
-		<? } ?>
+		<?php } ?>
 	</div>
-<?
+<?php
 }
 ?>
 
-<? if( !$_GET['id'] and in_array('id',$vars['fields'][$this->section]) ){ ?>
-<p><label><input type="checkbox" name="add_another" value="1" <? if( $_GET['add_another'] ){ ?>checked="checked"<? } ?> /> add another?</label></p>
+<?php if( !$_GET['id'] and in_array('id',$vars['fields'][$this->section]) ){ ?>
+<p><label><input type="checkbox" name="add_another" value="1" <?php if( $_GET['add_another'] ){ ?>checked="checked"<?php } ?> /> add another?</label></p>
 <br />
-<? } ?>
+<?php } ?>
 
 <table width="100%">
 <tr>

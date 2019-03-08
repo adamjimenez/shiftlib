@@ -172,7 +172,6 @@ $field_opts=array(
 	'combo',
 	'password',
 	'email',
-	'number',
 	'postcode',
 	'tel',
 	'mobile',
@@ -493,21 +492,6 @@ $upload_config["allowed_exts"]=array('.str_to_csv($_POST['upload_config']['allow
 
 #ADMIN AREA
 $languages=array('.str_to_csv($_POST['languages']).');
-
-$email_templates=array(
-	"Password Reminder"=>\'Hi,
-
-	Your password is: {$password}
-
-	Kind Regards
-	The management\',
-	"Registration Confirmation"=>\'Hi,
-
-	Your password is: {$password}
-
-	Kind Regards
-	The management\',
-);
 
 $vars["configure_dropdowns"]='.str_to_bool($_POST['vars']['configure_dropdowns']).';
 
@@ -923,7 +907,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         <div class="box">
         <table>
         <tbody id="sections">
-        <?
+        <?php
         foreach( $vars['fields'] as $section=>$fields ){
         $count['sections']++;
         ?>
@@ -931,11 +915,11 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<td style="height:100%"><div class="handle" style="height:100%;">&nbsp;</div></td>
         		<td>
         			<h3>
-            			<input type="text" name="sections[<?=$count['sections'];?>]" value="<?=$section;?>" <? if( $section=='users' ){ ?> readonly <? } ?> />
+            			<input type="text" name="sections[<?=$count['sections'];?>]" value="<?=$section;?>" <?php if( $section=='users' ){ ?> readonly <?php } ?> />
             			<a href="javascript:;" onclick="jQuery('#div_<?=$count['sections'];?>').slideToggle(); return false;">toggle</a> &nbsp;&nbsp;
-            			<? if( $section!='users' ){ ?>
+            			<?php if( $section!='users' ){ ?>
             			    <a href="javascript:;" onclick="delTR(this)">delete</a>
-            			<? } ?>
+            			<?php } ?>
         			</h3>
 
         			<div id="div_<?=$count['sections'];?>" style="display:none;">
@@ -950,7 +934,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         					<th>Required</th>
         					<th>&nbsp;</th>
         				</tr>
-        				<?
+        				<?php
         				foreach( $vars['fields'][$section] as $k=>$v ){
         					$count['fields']++;
 
@@ -969,11 +953,11 @@ var section_templates=<?=json_encode($section_templates);?>;
         							<?=html_options($field_opts,$field_type);?>
         						</select>
         					</td>
-        					<td><input type="checkbox" name="vars[labels][<?=$count['fields'];?>]" value="1" <? if( in_array($k,$vars['labels'][$section]) ){ ?> checked<? } ?>></td>
-        					<td><input type="checkbox" name="vars[required][<?=$count['fields'];?>]" value="1" <? if( in_array($k,$vars['required'][$section]) ){ ?> checked<? } ?>></td>
+        					<td><input type="checkbox" name="vars[labels][<?=$count['fields'];?>]" value="1" <?php if( in_array($k,$vars['labels'][$section]) ){ ?> checked<?php } ?>></td>
+        					<td><input type="checkbox" name="vars[required][<?=$count['fields'];?>]" value="1" <?php if( in_array($k,$vars['required'][$section]) ){ ?> checked<?php } ?>></td>
         					<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         				</tr>
-        				<?
+        				<?php
         					if( is_array($v) ){
         						$parent=$count['fields'];
         						foreach( $v as $k2=>$v2 ){
@@ -992,11 +976,11 @@ var section_templates=<?=json_encode($section_templates);?>;
         									<?=html_options($field_opts,$v2);?>
         								</select>
         							</td>
-        							<td><input type="checkbox" name="vars[labels][<?=$count['fields'];?>]" value="1" <? if( in_array($k2,$vars['labels'][$section]) ){ ?> checked<? } ?>></td>
-        							<td><input type="checkbox" name="vars[required][<?=$count['fields'];?>]" value="1" <? if( in_array($k2,$vars['required'][$section]) ){ ?> checked<? } ?>></td>
+        							<td><input type="checkbox" name="vars[labels][<?=$count['fields'];?>]" value="1" <?php if( in_array($k2,$vars['labels'][$section]) ){ ?> checked<?php } ?>></td>
+        							<td><input type="checkbox" name="vars[required][<?=$count['fields'];?>]" value="1" <?php if( in_array($k2,$vars['required'][$section]) ){ ?> checked<?php } ?>></td>
         							<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         						</tr>
-        						<?
+        						<?php
         						}
         					}
         				}
@@ -1010,22 +994,22 @@ var section_templates=<?=json_encode($section_templates);?>;
 
         				<h4>Settings</h4>
         				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][display]" value="1" <? if( in_array($section,$vars['sections']) ){ ?> checked<? } ?>> display
+        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][display]" value="1" <?php if( in_array($section,$vars['sections']) ){ ?> checked<?php } ?>> display
         				</label>
         				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][import]" value="1" <? if( $vars['settings'][$section]['import'] ){ ?> checked<? } ?>> import
+        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][import]" value="1" <?php if( $vars['settings'][$section]['import'] ){ ?> checked<?php } ?>> import
         				</label>
         				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][export]" value="1" <? if( $vars['settings'][$section]['export'] ){ ?> checked<? } ?>> export
+        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][export]" value="1" <?php if( $vars['settings'][$section]['export'] ){ ?> checked<?php } ?>> export
         				</label>
         				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][shiftmail]" value="1" <? if( $vars['settings'][$section]['shiftmail'] ){ ?> checked<? } ?>> shiftmail
+        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][shiftmail]" value="1" <?php if( $vars['settings'][$section]['shiftmail'] ){ ?> checked<?php } ?>> shiftmail
         				</label>
         				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][sms]" value="1" <? if( $vars['settings'][$section]['sms'] ){ ?> checked<? } ?>> sms
+        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][sms]" value="1" <?php if( $vars['settings'][$section]['sms'] ){ ?> checked<?php } ?>> sms
         				</label>
         				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][show_id]" value="1" <? if( $vars['settings'][$section]['show_id'] ){ ?> checked<? } ?>> show id
+        					<input type="checkbox" name="vars[settings][<?=$count['sections'];?>][show_id]" value="1" <?php if( $vars['settings'][$section]['show_id'] ){ ?> checked<?php } ?>> show id
         				</label>
         				<br>
         				<br />
@@ -1033,7 +1017,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<h4>Subsections</h4>
         				<table cellspacing="0">
         				<tbody id="subsections_<?=$count['sections'];?>" class="subsections">
-        				<?
+        				<?php
         				foreach( $vars['subsections'][$section] as $k=>$v ){
         					$count['subsections']++;
         				?>
@@ -1046,7 +1030,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         					</td>
         					<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         				</tr>
-        				<?
+        				<?php
         				}
         				?>
         				<tr>
@@ -1057,7 +1041,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         			</div>
         		</td>
         	</tr>
-        <?
+        <?php
         }
         ?>
         <tr>
@@ -1078,18 +1062,18 @@ var section_templates=<?=json_encode($section_templates);?>;
         	<div style="padding:5px 10px;">
         		<table id="options" width="400" class="box">
         		<tbody>
-        		<?
+        		<?php
         		foreach( $vars['options'] as $opt=>$val ){
         			$count['options']++;
         		?>
         		<tr>
         			<th valign="top">
         				<input type="text" name="options[<?=$count['options'];?>][name]" value="<?=$opt;?>" /><br />
-        				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <? if(is_array($val)){ ?>checked="checked"<? } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
-        				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <? if(!is_array($val)){ ?>checked="checked"<? } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
+        				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <?php if(is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
+        				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <?php if(!is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
         			</th>
         			<td valign="top">
-        				<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <? if(!is_array($val)){ ?>style="display:none;"<? } ?>><?
+        				<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <?php if(!is_array($val)){ ?>style="display:none;"<?php } ?>><?php
         					if( is_assoc_array($val) ){
         						$options='';
 
@@ -1102,13 +1086,13 @@ var section_templates=<?=json_encode($section_templates);?>;
         						print implode("\n",$val);
         					}
         				;?></textarea>
-        				<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <? if(is_array($val)){ ?>style="display:none;"<? } ?>>
+        				<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <?php if(is_array($val)){ ?>style="display:none;"<?php } ?>>
         					<?=html_options($section_opts,$val);?>
         				</select>
         			</td>
         			<td valign="top"><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         		</tr>
-        		<?
+        		<?php
         		}
         		?>
         		<tr>
@@ -1122,7 +1106,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 
         <h2>Website code</h2>
         <ul style="list-style:inside; margin-left:20px;">
-        <?
+        <?php
         foreach( $vars['fields'] as $section=>$fields ){
         ?>
         	<li><a href="javascript:;" onclick="jQuery('#code_<?=underscored($section);?>').slideToggle(); return false;"><?=$section;?></a></li>
@@ -1131,7 +1115,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<div style="padding:5px 10px; background:#fff;">
         		    <pre>
 
-        <?
+        <?php
         $source='
         <?php
         $content = $cms->get(\''.$section.'\'';
@@ -1153,9 +1137,9 @@ var section_templates=<?=json_encode($section_templates);?>;
         if( in_array('id',$fields) ){
         	$source.='<div>';
         $source.='
-        <? foreach( $items as $v ){ ?>
+        <?php foreach( $items as $v ){ ?>
         	<a href="?id=<?=$v[\'id\'];?>"><?=$v[\'heading\'];?></a><br>
-        <? } ?>
+        <?php } ?>
         </div>
         ';
         }
@@ -1174,7 +1158,7 @@ var section_templates=<?=json_encode($section_templates);?>;
                     </pre>
         		</div>
         	</div>
-        <?
+        <?php
         }
         ?>
         </ul>
@@ -1219,7 +1203,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</tr>
         		<tr>
         			<th>configure dropdowns</th>
-        			<td><input type="checkbox" name="vars[configure_dropdowns]" value="1" <? if( $vars['configure_dropdowns'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="vars[configure_dropdowns]" value="1" <?php if( $vars['configure_dropdowns'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>folder to store upload data</th>
@@ -1227,7 +1211,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</tr>
         		<tr>
         			<th>shopping cart</th>
-        			<td><input type="checkbox" name="shop_enabled" value="1" <? if( $shop_enabled ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="shop_enabled" value="1" <?php if( $shop_enabled ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>paypal email</th>
@@ -1243,7 +1227,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</tr>
         		<tr>
         			<th>vat</th>
-        			<td><input type="checkbox" name="shop_config[include_vat]" value="1" <? if( $shop_config['include_vat'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="shop_config[include_vat]" value="1" <?php if( $shop_config['include_vat'] ){ ?> checked<?php } ?>></td>
         		</tr>
             	<tr>
         			<th>editor</th>
@@ -1341,7 +1325,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th valign="top">Redirects</th>
         			<td>
-        				<?
+        				<?php
         				$redirects='';
         				foreach( $tpl_config['redirects'] as $k=>$v ){
         					$redirects.=$k.'='.$v."\n";
@@ -1354,7 +1338,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th valign="top">Alias</th>
         			<td>
-        				<?
+        				<?php
         				$alias='';
         				foreach( $tpl_config['alias'] as $k=>$v ){
         					$alias.=$k.'='.$v."\n";
@@ -1367,7 +1351,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th valign="top">Secure</th>
         			<td>
-        				<?
+        				<?php
         				$secure='';
         				foreach( $tpl_config['secure'] as $v ){
         					$secure.=$v."\n";
@@ -1379,7 +1363,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</tr>
         		<tr>
         			<th valign="top">Site-wide SSL</th>
-		        		<td><input type="checkbox" name="tpl_config[ssl]" value="1" <? if( $tpl_config['ssl'] ){ ?> checked<? } ?>></td>
+		        		<td><input type="checkbox" name="tpl_config[ssl]" value="1" <?php if( $tpl_config['ssl'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		</table>
         	</div>
@@ -1408,23 +1392,23 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</tr>
         		<tr>
         			<th>generate password</th>
-        			<td><input type="checkbox" name="auth_config[generate_password]" value="1" <? if( $auth_config['generate_password'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="auth_config[generate_password]" value="1" <?php if( $auth_config['generate_password'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>hash passwords</th>
-        			<td><input type="checkbox" name="auth_config[hash_password]" value="1" <? if( $auth_config['hash_password'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="auth_config[hash_password]" value="1" <?php if( $auth_config['hash_password'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>email activation</th>
-        			<td><input type="checkbox" name="auth_config[email_activation]" value="1" <? if( $auth_config['email_activation'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="auth_config[email_activation]" value="1" <?php if( $auth_config['email_activation'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>activation required</th>
-        			<td><input type="checkbox" name="auth_config[activation_required]" value="1" <? if( $auth_config['activation_required'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="auth_config[activation_required]" value="1" <?php if( $auth_config['activation_required'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>register login</th>
-        			<td><input type="checkbox" name="auth_config[register_login]" value="1" <? if( $auth_config['register_login'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="auth_config[register_login]" value="1" <?php if( $auth_config['register_login'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>secret phrase</th>
@@ -1436,7 +1420,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</tr>
         		<tr>
         			<th>registration notification</th>
-        			<td><input type="checkbox" name="auth_config[registration_notification]" value="1" <? if( $auth_config['registration_notification'] ){ ?> checked<? } ?>></td>
+        			<td><input type="checkbox" name="auth_config[registration_notification]" value="1" <?php if( $auth_config['registration_notification'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>facebook appId</th>
@@ -1486,11 +1470,11 @@ var section_templates=<?=json_encode($section_templates);?>;
         			</tr>
         			<tr>
         				<th>overwrite files</th>
-        				<td><input type="checkbox" name="upload_config[overwrite_files]" value="1" <? if( $upload_config['overwrite_files'] ){ ?> checked<? } ?>></td>
+        				<td><input type="checkbox" name="upload_config[overwrite_files]" value="1" <?php if( $upload_config['overwrite_files'] ){ ?> checked<?php } ?>></td>
         			</tr>
         			<tr>
         				<th>resize images</th>
-        				<td><input type="checkbox" name="upload_config[resize_images]" value="1" <? if( $upload_config['resize_images'] ){ ?> checked<? } ?>></td>
+        				<td><input type="checkbox" name="upload_config[resize_images]" value="1" <?php if( $upload_config['resize_images'] ){ ?> checked<?php } ?>></td>
         			</tr>
         			<tr>
         				<th>resize dimensions</th>

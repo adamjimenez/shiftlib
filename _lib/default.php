@@ -193,8 +193,10 @@ switch( $request ){
 		exit;
 	break;
 	case 'sitemap.xml':
-		require(dirname(__FILE__).'/modules/seo/sitemap.xml.php');
-		exit;
+		if (!file_exists($root_folder.'/_tpl/sitemap.xml.php')) {
+			require(dirname(__FILE__).'/modules/seo/sitemap.xml.php');
+			exit;
+		}
 	break;
 	case 'logout':
 		$auth->logout();
@@ -209,7 +211,7 @@ $sections = explode('/', $request);
 $catcher = '';
 $include_file = get_include($request);
 
-ob_start("ob_gzhandler");
+//ob_start("ob_gzhandler"); // breaks server side event streaming
 
 if( end($sections)=='template' ){
 	$trigger_404=true;

@@ -45,7 +45,14 @@ function timeSince(timeStamp) {
 					rinput.test( this.type ) );
 		})
 		.map(function( i, elem ){
-			var val = jQuery( this ).val();
+			if ($(elem).attr('type')=='file') {
+				var val = [];
+				for (var i = 0; i < $(elem).get(0).files.length; ++i) {
+					val.push($(elem).get(0).files[i].name);
+				}
+			} else {
+				var val = jQuery( this ).val();
+			}
 
 			return val === null ?
 				null :
@@ -145,7 +152,7 @@ function initForms()
 		//validate
 		jQuery.ajax( url, {
 			dataType: 'json',
-			type: 'post',
+			type: $(this).attr('method'),
 			data: jQuery(this).serializeAll()+'&validate=1&nospam=1',
 			success: jQuery.proxy(function(returned){
 			    var errorMethod = 'inline';
@@ -251,7 +258,7 @@ function initForms()
 						}
 
 						//focus field
-						$(this).find('[name="'+returned[0]+'"]:first').focus();
+					//	$(this).find('[name="'+returned[0]+'"]:first').focus();
 					}
 
 					//remove error messages
@@ -674,6 +681,35 @@ function initForms()
 		
 		jQuery('.checkboxes').sortable({
 			axis: 'y',
+		});
+	}
+	
+	// file preview and add another
+	if( jQuery('ul.files').length ){
+		function readURL(input) {
+			if (input.files && input.files[0]) {
+				var filesAmount = input.files.length;
+				
+				for (i = 0; i < filesAmount; i++) {
+					var reader = new FileReader();
+					
+					reader.onload = function(e) {
+						$('<img class="file-preview" title="click to remove" style="max-width: 100px; max-height: 100px; cursor: pointer;">').appendTo($(input).parent()).attr('src', e.target.result	);
+						$(input).hide();
+					}
+					
+					reader.readAsDataURL(input.files[i]);
+				}
+			}
+		}
+			
+		$("body").on('change', 'ul.files input', function() {
+			$(this).parent().clone().appendTo( $(this).closest('ul') ).find('input').val('');
+			readURL(this);
+		});
+			
+		$("body").on('click', 'img.file-preview', function() {
+			$(this).parent().remove();
 		});
 	}
 

@@ -1,4 +1,4 @@
-<?
+<?php
 if( !$shop_enabled ){
     die('shop is not enabled');
 }
@@ -26,7 +26,7 @@ $orders = sql_query($p->query);
         <button type="submit">Lookup order</button>
         </form>
 
-        <table width="420" border="1" cellspacing="0" cellpadding="4" align="center" style="margin:5px" class="box">
+        <table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" style="margin:5px" class="box">
         <tr>
         	<th>Date</th>
         	<th>Name</th>
@@ -34,25 +34,25 @@ $orders = sql_query($p->query);
         	<th>Amount</th>
         	<th>Status</th>
         </tr>
-        <?
+        <?php
         if( count($orders) ){
         	foreach( $orders as $k=>$v ){
         ?>
         <tr>
         	<td><?=dateformat('d-m-Y',$v['date']);?></td>
-        	<td><?=$v['name'];?></td>
+        	<td><?=$v['name'] ?: $v['email'];?></td>
         	<td><a href="?option=shop_order&id=<?=$v['id'];?>"><?=$v['id'];?></a></td>
         	<td>&pound;<?=number_format(($v['total']),2);?></td>
         	<td><?=$v['status'];?></td>
         </tr>
-        <?
+        <?php
         	}
         }else{
         ?>
         <tr>
         	<td colspan="5">No previous orders</td>
         </tr>
-        <?
+        <?php
         }
         ?>
         </table>

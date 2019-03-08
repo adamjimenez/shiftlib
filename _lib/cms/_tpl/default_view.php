@@ -1,4 +1,4 @@
-<?
+<?php
 // check permissions
 if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
     die('access denied');
@@ -165,7 +165,7 @@ window.onload=init;
 <table width="100%">
 <tr>
     <td>
-		<?
+		<?php
 		$qs_arr = $_GET;
 		unset($qs_arr['option']);
 		unset($qs_arr['view']);
@@ -193,25 +193,25 @@ window.onload=init;
 		}
 		?>
 
-		<? /*if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
+		<?php /*if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
 		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($section);?></a>
 		&nbsp;
-		<? }elseif( in_array('id', $vars['fields'][$this->section]) ){ */?>
+		<?php }elseif( in_array('id', $vars['fields'][$this->section]) ){ */?>
 		<a href="?option=<?=$this->section;?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
 		&nbsp;
-		<? /*}*/ ?>
+		<?php /*}*/ ?>
 
         <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
 
 
-		<? if( $vars['settings'][$this->section]['sms'] and is_numeric($content['mobile']) ){ ?>
+		<?php if( $vars['settings'][$this->section]['sms'] and is_numeric($content['mobile']) ){ ?>
 		<form method="post" style="display:inline">
 		<input type="hidden" name="sms" value="1">
 			<button class="btn btn-default" type="submit">Send SMS text</button>
 		</form>
-		<? } ?>
+		<?php } ?>
 
-		<?
+		<?php
 		foreach( $cms_buttons as $k=>$button ){
 			if( $this->section==$button['section'] and $button['page']=='view' ){
                 require('includes/button.php');
@@ -227,20 +227,20 @@ window.onload=init;
         </form>
 	</td>
     <td style="text-align: right;">
-        <? if( $prev_link ){ ?>
+        <?php if( $prev_link ){ ?>
         <a href="<?=$prev_link;?>">Prev</a>
-        <? } ?>
-        <? if( $prev_link and $next_link ){ ?>
+        <?php } ?>
+        <?php if( $prev_link and $next_link ){ ?>
         |
-        <? } ?>
-        <? if( $next_link ){ ?>
+        <?php } ?>
+        <?php if( $next_link ){ ?>
         <a href="<?=$next_link;?>">Next</a>
-        <? } ?>
+        <?php } ?>
     </td>
 </tr>
 </table>
 
-<?
+<?php
 if( in_array('language',$vars['fields'][$this->section]) ){
 ?>
 <p>
@@ -249,20 +249,20 @@ Language:
 	<?=html_options($languages);?>
 </select>
 </p>
-<?
+<?php
 }
 ?>
 
-<?
+<?php
 foreach( $languages as $language ){
 	if( $language!=='en' and in_array('language', $vars['fields'][$this->section]) ){
 		$this->language = $language;
 		$content = $this->get($this->section,$_GET['id']);
 	}
 ?>
-	<div id="language_<?=$language;?>" <? if($language!='en'){ ?>style="display:none;"<? } ?> class="box">
+	<div id="language_<?=$language;?>" <?php if($language!='en'){ ?>style="display:none;"<?php } ?> class="box">
 	<table border="0" cellspacing="0" cellpadding="5" width="100%">
-	<?
+	<?php
 	foreach( $vars['fields'][$this->section] as $name=>$type ){
 		$label = $vars['label'][$this->section][$name];
 
@@ -334,60 +334,60 @@ foreach( $languages as $language ){
 				<h2><?=ucfirst($name);?></h2>
 			</td>
 		</tr>
-		<?
+		<?php
 		}else{
 		?>
 
 		<tr>
 			<th align="left" valign="top" width="20%"><?=$label;?></th>
 			<td>
-		<?
+		<?php
 		if( in_array($type,array('text','float','decimal','int','id','page-name','hidden','ip','deleted')) ){
 			if( is_numeric($value) and $value==0 ){
 				continue;
 			}
 		?>
 			<?=$value;?>
-		<? }elseif( is_array($type) ){ ?>
+		<?php }elseif( is_array($type) ){ ?>
 			<?=$value;?>
-		<? }elseif( $type == 'mobile' || $type == 'tel' ){ ?>
+		<?php }elseif( $type == 'mobile' || $type == 'tel' ){ ?>
 			<?=$value;?>
-		<? }elseif( $type == 'url' ){ ?>
+		<?php }elseif( $type == 'url' ){ ?>
 			<a href="<?=$value;?>" target="_blank"><?=$value;?></a>
-		<? }elseif( $type == 'email' ){ ?>
+		<?php }elseif( $type == 'email' ){ ?>
 			<a href="mailto:<?=$value;?>" target="_blank"><?=$value;?></a>
-		<? }elseif( $type == 'postcode' ){ ?>
+		<?php }elseif( $type == 'postcode' ){ ?>
 			<?=$value;?>
 			<a href="http://maps.google.co.uk/maps?f=q&source=s_q&hl=en&geocode=&q=<?=$value;?>" target="_blank">(view map)</a>
-		<? }elseif( $type == 'coords' ){ ?>
+		<?php }elseif( $type == 'coords' ){ ?>
 			<?=htmlspecialchars(substr($value,6,-1));?>
-		<? }elseif( $type == 'textarea' ){ ?>
+		<?php }elseif( $type == 'textarea' ){ ?>
 			<?=nl2br(strip_tags($value));?>
-		<? }elseif( $type == 'editor' ){ ?>
+		<?php }elseif( $type == 'editor' ){ ?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type == 'file' ){
 			if( $value ){
 				$file=sql_query("SELECT * FROM files WHERE id='".escape($value)."'");
 			}
 		?>
-				<?
+				<?php
 				$image_types=array('jpg','jpeg','gif','png');
 				if( in_array(file_ext($file[0]['name']),$image_types) ){
 				?>
 				<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
-				<? } ?>
+				<?php } ?>
 				<a href="/_lib/cms/file.php?f=<?=$file[0]['id'];?>"><?=$file[0]['name'];?></a> <span style="font-size:9px;"><?=file_size($file[0]['size']);?></span>
 
-				<?
+				<?php
 				$doc_types=array('pdf','doc','docx','xls','tiff');
 				if( in_array(file_ext($file[0]['name']),$doc_types) ){
 				?>
 				<a href="http://docs.google.com/viewer?url=<?=rawurlencode('http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'&auth_user='.$_SESSION[$auth->cookie_prefix.'_email'].'&auth_pw='.md5($auth->secret_phrase.$_SESSION[$auth->cookie_prefix.'_password']));?>" target="_blank">(view)</a>
-				<? } ?>
-		<? }elseif( $type == 'phpupload' ){ ?>
+				<?php } ?>
+		<?php }elseif( $type == 'phpupload' ){ ?>
             <input type="text" name="<?=$name;?>" class="upload" value="<?=$value;?>" readonly="true">
-		<?
+		<?php
 		}elseif( $type == 'select' or $type == 'combo' or $type == 'radio' or $type == 'select-distance' ){
 
 			if( !is_array($vars['options'][$name]) ){
@@ -403,7 +403,7 @@ foreach( $languages as $language ){
 			}
 		?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type == 'parent' ){
 			reset($vars['fields'][$this->section]);
 
@@ -415,20 +415,20 @@ foreach( $languages as $language ){
 
 		?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type == 'select-multiple' or $type=='checkboxes' ){
 		?>
 			<?=$value;?>
-		<? }elseif( $type == 'checkbox' ){ ?>
+		<?php }elseif( $type == 'checkbox' ){ ?>
 			<?=$value ? 'Yes' : 'No' ;?>
-		<? }elseif( $type == 'files' ){
+		<?php }elseif( $type == 'files' ){
 
 		if( $value ){
 			$value=explode("\n",$value);
 		}
 		?>
 				<ul id="<?=$name;?>_files" class="files">
-				<?
+				<?php
 				$count=0;
 
 				if( is_array($value) ){
@@ -442,32 +442,32 @@ foreach( $languages as $language ){
 				<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
 				<a href="/_lib/cms/file.php?f=<?=$file[0]['id'];?>"><?=$file[0]['name'];?></a><br />
 				<br />
-				<?
+				<?php
 					}
 				}
 				?>
 				</ul>
-		<? }elseif( $type == 'phpuploads' ){ ?>
+		<?php }elseif( $type == 'phpuploads' ){ ?>
             <textarea name="<?=$field_name;?>" class="upload" readonly="true"><?=$value;?></textarea>
-		<?
+		<?php
 		}elseif( $type == 'color' ){
 		?>
 			<input type="color" value="<?=$value;?>" disabled >
-		<?
+		<?php
 		}elseif( $type == 'date' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$value=dateformat('d/m/Y',$value);
 			}
 		?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type == 'month' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$value=dateformat('F Y',$value);
 			}
 		?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type=='dob' ){
 			if( $value!='0000-00-00' and $value!='' ){
 				$age=age($value);
@@ -475,11 +475,11 @@ foreach( $languages as $language ){
 			}
 		?>
 			<?=$value;?> (<?=$age;?>)
-		<?
+		<?php
 		}elseif( $type == 'time' ){
 		?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type == 'datetime' ){
 			if( $value!='0000-00-00 00:00:00' ){
 				$date=explode(' ',$value);
@@ -487,7 +487,7 @@ foreach( $languages as $language ){
 			}
 		?>
 			<?=$value;?>
-		<?
+		<?php
 		}elseif( $type == 'timestamp' ){
 			if( $value!='0000-00-00 00:00:00' ){
 				$date=explode(' ',$value);
@@ -495,7 +495,7 @@ foreach( $languages as $language ){
 			}
 		?>
 			<?=$value;?>
-		<? }elseif( $type == 'rating' ){
+		<?php }elseif( $type == 'rating' ){
 			$opts['rating']=array(
 					1=>'Very Poor',
 					2=>'Poor',
@@ -508,41 +508,41 @@ foreach( $languages as $language ){
 				<option value=""></option>
 				<?=html_options($opts['rating'], $value);?>
 			</select>
-		<? }elseif( $type == 'number' ){ ?>
+		<?php }elseif( $type == 'number' ){ ?>
 			<?=number_format($value,2);?>
-		<? } ?>
+		<?php } ?>
 
 			</td>
 		</tr>
-		<? } ?>
-	<? } ?>
+		<?php } ?>
+	<?php } ?>
 	</table>
 	</div>
-<?
+<?php
 }
 ?>
 
 
-<?
+<?php
 if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleges ){
 ?>
 	<br>
 	<ul class="tabs">
-<?
+<?php
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
 ?>
 		<li><a id="tab_<?=$count;?>" href="javascript:;" target="subsection_<?=$count;?>" class="tab" onclick="return false;"><?=ucfirst($subsection);?></a></li>
-<?
+<?php
 	}
 ?>
-	<? if ($has_priveleges) { ?>
+	<?php if ($has_priveleges) { ?>
 		<li><a id="tab_priveleges" href="javascript:;" target="subsection_priveleges" class="tab" onclick="return false;">Priveleges</a></li>
-	<? } ?>
-	<? if ($has_logs) { ?>
+	<?php } ?>
+	<?php if ($has_logs) { ?>
 		<li><a id="tab_logs" href="javascript:;" target="subsection_logs" class="tab" onclick="return false;">Logs</a></li>
-	<? } ?>
+	<?php } ?>
 	</ul>
-<?
+<?php
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
 
 	    if( count($vars['fields'][$subsection]) ){
@@ -596,7 +596,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 
 <div style="display:none;" id="subsection_<?=$count;?>">
     <div class="box" style="clear:both;">
-	<?
+	<?php
 	if( count($vars['fields'][$subsection]) ){
 	    require(dirname(__FILE__).'/list.php');
 	}else if(file_exists('_tpl/admin/'.$subsection.'.php')){
@@ -611,14 +611,14 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 	$('#tab_<?=$count;?>').text('<?=ucfirst($subsection);?> (<?=$p->total;?>)');
 </script>
 
-<?
+<?php
 	}
 ?>
 
-<? if ($has_priveleges) { ?>
+<?php if ($has_priveleges) { ?>
 	<div style="display:none;" id="subsection_priveleges">
 	    <div class="box" style="clear:both;">
-		<?
+		<?php
 		//privileges
 		if(
 			$auth->user['admin']==1 and
@@ -644,7 +644,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 			</th>
 			<th>Filter</th>
 		</tr>
-		<?
+		<?php
 			foreach( $vars["fields"] as $section=>$fields ){
 		?>
 		<tr>
@@ -660,7 +660,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 				<button type="button" onclick="choose_filter('<?=$section;?>');">Choose Filter</button>
 			</td>
 		</tr>
-		<?
+		<?php
 			}
 		?>
 		<tr>
@@ -705,17 +705,18 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 			return false;
 		});
 		</script>
-		<?
+		<?php
 		}
 		?>
 		</div>
 	</div>
-<? } ?>
+<?php } ?>
 
-<? if ($has_logs) { ?>
+<?php if ($has_logs) { ?>
 	<div style="display:none;" id="subsection_logs">
 	    <div class="box" style="clear:both;">
-			<?
+			<?php
+				/*
 				if( $_GET['option']=='users' ){
 					$query = "SELECT *,L.date FROM cms_logs L
 						INNER JOIN users U ON L.user=U.id
@@ -724,14 +725,15 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 						ORDER BY L.date DESC
 					";
 				}else{
+				*/
 					$query = "SELECT *,L.date FROM cms_logs L
-						INNER JOIN users U ON L.user=U.id
+						LEFT JOIN users U ON L.user=U.id
 						WHERE
 							section='".escape($_GET['option'])."' AND
 							item='".escape($id)."'
 						ORDER BY L.date DESC
 					";
-				}
+				//}
 				
 				$p = new paging($query, 20);
 				
@@ -740,7 +742,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 				if( count($logs) ){
 			?>
 			<div style="overflow: scroll; background: #fff;">
-			<?
+			<?php
 				foreach( $logs as $k=>$v ){
 					switch( $v['task'] ){
 						case 'edit':
@@ -772,7 +774,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 			</p>
 			<br>
 			<br>
-			<? } ?>
+			<?php } ?>
 			<p>
 				<?=$p->get_paging();?>
 			</p>
@@ -780,14 +782,14 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 			
 			<br />
 			<br />
-			<?
+			<?php
 				}
 			?>
 		</div>
 	</div>
-<? } ?>
+<?php } ?>
 
-<?
+<?php
 }
 
 }
