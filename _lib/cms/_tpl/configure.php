@@ -400,15 +400,10 @@ if( $_POST['save'] ){
 
 	$config='<?php
 #GENERAL SETTINGS
-$db_config["host"]="'.$_POST['db_config']['host'].'";
-$db_config["user"]="'.$_POST['db_config']['user'].'";
-$db_config["pass"]="'.$_POST['db_config']['pass'].'";
-$db_config["name"]="'.$_POST['db_config']['name'].'";
-
-$db_config["dev_host"]="'.$_POST['db_config']['dev_host'].'";
-$db_config["dev_user"]="'.$_POST['db_config']['dev_user'].'";
-$db_config["dev_pass"]="'.$_POST['db_config']['dev_pass'].'";
-$db_config["dev_name"]="'.$_POST['db_config']['dev_name'].'";
+$db_config["host"]="'.$db_config['host'].'";
+$db_config["user"]="'.$db_config['user'].'";
+$db_config["pass"]="'.$db_config['pass'].'";
+$db_config["name"]="'.$db_config['name'].'";
 
 $live_site='.str_to_bool($_POST['live_site']).';
 $admin_config["theme"]="'.$_POST['admin_config']['theme'].'";
@@ -896,7 +891,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 <div id="tabs">
     <ul class="nav">
         <li><a href="#sections">Sections</a></li>
-        <li><a href="#database">Database</a></li>
         <li><a href="#general">General</a></li>
         <li><a href="#template">Template</a></li>
         <li><a href="#login">Login</a></li>
@@ -1162,31 +1156,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         }
         ?>
         </ul>
-    </div>
-
-    <div id="database">
-        <div id="database_config">
-        	<div style="padding:5px 10px;">
-        		<table>
-        		<tr>
-        			<th>Host</th>
-        			<td><input type="text" name="db_config[host]" value="<?=$db_config['host'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>User</th>
-        			<td><input type="text" name="db_config[user]" value="<?=$db_config['user'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>Pass</th>
-        			<td><input type="password" name="db_config[pass]" value="<?=$db_config['pass'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>Name</th>
-        			<td><input type="text" name="db_config[name]" value="<?=$db_config['name'];?>"></td>
-        		</tr>
-        		</table>
-        	</div>
-        </div>
     </div>
 
     <div id="general">
