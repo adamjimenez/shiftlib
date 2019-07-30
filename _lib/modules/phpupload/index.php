@@ -156,7 +156,7 @@ if($_FILES) {
     }
     
     // rotate
-    imageorientationfix($filePath);
+    //imageorientationfix($filePath);
 
     // Return Success JSON-RPC response
     $result['file'] = $filePath;
@@ -193,7 +193,7 @@ if($_GET["cmd"]) {
             });
 
             $start = $_GET['current'] ?: 0;
-            $max_files = 500;
+            $max_files = 2000;
             $i = 0;
             foreach ($paths as $pathname) {
     			$i++;
