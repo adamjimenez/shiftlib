@@ -183,6 +183,7 @@ class shop{
 					B.session='".session_id()."'
 					$where_str
 				)
+			ORDER BY B.id
 		");
 
 		$this->item_count=0;
@@ -229,7 +230,7 @@ class shop{
 		$this->vat=$this->subtotal*$this->vat_rate;
 	}
 
-	function add_to_basket($product,$quantity=1,$buy_now=false,$variation_id=null,$extras_arr=null)
+	function add_to_basket($product, $quantity=1, $buy_now=false, $variation_id=null, $extras_arr='')
 	{
 		global $auth;
 
@@ -242,10 +243,12 @@ class shop{
 		}
 
 		$extras='';
-		if( $extras_arr ){
+		if( is_array($extras_arr) ){
 			foreach( $extras_arr as $k=>$v ){
 				$extras.=spaced($k).': '.$v."\n";
 			}
+		} else {
+			$extras = $extras_arr;
 		}
 
 		if( $variation_id ){
@@ -342,19 +345,30 @@ class shop{
 
 		if( $_POST['remove'] ){
 			foreach( $_POST['remove'] as $k=>$v ){
-				sql_query("DELETE FROM basket
-					WHERE id='".escape($k)."'
-				");
+				if ($v) {
+					sql_query("DELETE FROM basket
+						WHERE id='".escape($k)."'
+					");
+				}
 			}
 		}
 	}
 
 	function empty_basket()
 	{
+		global $auth;
+		
 		sql_query("DELETE FROM basket
 		    WHERE
-		        session='".session_id()."' OR user='".$auth->user['id']."'
+		        session='".session_id()."' 
 		");
+		
+		if ($auth->user['id']) {
+			sql_query("DELETE FROM basket
+				WHERE
+					user='".$auth->user['id']."'
+			");
+		}
 	}
 
 	function set_delivery($price)
@@ -910,7 +924,10 @@ class shop{
 
 			if(!$this->disable_confirmation_email){
 				email_template($order['email'], 'Order Confirmation', $reps);
-				email_template($this->paypal_email, 'Order Confirmation', $reps);
+				
+				if ($order['email']!=$this->paypal_email) {
+					email_template($this->paypal_email, 'Order Confirmation', $reps);
+				}
 			}
 
 			email_template($admin_email, 'Order Confirmation', $reps);
@@ -961,16 +978,16 @@ class shop{
 			}
 			if( $order['discount'] ){
 				$msg.='Discount:'."\n";
-				$msg.='£'.number_format($order['discount'],2)."\n\n";
+				$msg.='£'.number_format($order['discount'], 2)."\n\n";
 			}
 
 			if( $order['vat'] ){
 				$msg.='Vat:'."\n";
-				$msg.='£'.number_format($order['vat'],2)."\n\n";
+				$msg.='£'.number_format($order['vat'], 2)."\n\n";
 			}
 
 			$msg.='Total: ';
-			$msg.='£'.number_format($order['total'],2)."\n\n";
+			$msg.='£'.number_format($order['total'], 2)."\n\n";
 
 			if( $order['event_date'] ){
 				$msg.='Event date:'."\n";
@@ -981,13 +998,15 @@ class shop{
 			mail($admin_email, 'Order Placed', $msg, $this->headers);
 
 			if(!$this->disable_confirmation_email){
-				mail($order['email'], 'Order Confirmation', $msg, $this->headers);
-
 				if( $this->cc ){
 					$this->headers.="Cc: ".$this->cc."\n";
 				}
+				
+				mail($order['email'], 'Order Confirmation', $msg, $this->headers);
 
-				mail($this->paypal_email,'Order Placed',$msg,$this->headers);
+				if ($order['email'] != $this->paypal_email) {
+					mail($this->paypal_email,'Order Placed',$msg,$this->headers);
+				}
 			}
 		}
 	}
