@@ -63,17 +63,8 @@ $row = sql_query("SELECT * FROM files WHERE
 	id='".addslashes($_GET['f'])."'
 ", 1);
 
-if( $vars['files']['dir'] ){
-    $video_types=array('f4v','mp4');
-    if( in_array(file_ext($row['name']), $video_types) ){
-	    $row['data'] = file_get_contents($vars['files']['dir'].$row['id'].'_thumb');
-    }else{
-	    $row['data'] = file_get_contents($vars['files']['dir'].$row['id']);
-    }
 
-}
-
-$img = imagecreatefromstring($row['data']);
+$img = imageorientationfix($vars['files']['dir'].$row['id']);
 $img = thumb_img($img,array($max_width, $max_height), false);
 
 switch( file_ext($row['name']) ){

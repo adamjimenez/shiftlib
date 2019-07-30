@@ -405,6 +405,11 @@ $db_config["user"]="'.$db_config['user'].'";
 $db_config["pass"]="'.$db_config['pass'].'";
 $db_config["name"]="'.$db_config['name'].'";
 
+$db_config["dev_host"]="'.$db_config['dev_host'].'";
+$db_config["dev_user"]="'.$db_config['dev_user'].'";
+$db_config["dev_pass"]="'.$db_config['dev_pass'].'";
+$db_config["dev_name"]="'.$db_config['dev_name'].'";
+
 $live_site='.str_to_bool($_POST['live_site']).';
 $admin_config["theme"]="'.$_POST['admin_config']['theme'].'";
 
@@ -458,6 +463,9 @@ $auth_config["secret_phrase"]="'.$_POST['auth_config']['secret_phrase'].'";
 
 //for use with session and cookie vars
 $auth_config["cookie_prefix"]="'.$_POST['auth_config']['cookie_prefix'].'";
+
+//how long a cookie lasts with remember me
+$auth_config["cookie_duration"]="'.$_POST['auth_config']['cookie_duration'].'";
 
 //send registration notifications
 $auth_config["registration_notification"]='.str_to_bool($_POST['auth_config']['registration_notification']).';
@@ -1386,6 +1394,10 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>cookie prefix</th>
         			<td><input type="text" name="auth_config[cookie_prefix]" value="<?=$auth_config['cookie_prefix'];?>"></td>
+        		</tr>
+        		<tr>
+        			<th>cookie duration</th>
+        			<td><input type="text" name="auth_config[cookie_duration]" value="<?=$auth_config['cookie_duration'];?>"></td>
         		</tr>
         		<tr>
         			<th>registration notification</th>

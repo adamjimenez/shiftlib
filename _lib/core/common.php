@@ -69,7 +69,7 @@ function imageorientationfix($path) {
 			$img = imagerotate($img, 90, 0);
 		break;
 	}
-	return imagejpeg($img, $path, 90);
+	return $img;
 }
 
 function imagefile($img, $path) {
@@ -284,14 +284,14 @@ function alert($error)
 	//deprecated
 	$error=str_replace("\n",'\n',$error);
 
-	echo '<script type="text/javascript">
+	echo '<script>
 			alert("'.$error.'");
 	</script>';
 }
 
 function analytics($id){
 	?>
-	<script type="text/javascript">
+	<script>
 	  var _gaq = _gaq || [];
 	  _gaq.push(['_setAccount', '<?=$id;?>']);
 	  _gaq.push(['_trackPageview']);
@@ -322,6 +322,134 @@ function array_orderby()
 	$args[] = &$data;
 	call_user_func_array('array_multisort', $args);
 	return array_pop($args);
+}
+
+function bank_holidays($yr) {
+ 
+    $bankHols = [];
+ 
+    // New year's:
+    switch ( date("w", strtotime("$yr-01-01 12:00:00")) ) {
+        case 6:
+            $bankHols[] = "$yr-01-03";
+            break;
+        case 0:
+            $bankHols[] = "$yr-01-02";
+            break;
+        default:
+            $bankHols[] = "$yr-01-01";
+    }
+ 
+    // Good friday:
+    $bankHols[] = date("Y-m-d", strtotime( "+".(easter_days($yr) - 2)." days", strtotime("$yr-03-21 12:00:00") ));
+ 
+    // Easter Monday:
+    $bankHols[] = date("Y-m-d", strtotime( "+".(easter_days($yr) + 1)." days", strtotime("$yr-03-21 12:00:00") ));
+ 
+    // May Day:
+    if ($yr == 1995) {
+        $bankHols[] = "1995-05-08"; // VE day 50th anniversary year exception
+    } else {
+        switch (date("w", strtotime("$yr-05-01 12:00:00"))) {
+            case 0:
+                $bankHols[] = "$yr-05-02";
+                break;
+            case 1:
+                $bankHols[] = "$yr-05-01";
+                break;
+            case 2:
+                $bankHols[] = "$yr-05-07";
+                break;
+            case 3:
+                $bankHols[] = "$yr-05-06";
+                break;
+            case 4:
+                $bankHols[] = "$yr-05-05";
+                break;
+            case 5:
+                $bankHols[] = "$yr-05-04";
+                break;
+            case 6:
+                $bankHols[] = "$yr-05-03";
+                break;
+        }
+    }
+ 
+    // Whitsun:
+    if ($yr == 2002) { // exception year
+        $bankHols[] = "2002-06-03";
+        $bankHols[] = "2002-06-04";
+    } else {
+        switch (date("w", strtotime("$yr-05-31 12:00:00"))) {
+            case 0:
+                $bankHols[] = "$yr-05-25";
+                break;
+            case 1:
+                $bankHols[] = "$yr-05-31";
+                break;
+            case 2:
+                $bankHols[] = "$yr-05-30";
+                break;
+            case 3:
+                $bankHols[] = "$yr-05-29";
+                break;
+            case 4:
+                $bankHols[] = "$yr-05-28";
+                break;
+            case 5:
+                $bankHols[] = "$yr-05-27";
+                break;
+            case 6:
+                $bankHols[] = "$yr-05-26";
+                break;
+        }
+    }
+ 
+    // Summer Bank Holiday:
+    switch (date("w", strtotime("$yr-08-31 12:00:00"))) {
+        case 0:
+            $bankHols[] = "$yr-08-25";
+            break;
+        case 1:
+            $bankHols[] = "$yr-08-31";
+            break;
+        case 2:
+            $bankHols[] = "$yr-08-30";
+            break;
+        case 3:
+            $bankHols[] = "$yr-08-29";
+            break;
+        case 4:
+            $bankHols[] = "$yr-08-28";
+            break;
+        case 5:
+            $bankHols[] = "$yr-08-27";
+            break;
+        case 6:
+            $bankHols[] = "$yr-08-26";
+            break;
+    }
+ 
+    // Christmas:
+    switch ( date("w", strtotime("$yr-12-25 12:00:00")) ) {
+        case 5:
+            $bankHols[] = "$yr-12-25";
+            $bankHols[] = "$yr-12-28";
+            break;
+        case 6:
+            $bankHols[] = "$yr-12-27";
+            $bankHols[] = "$yr-12-28";
+            break;
+        case 0:
+            $bankHols[] = "$yr-12-26";
+            $bankHols[] = "$yr-12-27";
+            break;
+        default:
+            $bankHols[] = "$yr-12-25";
+            $bankHols[] = "$yr-12-26";
+    }
+ 
+    return $bankHols;
 }
 
 function basename_safe($path)
@@ -404,9 +532,9 @@ function current_tab( $tab, $class='' )
 	$index = 0;
 
 	if( $sections[$index] == $tab or $tab == $request ){
-		echo ' class="current active '.$class.'"';
+		return ' class="current active '.$class.'"';
 	}else if($class){
-		echo ' class="'.$class.'"';
+		return ' class="'.$class.'"';
 	}
 }
 
@@ -1089,7 +1217,7 @@ function load_js($libs)
 	//load the js and css in the right order
 	if( $deps['google'] ){
 	?>
-	<script type="text/javascript" src="//www.google.com/jsapi"></script>
+	<script src="//www.google.com/jsapi"></script>
 	<?php
 	}
 
@@ -1101,7 +1229,7 @@ function load_js($libs)
 
 	if( $deps['cms'] ){
 	?>
-		<script type="text/javascript" src="/_lib/cms/js/cms.js"></script>
+		<script src="/_lib/cms/js/cms.js" async></script>
 	<?php
 	}
 
@@ -1115,41 +1243,41 @@ function load_js($libs)
 
 	if( $deps['lightbox'] ){
 	?>
-		<link rel="stylesheet" href="//cdn.jsdelivr.net/lightbox2/2.6/css/lightbox.css" type="text/css" media="screen" />
-		<script src="//cdn.jsdelivr.net/lightbox2/2.6/js/lightbox-2.6.min.js" type="text/javascript"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.1/css/lightbox.min.css" type="text/css" media="screen" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.1/js/lightbox.min.js" async></script>
 	<?php
 	}
 
 	if( $deps['cycle'] ){
 	?>
-		<script src="//cdn.jsdelivr.net/cycle/3.0.2/jquery.cycle.all.js" type="text/javascript"></script>
+		<script src="//cdn.jsdelivr.net/cycle/3.0.2/jquery.cycle.all.js"></script>
 	<?php
 	}
 
 	if( $deps['cycle2'] ){
 	?>
-		<?php /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js" type="text/javascript"></script>*/ ?>
-		<script src="/_lib/js/jquery.cycle2.js" type="text/javascript"></script>
-		<script src="/_lib/js/jquery.cycle2.carousel.js" type="text/javascript"></script>
+		<?php /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js"></script>*/ ?>
+		<script src="/_lib/js/jquery.cycle2.js"></script>
+		<script src="/_lib/js/jquery.cycle2.carousel.js"></script>
 	<?php
 	}
 
 	if( $deps['colorbox'] ){
 	?>
 		<link rel="stylesheet" href="/_lib/js/jquery.colorbox/colorbox.css" type="text/css" media="screen" />
-		<script src="/_lib/js/jquery.colorbox/jquery.colorbox.js" type="text/javascript"></script>
+		<script src="/_lib/js/jquery.colorbox/jquery.colorbox.js"></script>
 	<?php
 	}
 
 	if( $deps['placeholder'] ){
 	?>
-		<script src="//cdn.jsdelivr.net/placeholder-shiv/0.2/placeholder-shiv.jquery.js" type="text/javascript"></script>
+		<script src="//cdn.jsdelivr.net/placeholder-shiv/0.2/placeholder-shiv.jquery.js"></script>
 	<?php
 	}
 
 	if( $deps['equalheights'] ){
 	?>
-		<script src="//cdn.jsdelivr.net/jquery.equalheights/1.3/jquery.equalheights.min.js" type="text/javascript"></script>
+		<script src="//cdn.jsdelivr.net/jquery.equalheights/1.3/jquery.equalheights.min.js"></script>
 	<?php
 	}
 
@@ -1162,7 +1290,7 @@ function load_js($libs)
 
 	if( $deps['swfobject'] ){
 	?>
-		<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js" type="text/javascript"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
 	<?php
 	}
 
@@ -1183,11 +1311,10 @@ function load_js($libs)
 
 	if( $deps['bootstrap4'] ){
 		//$version = '3.1.1';
-		$version = '4.0.0';
+		$version = '4.3.1';
 	?>
-	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap.min.css" crossorigin="anonymous">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/<?=$version;?>/js/bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
 	<?php
 	}
 
@@ -1209,8 +1336,8 @@ function load_js($libs)
 			padding: 10px;
 		}
 	</style>
-	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js" type="text/javascript"></script>
-	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shAutoloader.js" type="text/javascript"></script>
+	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js"></script>
+	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shAutoloader.js"></script>
 	<script>
 	SyntaxHighlighter.autoloader(
 	  'php //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPHP.js',
@@ -1230,9 +1357,10 @@ function load_js($libs)
 	?>
 		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 	<?php
+    	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 		*/
 		?>
-    	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
 		<?php
 	}
 }
@@ -1398,6 +1526,38 @@ function cache_query($query, $single=false, $expire=3600) {
 	return $single ? $result[0] : $result;
 }
 
+function send_html_email($user, $html, $reps) {
+	// get subject
+	if (preg_match("/<title>(.*)<\/title>/siU", $html, $title_matches)) {
+		$title = preg_replace('/\s+/', ' ', $title_matches[1]);
+		$subject = trim($title);
+	}
+	
+	if (!$subject) {
+		die('missing subject');
+	}
+	
+	// get from name
+	$pos = strpos($_SERVER['HTTP_HOST'], '.');
+	$from = substr($_SERVER['HTTP_HOST'], 9, $pos);
+	
+	$headers = array(
+		'MIME-Version: 1.0',
+		'Content-type: text/html; charset=iso-8859-1',
+		'From: '.$from.' <auto@'.$_SERVER['HTTP_HOST'].'>'
+	);
+	$headers = implode("\r\n", $headers);
+	
+	$hash = md5($user['id'].'jhggh6tj^999£$£%k77');
+	$reps['unsubscribe'] = 'https://'.$_SERVER['HTTP_HOST'].'/unsubscribe?u='.$user['id'].'&h='.$hash;
+	
+	foreach($reps as $k=>$v) {
+		$html = str_replace('{$'.$k.'}', $v, $html);
+	}
+	
+	mail($user['email'], $subject, $html, $headers);
+}
+
 function sql_affected_rows() {
 	global $db_connection;
 	return mysqli_affected_rows($db_connection);
@@ -1535,14 +1695,9 @@ function thumb($file,$max_width=200,$max_height=200,$default=NULL,$save=NULL,$ou
 function time_elapsed($ptime) {
 	$etime = time() - make_timestamp($ptime);
 
-	if ($etime < 1)
-	{
-		return '0s';
-	}
-
-	$a = array( 12 * 30 * 24 * 60 * 60  =>  'year',
-				30 * 24 * 60 * 60	   =>  'month',
-				24 * 60 * 60			=>  'day',
+	$a = array( 12 * 30 * 24 * 60 * 60  =>  ' years',
+				30 * 24 * 60 * 60	   =>  ' months',
+				24 * 60 * 60			=>  ' days',
 				60 * 60				 =>  'h',
 				60					  =>  'm',
 				1					   =>  's'
@@ -1551,10 +1706,10 @@ function time_elapsed($ptime) {
 	foreach ($a as $secs => $str)
 	{
 		$d = $etime / $secs;
-		if ($d >= 1)
+		if (abs($d) >= 1)
 		{
 			$r = round($d);
-			return $r . $str . ($r > 1 ? '' : '');
+			return $r . $str . (abs($r) > 1 ? '' : '');
 		}
 	}
 }

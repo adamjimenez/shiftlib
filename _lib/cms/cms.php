@@ -145,7 +145,7 @@ class cms{
 			}
 
 			if( $auth->user['admin'] == 1 or $auth->user['privileges'][$section] == 2 ){
-				$response = $this->delete($section,$items);
+				$response = $this->delete($section, $items);
 
                 if($response === false){
 				    $_SESSION['message'] = 'Permission denied.';
@@ -186,12 +186,12 @@ class cms{
 		}
 	}
 
-	function delete($section,$ids) // no security checks
+	function delete($section, $ids) // no security checks
 	{
 		global $vars;
 
 		if( !is_array($ids) ){
-			$ids=array($ids);
+			$ids = array($ids);
 		}
 
 		$field_id = in_array('id', $vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
@@ -203,8 +203,15 @@ class cms{
 		if ($response===false) {
 		    return false;
 		}
-
-		foreach( $ids as $id ){
+		
+		foreach($ids as $id) {
+			// cheeck perms
+			$conditions[$field_id] = $id;
+			$content = $this->get($section, $conditions);
+			if (!$content) {
+				continue;
+			}
+			
 			if ($soft_delete) {
 				sql_query("UPDATE `".escape(underscored($section))."` SET
 					deleted = 1
@@ -244,26 +251,27 @@ class cms{
 		$this->trigger_event('delete', array($ids));
 	}
 
-	function conditions_to_sql($section, $conditions=null, $num_results=null, $cols=null){
-	    global $vars;
+	function conditions_to_sql($section, $conditions=array(), $num_results=null, $cols=null){
+	    global $vars, $auth;
 
 	    //debug($conditions);
 
 		if( $this->language ){
 			$language = $this->language;
-		}else{
+		} else {
 			$language = 'en';
 		}
 
 		if( is_numeric($conditions) ){
 			if( $language == 'en' ){
 				$id = $conditions;
+				//$conditions['id'] = $id;
 			}else{
 				$id = NULL;
 				$conditions = array('translated_from'=>$conditions, 'language'=>$language);
 			}
 			$num_results = 1;
-		}elseif( is_string($conditions) ){
+		} elseif ( is_string($conditions) ){
 			if( in_array('page-name', $vars['fields'][$section]) ){
 				$page_name = $conditions;
 
@@ -273,10 +281,10 @@ class cms{
 
 				$num_results = 1;
 			}
-		}else{
-			if( in_array('language',$vars['fields'][$section]) and $language ){
+		} else {
+			if ( in_array('language',$vars['fields'][$section]) and $language ){
 				$conditions['language'] = $language;
-			}elseif( !in_array('id', $vars['fields'][$section]) ){
+			} elseif ( !in_array('id', $vars['fields'][$section]) ){
 				$id = 1;
 			}
 		}
@@ -285,8 +293,17 @@ class cms{
 		$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
 
 		if( is_numeric($id) ){
-			$where[] = "T_$table.".$field_id."='".escape($id)."'";
+			//$where[] = "T_$table.".$field_id."='".escape($id)."'";
+			//$conditions['id'] = $id;
+			$conditions = array('id' => $id);
+	    	//debug($conditions);
 		}
+		
+		// staff perms
+		foreach( $auth->user['filters'][$this->section] as $k=>$v ){
+			$conditions[$k] = $v;
+		}
+	    //debug($conditions);
 		
 		if( in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id and !$conditions['id'] ){
 			$where[] = "T_$table.deleted = 0";
@@ -438,7 +455,12 @@ class cms{
 								    T_$table.".$field_name." >= '".escape($min)."' AND
 								    T_$table.".$field_name." <= '".escape($max)."'
 								)";
+							} else {
+								$where[] = "T_$table.".$field_name." = '".escape($value)."'";
 							}
+						break;
+						case 'file':
+							$where[] = "T_$table.".$field_name." > 0";
 						break;
 						default:
 							if( $conditions['func'][$field_name]=='!=' ){
@@ -511,7 +533,6 @@ class cms{
 						$where[] = '('.$or_str.')';
 					}
 				}
-
 			}
 		}
 
@@ -574,6 +595,8 @@ class cms{
 				}
 			}
 		}
+		
+		//debug($where_str);
 
 		return array(
 		    'where_str' => $where_str,
@@ -808,7 +831,7 @@ class cms{
 
 	function set_section($section, $id=null, $editable_fields=null)
 	{
-		global $vars, $languages;
+		global $vars, $languages, $auth;
 
 		if( !$vars['fields'][$section] ){
 			throw new Exception("Section does not exist: ".$section, E_USER_ERROR);
@@ -817,14 +840,19 @@ class cms{
 		$this->section = $section;
 		$this->table = underscored($section);
 
-        foreach( $editable_fields as $k=>$v ){
-            $editable_fields[$k] = spaced($v);
-        }
-
 		if( is_array($editable_fields) ){
-			$this->editable_fields = $editable_fields;
-		}else{
-			$this->editable_fields = null;
+	        foreach( $editable_fields as $k=>$v ){
+	            $this->editable_fields[$k] = spaced($v);
+	        }
+		} else {
+	        foreach( $vars['fields'][$this->section] as $k=>$v ){
+	            $this->editable_fields[] = $k;
+	        }
+		}
+		
+		// don't allow staff to edit admin perms
+		if ($auth->user['admin']!=1 and in_array('admin', $this->editable_fields)) {
+			unset($this->editable_fields[array_search('admin', $this->editable_fields)]);
 		}
 
 		$this->field_id = array_search('id', $vars['fields'][$this->section]);
@@ -1124,7 +1152,23 @@ class cms{
 					<div class="chained" data-name="<?=$field_name;?>" data-section="<?=$vars['options'][$name];?>" data-value="<?=$value;?>"></div>
 					<?php
 					} else {
-						$vars['options'][$name] = $this->get_options($name, $where);
+						if (!is_array($vars['options'][$name])) {
+							global $auth;
+							
+							$conditions = array();
+							
+							foreach( $auth->user['filters'][$this->section] as $k=>$v ){
+								$conditions[$k]=$v;
+							}
+							
+							$order = key($vars['fields'][$vars['options'][$name]]);
+							$rows = $this->get($vars['options'][$name], $conditions, null, $order);
+							
+							$vars['options'][$name] = array();
+							foreach($rows as $v) {
+								$vars['options'][$name][$v['id']] = current($v);
+							}
+						}
 					?>
 					<select name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?>>
 					<option value=""><?=$placeholder ?: 'Choose';?></option>
@@ -1717,6 +1761,7 @@ class cms{
 		}elseif( method_exists($this, $option) ){
 			$this->$option();
 		}elseif( $option!='index' ){
+			check_table('cms_filters', $this->cms_filters);
 			$this->default_section($option);
 		}else{
 			$this->main();
@@ -2232,6 +2277,11 @@ class cms{
 		if (is_array($result)) {
 			$data = $result;
 		}
+		
+		// force save data to match privileges
+		foreach( $auth->user['filters'][$this->section] as $k=>$v ){
+			$data[$k] = $v;
+		}
 
 		if( count($languages) and !in_array('en', $languages) ){
 			$languages = array_merge(array('en'), $languages);
@@ -2411,11 +2461,6 @@ class cms{
 		}
 	}
 
-	function backup()
-	{
-		$this->template('backup.php',true);
-	}
-
 	function choose_filter()
 	{
 		$this->template('choose_filter.php',true);
@@ -2457,6 +2502,8 @@ class cms{
 		if( !$title and preg_match('/<h1>([\s\S]*?)<\/h1>/i', $include_content, $matches) ){
 			$title=strip_tags($matches[1]);
 		}
+		
+		$this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '".escape($auth->user['id'])."'");
 
 		require(dirname(__FILE__).'/_tpl/template.php');
 		exit;

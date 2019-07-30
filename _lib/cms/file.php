@@ -15,7 +15,6 @@ if( $vars['files']['dir'] ){
 	$row['data']=file_get_contents($vars['files']['dir'].$row['id']);
 }
 
-header ("Content-Disposition: attachment; filename=\"" . $row['name'] . "\"");
+header ("filename=\"" . $row['name'] . "\"");
 header('Content-type: '.$row['type']);
 print $row['data'];
-?>

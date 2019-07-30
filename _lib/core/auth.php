@@ -21,8 +21,9 @@ class auth{
 			'id'=>'id'
 		);
 
-		$this->generate_password=true;
-		$this->cookie_domain=$_SERVER['HTTP_HOST'];
+		$this->generate_password = true;
+		$this->cookie_domain = $_SERVER['HTTP_HOST'];
+		$this->cookie_duration = 14;
 
 		$this->hash_password=false;
 		$this->salt='a9u03udk[';
@@ -321,6 +322,7 @@ class auth{
 	{
 		global $cms;
 
+		unset($data['admin']);
 		$cms->set_section($this->table, null, array_keys($data));
 		
 		$errors = $cms->validate();
@@ -374,6 +376,7 @@ class auth{
 		$cms->set_section($this->table);
 		
 		$data = $_POST;
+		unset($data['admin']);
 
 		$errors = $cms->validate();
 		
@@ -668,8 +671,8 @@ class auth{
 
 				//cookies
 				if($remember) {
-					setcookie($this->cookie_prefix.'_email', $email, time()+(86400*14), '/', $this->cookie_domain);
-					setcookie($this->cookie_prefix.'_password', md5($this->secret_phrase.$password), time()+(86400*14), '/', $this->cookie_domain);
+					setcookie($this->cookie_prefix.'_email', $email, time()+(86400*$this->cookie_duration), '/', $this->cookie_domain);
+					setcookie($this->cookie_prefix.'_password', md5($this->secret_phrase.$password), time()+(86400*$this->cookie_duration), '/', $this->cookie_domain);
 				}
 			}else{
 				$error = 'password incorrect';
@@ -720,8 +723,8 @@ class auth{
 
 				//cookies
 				if( $_POST['remember'] ){
-					setcookie($this->cookie_prefix.'_email', $_POST['email'], time()+(86400*14), '/', $this->cookie_domain );
-					setcookie($this->cookie_prefix.'_password', md5($this->secret_phrase.$password), time()+(86400*14), '/', $this->cookie_domain );
+					setcookie($this->cookie_prefix.'_email', $_POST['email'], time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
+					setcookie($this->cookie_prefix.'_password', md5($this->secret_phrase.$password), time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
 				}
 
 				if( $_POST['validate'] ){
@@ -824,8 +827,8 @@ class auth{
 					$_SESSION[$this->cookie_prefix.'_email']=$email;
 					$_SESSION[$this->cookie_prefix.'_password']=$password;
 
-					setcookie($this->cookie_prefix.'_email' ,$email, time()+(86400*14), '/', $this->cookie_domain );
-					setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$password), time()+(86400*14), '/', $this->cookie_domain );
+					setcookie($this->cookie_prefix.'_email' ,$email, time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
+					setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$password), time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
 
 					if( $_SESSION['request'] ){
 						$request=$_SESSION['request'];
@@ -930,8 +933,8 @@ class auth{
 			$_SESSION[$this->cookie_prefix.'_email'] = $email;
 			$_SESSION[$this->cookie_prefix.'_password'] = $password;
 
-			setcookie($this->cookie_prefix.'_email' ,$email, time()+(86400*14), '/', $this->cookie_domain );
-			setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$password), time()+(86400*14), '/', $this->cookie_domain );
+			setcookie($this->cookie_prefix.'_email' ,$email, time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
+			setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$password), time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
 
 			if( $_SESSION['request'] ){
 				$request=$_SESSION['request'];
@@ -989,14 +992,14 @@ class auth{
 	{
 		$_SESSION = array();
 
-  		setcookie($this->cookie_prefix.'_email' ,'', time()-(86400*14), '/', $this->cookie_domain);
-		setcookie($this->cookie_prefix.'_password' ,'', time()-(86400*14), '/', $this->cookie_domain);
+  		setcookie($this->cookie_prefix.'_email' ,'', time()-(86400*$this->cookie_duration), '/', $this->cookie_domain);
+		setcookie($this->cookie_prefix.'_password' ,'', time()-(86400*$this->cookie_duration), '/', $this->cookie_domain);
 
-  		setcookie($this->cookie_prefix.'_email' ,'', time()-(86400*14), '/');
-		setcookie($this->cookie_prefix.'_password' ,'', time()-(86400*14), '/' );
+  		setcookie($this->cookie_prefix.'_email' ,'', time()-(86400*$this->cookie_duration), '/');
+		setcookie($this->cookie_prefix.'_password' ,'', time()-(86400*$this->cookie_duration), '/' );
 
-  		setcookie($this->cookie_prefix.'_email' ,'', time()-(86400*14), '/', str_replace('www','',$this->cookie_domain) );
-  		setcookie($this->cookie_prefix.'_password' ,'', time()-(86400*14), '/', str_replace('www','',$this->cookie_domain) );
+  		setcookie($this->cookie_prefix.'_email' ,'', time()-(86400*$this->cookie_duration), '/', str_replace('www','',$this->cookie_domain) );
+  		setcookie($this->cookie_prefix.'_password' ,'', time()-(86400*$this->cookie_duration), '/', str_replace('www','',$this->cookie_domain) );
 
 		if (ini_get("session.use_cookies")) {
 			$params = session_get_cookie_params();
