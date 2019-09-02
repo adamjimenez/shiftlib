@@ -1158,16 +1158,10 @@ class cms{
 							$conditions = array();
 							
 							foreach( $auth->user['filters'][$this->section] as $k=>$v ){
-								$conditions[$k]=$v;
+								$conditions[$k] = $v;
 							}
 							
-							$order = key($vars['fields'][$vars['options'][$name]]);
-							$rows = $this->get($vars['options'][$name], $conditions, null, $order);
-							
-							$vars['options'][$name] = array();
-							foreach($rows as $v) {
-								$vars['options'][$name][$v['id']] = current($v);
-							}
+							$vars['options'][$name] = $this->get_options($name, $where);
 						}
 					?>
 					<select name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?>>
