@@ -338,8 +338,10 @@ if( $_POST['action']=='email' ){
 						$conditions[$k]=$v;
 					}
 					
-					$order = key($vars['fields'][$vars['options'][$name]]);
-					$rows = $this->get($vars['options'][$name], $conditions, null, $order);
+					$table = underscored($vars['options'][$name]);
+					$db_field_name = $this->db_field_name($vars['options'][$name],$field);
+					$cols = "`".underscored($db_field_name)."` AS `".underscored($field)."`"."\n";
+					$rows = sql_query("SELECT id,$cols FROM $table ORDER BY `".underscored($db_field_name)."`");
 					
 					$options = array();
 					foreach($rows as $v) {
