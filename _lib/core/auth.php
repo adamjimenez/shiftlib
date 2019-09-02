@@ -720,6 +720,9 @@ class auth{
 						LIMIT 1
 					");
 				}
+				
+				// load cms privileges
+				$this->load();
 
 				//cookies
 				if( $_POST['remember'] ){

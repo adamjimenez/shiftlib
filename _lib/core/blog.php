@@ -5,6 +5,7 @@ class blog{
 
 		$this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
 
+		$this->table_blog = $options['table_blog'] ?: 'blog';
 		$this->table_categories = $options['table_categories'] ?: 'blog_categories';
 
 		$this->category_field = array_search($this->table_categories, $opts);
@@ -28,7 +29,7 @@ class blog{
 		*/
 
 		//archive
-		$this->months = sql_query("SELECT date,date_format(date, '%m %Y') AS `month` FROM blog
+		$this->months = sql_query("SELECT date, date_format(date, '%m %Y') AS `month` FROM ".$this->table_blog."
 			WHERE
 				display=1 AND
 				date <= NOW()
@@ -53,7 +54,7 @@ class blog{
 
 		$limit=NULL;
 
-		if(in_array('blog', $sections) and $sections[$this->blog_index]=='blog'){
+		if(in_array($this->table_blog, $sections) and $sections[$this->blog_index]==$this->table_blog){
 			//archive
 			if( is_numeric($sections[($this->blog_index+1)]) and is_numeric($sections[($this->blog_index+2)]) ){
 				$date = $sections[($this->blog_index+1)].'/'.$sections[($this->blog_index+2)].'/01';
@@ -62,8 +63,7 @@ class blog{
 				$conditions['date'] = dateformat('mY',$date);
 			}elseif( is_numeric($sections[($this->blog_index+1)]) ){
 				$conditions['id'] = $sections[($this->blog_index+1)];
-
-				$this->article=true;
+				$this->article = true;
 			}elseif( $sections[($this->blog_index+1)]=='category' ){
 	            $conditions['func']['date'] = '<';
 	    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
@@ -97,8 +97,8 @@ class blog{
 
 			$conditions['display'] = 1;
 
-			//print_r($conditions);
-			$this->content = $cms->get('blog', $conditions, $limit, 'date', false);
+			//print_r($conditions);exit;
+			$this->content = $cms->get($this->table_blog, $conditions, $limit, 'date', false);
 	        $this->p = $cms->p;
 
 			if( $this->article ){
@@ -125,7 +125,7 @@ class blog{
 				$errors[]='comment';
 			}
 			if( !$_POST['blog'] ){
-				$errors[]='blog';
+				$errors[] = 'blog';
 			}
 			
 			global $recaptcha_secret;
@@ -204,7 +204,7 @@ class blog{
 						SET
 							approved=1
 						WHERE
-							blog='".escape($content[0]['id'])."' AND
+							blog = '".escape($content[0]['id'])."' AND
 							approved!=1
 					");
 				break;
@@ -212,7 +212,7 @@ class blog{
 				case 'delete':
 					sql_query("DELETE FROM comments
 						WHERE
-							blog='".escape($content[0]['id'])."' AND
+							blog = '".escape($content[0]['id'])."' AND
 							approved!=1
 					");
 				break;
@@ -220,15 +220,15 @@ class blog{
 				case 'delete and block':
 					$comments=sql_query("SELECT * FROM comments
 						WHERE
-							blog='".escape($content[0]['id'])."' AND
+							blog = '".escape($content[0]['id'])."' AND
 							approved!=1
 					");
 
 					foreach( $comments as $comment ){
 						sql_query("DELETE FROM comments
 							WHERE
-								id='".escape($comment['id'])."' OR
-								ip='".escape($comment['ip'])."'
+								id = '".escape($comment['id'])."' OR
+								ip = '".escape($comment['ip'])."'
 						");
 					}
 				break;
@@ -237,7 +237,7 @@ class blog{
 
 		if( $_POST['approve'] and $auth->user ){
 			foreach( $_POST['approve'] as $k=>$v ){
-				$comment=sql_query("SELECT * FROM comments
+				$comment = sql_query("SELECT * FROM comments
 					WHERE
 						id='".escape($k)."'
 				");
@@ -290,7 +290,7 @@ class blog{
 	}
 
 	function recent_posts($limit=5){
-		return sql_query("SELECT * FROM blog
+		return sql_query("SELECT * FROM ".$this->table_blog."
 			WHERE
 				display=1 AND
 				date <= NOW()
@@ -306,7 +306,7 @@ class blog{
         		heading,
         		copy,
         		date
-        	FROM blog
+        	FROM ".$this->table_blog."
         	WHERE
         		display=1
         	ORDER BY date DESC
@@ -360,7 +360,7 @@ function blog_save_handler()
 	check_table($table_tags, $fields);
 
 	//update tag cloud
-	$blogs=sql_query("SELECT tags FROM blog WHERE display=1");
+	$blogs=sql_query("SELECT tags FROM ".$this->table_blog." WHERE display=1");
 
 	foreach( $blogs as $blog ){
 		$content.=$blog['tags'].',';
@@ -399,8 +399,8 @@ function blog_save_handler()
 	);
 
 	foreach( $words as $word ){
-		$word=preg_replace("/[^A-Za-z0-9'\-\s]/",'',$word);
-		$word=trim($word);
+		$word = preg_replace("/[^A-Za-z0-9'\-\s]/",'',$word);
+		$word = trim($word);
 		if( !$word or strlen($word)==1 or in_array($word,$stop_words) or is_numeric($word) ){
 			continue;
 		}
@@ -418,7 +418,7 @@ function blog_save_handler()
 	}
 
 	// email subscribers
-	$blog=sql_query("SELECT * FROM blog WHERE id='".escape($_GET['id'])."'");
+	$blog=sql_query("SELECT * FROM ".$this->table_blog." WHERE id='".escape($_GET['id'])."'");
 
 	if( $_POST['display'] and !$blog[0]['display'] and $vars['fields']['newsletter'] ){
 		$users=sql_query("SELECT * FROM newsletter");
@@ -432,8 +432,8 @@ function blog_save_handler()
 
 		foreach( $valid_users as $user ){
 			$reps=array();
-			$reps['link']='http://'.$_SERVER['HTTP_HOST'].'/blog/'.str_to_pagename($_POST['page_name']);
-			$reps['unsubscribe_link']='http://'.$_SERVER['HTTP_HOST'].'/newsletter-unsubscribe?email='.$user['email'];
+			$reps['link']='https://'.$_SERVER['HTTP_HOST'].'/blog/'.str_to_pagename($_POST['page_name']);
+			$reps['unsubscribe_link']='https://'.$_SERVER['HTTP_HOST'].'/newsletter-unsubscribe?email='.$user['email'];
 
 			email_template( $user['email'],'New Blog Entry', $reps );
 		}
@@ -446,4 +446,3 @@ $cms_handlers[] = array(
 	'event'=>'beforeSave',
 	'handler'=>'blog_save_handler'
 );
-?>

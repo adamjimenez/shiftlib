@@ -93,7 +93,6 @@ function toggle_advanced(on)
 		}
 
 		$('#advanced').slideToggle();
-		$('#basic').slideToggle();
 	}else{
 		for (i = 0; i < field.length; i++){
 			if( field[i].type!=='hidden' && field[i].type!=='submit' && field[i].type!=='button' ){
@@ -106,7 +105,6 @@ function toggle_advanced(on)
 		}
 
 		$('#advanced').slideToggle();
-		$('#basic').slideToggle();
 	}
 }
 
@@ -118,7 +116,7 @@ function toggle_import()
 }
 
 function changeFile()
-{
+{console.log('yooo3')
 	$('#csv_preview').innerHTML='';
 
 	for( var j in fields ){
@@ -135,7 +133,7 @@ function changeFile()
     name = file.name;
     size = file.size;
     type = file.type;
-
+console.log('yooo')
     if(file.name.length < 1) {
 
     }
@@ -188,6 +186,7 @@ var file_field_html;
 
 function loadFile(file)
 {
+	console.log('yooo')
 	jQuery.ajax(
 		'/_lib/cms/_ajax/csv_fields.php',
 		{
