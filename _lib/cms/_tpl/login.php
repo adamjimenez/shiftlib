@@ -2,227 +2,125 @@
 if( $auth->user['admin'] ){
 	redirect('/admin');
 }
-$backgrounds = array("https://images.pexels.com/photos/4827/nature-forest-trees-fog.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", "https://images.pexels.com/photos/147411/italy-mountains-dawn-daybreak-147411.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", "https://images.pexels.com/photos/247478/pexels-photo-247478.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", "https://images.pexels.com/photos/414171/pexels-photo-414171.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", "https://images.pexels.com/photos/556416/pexels-photo-556416.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", "https://images.pexels.com/photos/129105/pexels-photo-129105.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", "https://images.pexels.com/photos/833013/pexels-photo-833013.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260,","https://images.pexels.com/photos/462024/pexels-photo-462024.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260","https://images.pexels.com/photos/258112/pexels-photo-258112.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260","https://images.pexels.com/photos/414110/pexels-photo-414110.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
-
 ?>
-<style>
-body {
-	background: url("<?=$backgrounds[array_rand($backgrounds)];?>") !important;
-	background-size: cover !important;
-	overflow-y: hidden;
-	width: 100%;
-	height: 100%;
-	background-position: center;
-}
-@media (max-width: 550px){
-	body {
-		background: none !important;
-	}
-	.login-page {
-	  width: 100%;
-	}
-}
-.content {
-	background: transparent;
-	box-shadow: none;
-	height: 100vh;
-	padding: 0;
-}
-.header-row {
-	display: none;
-}
-.leftcol {
-	display: none;
-}
-.content-wrapper {
-	min-height: 900px;
-	z-index: 500;
-	margin-left: 0px;
-	margin-top: 0px;
-	margin-right: 0;
-}
-.form-container {
-	position: absolute;
-	top: 150px;
-	left: 50%;
-	width: 300px;
-	margin-left: -150px;
-	height: 378px;
-	padding: 10px;
-	border-radius: 10px;
-	background: #333;
-}
-.form-container-inner {
-	border: 3px solid #fff;
-	width: 294px;
-	float: left;
-	background: #fff;
-	height: 372px;
-	border-radius: 10px;
-}
-#content .inner {
-	background: none;
-}
-.input-field {
-	float: left;
-	width: 284px;
-	padding: 5px;
-	background: none;
-	border-radius: 10px;
-	border: 1px solid #333;
-}
-@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+<!doctype html>
+<html class="no-js" lang="en">
 
-.login-page {
-	padding:0;
-	margin: auto;
-	position: absolute;
-	min-height: 100%;
-	display: table;
-	height: 100vh;
-	right: 0;
-}
-.form {
-	bottom: 0;
-	overflow: hidden;
-	top: 0;
-	z-index: 1;
-	background: #FFFFFF;
-	width: 360px;
-	padding: 50px;
-	text-align: center;
-	right: 0;
-	height: 100%;
-	display: table-cell;
-	vertical-align: middle;
-}
-.form input {
-	font-family: "Roboto", sans-serif;
-	outline: 0;
-	background: #f2f2f2;
-	width: 100%;
-	border: 0;
-	margin: 0 0 15px;
-	padding: 15px;
-	box-sizing: border-box;
-	font-size: 14px;
-}
-.form button {
-	font-family: "Roboto", sans-serif;
-	text-transform: uppercase;
-	outline: 0;
-	background: #4CAF50;
-	width: 100%;
-	border: 0;
-	padding: 15px;
-	color: #FFFFFF;
-	font-size: 14px;
-	-webkit-transition: all 0.3 ease;
-	transition: all 0.3 ease;
-	cursor: pointer;
-}
-.form button:hover,.form button:active,.form button:focus {
-	background: #43A047;
-}
-.form .message {
-	margin: 15px 0 0;
-	color: #b3b3b3;
-	font-size: 12px;
-}
-.form .message a {
-	color: #4CAF50;
-	text-decoration: none;
-}
-  .form .register-form {
-	display: none;
-}
-.container {
-	position: relative;
-	z-index: 1;
-	max-width: 300px;
-	margin: 0 auto;
-}
-.container:before, .container:after {
-	content: "";
-	display: block;
-	clear: both;
-}
-.container .info {
-	margin: 50px auto;
-	text-align: center;
-}
-.container .info h1 {
-	margin: 0 0 15px;
-	padding: 0;
-	font-size: 36px;
-	font-weight: 300;
-	color: #1a1a1a;
-}
-.container .info span {
-	color: #4d4d4d;
-	font-size: 12px;
-}
-.container .info span a {
-	color: #000000;
-	text-decoration: none;
-}
-  .container .info span .fa {
-	color: #EF3B3A;
-}
-.form input[type=checkbox] {
-	  float: none;
-	  width: auto;
-	  padding: 10px;
-}
-.login-page legend {
-	float: left;
-	width: 100%;
-	text-align: center;
-	font-size: 22px;
-	color: #333;
-	margin-bottom: 30px;
-	background: none;
-	margin-top: -25px;
-	border-bottom: 0;
-}
-.sidebar {
-	display: none;
-}
-
-</style>
-
-
-
-<div class="login-page">
-  <div class="form">
-      
-      <legend>Sign In</legend>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Login</title>
     
-    <form class="login-form validate" method="post" id="login_form" action="/admin?option=login">
-        <input type="hidden" name="login" value="1">
-      <input type="text" name="email" id="email" placeholder="username"/>
-          <?php if( in_array('email',$auth->errors) ){ ?>
-              <p style="color:red;">Username is required</p>
-              <br>
-          <?php } ?>
-          
-      <input type="password" name="password" id="password" placeholder="password"/>
-      <?php if( in_array('password',$auth->errors) ){ ?>
-      <p style="color:red;">Password is required</p>
-      <br>
-      <?php } ?>
-      
-      
-      <button>login</button>
-      <p class="message"><label><input type="checkbox" name="remember" value="1"> Remember me?</label></p>
-    </form>
+	<?php load_js(array('cms')); ?>
+	
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="/_lib/assets/images/icon/favicon.ico">
+    <link rel="stylesheet" href="/_lib/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/_lib/assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/_lib/assets/css/themify-icons.css">
+    <link rel="stylesheet" href="/_lib/assets/css/metisMenu.css">
+    <link rel="stylesheet" href="/_lib/assets/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="/_lib/assets/css/slicknav.min.css">
+    <!-- others css -->
+    <link rel="stylesheet" href="/_lib/assets/css/typography.css">
+    <link rel="stylesheet" href="/_lib/assets/css/default-css.css">
+    <link rel="stylesheet" href="/_lib/assets/css/styles.css">
+    <link rel="stylesheet" href="/_lib/assets/css/responsive.css">
+    <!-- modernizr css -->
+    <script src="/_lib/assets/js/vendor/modernizr-2.8.3.min.js"></script>
+</head>
+
+<body>
+    <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+    <!-- preloader area start -->
+    <div id="preloader">
+        <div class="loader"></div>
+    </div>
+    <!-- preloader area end -->
+    <!-- login area start -->
+    <div class="login-area">
+        <div class="container">
+            <div class="login-box ptb--100">
+                <form action="/admin?option=login" method="post" class="validate">
+                <input type="hidden" name="login" value="1">
+                    <div class="login-form-head">
+                        <h4>Sign In</h4>
+                        <p>Hello there, Sign in and start managing your Admin</p>
+                    </div>
+                    <div class="login-form-body">
+                        <div class="form-gp">
+                            <label for="email">Email address</label>
+                            <input type="text" id="email" name="email">
+                            <i class="ti-email"></i>
+                        </div>
+                        <div class="form-gp">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password">
+                            <i class="ti-lock"></i>
+                        </div>
+                        <div class="row mb-4 rmber-area">
+                            <div class="col-6">
+                                <div class="custom-control custom-checkbox mr-sm-2">
+                                    <input type="checkbox" class="custom-control-input" id="remember" name="remember" value="1">
+                                    <label class="custom-control-label" for="remember">Remember Me</label>
+                                </div>
+                            </div>
+                            <?php
+                            /*
+                            <div class="col-6 text-right">
+                                <a href="#">Forgot Password?</a>
+                            </div>
+                            */
+                            ?>
+                        </div>
+                        <div class="submit-btn-area">
+                            <button id="form_submit" type="submit">Submit <i class="ti-arrow-right"></i></button>
+                            <?php
+                            /*
+                            <div class="login-other row mt-4">
+                                <div class="col-6">
+                                    <a class="fb-login" href="#">Log in with <i class="fa fa-facebook"></i></a>
+                                </div>
+                                <div class="col-6">
+                                    <a class="google-login" href="#">Log in with <i class="fa fa-google"></i></a>
+                                </div>
+                            </div>
+                            */
+                            ?>
+                        </div>
+                        <?php
+                        /*
+                        <div class="form-footer text-center mt-5">
+                            <p class="text-muted">Don't have an account? <a href="register.html">Sign up</a></p>
+                        </div>
+                        */
+                        ?>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- login area end -->
+
+    <!-- jquery latest version -->
+    <script src="/_lib/assets/js/vendor/jquery-2.2.4.min.js"></script>
+    <!-- bootstrap 4 js -->
+    <script src="/_lib/assets/js/popper.min.js"></script>
+    <script src="/_lib/assets/js/bootstrap.min.js"></script>
+    <script src="/_lib/assets/js/owl.carousel.min.js"></script>
+    <script src="/_lib/assets/js/metisMenu.min.js"></script>
+    <script src="/_lib/assets/js/jquery.slimscroll.min.js"></script>
+    <script src="/_lib/assets/js/jquery.slicknav.min.js"></script>
     
-  </div>
-</div>
+    <!-- others plugins -->
+    <script src="/_lib/assets/js/plugins.js"></script>
+    <script src="/_lib/assets/js/scripts.js"></script>
+</body>
 
+</html>
 
-<script type="text/javascript">
-$(function() {
-	$('#email').focus();
-});
-</script>
+<?php
+exit;
+?>

@@ -53,12 +53,12 @@ if ($_POST['select_all_pages']) {
 
 //bulk export
 if( $_POST['action']=='export' ){
-	$this->export_items($_POST['section'], $_POST['items']);
+	$this->export_items($_POST['section'], $_POST['id']);
 }
 
 //subsections delete
 if( $_POST['action']=='delete' ){
-    $this->delete_items($_POST['section'], $_POST['items']);
+    $this->delete_items($_POST['section'], $_POST['id']);
 }
 
 //save privileges
@@ -128,118 +128,33 @@ if( $_POST['sms'] ){
             $next_link = '?id='.$next['id'].'&'.$qs;
         }
     }
+    
+    
+	$qs_arr = $_GET;
+	unset($qs_arr['option']);
+	unset($qs_arr['view']);
+	unset($qs_arr['id']);
+	$qs = http_build_query($qs_arr);
+	
+	$section='';
+	foreach( $vars['fields'][$this->section] as $name=>$type ){
+		if( $_GET[underscored($name)] and $name!='id' and $type=='select' ){
+			$section = $name;
+			break;
+		}
+	}
+
+	if( $section and in_array('id',$vars['fields'][$this->section]) ){
+		$back_link = '?option='.$vars['options'][$section].'&view=true&id='.$this->content[$section];
+		$back_label = ucfirst($vars['options'][$section]);
+	} else {
+		$back_link = '?option='.$this->section;
+		$back_label = ucfirst($this->section);
+	}
 ?>
 
 
-<script type="text/javascript">
-function init()
-{
-	if( jQuery('#language') ){
-		jQuery('#language').on('change',set_language);
-	}
-
-	init_tabs();
-}
-
-function set_language()
-{
-	var option=document.getElementById('language');
-
-	for( j=0; j<option.options.length; j++ ){;
-		if( document.getElementById('language_'+option.options[j].value).style.display!='none' ){
-			document.getElementById('language_'+option.options[j].value).style.display='none';
-		}
-	}
-
-	document.getElementById('language_'+jQuery('#language').val()).style.display='block';
-}
-
-function choose_filter(field)
-{
-	window.open('/admin?option=choose_filter&section='+field,'Insert','width=700,height=450,screenX=100,screenY=100,left=100,top=100,status,dependent,alwaysRaised,resizable,scrollbars')
-}
-
-window.onload=init;
-</script>
-
-<table width="100%">
-<tr>
-    <td>
-		<?php
-		$qs_arr = $_GET;
-		unset($qs_arr['option']);
-		unset($qs_arr['view']);
-		unset($qs_arr['id']);
-		$qs = http_build_query($qs_arr);
-		
-		/*
-		$qs = array();
-		foreach( $vars['fields'][$this->section] as $k=>$v ){
-			if( ($v=='select' or $v=='radio') and $_GET[$k] ){
-				$qs[$k]=$_GET[$k];
-				break;
-			}
-		}
-		$qs = http_build_query($qs);
-		print $qs;
-		*/
-
-		$section='';
-		foreach( $vars['fields'][$this->section] as $name=>$type ){
-			if( $_GET[underscored($name)] and $name!='id' and $type=='select' ){
-				$section=$name;
-				break;
-			}
-		}
-		?>
-
-		<?php /*if( $section and in_array('id', $vars['fields'][$this->section]) and !is_array($vars['options'][$section]) ){ ?>
-		<a href="?option=<?=$vars['options'][$section];?>&view=true&id=<?=$content[$section];?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($section);?></a>
-		&nbsp;
-		<?php }elseif( in_array('id', $vars['fields'][$this->section]) ){ */?>
-		<a href="?option=<?=$this->section;?>&<?=$qs;?>">&laquo; Back to <?=ucfirst($this->section);?></a>
-		&nbsp;
-		<?php /*}*/ ?>
-
-        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
-
-
-		<?php if( $vars['settings'][$this->section]['sms'] and is_numeric($content['mobile']) ){ ?>
-		<form method="post" style="display:inline">
-		<input type="hidden" name="sms" value="1">
-			<button class="btn btn-default" type="submit">Send SMS text</button>
-		</form>
-		<?php } ?>
-
-		<?php
-		foreach( $cms_buttons as $k=>$button ){
-			if( $this->section==$button['section'] and $button['page']=='view' ){
-                require('includes/button.php');
-			}
-		}
-		?>
-
-		&nbsp;
-
-        <form method="post" style="display:inline;">
-	        <input type="hidden" name="delete" value="1">
-	        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
-        </form>
-	</td>
-    <td style="text-align: right;">
-        <?php if( $prev_link ){ ?>
-        <a href="<?=$prev_link;?>">Prev</a>
-        <?php } ?>
-        <?php if( $prev_link and $next_link ){ ?>
-        |
-        <?php } ?>
-        <?php if( $next_link ){ ?>
-        <a href="<?=$next_link;?>">Next</a>
-        <?php } ?>
-    </td>
-</tr>
-</table>
-
+<?php /*
 <?php
 if( in_array('language',$vars['fields'][$this->section]) ){
 ?>
@@ -252,6 +167,103 @@ Language:
 <?php
 }
 ?>
+*/ ?>
+
+<!-- page title area start -->
+<div class="page-title-area">
+    <div class="row align-items-center">
+        <div class="col-sm-10">
+            <div class="breadcrumbs-area clearfix" style="margin: 20px 0;">
+                <h4 class="page-title pull-left">Admin</h4>
+                <ul class="breadcrumbs pull-left">
+                    <li><a href="/admin">Dashboard</a></li>
+                    <li><a href="<?=$back_link;?>"><?=$back_label;?></a></li>
+                    <li><?=$this->get_label();?></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-sm-2 clearfix">
+            <ul class="breadcrumbs pull-right">
+		        <?php if( $prev_link ){ ?>
+		        <li><a href="<?=$prev_link;?>">Prev</a></li>
+		        <?php } ?>
+		        <?php if( $next_link ){ ?>
+		        <li><a href="<?=$next_link;?>">Next</a></li>
+		        <?php } ?>
+        	</ul>
+        </div>
+
+    </div>
+</div>
+<!-- page title area end -->
+
+
+<div class="main-content-inner">
+    <div class="row">
+
+
+
+<!-- tab start -->
+<div class="col-lg-12 mt-5">
+    <div class="card">
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#pills-summary" role="tab" aria-controls="pills-summary" aria-selected="true">
+                    	Summary
+                    </a>
+                </li>
+				<?php
+				foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
+				?>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-<?=$count;?>-tab" data-toggle="pill" href="#pills-<?=$count;?>" role="tab" aria-controls="pills-tab_<?=$count;?>" aria-selected="true">
+						<?=ucfirst($subsection);?>
+					</a>
+				</li>
+				<?php
+				}
+				?>
+				<?php if ($has_priveleges) { ?>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-priveleges-tab" data-toggle="pill" href="#pills-priveleges" role="tab" aria-controls="pills-priveleges" aria-selected="true">
+						Priveleges
+					</a>
+				</li>
+				<?php } ?>
+				<?php if ($has_logs) { ?>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-logs-tab" data-toggle="pill" href="#pills-logs" role="tab" aria-controls="pills-logs" aria-selected="true">
+						Logs
+					</a>
+				</li>
+				<?php } ?>
+            </ul>
+            <div class="tab-content mt-3" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
+                	
+                	<div>
+				        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=true&id=<?=$id;?>&<?=$qs;?>'" style="font-weight:bold;">Edit</button>
+				
+						<?php
+						foreach( $cms_buttons as $k=>$button ){
+							if( $this->section==$button['section'] and $button['page']=='view' ){
+				                require('includes/button.php');
+							}
+						}
+						?>
+				
+						&nbsp;
+				
+				        <form method="post" style="display:inline;">
+					        <input type="hidden" name="delete" value="1">
+					        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
+				        </form>
+                	</div>
+
+    				
+
 
 <?php
 foreach( $languages as $language ){
@@ -371,20 +383,24 @@ foreach( $languages as $language ){
 				$file=sql_query("SELECT * FROM files WHERE id='".escape($value)."'");
 			}
 		?>
-				<?php
+				<a href="/_lib/cms/file.php?f=<?=$file[0]['id'];?>" target="_blank">
+				<?
 				$image_types=array('jpg','jpeg','gif','png');
 				if( in_array(file_ext($file[0]['name']),$image_types) ){
 				?>
-				<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
-				<?php } ?>
-				<a href="/_lib/cms/file.php?f=<?=$file[0]['id'];?>"><?=$file[0]['name'];?></a> <span style="font-size:9px;"><?=file_size($file[0]['size']);?></span>
+					<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id'];?>&w=400&h=400" id="<?=$name;?>_thumb" /><br />
+				<? } ?>
+				<?=$file[0]['name'];?>
+				</a> 
+				
+				<span style="font-size:9px;"><?=file_size($file[0]['size']);?></span>
 
-				<?php
+				<?
 				$doc_types=array('pdf','doc','docx','xls','tiff');
 				if( in_array(file_ext($file[0]['name']),$doc_types) ){
 				?>
 				<a href="http://docs.google.com/viewer?url=<?=rawurlencode('http://'.$_SERVER['HTTP_HOST'].'/_lib/cms/file.php?f='.$file[0]['id'].'&auth_user='.$_SESSION[$auth->cookie_prefix.'_email'].'&auth_pw='.md5($auth->secret_phrase.$_SESSION[$auth->cookie_prefix.'_password']));?>" target="_blank">(view)</a>
-				<?php } ?>
+				<? } ?>
 		<?php }elseif( $type == 'phpupload' ){ ?>
             <input type="text" name="<?=$name;?>" class="upload" value="<?=$value;?>" readonly="true">
 		<?php
@@ -523,25 +539,10 @@ foreach( $languages as $language ){
 ?>
 
 
-<?php
-if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleges ){
-?>
-	<br>
-	<ul class="tabs">
-<?php
-	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
-?>
-		<li><a id="tab_<?=$count;?>" href="javascript:;" target="subsection_<?=$count;?>" class="tab" onclick="return false;"><?=ucfirst($subsection);?></a></li>
-<?php
-	}
-?>
-	<?php if ($has_priveleges) { ?>
-		<li><a id="tab_priveleges" href="javascript:;" target="subsection_priveleges" class="tab" onclick="return false;">Priveleges</a></li>
-	<?php } ?>
-	<?php if ($has_logs) { ?>
-		<li><a id="tab_logs" href="javascript:;" target="subsection_logs" class="tab" onclick="return false;">Logs</a></li>
-	<?php } ?>
-	</ul>
+    
+    
+                </div>
+                
 <?php
 	foreach( $vars['subsections'][$this->section] as $count=>$subsection ){
 
@@ -594,8 +595,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 	    }
 ?>
 
-<div style="display:none;" id="subsection_<?=$count;?>">
-    <div class="box" style="clear:both;">
+<div class="tab-pane fade" id="pills-<?=$count;?>" role="tabpanel" aria-labelledby="pills-<?=$count;?>-tab">
 	<?php
 	if( count($vars['fields'][$subsection]) ){
 	    require(dirname(__FILE__).'/list.php');
@@ -603,7 +603,6 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 	    require('_tpl/admin/'.$subsection.'.php');
 	}
 	?>
-	</div>
 </div>
 
 
@@ -616,7 +615,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 ?>
 
 <?php if ($has_priveleges) { ?>
-	<div style="display:none;" id="subsection_priveleges">
+	<div class="tab-pane fade" id="pills-priveleges" role="tabpanel" aria-labelledby="pills-priveleges-tab">
 	    <div class="box" style="clear:both;">
 		<?php
 		//privileges
@@ -689,22 +688,6 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 		</table>
 		</form>
 		<br />
-		<script>
-		$('#privileges_none').click(function(){
-			$('select.privileges').val('0');
-			return false;
-		});
-		
-		$('#privileges_read').click(function(){
-			$('select.privileges').val('1');
-			return false;
-		});
-		
-		$('#privileges_write').click(function(){
-			$('select.privileges').val('2');
-			return false;
-		});
-		</script>
 		<?php
 		}
 		?>
@@ -713,7 +696,7 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 <?php } ?>
 
 <?php if ($has_logs) { ?>
-	<div style="display:none;" id="subsection_logs">
+	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
 	    <div class="box" style="clear:both;">
 			<?php
 				/*
@@ -788,9 +771,88 @@ if( is_array($vars['subsections'][$this->section]) or $has_logs or $has_priveleg
 		</div>
 	</div>
 <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- tab end -->
+
+	</div>
+</div>
+
+
+
 
 <?php
 }
 
-}
 ?>
+
+<script>
+function init()
+{
+	if( jQuery('#language') ){
+		jQuery('#language').on('change', set_language);
+	}
+
+	init_tabs();
+}
+
+function set_language()
+{
+	var option=document.getElementById('language');
+
+	for( j=0; j<option.options.length; j++ ){;
+		if( document.getElementById('language_'+option.options[j].value).style.display!='none' ){
+			document.getElementById('language_'+option.options[j].value).style.display='none';
+		}
+	}
+
+	document.getElementById('language_'+jQuery('#language').val()).style.display='block';
+}
+
+function choose_filter(field)
+{
+	window.open('/admin?option=choose_filter&section='+field,'Insert','width=700,height=450,screenX=100,screenY=100,left=100,top=100,status,dependent,alwaysRaised,resizable,scrollbars')
+}
+
+window.onload=init;
+</script>
+
+<script>
+$('#privileges_none').click(function(){
+	$('select.privileges').val('0');
+	return false;
+});
+
+$('#privileges_read').click(function(){
+	$('select.privileges').val('1');
+	return false;
+});
+
+$('#privileges_write').click(function(){
+	$('select.privileges').val('2');
+	return false;
+});
+
+// hash tabs
+$(function(){
+  var hash = window.location.hash;
+  hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+
+  $('.nav-tabs a').click(function (e) {
+    $(this).tab('show');
+    var scrollmem = $('body').scrollTop() || $('html').scrollTop();
+    window.location.hash = this.hash;
+    $('html,body').scrollTop(scrollmem);
+  });
+});
+
+// resize datatables
+$('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+    $($.fn.dataTable.tables(true)).DataTable()
+       .columns.adjust()
+       .responsive.recalc();
+});
+
+</script>

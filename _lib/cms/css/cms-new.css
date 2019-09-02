@@ -20,9 +20,11 @@ h1{
 	padding:5px 0;
 }
 
+/*
 td, th{
 	text-align:left;
 }
+*/
 
 legend{
 	font-weight:bold;
@@ -190,16 +192,6 @@ tr.result_selected td{
 
 .list-row:hover{
 	background: orange;
-}
-
-@media print {
-	#header, #menu, .noprint{
-		display:none;
-	}
-
-	#content{
-		margin-left:0;
-	}
 }
 
 /* END OLD STYLES */
@@ -482,12 +474,26 @@ box-shadow: 0 0 5px 2px rgba(0,0,0,0.05);
 }
 
 .ui-dialog-titlebar-close {
- padding:0 !important;
+	padding:0 !important;
 }
 
 .ui-dialog-titlebar-close:after {
- content: '\f00d';
- font-family: FontAwesome;
- width: 20px;
- height: 20px;
+	content: '\f00d';
+	font-family: FontAwesome;
+	width: 20px;
+	height: 20px;
+}
+
+@media print {
+	.header-row, .leftcol, .noprint{
+		display: none;
+	}
+	
+	.content {
+		padding: 0;
+	}
+	
+	.content-wrapper{
+		margin: 0;
+	}
 }

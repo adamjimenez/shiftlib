@@ -13,10 +13,6 @@ if( !$qs ){
 		<button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=1&<?=$qs;?>'; return false;" style="font-weight:bold;">Create New</button>
 
 
-		<?php /*
-		<button class="btn btn-default" type="submit" onclick="return export_selected();">Export</button>
-		*/ ?>
-
 		<?php
 		foreach( $cms_buttons as $k=>$button ){
 			if( $this->section==$button['section'] and $button['page']=='list' ){
@@ -25,11 +21,6 @@ if( !$qs ){
     	}
     	?>
 
-		<!--
-		<?php if( $vars['settings'][$this->section]['sms'] ){ ?>
-		<button type="submit">Send SMS text</button>
-		<?php } ?>
-		-->
 		<?php if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
 		<button class="btn btn-default" type="submit" onclick="return email_selected();">Email</button>
 		<?php } ?>

@@ -29,43 +29,41 @@ function timeSince(timeStamp) {
 	}
 }
 
-(function($) {
-    //needed to include input file
-    $.fn.serializeAll = function() {
-		var rselectTextarea = /^(?:select|textarea)/i;
-		var rinput = /^(?:color|date|datetime|datetime-local|email|file|hidden|month|number|password|range|search|tel|text|time|url|week)$/i;
-		var rCRLF = /\r?\n/g;
+//needed to include input file
+function serializeAll (form) {
+	var rselectTextarea = /^(?:select|textarea)/i;
+	var rinput = /^(?:color|date|datetime|datetime-local|email|file|hidden|month|number|password|range|search|tel|text|time|url|week)$/i;
+	var rCRLF = /\r?\n/g;
 
-		var arr = this.map(function(){
-			return this.elements ? jQuery.makeArray( this.elements ) : this;
-		})
-		.filter(function(){
-			return this.name && !this.disabled &&
-				( this.checked || rselectTextarea.test( this.nodeName ) ||
-					rinput.test( this.type ) );
-		})
-		.map(function( i, elem ){
-			if ($(elem).attr('type')=='file') {
-				var val = [];
-				for (var i = 0; i < $(elem).get(0).files.length; ++i) {
-					val.push($(elem).get(0).files[i].name);
-				}
-			} else {
-				var val = jQuery( this ).val();
+	var arr = $(form).map(function(){
+		return form.elements ? jQuery.makeArray( form.elements ) : form;
+	})
+	.filter(function(){
+		return this.name && !this.disabled &&
+			( this.checked || rselectTextarea.test( this.nodeName ) ||
+				rinput.test( this.type ) );
+	})
+	.map(function( i, elem ){
+		if ($(elem).attr('type')=='file') {
+			var val = [];
+			for (var i = 0; i < $(elem).get(0).files.length; ++i) {
+				val.push($(elem).get(0).files[i].name);
 			}
+		} else {
+			var val = jQuery( this ).val();
+		}
 
-			return val === null ?
-				null :
-				jQuery.isArray( val ) ?
-					jQuery.map( val, function( val, i ){
-						return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
-					}) :
-					{ name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
-		}).get();
+		return val === null ?
+			null :
+			jQuery.isArray( val ) ?
+				jQuery.map( val, function( val, i ){
+					return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
+				}) :
+				{ name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
+	}).get();
 
-		return $.param(arr);
-	};
-})(jQuery);
+	return $.param(arr);
+};
 
 function remove_options(select)
 {
@@ -143,6 +141,7 @@ function initForms()
 
 		//remove error messages
 		jQuery('div.error').remove();
+		$('.errors').hide();
 
 		var url = location.href;
 		if( this.action ){
@@ -153,7 +152,7 @@ function initForms()
 		jQuery.ajax( url, {
 			dataType: 'json',
 			type: $(this).attr('method'),
-			data: jQuery(this).serializeAll()+'&validate=1&nospam=1',
+			data: serializeAll(this)+'&validate=1&nospam=1',
 			success: jQuery.proxy(function(returned){
 			    var errorMethod = 'inline';
 				var firstError;
@@ -201,7 +200,8 @@ function initForms()
 								}else if( this[field][0] ){
 									parent=this[field][0].parentNode.parentNode;
 								}
-								errors+=field+'\n';
+								
+								errors += field + ': ' + error + '\n';
 							}else if( this[field+'[]'] ){
 								if( this[field+'[]'].style ){
 									if( !firstError ){
@@ -213,18 +213,18 @@ function initForms()
 									parent=this[field+'[]'][0].parentNode.parentNode;
 								}
 
-								errors+=field+'\n';
+								errors += field + ': ' + error + '\n';
 							}else{
-								errors+=error+'\n';
+								errors += error + '\n';
 
 								debug('field not found: '+field);
 							}
 
 							if( parent && errorMethod=='inline' ){
 								div = document.createElement("div");
-								div.innerHTML=error;
-								div.style.color='red';
-								div.className='error';
+								div.innerHTML = error;
+								div.style.color = 'red';
+								div.className = 'error';
 
 								parent.appendChild(div);
 							}
@@ -233,6 +233,8 @@ function initForms()
 						if( errorMethod=='alert' ){
 							alert('Please check the required fields\n'+errors);
 						}
+						
+						$('.errors').html('Pleae check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
 
 						//show first error
 						var tab, node;
@@ -583,7 +585,8 @@ function initForms()
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
                     "searchreplace visualblocks code fullscreen",
-                    "insertdatetime media table contextmenu paste textcolor colorpicker hr"
+                    "insertdatetime media table contextmenu paste textcolor colorpicker hr",
+                    "autoresize"
                 ],
                 toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
@@ -677,9 +680,9 @@ function initForms()
 	
 	if ($.ui && $.ui.sortable) {
 		//files
-		jQuery('ul.files').sortable();
+		$('ul.files').sortable();
 		
-		jQuery('.checkboxes').sortable({
+		$('.checkboxes').sortable({
 			axis: 'y',
 		});
 	}

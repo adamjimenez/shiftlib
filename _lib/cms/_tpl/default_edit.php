@@ -90,27 +90,12 @@ if( $_GET["id"] ){
 }
 ?>
 
-<script type="text/javascript">
-<?php
-if($this->components){
-?>
-var components = <?=json_encode($this->components);?>;
-<?php
-}
-?>
-
-$(function() {
-    if( document.getElementById('language') ){
-		$('#language').on('change',set_language);
-	}
-
-	init_tabs();
-
-    $('form input:visible, form select:visible').first().focus();
-
-    var phpupload_default_dir = '<?=$_GET["option"];?>/<?=$id;?>';
-});
-</script>
+<div class="main-content-inner">
+    <div class="row">
+<!-- tab start -->
+<div class="col-lg-12 mt-5">
+    <div class="card">
+        <div class="card-body">
 
 <form id="form" method="post" enctype="multipart/form-data" class="validate">
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
@@ -125,7 +110,7 @@ $(function() {
 	<td>
     		<div class="top-row">
 			<button type="submit" class="btn btn-success">Save</button>
-			<button type="button" class="btn btn-danger" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
+			<button type="button" class="btn btn-default" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
 		</div>
 	</td>
 </tr>
@@ -151,25 +136,6 @@ foreach( $languages as $language ){
 	<div id="language_<?=$language;?>" <?php if($language!='en'){ ?>style="display:none;"<?php } ?> class="box">
 
 		<?php
-		if( in_array('separator',$vars['fields'][$this->section]) ){
-		?>
-		<ul class="tabs">
-		<?php
-			foreach( $vars['fields'][$this->section] as $name=>$type ){
-				if( $type=='separator' ){
-				?>
-				<li><a href="javascript:;" target="section_<?=$name;?>" class="tab" onclick="return false;"><?=ucfirst($name);?></a></li>
-				<?php
-				}
-			}
-		?>
-		</ul>
-		<?php
-		}
-		?>
-
-		<table border="1" cellspacing="0" cellpadding="5" width="100%">
-		<?php
 		foreach( $vars['fields'][$this->section] as $name=>$type ){
 			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','deleted')) ){
 				continue;
@@ -191,44 +157,54 @@ foreach( $languages as $language ){
 			if( $type=='select-multiple' ){
 				$value=$id;
 			}
-
-			if( $type=='separator' ){
 			?>
-			</table>
-
-			<?php if( $separator_open ){ ?>
+			
+			<div class="form-group">
+				<?php
+				switch ($type) {
+					case 'checkbox':
+				?>
+			    <div>
+			    	<?=$this->get_field($name, 'class="'.$class.'" id="'.underscored($name).'"' );?>
+			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+			    </div>
+				<?php
+					break;
+					case 'radio':
+				?>
+			    <div>
+			    	<?=$label;?>
+			    </div>
+			    <br>
+			    <?=$this->get_field($name, 'class="'.$class.'" id="'.underscored($name).'"' );?>
+				<?php
+					break;
+					case 'select':
+				?>
+			    <div>
+			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+			    </div>
+			   	<?=$this->get_field($name, 'id="'.underscored($name).'"' );?>
+				<?php
+					break;
+					case 'editor':
+				?>
+			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+			   	<?=$this->get_field($name, 'id="'.underscored($name).'"' );?>
+				<?php
+					break;
+					default:
+				?>
+			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+			   	<?=$this->get_field($name, 'class="form-control" id="'.underscored($name).'"' );?>
+				<?php
+					break;
+				}
+				?>
 			</div>
-			<?php } ?>
-			<div style="display:none;" id="section_<?=$name;?>">
-			<table border="1" cellspacing="0" cellpadding="5" width="100%">
-			<?php
-				$separator_open=true;
-				continue;
-			}
-			?>
+		
+		<?php } ?>
 
-		<tr>
-			<th align="left" valign="top"><?=$label;?></th>
-			<td>
-				<?php
-				if( is_array($type) ){
-					foreach( $type as $k=>$v ){
-				?>
-					<?=$k;?><br />
-					<?php $this->get_field($k);?><br />
-				<?php
-					}
-				}else{
-				?>
-					<?php $this->get_field($name);?>
-				<?php } ?>
-			</td>
-		</tr>
-		<?php } ?>
-		</table>
-		<?php if( $separator_open ){ ?>
-		</div>
-		<?php } ?>
 	</div>
 <?php
 }
@@ -239,13 +215,40 @@ foreach( $languages as $language ){
 <br />
 <?php } ?>
 
-<table width="100%">
-<tr>
-	<td>
-    		<button type="submit" class="btn btn-success">Save</button>
-  		<button type="button" class="btn btn-danger" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
-	</td>
-</tr>
-</table>
-
 </form>
+
+		</div>
+	</div>
+</div>
+	</div>
+</div>
+
+<style>
+.mce-notification {
+	display: none !important;
+}
+</style>
+
+<script type="text/javascript">
+<?php
+if($this->components){
+?>
+var components = <?=json_encode($this->components);?>;
+<?php
+}
+?>
+
+/*
+$(function() {
+    if( document.getElementById('language') ){
+		$('#language').on('change',set_language);
+	}
+
+	init_tabs();
+
+    $('form input:visible, form select:visible').first().focus();
+
+    var phpupload_default_dir = '<?=$_GET["option"];?>/<?=$id;?>';
+});
+*/
+</script>
