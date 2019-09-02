@@ -1585,20 +1585,14 @@ class cms{
 				$value = dateformat('d/m/Y',$date[0]).' '.$date[1];
 			}
 		}elseif( $type == 'number' ){
-		?>
-			<?=number_format($value, 2);?>
-		<?php 
+			$value = number_format($value, 2);
 		}elseif( $type == 'rating' ){
-		?>
-			<select name="<?=$field_name;?>" class="rating" disabled="disabled">
+			$value = '<select name="'.$field_name.'" class="rating" disabled="disabled">
 			    <option value="">Choose</option>
-				<?=html_options($this->opts['rating'], $value, true);?>
-			</select>
-		<?php
+				'.html_options($this->opts['rating'], $value, true).'
+			</select>';
 		}elseif( $type == 'coords' ){
-		?>
-			<input type="text" class="map" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value,6,-1));?>" <?php if( $readonly ){ ?>disabled<?php } ?> size="50" <?=$attribs;?>>
-		<?php
+			$value = '<input type="text" class="map" name="'.$field_name.'" value="'.htmlspecialchars(substr($value,6,-1)).'" size="50" '.$attribs.'>';
 		}
 
 		if( $return ){
@@ -1730,16 +1724,22 @@ class cms{
 		
 		$option = $_GET['option'] ?: 'index';
 
+		$section = $option;
+		$pos = strpos($section, '/');
+		if ($pos) {
+			$section = substr($option, 0, $pos);
+		}
+
 		if( $_GET['option']!='login' ){
 			$auth->check_admin();
 		}
 
 		if(
             $auth->user['admin']==2 and
-            $_GET['option'] and $option!='preferences' and
+            $_GET['option'] and $section!='preferences' and
             $_GET['option']!='logout' and
             $_GET['option']!='login' and
-            !array_key_exists($option, $auth->user['privileges'])
+            !array_key_exists($section, $auth->user['privileges'])
         ){
 			die('access denied');
 		}
@@ -1764,6 +1764,7 @@ class cms{
 			check_table('cms_filters', $this->cms_filters);
 			$this->default_section($option);
 		}else{
+			check_table('cms_filters', $this->cms_filters);
 			$this->main();
 		}
 	}
