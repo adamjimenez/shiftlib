@@ -9,6 +9,8 @@ class blog{
 		$this->table_categories = $options['table_categories'] ?: 'blog_categories';
 
 		$this->category_field = array_search($this->table_categories, $opts);
+		
+		$this->conditions = array();
 
 		//categories
 		if( count($vars["fields"][$this->table_categories]) ){
@@ -59,46 +61,46 @@ class blog{
 			if( is_numeric($sections[($this->blog_index+1)]) and is_numeric($sections[($this->blog_index+2)]) ){
 				$date = $sections[($this->blog_index+1)].'/'.$sections[($this->blog_index+2)].'/01';
 
-				$conditions['func']['date'] = 'month';
-				$conditions['date'] = dateformat('mY',$date);
+				$this->conditions['func']['date'] = 'month';
+				$this->conditions['date'] = dateformat('mY',$date);
 			}elseif( is_numeric($sections[($this->blog_index+1)]) ){
-				$conditions['id'] = $sections[($this->blog_index+1)];
+				$this->conditions['id'] = $sections[($this->blog_index+1)];
 				$this->article = true;
 			}elseif( $sections[($this->blog_index+1)]=='category' ){
-	            $conditions['func']['date'] = '<';
-	    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+	            $this->conditions['func']['date'] = '<';
+	    		$this->conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
 
 				$category = sql_query("SELECT * FROM ".underscored($this->table_categories)." WHERE
 				    page_name='".escape($sections[($this->blog_index+2)])."'
 				",1);
 
 				if($category['id']){
-					$conditions[underscored($this->category_field)][] = $category['id'];
+					$this->conditions[underscored($this->category_field)][] = $category['id'];
 				}
 			}elseif( $sections[($this->blog_index+1)]=='tags' ){
-				$conditions['tags']='*'.$sections[($this->blog_index+2)].'*';
+				$this->conditions['tags']='*'.$sections[($this->blog_index+2)].'*';
 			}elseif( $sections[($this->blog_index+1)] and $sections[($this->blog_index+1)]!=='index' ){
-				$conditions['page_name']=$sections[($this->blog_index+1)];
+				$this->conditions['page_name']=$sections[($this->blog_index+1)];
 
 				$this->article=true;
 			}else{
-	        	$conditions['func']['date'] = '<';
-	    		$conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+	        	$this->conditions['func']['date'] = '<';
+	    		$this->conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
 	    		
 	    		if ($_GET['s']) {
-	    			$conditions['s'] = $_GET['s'];
+	    			$this->conditions['s'] = $_GET['s'];
 	    		}
 	    		if ($_GET['w']) {
-	    			$conditions['w'] = $_GET['w'];
+	    			$this->conditions['w'] = $_GET['w'];
 	    		}
 
 				$limit=6;
 			}
 
-			$conditions['display'] = 1;
+			$this->conditions['display'] = 1;
 
-			//print_r($conditions);exit;
-			$this->content = $cms->get($this->table_blog, $conditions, $limit, 'date', false);
+			//print_r($this->conditions);exit;
+			$this->content = $cms->get($this->table_blog, $this->conditions, $limit, 'date', false);
 	        $this->p = $cms->p;
 
 			if( $this->article ){
