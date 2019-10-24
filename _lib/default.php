@@ -94,7 +94,7 @@ function parse_request(){
 }
 
 function get_include( $request ){
-	global $tpl_config, $root_folder, $catcher, $sections;
+	global $tpl_config, $root_folder, $catcher, $sections, $vars, $cms, $content;
 
 	$include_file = false;
 
@@ -112,10 +112,19 @@ function get_include( $request ){
 	}elseif( $catcher=get_tpl_catcher($request) ){
 		$include_file = $root_folder.'/_tpl/'.$catcher.'.php';
 	}else{
-		//check aliases
-		if( $tpl_config['alias'][$request] ){
+		// check pages
+		if (in_array('pages', $vars["sections"])) {
+			$content = $cms->get('pages', $request);
+			
+			if($content) {
+			    $include_file = $root_folder.'/_tpl/page.php';
+			} else {
+				$trigger_404 = true;
+			}
+		} elseif( $tpl_config['alias'][$request] ){
+			//check aliases
 			$include_file=$root_folder.'/_tpl/'.$tpl_config['alias'][$request].'.php';
-		}else{
+		} else {
 			if( (file_exists('_tpl/'.$request) and !is_dir('_tpl/'.$request)) or $tpl_config['alias'][str_replace('.php','',$request)] ){
 				$url='http://'.$_SERVER['SERVER_NAME'].'/'.str_replace('.php','',$request);
 

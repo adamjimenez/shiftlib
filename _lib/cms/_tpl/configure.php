@@ -19,6 +19,8 @@ $section_templates['pages']=array(
 	'heading'=>'text',
 	'copy'=>'editor',
 	'page name'=>'page-name',
+	'page title'=>'text',
+	'meta description'=>'textarea',
 	'id'=>'id',
 );
 
