@@ -1,5 +1,5 @@
 <IfModule pagespeed_module>
-    ModPagespeed on
+    ModPagespeed off
 
     # using commands,filters etc
     ModPagespeedEnableFilters rewrite_javascript
