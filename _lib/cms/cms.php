@@ -213,11 +213,8 @@ class cms{
 			}
 			
 			if ($soft_delete) {
-				sql_query("UPDATE `".escape(underscored($section))."` SET
-					deleted = 1
-					WHERE ".$field_id."='$id'
-						LIMIT 1
-				");
+				$this->set_section($section, $id, array('deleted'));
+				$this->save(array('deleted'=>1));
 	
 				if( in_array('language',$vars['fields'][$section]) ){
 					sql_query("UPDATE `".escape(underscored($section))."` SET
@@ -567,6 +564,9 @@ class cms{
 			foreach( $keys as $key ){
 				if( !is_array($vars['options'][$key]) ){
 					$option_table = underscored($vars['options'][$key]);
+					if (!$option_table) {
+						die('missing options array value for: '.$key);
+					}
 
 					$join_id = array_search('id', $vars['fields'][$vars['options'][$key]]);
 
@@ -840,6 +840,7 @@ class cms{
 		$this->section = $section;
 		$this->table = underscored($section);
 
+		$this->editable_fields = array();
 		if( is_array($editable_fields) ){
 	        foreach( $editable_fields as $k=>$v ){
 	            $this->editable_fields[$k] = spaced($v);
@@ -898,7 +899,7 @@ class cms{
 							WHERE
 								`translated_from`='".escape($this->id)."' AND
 								`language`='".escape($language)."'
-						",true);
+						", true);
 					}
 				}
 			}
@@ -917,13 +918,13 @@ class cms{
 							WHERE
 								`translated_from`='".escape($this->id)."' AND
 								`language`='".escape($language)."'
-						",true);
+						", true);
 					}
 				}
 			}
 		}else{
-			$this->content=$_GET;
-			$this->id=NULL;
+			$this->content = $_GET;
+			$this->id = NULL;
 		}
 	}
 
