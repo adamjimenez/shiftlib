@@ -153,11 +153,13 @@
 							}
 							?>
 			
-							<?php if( $shop_enabled and ($auth->user['admin']==1 or $auth->user['privileges']['orders']) ){ ?>
+							<?php 
+							if( $shop_enabled and ($auth->user['admin']==1 or $auth->user['privileges']['orders']) ){ ?>
 							<li <?php if($_GET['option']=='shop_orders'){ ?>id="current"<?php } ?>>
 								<a href="?option=shop_orders"><span>Orders</span></a>
 							</li>
-							<?php } ?>
+							<?php } 
+							?>
 							<?php if( ($auth->user['admin']==1 or $auth->user['privileges']['email_templates']) ){ ?>
 							<li <?php if($_GET['option']=='email_templates'){ ?>id="current"<?php } ?>>
 								<a href="?option=email templates"><span>Email Templates</span></a>

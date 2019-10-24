@@ -147,7 +147,7 @@ class shop{
 
 			if( $promo ){
 				if( $promo['discount'] ){
-					$this->promo=$promo;
+					$this->promo = $promo;
 
                     if( !$promo['min_spend'] or $promo['min_spend']<$this->subtotal ){
 					    $this->set_discount($promo['discount']);

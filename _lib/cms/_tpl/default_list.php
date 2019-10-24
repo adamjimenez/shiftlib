@@ -240,7 +240,7 @@ if( $_POST['action']=='email' ){
 			continue;
 		}
 
-		$fields[]=$field;
+		$fields[] = $field;
 	}
 ?>
 
@@ -338,10 +338,11 @@ if( $_POST['action']=='email' ){
 						$conditions[$k]=$v;
 					}
 					
+					$field = key($vars['fields'][$vars['options'][$name]]);
 					$table = underscored($vars['options'][$name]);
-					$db_field_name = $this->db_field_name($vars['options'][$name],$field);
+					$db_field_name = $this->db_field_name($vars['options'][$name], $field);
 					$cols = "`".underscored($db_field_name)."` AS `".underscored($field)."`"."\n";
-					$rows = sql_query("SELECT id,$cols FROM $table ORDER BY `".underscored($db_field_name)."`");
+					$rows = sql_query("SELECT $cols, id FROM $table ORDER BY `".underscored($db_field_name)."`");
 					
 					$options = array();
 					foreach($rows as $v) {
@@ -463,6 +464,7 @@ if( $_POST['action']=='email' ){
 		<?php
 			break;
 			case 'text':
+			case 'textarea':
 			case 'hidden':
 			case 'email':
 			case 'mobile':
