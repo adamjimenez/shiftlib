@@ -65,7 +65,7 @@ if ($_GET['cmd']=='reorder') {
 	
 	$table = escape(underscored($_GET['section']));
 	
-	$rows = sql_query("SELECT *, T_$table.* FROM $table T_$table
+	$rows = sql_query("SELECT T_$table.* ".$sql['cols']." FROM $table T_$table
 	".$sql['joins']."
 	".$sql['where_str']."
 	ORDER BY
@@ -73,13 +73,19 @@ if ($_GET['cmd']=='reorder') {
 	$limit
 	");
 	
+	//debug($sql);
+	
 	foreach($rows as $v) {
 		$item = array();
 		
 		$item[] = $v['position'];
 		
 		foreach( $labels as $i=>$k ){
-			$item[] = $v[underscored($k)];
+			if($v[underscored($k).'_label']) {
+				$item[] = $v[underscored($k).'_label'];
+			} else {
+				$item[] = $v[underscored($k)];
+			}
 		}
 		
 		$response['data'][] = $item;
