@@ -62,13 +62,13 @@ class blog{
 				$date = $sections[($this->blog_index+1)].'/'.$sections[($this->blog_index+2)].'/01';
 
 				$this->conditions['func']['date'] = 'month';
-				$this->conditions['date'] = dateformat('mY',$date);
+				$this->conditions['date'] = $date;
 			}elseif( is_numeric($sections[($this->blog_index+1)]) ){
 				$this->conditions['id'] = $sections[($this->blog_index+1)];
 				$this->article = true;
 			}elseif( $sections[($this->blog_index+1)]=='category' ){
 	            $this->conditions['func']['date'] = '<';
-	    		$this->conditions['date'] = date('d/m/Y', strtotime('tomorrow'));
+	    		$this->conditions['date'] = date('Y-m-d', strtotime('tomorrow'));
 
 				$category = sql_query("SELECT * FROM ".underscored($this->table_categories)." WHERE
 				    page_name='".escape($sections[($this->blog_index+2)])."'
@@ -331,7 +331,7 @@ class blog{
         	$summary->addAttribute('type', 'html');
 
         	$link=$entry->addChild('link');
-        	$url = 'http://'.$_SERVER['HTTP_HOST'].'/';
+        	$url = 'https://'.$_SERVER['HTTP_HOST'].'/';
         	if($this->blog_index>0) {
         		$url .= 'blog/';
         	}
