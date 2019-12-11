@@ -1,6 +1,11 @@
 <?php
 $label = is_string($button['label']) ? $button['label'] : $button['label']();
-$disabled = $button['disabled'] ? 'disabled' : '';
+
+if (is_callable($button['disabled'])) {
+	$disabled = $button['disabled']($content) ? 'disabled' : '';
+} else {
+	$disabled = $button['disabled'] ? 'disabled' : '';
+}
 
 if ($label!==false) {
 	if( $button['submit']===false ){
