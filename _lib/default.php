@@ -9,7 +9,7 @@ require_once(dirname(__FILE__).'/core/common.php');
 function add_components($html){
 	return preg_replace_callback('/{\$([A-Za-z0-9]+)}/', function($match) {
 		$include = $match[1];
-		return file_get_contents('http://'.$_SERVER['HTTP_HOST'].'/components/'.$include);
+		return file_get_contents('https://'.$_SERVER['HTTP_HOST'].'/components/'.$include);
 	}, $html);
 }
 
@@ -193,7 +193,7 @@ switch( $request ){
 	break;
 	case 'sitemap.xml':
 		if (!file_exists($root_folder.'/_tpl/sitemap.xml.php')) {
-			require(dirname(__FILE__).'/modules/seo/sitemap.xml.php');
+			require(dirname(__FILE__).'/sitemap.xml.php');
 			exit;
 		}
 	break;

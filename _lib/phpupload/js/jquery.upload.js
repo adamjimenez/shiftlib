@@ -66,7 +66,7 @@ function file_ext( filename ){
 
         var uploadContainer = $('#uploadContainer');
 
-        var url = '_lib/modules/phpupload/index.php';
+        var url = '_lib/phpupload/index.php';
 
         url += '?date='+(new Date()).getTime();
 
@@ -125,7 +125,7 @@ function file_ext( filename ){
                 var html = '<li>';
 
                     if( ['jpg', 'jpeg', 'gif', 'png'].indexOf(file_ext(files[i].toLowerCase()))!==-1  ){
-                        html += '<img src="/_lib/modules/phpupload/?func=preview&file='+files[i]+'&w=320&h=240" class="thumb"><br>';
+                        html += '<img src="/_lib/phpupload/?func=preview&file='+files[i]+'&w=320&h=240" class="thumb"><br>';
                     }else if( ['f4v', 'mp4'].indexOf(file_ext(files[i]))!==-1 ){
                         html += '<video width="320" height="240" src="/uploads/'+files[i]+'" controls="controls" preload="none"></video><br>';
                     }

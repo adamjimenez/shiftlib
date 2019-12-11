@@ -14,20 +14,17 @@ if( $auth->user['admin'] ){
 	<?php load_js(array('cms')); ?>
 	
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" type="image/png" href="/_lib/assets/images/icon/favicon.ico">
-    <link rel="stylesheet" href="/_lib/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/_lib/assets/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/_lib/assets/css/themify-icons.css">
-    <link rel="stylesheet" href="/_lib/assets/css/metisMenu.css">
-    <link rel="stylesheet" href="/_lib/assets/css/owl.carousel.min.css">
-    <link rel="stylesheet" href="/_lib/assets/css/slicknav.min.css">
+    <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/metisMenu.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/slicknav.min.css">
     <!-- others css -->
-    <link rel="stylesheet" href="/_lib/assets/css/typography.css">
-    <link rel="stylesheet" href="/_lib/assets/css/default-css.css">
-    <link rel="stylesheet" href="/_lib/assets/css/styles.css">
-    <link rel="stylesheet" href="/_lib/assets/css/responsive.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/typography.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/default-css.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/responsive.css">
     <!-- modernizr css -->
-    <script src="/_lib/assets/js/vendor/modernizr-2.8.3.min.js"></script>
+    <script src="/_lib/cms/assets/js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
 
 <body>
@@ -104,19 +101,17 @@ if( $auth->user['admin'] ){
     </div>
     <!-- login area end -->
 
-    <!-- jquery latest version -->
-    <script src="/_lib/assets/js/vendor/jquery-2.2.4.min.js"></script>
     <!-- bootstrap 4 js -->
-    <script src="/_lib/assets/js/popper.min.js"></script>
-    <script src="/_lib/assets/js/bootstrap.min.js"></script>
-    <script src="/_lib/assets/js/owl.carousel.min.js"></script>
-    <script src="/_lib/assets/js/metisMenu.min.js"></script>
-    <script src="/_lib/assets/js/jquery.slimscroll.min.js"></script>
-    <script src="/_lib/assets/js/jquery.slicknav.min.js"></script>
+    <script src="/_lib/cms/assets/js/popper.min.js"></script>
+    <script src="/_lib/cms/assets/js/bootstrap.min.js"></script>
+    <script src="/_lib/cms/assets/js/owl.carousel.min.js"></script>
+    <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
+    <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
+    <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
     
     <!-- others plugins -->
-    <script src="/_lib/assets/js/plugins.js"></script>
-    <script src="/_lib/assets/js/scripts.js"></script>
+    <script src="/_lib/cms/assets/js/plugins.js"></script>
+    <script src="/_lib/cms/assets/js/scripts.js"></script>
 </body>
 
 </html>

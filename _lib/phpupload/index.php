@@ -1,5 +1,5 @@
 <?php
-require(dirname(__FILE__).'/../../../_lib/base.php');
+require(dirname(__FILE__).'/../../_lib/base.php');
 
 function get_all_headers()
 {
@@ -40,14 +40,6 @@ if($_GET["path"]) {
         $result['success'] = false;
     }
 }
-
-/*
-$request = get_all_headers();
-
-if($request["path"]) {
-    $path .= $request["path"];
-}
-*/
 
 if($_GET["func"] == 'preview') {
 	$image = image($_GET["file"], $_GET["w"], $_GET["h"], false);
