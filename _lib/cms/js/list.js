@@ -1,85 +1,8 @@
-$(function() {
-    $('.cms_list').each(function(){
-        var _this = this;
-
-        this.select_all_row = $(this).find('tr.select_all_row');
-        this.clear_all_row = $(this).find('tr.clear_all_row');
-    	this.select_all_pages_el = $(this).find('input[name="select_all_pages"]');
-
-        // toggle select all
-    	$(this).find('input.toggle_select').bind('change', function(e) {
-        	if( $(this).is(':checked') ){
-                $(_this).find('input[name="items[]"]:not(:checked)').trigger('click');
-                $(_this).find('tr.select_all_row').show();
-    		}else{
-                $(_this).find('input[name="items[]"]:checked').trigger('click');
-                _this.select_all_pages_el.val(0);
-            	$(_this).find('tr.select_all_row').hide();
-            	$(_this).find('tr.clear_all_row').hide();
-    		}
-    	});
-
-        //select all pages
-    	$(this).find('a.select_all_pages').bind('click', function() {
-        	_this.select_all_pages_el.val(1);
-        	$(_this).find('tr.select_all_row').hide();
-            $(_this).find('tr.clear_all_row').show();
-    	});
-
-        //clear all pages
-    	$(this).find('a.clear_all_pages').bind('click', function() {
-        	$(_this).find('input.toggle_select').trigger('click');
-    	});
-
-        //row click
-        $(this).find('tr.row').bind('click', function(){
-    		$(this).find('input').trigger('click');
-    	});
-
-        //checkbox click
-        $(this).find('input[name="items[]"]').bind('click', function(e){
-            e.stopPropagation();
-        });
-
-        //checkbox change
-        $(this).find('input[name="items[]"]').bind('change', function(e){
-            $(this).parent().parent().toggleClass('result_selected');
-        });
-
-        //sortables
-    	if ($(this).find('input[name="sortable"]')) {
-    		this.isSortable = true;
-
-    		var name = $(this).find('input[name="section"]').val().replace(/\s/g, '_');;
-
-            $( '#items_'+name ).sortable({
-                handle: '.handle',
-                opacity: 0.5,
-                items: ".draggable",
-                axis: 'y',
-                update: function( event, ui ) {
-                    jQuery.ajax('_lib/cms/_ajax/update_order.php', {
-                        type : 'post',
-                        data : 'section='+name+'&'+$('#items_'+name).sortable('serialize', {key: 'items_'+name+'[]'})
-                    });
-                }
-            });
-    	}
-
-        //custom buttons
-        $(this).find('button[data-custom]').on('click', function(e){
-            $(_this).find('input[name="custom_button"]').val($(this).data('custom'));
-            $(_this).submit();
-        });
-
-    });
-});
-
 function toggle_advanced(on)
 {
 	$('#csv').hide();
 
-	var field=$('#search_form');
+	var field = $('#search_form');
 
 	if( !on ){
 		for (i = 0; i < field.length; i++){
@@ -115,8 +38,8 @@ function toggle_import()
 	$('#csv').slideToggle();
 }
 
-function changeFile()
-{console.log('yooo3')
+function changeFile() 
+{
 	$('#csv_preview').innerHTML='';
 
 	for( var j in fields ){
@@ -133,11 +56,8 @@ function changeFile()
     name = file.name;
     size = file.size;
     type = file.type;
-console.log('yooo')
-    if(file.name.length < 1) {
 
-    }
-    else {
+    if(file.name.length > 0)  {
         var data = new FormData();
         jQuery.each(this.files, function(i, file) {
             data.append('file-'+i, file);
@@ -146,15 +66,6 @@ console.log('yooo')
         jQuery.ajax({
             url: '/_lib/cms/_ajax/csv_upload.php',  //server script to process data
             type: 'POST',
-            /*
-            xhr: function() {  // custom xhr
-                myXhr = jQuery.ajaxSettings.xhr();
-                if(myXhr.upload){ // if upload property exists
-                    myXhr.upload.addEventListener('progress', progressHandlingFunction, false); // progressbar
-                }
-                return myXhr;
-            },
-            */
             //Ajax events
             success: completeHandler = function(data) {
                 //open preview
@@ -186,7 +97,6 @@ var file_field_html;
 
 function loadFile(file)
 {
-	console.log('yooo')
 	jQuery.ajax(
 		'/_lib/cms/_ajax/csv_fields.php',
 		{
