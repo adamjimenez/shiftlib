@@ -148,7 +148,7 @@ if( $_POST['sms'] ){
 		$back_link = '?option='.$vars['options'][$section].'&view=true&id='.$this->content[$section];
 		$back_label = ucfirst($vars['options'][$section]);
 	} else {
-		$back_link = '?option='.$this->section;
+		$back_link = '?option='.$this->section.'&'.http_build_query($_GET['s']);
 		$back_label = ucfirst($this->section);
 	}
 ?>
