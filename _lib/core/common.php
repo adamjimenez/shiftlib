@@ -1,32 +1,6 @@
 <?php
-$debug_ip = '';
-
-error_reporting(E_ALL ^ E_NOTICE);
-ini_set('error_reporting', E_ALL ^ E_NOTICE);
-
-if( $_SERVER['REMOTE_ADDR']==$debug_ip ){
-	ini_set('display_errors', '1');
-	ini_set('display_startup_errors', '1');
-}else{
-	ini_set('display_errors', '0');
-	ini_set('display_startup_errors', '0');
-}
-
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
-
-ini_set('include_path', '.:/usr/share/pear/:');
-
-if (get_magic_quotes_gpc()) {
-	function stripslashes_gpc(&$value)
-	{
-		$value = stripslashes($value);
-	}
-	array_walk_recursive($_GET, 'stripslashes_gpc');
-	array_walk_recursive($_POST, 'stripslashes_gpc');
-	array_walk_recursive($_COOKIE, 'stripslashes_gpc');
-	array_walk_recursive($_REQUEST, 'stripslashes_gpc');
-}
 
 function imagecreatefromfile($path) {
 	$info = getimagesize($path);
@@ -37,7 +11,6 @@ function imagecreatefromfile($path) {
 		break;
 		case 'image/png':
 			$img = imagecreatefrompng($path);
-			//imagealphablending($img, true);
 			imagesavealpha($img, true);
 		break;
 		case 'image/gif':
@@ -100,11 +73,6 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 	}
 	
 	if (is_numeric($file)) {
-		/*
-		$row = sql_query("SELECT * FROM files WHERE
-			id='".addslashes($_GET['f'])."'
-		", 1);
-		*/
 		$file = 'files/'.$file;
 	}
 	
@@ -277,16 +245,6 @@ function age($dob)
 	}
 
 	return date('Y') - $y;
-}
-
-function alert($error)
-{
-	//deprecated
-	$error=str_replace("\n",'\n',$error);
-
-	echo '<script>
-			alert("'.$error.'");
-	</script>';
 }
 
 function analytics($id){
@@ -576,13 +534,6 @@ function debug($var, $die=false)
 	}
 }
 
-function shutdown()
-{
-	if( $error=error_get_last() ){
-		error_handler($error['type'],$error['message'],$error['file'],$error['line']);
-	}
-}
-
 function send_mail($opts=array()) {
 	require 'vendor/autoload.php'; // If you're using Composer (recommended)
 	
@@ -604,12 +555,6 @@ function send_mail($opts=array()) {
 	$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
 	try {
 	    $response = $sendgrid->send($email);
-	    /*
-	    print $response->statusCode() . "\n";
-	    print_r($response->headers());
-	    print $response->body() . "\n";
-	    exit;
-	    */
 	} catch (Exception $e) {
 	    echo 'Caught exception: '. $e->getMessage() ."\n";
 	}
@@ -706,9 +651,11 @@ function ends_with($haystack, $needle){
 	return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
 }
 
-function error($error){
-	echo $error;
-	exit;
+function shutdown()
+{
+	if( $error = error_get_last() ){
+		error_handler($error['type'],$error['message'],$error['file'],$error['line']);
+	}
 }
 
 function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
@@ -1461,15 +1408,6 @@ function array_to_csv_file($rows, $filename='data', $add_header=true)
 	exit;
 }
 
-function num2alpha($n) {
-	$r = '';
-	for ($i = 1; $n >= 0 && $i < 10; $i++) {
-		$r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
-		$n -= pow(26, $i);
-	}
-	return $r;
-}
-
 function options($options,$selected='')
 {
 	if( is_assoc_array($options) ){
@@ -1522,7 +1460,7 @@ function redirect($url, $http_response_code = null) {
 	exit;
 }
 
-function sec2hms ($sec, $padHours = false)
+function sec2hms($sec, $padHours = false)
 {
 	// holds formatted string
 	$hms = "";
@@ -1892,4 +1830,3 @@ function video_info($url) {
 
 	return $data;
 }
-?>
