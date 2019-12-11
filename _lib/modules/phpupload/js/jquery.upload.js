@@ -66,7 +66,7 @@ function file_ext( filename ){
 
         var uploadContainer = $('#uploadContainer');
 
-        var url = '_lib/modules/phpupload/';
+        var url = '_lib/modules/phpupload/index.php';
 
         url += '?date='+(new Date()).getTime();
 

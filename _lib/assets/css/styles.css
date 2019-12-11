@@ -123,7 +123,7 @@
 .main-menu {
     height: calc(100% - 100px);
     overflow: hidden;
-    padding: 20px 10px 0 0;
+    padding: 0 10px 0 0;
     -webkit-transition: all 0.3s ease 0s;
     transition: all 0.3s ease 0s;
 }
@@ -139,7 +139,7 @@
 }
 
 .sidebar-header {
-    padding: 19px 32px 20px;
+    padding: 0 32px;
     background: #303641;
     border-bottom: 1px solid #343e50;
 }

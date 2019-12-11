@@ -46,10 +46,11 @@ $(function() {
 		url : "",
 		
 		filters : {
-			max_file_size : '20mb',
+			max_file_size : max_file_size,
 			mime_types: [
 				{title : "Office files", extensions : "pdf,doc,docx,xls,xlsx"},
 				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Video files", extensions : "mp4"},
 				{title : "Zip files", extensions : "zip"}
 			]
 		},

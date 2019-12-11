@@ -164,7 +164,7 @@ $blog = new blog(
 		<?php
 		foreach( $blog->categories as $k=>$v ){
 		?>
-			<li><a href="/blog//category/<?=$v['page_name'];?>"><?=$v['category'];?></a></li>
+			<li><a href="/blog/category/<?=$v['page_name'];?>"><?=$v['category'];?></a></li>
 		<?php
 		}
 		?>

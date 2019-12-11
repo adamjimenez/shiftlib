@@ -144,7 +144,7 @@ function str_to_bool($str)
 	}
 }
 
-$field_opts=array(
+$field_opts = array(
 	'text',
 	'textarea',
 	'hidden',
@@ -381,13 +381,8 @@ if( $_POST['save'] ){
 		}
 	}
 
-    //default upload size
-    if(!$_POST['upload_config']['max_file_size']){
-        $_POST['upload_config']['max_file_size'] = 1000000;
-    }
-
     //hash passwords
-    if( !$auth_config['hash_password'] and $_POST['hash_password'] ){
+    if( !$auth_config['hash_password'] and $_POST['auth_config']['hash_password'] ){
     	$users = sql_query("SELECT * FROM users");
 
     	foreach($users as $user){
@@ -420,8 +415,6 @@ $tpl_config["catchers"]=array('.str_to_csv($_POST['tpl_config']['catchers']).');
 
 $tpl_config["redirects"]=array('.str_to_assoc($_POST['tpl_config']['redirects']).');
 
-$tpl_config["alias"]=array('.str_to_assoc($_POST['tpl_config']['alias']).');
-
 $tpl_config["secure"]=array('.str_to_csv($_POST['tpl_config']['secure']).');
 
 $tpl_config["ssl"]='.str_to_bool($_POST['tpl_config']['ssl']).';
@@ -446,9 +439,6 @@ $auth_config["from_email"]="'.$_POST['from_email'].'";
 $auth_config["login"]="'.$_POST['auth_config']['login'].'";
 $auth_config["register_success"]="'.$_POST['auth_config']['register_success'].'";
 $auth_config["forgot_success"]="'.$_POST['auth_config']['forgot_success'].'";
-
-//automatically generate a password
-$auth_config["generate_password"]='.str_to_bool($_POST['auth_config']['generate_password']).';
 
 //hash passwords
 $auth_config["hash_password"]='.str_to_bool($_POST['auth_config']['hash_password']).';
@@ -483,13 +473,6 @@ $upload_config=array();
 // configure the variables before use.
 $upload_config["upload_dir"]="'.$_POST['upload_config']['upload_dir'].'";
 $upload_config["web_path"]="'.$_POST['upload_config']['web_path'].'";
-$upload_config["max_file_size"]='.$_POST['upload_config']['max_file_size'].';
-$upload_config["type"]="'.$_POST['upload_config']['type'].'"; // db or dir
-
-$upload_config["mysql_table"]="'.$_POST['upload_config']['mysql_table'].'";
-
-$upload_config["overwrite_files"]='.str_to_bool($_POST['upload_config']['overwrite_files']).';
-
 $upload_config["resize_images"]='.str_to_bool($_POST['upload_config']['resize_images']).';
 $upload_config["resize_dimensions"]=array('.str_replace('x',',',$_POST['upload_config']['resize_dimensions']).');
 
@@ -497,8 +480,6 @@ $upload_config["allowed_exts"]=array('.str_to_csv($_POST['upload_config']['allow
 
 #ADMIN AREA
 $languages=array('.str_to_csv($_POST['languages']).');
-
-$vars["configure_dropdowns"]='.str_to_bool($_POST['vars']['configure_dropdowns']).';
 
 // sections in menu
 $vars["sections"]=array(
@@ -593,28 +574,13 @@ $cms_config["editor"]="'.$_POST['cms_config']['editor'].'";
 $shop_enabled='.str_to_bool($_POST['shop_enabled']).';
 
 $shop_config["paypal_email"]="'.$_POST['shop_config']['paypal_email'].'";
-$shop_config["gc_merchant_id"]="'.$_POST['shop_config']['gc_merchant_id'].'";
-$shop_config["gc_merchant_key"]="'.$_POST['shop_config']['gc_merchant_key'].'";
 $shop_config["include_vat"]='.str_to_bool($_POST['shop_config']['include_vat']).';
-
-#sms
-$sms_config["provider"]="'.$_POST['sms_config']['provider'].'";
-$sms_config["username"]="'.$_POST['sms_config']['username'].'";
-$sms_config["password"]="'.$_POST['sms_config']['password'].'";
-$sms_config["account"]="'.$_POST['sms_config']['account'].'";
-$sms_config["originator"]="'.$_POST['sms_config']['originator'].'";
 
 #mailer
 $mailer_config["provider"]="'.$_POST['mailer_config']['provider'].'";
 $mailer_config["username"]="'.$_POST['mailer_config']['username'].'";
 $mailer_config["password"]="'.$_POST['mailer_config']['password'].'";
 $mailer_config["originator"]="'.$_POST['mailer_config']['originator'].'";
-
-#twitter
-$vars["twitter"]["consumer_key"]="'.$_POST['vars']['twitter']['consumer_key'].'";
-$vars["twitter"]["consumer_secret"]="'.$_POST['vars']['twitter']['consumer_secret'].'";
-$vars["twitter"]["oauth_token"]="'.$_POST['vars']['twitter']['oauth_token'].'";
-$vars["twitter"]["oauth_secret"]="'.$_POST['vars']['twitter']['oauth_secret'].'";
 
 #OPTIONS
 ';
@@ -1315,19 +1281,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         			</td>
         		</tr>
         		<tr>
-        			<th valign="top">Alias</th>
-        			<td>
-        				<?php
-        				$alias='';
-        				foreach( $tpl_config['alias'] as $k=>$v ){
-        					$alias.=$k.'='.$v."\n";
-        				}
-        				$alias=trim($alias);
-        				?>
-        				<textarea name="tpl_config[alias]" cols="70" class="autogrow"><?=$alias;?></textarea>
-        			</td>
-        		</tr>
-        		<tr>
         			<th valign="top">Secure</th>
         			<td>
         				<?php
@@ -1368,10 +1321,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>forgot success</th>
         			<td><input type="text" name="auth_config[forgot_success]" value="<?=$auth_config['forgot_success'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>generate password</th>
-        			<td><input type="checkbox" name="auth_config[generate_password]" value="1" <?php if( $auth_config['generate_password'] ){ ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>hash passwords</th>
@@ -1434,26 +1383,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         			<tr>
         				<th>web path</th>
         				<td><input type="text" name="upload_config[web_path]" value="<?=$upload_config['web_path'];?>"></td>
-        			</tr>
-        			<tr>
-        				<th>max file size</th>
-        				<td><input type="text" name="upload_config[max_file_size]" value="<?=$upload_config['max_file_size'];?>"></td>
-        			</tr>
-        			<tr>
-        				<th>type</th>
-        				<td>
-        					<select name="upload_config[type]" value="<?=$upload_config['type'];?>">
-        						<?=html_options(array('db','dir'),$upload_config['type']);?>
-        					</select>
-        				</td>
-        			</tr>
-        			<tr>
-        				<th>mysql table</th>
-        				<td><input type="text" name="upload_config[mysql_table]" value="<?=$upload_config['mysql_table'];?>"></td>
-        			</tr>
-        			<tr>
-        				<th>overwrite files</th>
-        				<td><input type="checkbox" name="upload_config[overwrite_files]" value="1" <?php if( $upload_config['overwrite_files'] ){ ?> checked<?php } ?>></td>
         			</tr>
         			<tr>
         				<th>resize images</th>

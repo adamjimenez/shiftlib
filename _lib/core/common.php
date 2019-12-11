@@ -583,6 +583,38 @@ function shutdown()
 	}
 }
 
+function send_mail($opts=array()) {
+	require 'vendor/autoload.php'; // If you're using Composer (recommended)
+	
+	$email = new \SendGrid\Mail\Mail(); 
+	//$email->setFrom("test@example.com", "Example User");
+	$email->setFrom($opts['from_email']);
+	$email->setSubject($opts['subject']);
+	//$email->addTo("adam.jimenez@gmail.com", "Example User");
+	$email->addTo($opts['to_email']);
+	
+	if ($opts['content']!=strip_tags($opts['content'])) {
+		$email->addContent(
+		    "text/html", $opts['content']
+		);
+	}
+	
+	$email->addContent("text/plain", strip_tags($opts['content']));
+
+	$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+	try {
+	    $response = $sendgrid->send($email);
+	    /*
+	    print $response->statusCode() . "\n";
+	    print_r($response->headers());
+	    print $response->body() . "\n";
+	    exit;
+	    */
+	} catch (Exception $e) {
+	    echo 'Caught exception: '. $e->getMessage() ."\n";
+	}
+}
+
 function email_template($email, $subject=null, $reps=null, $headers=null, $language='en')
 {
 	global $from_email, $email_templates, $cms, $lang;
@@ -632,30 +664,38 @@ function email_template($email, $subject=null, $reps=null, $headers=null, $langu
 	$body = str_replace("\n", "\t\n", $body);
 
 	//mail($email, $template['subject'], $body, $headers);
-
-	$mail = new Rmail();
-
-	//set html or text
-	if( strip_tags($body)!==$body ){
-		$mail->setHtml($body, strip_tags($body));
-	}else{
-		$mail->setText($body);
-	}
-
-	$mail->setHTMLCharset('UTF-8');
-	$mail->setHeadCharset('UTF-8');
-	$mail->setFrom($from_email);
-	$mail->setSubject($template['subject']);
-
-	if( $template['attachments'] ){
-		$attachments = explode("\n", $template['attachments']);
-
-		foreach($attachments as $attachment){
-			$mail->addAttachment(new fileAttachment('uploads/'.$attachment));
+	if (getenv('SENDGRID_API_KEY')) {
+		$opts = array();
+		$opts['from_email'] = $from_email;
+		$opts['to_email'] = $email;
+		$opts['subject'] = $template['subject'];
+		$opts['content'] = $body;
+		send_mail($opts);
+	} else {
+		$mail = new Rmail();
+	
+		//set html or text
+		if( strip_tags($body)!==$body ){
+			$mail->setHtml($body, strip_tags($body));
+		}else{
+			$mail->setText($body);
 		}
+	
+		$mail->setHTMLCharset('UTF-8');
+		$mail->setHeadCharset('UTF-8');
+		$mail->setFrom($from_email);
+		$mail->setSubject($template['subject']);
+	
+		if( $template['attachments'] ){
+			$attachments = explode("\n", $template['attachments']);
+	
+			foreach($attachments as $attachment){
+				$mail->addAttachment(new fileAttachment('uploads/'.$attachment));
+			}
+		}
+	
+		return $mail->send(array($email), 'mail');
 	}
-
-	return $mail->send(array($email), 'mail');
 }
 
 function starts_with($haystack, $needle){
@@ -1154,7 +1194,7 @@ function is_odd($number)
 
 function is_postcode($code)
 {
-	if (!preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code)){
+	if (!preg_match('/^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$/', $code)){
 		return false;
 	}
 	

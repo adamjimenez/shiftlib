@@ -58,7 +58,10 @@ $filters = sql_query("SELECT * FROM cms_filters WHERE
 ");
 
 $filter_exists = false;
-$qs = http_build_query($_GET);
+$params = $_GET;
+unset($params['option']);
+
+$qs = http_build_query($params);
 foreach($filters as $v) {
 	if ($v['filter'] == $qs) {
 		$filter_exists = true;
@@ -287,6 +290,12 @@ if( $_POST['action']=='email' ){
 				<form method="get" id="search_form">
 				<input type="hidden" name="option" value="<?=$this->section;?>" />
 				
+				<!-- fake fields are a workaround for chrome autofill -->
+				<div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
+					<input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername"></input>
+					<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
+				</div>
+				
                 <div class="modal-header">
                     <h5 class="modal-title">Advanced search</h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
@@ -295,6 +304,9 @@ if( $_POST['action']=='email' ){
                 	
 
 	<?php
+	$this->set_section($this->section);
+	$this->content = $_GET;
+	
 	foreach( $vars['fields'][$this->section] as $name=>$type ){
 		if( in_array($name,$vars["non_searchable"][$this->section]) ){
 			continue;
@@ -355,8 +367,18 @@ if( $_POST['action']=='email' ){
 	    </div>
 		<select name="<?=$name;?>[]" multiple size="4">
 			<option value=""></option>
-			<?=html_options($options,$_GET[$field_name]);?>
+			<?=html_options($options, $_GET[$field_name]);?>
 		</select>
+		<br>
+		<br>
+		<?php
+			break;
+			case 'combo':
+		?>
+	    <div>
+	    	<?=$label;?>
+	    </div>
+		<?=$this->get_field($name, 'class="form-control"'); ?>
 		<br>
 		<br>
 		<?php
@@ -609,7 +631,8 @@ if( $_POST['action']=='email' ){
 	<?php 
 	$conditions = $_GET;
 	unset($conditions['option']);
-		
+	
+	$qs = http_build_query(array('s'=>$params));
 	require(dirname(__FILE__).'/list.php');
 	?>
 	

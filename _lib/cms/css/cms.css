@@ -24,3 +24,7 @@
 		padding: 0;
 	}
 }
+
+.ui-autocomplete {
+	z-index: 9999 !important;
+}

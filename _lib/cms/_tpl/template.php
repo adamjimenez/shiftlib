@@ -177,12 +177,6 @@
 							</li>
 							<?php } ?>
 				
-							<?php if( $vars['configure_dropdowns'] and ($auth->user['admin']==1 or $auth->user['privileges']['email_templates']) ){ ?>
-							<li <?php if($_GET['option']=='dropdowns'){ ?>id="current"<?php } ?>>
-								<a href="?option=dropdowns"><span>Dropdowns</span></a>
-							</li>
-							<?php } ?>
-				
 							<?php if( $auth->user['admin']==1 ){ ?>
 							<li <?php if($_GET['option']=='configure'){ ?>id="current"<?php } ?>>
 								<a href="?option=configure"><span>Configure</span></a>

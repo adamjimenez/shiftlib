@@ -1,5 +1,5 @@
 <?php
-global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $live_site;
+global $db_config, $auth_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $live_site;
 
 function array_to_csv($array)
 {
@@ -43,11 +43,7 @@ function str_to_assoc($str)
 
 function str_to_bool($str)
 {
-	if( $str ){
-		return 'true';
-	}else{
-		return 'false';
-	}
+	return $str ? 'true' : 'false';
 }
 
 foreach( $vars['fields'] as $section=>$fields ){
@@ -66,11 +62,9 @@ if( $_POST['save'] ){
 		die('Error: config file is not writable: '.$config_file);
 	}
 
-	$config=file_get_contents($config_file);
-
-	$pos=strpos($config,'#OPTIONS');
-
-	$config=substr($config,0,$pos);
+	$config = file_get_contents($config_file);
+	$pos = strpos($config, '#OPTIONS');
+	$config = substr($config, 0, $pos);
 
 $config.='
 #OPTIONS
@@ -168,50 +162,49 @@ window.onload=init;
 </script>
 
 <form method="post">
-<input type="hidden" name="save" value="1" />
-
-<h2>Options</h2>
-<div class="box">
-<table id="options" width="400">
-<tbody>
-<?php
-foreach( $vars['options'] as $opt=>$val ){
-	$count['options']++;
-?>
-<tr>
-	<th valign="top">
-		<input type="text" name="options[<?=$count['options'];?>][name]" value="<?=$opt;?>" /><br />
-		<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <?php if(is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
-		<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <?php if(!is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
-	</th>
-	<td>
-		<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <?php if(!is_array($val)){ ?>style="display:none;"<?php } ?>><?php
-			if( is_assoc_array($val) ){
-				$options='';
-
-				foreach( $val as $k=>$v ){
-					$options.=$k.'='.$v."\n";
-				}
-
-				print trim($options);
-			}else{
-				print implode("\n",$val);
-			}
-		;?></textarea>
-		<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <?php if(is_array($val)){ ?>style="display:none;"<?php } ?>>
-			<?=html_options($section_opts,$val);?>
-		</select>
-	</td>
-</tr>
-<?php
-}
-?>
-</tfoot>
-</table>
-</div>
-
-<br />
-
-<p><button type="submit">Save</button></p>
-
+	<input type="hidden" name="save" value="1" />
+	
+	<h2>Options</h2>
+	<div class="box">
+	<table id="options" width="400">
+		<tbody>
+		<?php
+		foreach( $vars['options'] as $opt=>$val ){
+			$count['options']++;
+		?>
+		<tr>
+			<th valign="top">
+				<input type="text" name="options[<?=$count['options'];?>][name]" value="<?=$opt;?>" /><br />
+				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <?php if(is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
+				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <?php if(!is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
+			</th>
+			<td>
+				<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <?php if(!is_array($val)){ ?>style="display:none;"<?php } ?>><?php
+					if( is_assoc_array($val) ){
+						$options='';
+		
+						foreach( $val as $k=>$v ){
+							$options.=$k.'='.$v."\n";
+						}
+		
+						print trim($options);
+					}else{
+						print implode("\n",$val);
+					}
+				;?></textarea>
+				<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <?php if(is_array($val)){ ?>style="display:none;"<?php } ?>>
+					<?=html_options($section_opts,$val);?>
+				</select>
+			</td>
+		</tr>
+		<?php
+		}
+		?>
+		</tbody>
+	</table>
+	</div>
+	
+	<br />
+	
+	<p><button type="submit">Save</button></p>
 </form>

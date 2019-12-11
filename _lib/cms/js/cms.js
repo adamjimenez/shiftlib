@@ -8,11 +8,11 @@ function debug(log_txt) {
 
 function timeSince(timeStamp) {
 	if (typeof timeStamp === "string") {
-		timeStamp = new Date(timeStamp);
+		timeStamp = new Date(timeStamp.replace(/-/g, "/"));
 	}
 	
 	var now = new Date();
-	var secondsPast = (now.getTime() - timeStamp.getTime() ) / 1000;
+	var secondsPast = parseInt((now.getTime() - timeStamp.getTime() ) / 1000);
 		
 	if(secondsPast <= 86400){
 		var hour = timeStamp.getHours();
@@ -234,7 +234,7 @@ function initForms()
 							alert('Please check the required fields\n'+errors);
 						}
 						
-						$('.errors').html('Pleae check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
+						$('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
 
 						//show first error
 						var tab, node;
@@ -325,7 +325,8 @@ function initForms()
     if( jQuery().datepicker ){
     	jQuery("input[data-type='date']").datepicker({
     		dateFormat: 'yy-mm-dd',
-    		altFormat: 'yy-mm-dd'
+    		altFormat: 'yy-mm-dd',
+    		constrainInput: false
     	});
 
     	//dob
@@ -618,7 +619,7 @@ function initForms()
                 file_picker_callback  :  function(callback, value, meta) {
                     tinymce.activeEditor.windowManager.open({
                         title: "File browser",
-                        url: "/_lib/modules/phpupload/?field=field_name&file=url",
+                        url: "/_lib/modules/phpupload/index.php?field=field_name&file=url",
                         width: 800,
                         height: 600
                     }, {
@@ -717,10 +718,20 @@ function initForms()
 	}
 
 	//combo
-	if( jQuery('input.combo').length ){
-		jQuery('input.combo').each(function() {
+	if( jQuery("input[data-type='combo']").length ){
+		jQuery("input[data-type='combo']").each(function() {
 			jQuery(this).autocomplete({
-				source: '_lib/cms/_ajax/autocomplete.php?field='+this.name
+				source: '_lib/cms/_ajax/autocomplete.php?field=' + $(this).data('field'),
+				select: function (event, ui) {
+					// Set autocomplete element to display the label
+					this.value = ui.item.label;
+					
+					// Store value in hidden field
+					$('input[name=' + $(this).data('field') + ']').val(ui.item.value);
+					
+					// Prevent default behaviour
+					return false;
+				}
 			});
 		});
 	}

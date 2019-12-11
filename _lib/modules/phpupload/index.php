@@ -343,10 +343,11 @@ if($_GET["cmd"]) {
 
     <script>
     var config = <?=json_encode($upload_config);?>;
+    var max_file_size = '<?=ini_get('upload_max_filesize');?>b';
     </script>
 
     <!-- plupload -->
-    <script type="text/javascript" src="js/ux/upload/plupload/js/plupload.full.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/plupload@2.3.6/js/plupload.full.min.js"></script>
 
 	<? load_js(array('fontawesome', 'jqueryui')); ?>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.js"></script>

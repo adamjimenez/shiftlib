@@ -117,42 +117,32 @@ function get_include( $request ){
 			$content = $cms->get('pages', $request);
 			
 			if($content) {
-			    $include_file = $root_folder.'/_tpl/page.php';
-			} else {
-				$trigger_404 = true;
+				return $root_folder.'/_tpl/page.php';
 			}
-		} elseif( $tpl_config['alias'][$request] ){
-			//check aliases
-			$include_file=$root_folder.'/_tpl/'.$tpl_config['alias'][$request].'.php';
+		}
+		
+		if(file_exists('_tpl/'.$request) and !is_dir('_tpl/'.$request)) {
+			$url = 'http://'.$_SERVER['SERVER_NAME'].'/'.str_replace('.php','',$request);
+
+			unset($_GET['page']);
+
+			if( count($_GET) ){
+				$url.='?'.http_build_query($_GET);
+			}
+
+			redirect($url, 301);
+		}
+
+		//check if using urlencode
+		$decoded = urldecode($request);
+		if( !file_exists($request) and file_exists($decoded) ){
+			redirect('/'.$decoded);
+		}
+
+		if(file_exists($root_folder.'/_inc/catch_all.php')) {
+			$include_file = $root_folder.'/_inc/catch_all.php';
 		} else {
-			if( (file_exists('_tpl/'.$request) and !is_dir('_tpl/'.$request)) or $tpl_config['alias'][str_replace('.php','',$request)] ){
-				$url='http://'.$_SERVER['SERVER_NAME'].'/'.str_replace('.php','',$request);
-
-				unset($_GET['page']);
-
-				if( count($_GET) ){
-					$url.='?'.http_build_query($_GET);
-				}
-
-				redirect($url, 301);
-			}
-
-			//check alias folder
-			if( $tpl_config['alias'][$request.'/index'] ){
-				redirect("http://".$_SERVER['SERVER_NAME'].'/'.$request.'/', 301);
-			}
-
-			//check if using urlencode
-			$decoded = urldecode($request);
-			if( !file_exists($request) and file_exists($decoded) ){
-				redirect('/'.$decoded);
-			}
-
-			if( file_exists($root_folder.'/_inc/catch_all.php') ){
-				$include_file = $root_folder.'/_inc/catch_all.php';
-			}else{
-				$trigger_404=true;
-			}
+			$trigger_404=true;
 		}
 	}
 
@@ -169,17 +159,17 @@ require(dirname(__FILE__).'/base.php');
 //ssl - must come after base.php
 if( !$_SERVER['HTTPS'] and ($tpl_config['ssl'] or in_array($request,$tpl_config['secure'])) ){
 	if( substr($request,-5)=='index' ){
-		$request=substr($request,0,-5);
+		$request = substr($request,0,-5);
 	}
 
 	if( $_SERVER['QUERY_STRING'] ){
-		$request.='?'.$_SERVER['QUERY_STRING'];
+		$request .= '?'.$_SERVER['QUERY_STRING'];
 	}
 
 	redirect('https://'.$_SERVER['HTTP_HOST'].'/'.$request);
 }elseif( $_SERVER['HTTPS'] and (!$tpl_config['ssl'] and !in_array($request,$tpl_config['secure'])) ){
 	if( substr($request,-5)=='index' ){
-		$request=substr($request,0,-5);
+		$request = substr($request,0,-5);
 	}
 
 	if( $_SERVER['QUERY_STRING'] ){
@@ -302,4 +292,3 @@ $body.='time: '.$time;
 mail($admin_email,'Slow page', $body, $headers );
 }
 */
-?>
