@@ -1,9 +1,9 @@
 <?php
-if( !$shop_enabled ){
+if (!$shop_enabled) {
     die('shop is not enabled');
 }
 
-$cust = sql_query("SELECT * FROM users WHERE id='".escape($_GET['cust'])."'", 1);
+$cust = sql_query("SELECT * FROM users WHERE id='" . escape($_GET['cust']) . "'", 1);
 
 $query = "SELECT * FROM orders
     WHERE
@@ -11,7 +11,7 @@ $query = "SELECT * FROM orders
     	status!='deleted'
 ";
 
-$p = new paging( $query, 20, 'date', false);
+$p = new paging($query, 20, 'date', false);
 
 $paging = $p->get_paging();
 $orders = sql_query($p->query);
@@ -35,20 +35,20 @@ $orders = sql_query($p->query);
         	<th>Status</th>
         </tr>
         <?php
-        if( count($orders) ){
-        	foreach( $orders as $k=>$v ){
-        ?>
+        if (count($orders)) {
+            foreach ($orders as $k => $v) {
+                ?>
         <tr>
-        	<td><?=dateformat('d-m-Y',$v['date']);?></td>
-        	<td><?=$v['name'] ?: $v['email'];?></td>
-        	<td><a href="?option=shop_order&id=<?=$v['id'];?>"><?=$v['id'];?></a></td>
-        	<td>&pound;<?=number_format(($v['total']),2);?></td>
-        	<td><?=$v['status'];?></td>
+        	<td><?=dateformat('d-m-Y', $v['date']); ?></td>
+        	<td><?=$v['name'] ?: $v['email']; ?></td>
+        	<td><a href="?option=shop_order&id=<?=$v['id']; ?>"><?=$v['id']; ?></a></td>
+        	<td>&pound;<?=number_format(($v['total']), 2); ?></td>
+        	<td><?=$v['status']; ?></td>
         </tr>
         <?php
-        	}
-        }else{
-        ?>
+            }
+        } else {
+            ?>
         <tr>
         	<td colspan="5">No previous orders</td>
         </tr>

@@ -3,118 +3,118 @@ global $db_config, $auth_config, $shop_config, $shop_enabled, $from_email, $tpl_
 
 function array_to_csv($array)
 {
-	foreach( $array as $k=>$v ){
-		$array[$k]="\t'".addslashes($v)."'";
-	}
+    foreach ($array as $k => $v) {
+        $array[$k] = "\t'" . addslashes($v) . "'";
+    }
 
-	return implode(",\n", $array);
+    return implode(",\n", $array);
 }
 
 function str_to_csv($str)
 {
-	if( !$str ){
-		return;
-	}
+    if (!$str) {
+        return;
+    }
 
-	$array=explode("\n",$str);
+    $array = explode("\n", $str);
 
-	foreach( $array as $k=>$v ){
-		$array[$k]="\t'".addslashes(trim($v))."'"."";
-	}
+    foreach ($array as $k => $v) {
+        $array[$k] = "\t'" . addslashes(trim($v)) . "'" . '';
+    }
 
-	return implode(",\n", $array);
+    return implode(",\n", $array);
 }
 
 function str_to_assoc($str)
 {
-	if( !$str ){
-		return;
-	}
+    if (!$str) {
+        return;
+    }
 
-	$array=explode("\n",$str);
+    $array = explode("\n", $str);
 
-	foreach( $array as $k=>$v ){
-		$pair=explode('=',$v);
-		$array[$k]="\t'".addslashes(trim($pair[0]))."'=>'".addslashes(trim($pair[1]))."'"."";
-	}
+    foreach ($array as $k => $v) {
+        $pair = explode('=', $v);
+        $array[$k] = "\t'" . addslashes(trim($pair[0])) . "'=>'" . addslashes(trim($pair[1])) . "'" . '';
+    }
 
-	return implode(",\n", $array);
+    return implode(",\n", $array);
 }
 
 function str_to_bool($str)
 {
-	return $str ? 'true' : 'false';
+    return $str ? 'true' : 'false';
 }
 
-foreach( $vars['fields'] as $section=>$fields ){
-	$section_opts[]=$section;
+foreach ($vars['fields'] as $section => $fields) {
+    $section_opts[] = $section;
 }
 
 //check config file
-$config_file='_inc/config.php';
+$config_file = '_inc/config.php';
 
-if( !file_exists($config_file) ){
-	die('Error: config file does not exist: '.$config_file);
+if (!file_exists($config_file)) {
+    die('Error: config file does not exist: ' . $config_file);
 }
 
-if( $_POST['save'] ){
-	if( !is_writable($config_file) ){
-		die('Error: config file is not writable: '.$config_file);
-	}
+if ($_POST['save']) {
+    if (!is_writable($config_file)) {
+        die('Error: config file is not writable: ' . $config_file);
+    }
 
-	$config = file_get_contents($config_file);
-	$pos = strpos($config, '#OPTIONS');
-	$config = substr($config, 0, $pos);
+    $config = file_get_contents($config_file);
+    $pos = strpos($config, '#OPTIONS');
+    $config = substr($config, 0, $pos);
 
-$config.='
+    $config .= '
 #OPTIONS
 ';
 
-foreach( $_POST['options'] as $option ){
-	while( in_array($option['name'],$field_options) ){
-		$index=array_search($option['name'],$field_options);
-		unset($field_options[$index]);
-	}
+    foreach ($_POST['options'] as $option) {
+        while (in_array($option['name'], $field_options)) {
+            $index = array_search($option['name'], $field_options);
+            unset($field_options[$index]);
+        }
 
-	if( $option['type']=='section' ){
-$config.='
-$opts["'.$option['name'].'"]="'.$option['section'].'";
+        if ('section' == $option['type']) {
+            $config .= '
+$opts["' . $option['name'] . '"]="' . $option['section'] . '";
 ';
-	}else{
-		if( strstr($option['list'],'=') ){
-$config.='
-$opts["'.$option['name'].'"]=array(
-'.str_to_assoc($option['list']).'
+        } else {
+            if (strstr($option['list'], '=')) {
+                $config .= '
+$opts["' . $option['name'] . '"]=array(
+' . str_to_assoc($option['list']) . '
 );
 ';
-		}else{
-$config.='
-$opts["'.$option['name'].'"]=array(
-'.str_to_csv($option['list']).'
+            } else {
+                $config .= '
+$opts["' . $option['name'] . '"]=array(
+' . str_to_csv($option['list']) . '
 );
 ';
-		}
-	}
-}
+            }
+        }
+    }
 
-foreach( $field_options as $field_option ){
-	if( !in_array($field_option,$_POST['options']) ){
-$config.='
-$opts["'.$field_option.'"]="";
+    foreach ($field_options as $field_option) {
+        if (!in_array($field_option, $_POST['options'])) {
+            $config .= '
+$opts["' . $field_option . '"]="";
 ';
-	}
-}
+        }
+    }
 
-$config.='
+    $config .= '
 
 $vars["options"]=$opts;
 ?>';
 
-	//die($config);
-	file_put_contents($config_file,$config);
+    //die($config);
+    file_put_contents($config_file, $config);
 
-	unset($_POST);
-	redirect('/admin?option=dropdowns');
+    unset($_POST);
+    redirect('/admin?option=dropdowns');
 }
 ?>
 
@@ -169,37 +169,35 @@ window.onload=init;
 	<table id="options" width="400">
 		<tbody>
 		<?php
-		foreach( $vars['options'] as $opt=>$val ){
-			$count['options']++;
-		?>
+        foreach ($vars['options'] as $opt => $val) {
+            $count['options']++; ?>
 		<tr>
 			<th valign="top">
-				<input type="text" name="options[<?=$count['options'];?>][name]" value="<?=$opt;?>" /><br />
-				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="list" <?php if(is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','list')" /> list</label><br />
-				<label><input type="radio" name="options[<?=$count['options'];?>][type]" value="section" <?php if(!is_array($val)){ ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options'];?>','section')" /> section</label><br />
+				<input type="text" name="options[<?=$count['options']; ?>][name]" value="<?=$opt; ?>" /><br />
+				<label><input type="radio" name="options[<?=$count['options']; ?>][type]" value="list" <?php if (is_array($val)) { ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options']; ?>','list')" /> list</label><br />
+				<label><input type="radio" name="options[<?=$count['options']; ?>][type]" value="section" <?php if (!is_array($val)) { ?>checked="checked"<?php } ?> onclick="set_list_type('<?=$count['options']; ?>','section')" /> section</label><br />
 			</th>
 			<td>
-				<textarea id="options_list_<?=$count['options'];?>" cols="30" type="text" name="options[<?=$count['options'];?>][list]" class="autogrow" <?php if(!is_array($val)){ ?>style="display:none;"<?php } ?>><?php
-					if( is_assoc_array($val) ){
-						$options='';
-		
-						foreach( $val as $k=>$v ){
-							$options.=$k.'='.$v."\n";
-						}
-		
-						print trim($options);
-					}else{
-						print implode("\n",$val);
-					}
-				;?></textarea>
-				<select id="options_section_<?=$count['options'];?>" name="options[<?=$count['options'];?>][section]" <?php if(is_array($val)){ ?>style="display:none;"<?php } ?>>
-					<?=html_options($section_opts,$val);?>
+				<textarea id="options_list_<?=$count['options']; ?>" cols="30" type="text" name="options[<?=$count['options']; ?>][list]" class="autogrow" <?php if (!is_array($val)) { ?>style="display:none;"<?php } ?>><?php
+                    if (is_assoc_array($val)) {
+                        $options = '';
+        
+                        foreach ($val as $k => $v) {
+                            $options .= $k . '=' . $v . "\n";
+                        }
+        
+                        print trim($options);
+                    } else {
+                        print implode("\n", $val);
+                    } ?></textarea>
+				<select id="options_section_<?=$count['options']; ?>" name="options[<?=$count['options']; ?>][section]" <?php if (is_array($val)) { ?>style="display:none;"<?php } ?>>
+					<?=html_options($section_opts, $val); ?>
 				</select>
 			</td>
 		</tr>
 		<?php
-		}
-		?>
+        }
+        ?>
 		</tbody>
 	</table>
 	</div>

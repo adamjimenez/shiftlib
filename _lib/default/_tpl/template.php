@@ -3,10 +3,10 @@
 <head>
     <title><?=$title;?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php if($meta_description){ ?>
+    <?php if ($meta_description) { ?>
     <meta name="Description" content="<?=$meta_description;?>" />
     <?php } ?>
-    <?php load_js(array('cms', 'bootstrap')); ?>
+    <?php load_js(['cms', 'bootstrap']); ?>
 
 	<style>
     body {
@@ -27,14 +27,14 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/"><?=$_SERVER["HTTP_HOST"];?></a>
+                <a class="navbar-brand" href="/"><?=$_SERVER['HTTP_HOST'];?></a>
             </div>
             <div class="collapse navbar-collapse">
     		<div>
-    			<?php if( $auth->user ){ ?>
+    			<?php if ($auth->user) { ?>
     			<?=$auth->user['email'];?>
     			| <a href="/account">Account</a> | <a href="/logout">Sign out</a>
-    			<?php }else{ ?>
+    			<?php } else { ?>
     			<a href="/login">Sign in</a>
     			<?php } ?>
     		</div>

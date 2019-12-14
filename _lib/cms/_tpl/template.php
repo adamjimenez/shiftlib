@@ -8,15 +8,15 @@
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
 	<?php
-	/*
-	<link href="/_lib/cms/css/cms-new.css" rel="stylesheet" type="text/css">
-	*/
-	?>
+    /*
+    <link href="/_lib/cms/css/cms-new.css" rel="stylesheet" type="text/css">
+    */
+    ?>
 	<script type="text/javascript">
 	var section='<?=$vars['section'];?>';
 	var fields=(<?=json_encode($fields);?>);
 	</script>
-	<?php load_js(array('jqueryui', 'cms', 'google', 'lightbox', 'fontawesome')); ?>
+	<?php load_js(['jqueryui', 'cms', 'google', 'lightbox', 'fontawesome']); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
     
@@ -75,22 +75,22 @@
         
         <?php
         if ($auth->user['admin']) {
-        ?>
+            ?>
         <div class="sidebar-menu">
             <div class="sidebar-header">
                 <div class="logo">
-					<?php if( file_exists('images/logo.gif') ){ ?>
+					<?php if (file_exists('images/logo.gif')) { ?>
 					<a href="/admin">
 						<img src="/images/logo.gif" alt="Admin home">
 					</a>
 					<?php
-					} else {
-						$website=explode('.', ucfirst(str_replace('www.','',$_SERVER['HTTP_HOST'])));
-					?>
+                    } else {
+                        $website = explode('.', ucfirst(str_replace('www.', '', $_SERVER['HTTP_HOST']))); ?>
 					<a href="/admin">
-						<?=$website[0];?>
+						<?=$website[0]; ?>
 					</a>
-					<?php } ?>
+					<?php
+                    } ?>
                 </div>
             </div>
             <div class="main-menu">
@@ -99,83 +99,80 @@
                         <ul class="metismenu" id="menu">
                             
 							<?php
-							foreach( $vars['sections'] as $section){
-								preg_match('/([a-zA-Z0-9\-\s]+)/', $section, $matches);
-								$option = trim($matches[1]);
-											
-								if( $section=='-' ){
-							?>
+                            foreach ($vars['sections'] as $section) {
+                                preg_match('/([a-zA-Z0-9\-\s]+)/', $section, $matches);
+                                $option = trim($matches[1]);
+                                            
+                                if ('-' == $section) {
+                                    ?>
 									<li><hr></li>
 							<?php
-								} elseif( $auth->user['admin']==1 or $auth->user['privileges'][$option] ) {
-							?>
-								<li <?php if($option==$_GET['option']){ ?>class="active"<?php } ?>>
-									<a href="?option=<?=$option;?>" title="<?=ucfirst($section);?>">
+                                } elseif (1 == $auth->user['admin'] or $auth->user['privileges'][$option]) {
+                                    ?>
+								<li <?php if ($option == $_GET['option']) { ?>class="active"<?php } ?>>
+									<a href="?option=<?=$option; ?>" title="<?=ucfirst($section); ?>">
 										<span>
-											<?=ucfirst($section);?>
-											<?php 
-											if(in_array('read', $vars['fields'][$section])) {
-												$unread = $this->get($section, array('read'=>0), true);
-												
-												if ($unread) {
-											?>
-												(<?=$unread;?>)
-											<?php 
-												}
-											} 
-											?>
+											<?=ucfirst($section); ?>
+											<?php
+                                            if (in_array('read', $vars['fields'][$section])) {
+                                                $unread = $this->get($section, ['read' => 0], true);
+                                                
+                                                if ($unread) {
+                                                    ?>
+												(<?=$unread; ?>)
+											<?php
+                                                }
+                                            } ?>
 										</span>
 									</a>
 								</li>
 								
-								<?php 
-								foreach ($this->filters as $v) { 
-									if ($v['section'] != $option) {
-										continue;
-									}
-									
-									parse_str($v['filter'], $conditions);
-									$result = $this->get($v['section'], $conditions, true);
-								?>
-									<li <?php if($v['filter']==http_build_query($_GET)){ ?>id="current"<?php } ?>>
-										<a href="?<?=$v['filter'];?>" title="<?=ucfirst($v['name']);?>">
+								<?php
+                                foreach ($this->filters as $v) {
+                                    if ($v['section'] != $option) {
+                                        continue;
+                                    }
+                                    
+                                    parse_str($v['filter'], $conditions);
+                                    $result = $this->get($v['section'], $conditions, true); ?>
+									<li <?php if ($v['filter'] == http_build_query($_GET)) { ?>id="current"<?php } ?>>
+										<a href="?<?=$v['filter']; ?>" title="<?=ucfirst($v['name']); ?>">
 											<span>
-												- <?=ucfirst($v['name']);?> <?php if ($result) { ?>(<?=$result;?>)<?php } ?>
+												- <?=ucfirst($v['name']); ?> <?php if ($result) { ?>(<?=$result;?>)<?php } ?>
 											</span>
 										</a>
 									</li>
-								<?php } ?>
+								<?php
+                                } ?>
 							<?php
-								}
-							}
-							?>
+                                }
+                            } ?>
 			
-							<?php 
-							if( $shop_enabled and ($auth->user['admin']==1 or $auth->user['privileges']['orders']) ){ ?>
-							<li <?php if($_GET['option']=='shop_orders'){ ?>id="current"<?php } ?>>
+							<?php
+                            if ($shop_enabled and (1 == $auth->user['admin'] or $auth->user['privileges']['orders'])) { ?>
+							<li <?php if ('shop_orders' == $_GET['option']) { ?>id="current"<?php } ?>>
 								<a href="?option=shop_orders"><span>Orders</span></a>
 							</li>
-							<?php } 
-							?>
-							<?php if( ($auth->user['admin']==1 or $auth->user['privileges']['email_templates']) ){ ?>
-							<li <?php if($_GET['option']=='email_templates'){ ?>id="current"<?php } ?>>
+							<?php } ?>
+							<?php if ((1 == $auth->user['admin'] or $auth->user['privileges']['email_templates'])) { ?>
+							<li <?php if ('email_templates' == $_GET['option']) { ?>id="current"<?php } ?>>
 								<a href="?option=email templates"><span>Email Templates</span></a>
 							</li>
 							<?php } ?>
-							<?php if( $auth->user['admin']==1 and $sms_config['provider'] ){ ?>
-							<li <?php if($_GET['option']=='sms templates'){ ?>id="current"<?php } ?>>
+							<?php if (1 == $auth->user['admin'] and $sms_config['provider']) { ?>
+							<li <?php if ('sms templates' == $_GET['option']) { ?>id="current"<?php } ?>>
 								<a href="?option=sms templates"><span>SMS Templates</span></a>
 							</li>
 							<?php } ?>
 				
-							<?php if( $auth->user['admin']==1 or $auth->user['privileges']['uploads'] ){ ?>
+							<?php if (1 == $auth->user['admin'] or $auth->user['privileges']['uploads']) { ?>
 							<li>
 								<a href="#" class="upload"><span>Uploads</span></a>
 							</li>
 							<?php } ?>
 				
-							<?php if( $auth->user['admin']==1 ){ ?>
-							<li <?php if($_GET['option']=='configure'){ ?>id="current"<?php } ?>>
+							<?php if (1 == $auth->user['admin']) { ?>
+							<li <?php if ('configure' == $_GET['option']) { ?>id="current"<?php } ?>>
 								<a href="?option=configure"><span>Configure</span></a>
 							</li>
 							<?php } ?>
@@ -206,11 +203,11 @@
                     <div class="col-md-6 col-sm-6 clearfix">
                         <ul class="notification-area pull-right">
                          
-                         	<?php if( $auth->user['admin'] ){ ?>
-								<li>Hello, <?=$auth->user['name'] ? $auth->user['name'].' '.$auth->user['surname'] : $auth->user['email'];?></li>
+                         	<?php if ($auth->user['admin']) { ?>
+								<li>Hello, <?=$auth->user['name'] ? $auth->user['name'] . ' ' . $auth->user['surname'] : $auth->user['email'];?></li>
 								<li><a href="../">Website</a></li>
 								<li><a href="?option=logout">Log out</a></li>
-							<?php }else{ ?>
+							<?php } else { ?>
 								<li><a href="?option=login">Log in</a></li>
 							<?php } ?>
                             
@@ -220,12 +217,12 @@
             </div>
             <!-- header area end -->
             
-            <div <? if(!strstr($include_content, 'main-content-inner')) { ?>class="main-content-inner"<? } ?>>
+            <div <?php if (!strstr($include_content, 'main-content-inner')) { ?>class="main-content-inner"<?php } ?>>
             	
 
 				<?php
-				if ($_SESSION['message']) {
-				?>
+                if ($_SESSION['message']) {
+                    ?>
 					<div class="row">
                         <!-- normal alert area start -->
                         <div class="col-lg-12 mt-5 mb-5">
@@ -233,7 +230,7 @@
                                 <div class="card-body">
                                     <div class="alert-items">
                                         <div class="alert alert-primary" role="alert">
-                                            <?=nl2br($_SESSION['message']);?>
+                                            <?=nl2br($_SESSION['message']); ?>
                                         </div>
                                     </div>
                                 </div>
@@ -242,9 +239,9 @@
                         <!-- normal alert area end -->
                     </div>
 				<?php
-					unset($_SESSION['message']);
-				}
-				?>
+                    unset($_SESSION['message']);
+                }
+                ?>
 				<?=$include_content;?>
             	
             </div>

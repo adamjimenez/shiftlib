@@ -20,30 +20,29 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 	        					<th>&nbsp;</th>
 	        					<th>&nbsp;</th>
 								<?php
-								foreach( $vars['labels'][$this->section] as $k ){
-									if ($k=='id') {
-										continue;
-									}
-									
-									$order = underscored('T_'.underscored($this->section).'.'.$k);
-									
-									if( $vars['fields'][$this->section][$k]=='select' or $vars['fields'][$this->section][$k]=='combo' or $vars['fields'][$this->section][$k]=='radio' ){
-										if( !is_array($vars['options'][$k]) ){
-											$option = key($vars['fields'][$vars['options'][$k]]);
-							
-											$order='T_'.underscored($k).'.'.underscored($option);
-										}
-									}
-									
-									$label = $vars['label'][$this->section][$k];
-									if(!$label) {
-										$label = ucfirst(str_replace('_', ' ', $k));
-									}
-								?>
-									<th><?=ucfirst($label);?></th>
+                                foreach ($vars['labels'][$this->section] as $k) {
+                                    if ('id' == $k) {
+                                        continue;
+                                    }
+                                    
+                                    $order = underscored('T_' . underscored($this->section) . '.' . $k);
+                                    
+                                    if ('select' == $vars['fields'][$this->section][$k] or 'combo' == $vars['fields'][$this->section][$k] or 'radio' == $vars['fields'][$this->section][$k]) {
+                                        if (!is_array($vars['options'][$k])) {
+                                            $option = key($vars['fields'][$vars['options'][$k]]);
+                            
+                                            $order = 'T_' . underscored($k) . '.' . underscored($option);
+                                        }
+                                    }
+                                    
+                                    $label = $vars['label'][$this->section][$k];
+                                    if (!$label) {
+                                        $label = ucfirst(str_replace('_', ' ', $k));
+                                    } ?>
+									<th><?=ucfirst($label); ?></th>
 								<?php
-								}
-								?>
+                                }
+                                ?>
 	                        </tr>
 	                    </thead>
 	                </table>
@@ -54,12 +53,12 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 	                		<button type="button" class="btn btn-danger mb-3" data-value="delete" data-confirm="true">Delete</button>
 	                		
 							<?php
-							foreach( $cms_buttons as $k=>$button ){
-								if( $this->section==$button['section'] and $button['page']=='list' ){
-					                require('includes/button.php');
-								}
-							}
-							?>
+                            foreach ($cms_buttons as $k => $button) {
+                                if ($this->section == $button['section'] and 'list' == $button['page']) {
+                                    require('includes/button.php');
+                                }
+                            }
+                            ?>
 	                	</div>
 	                	
 						
@@ -76,7 +75,7 @@ $params = $conditions;
 $params['section'] = $this->section;
 
 $first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
-$asc = ($first_field_type=='date' or $first_field_type=='timestamp') ? 'desc' : 'asc';
+$asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? 'desc' : 'asc';
 
 //debug($first_field_type,1);
 

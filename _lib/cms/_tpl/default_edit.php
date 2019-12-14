@@ -1,29 +1,29 @@
 <?php
 //check permissions
-if( $auth->user['admin']!=1 and !$auth->user['privileges'][$this->section] ){
+if (1 != $auth->user['admin'] and !$auth->user['privileges'][$this->section]) {
     die('access denied');
 }
 
 $this->set_section($this->section, $_GET['id']);
-$this->trigger_event('beforeEdit', array($this->id));
+$this->trigger_event('beforeEdit', [$this->id]);
 
 //return url
-$section='';
-foreach( $vars['fields'][$this->section] as $name=>$type ){
-	if( $_GET[underscored($name)] and $name!='id' ){
-		$section=$name;
-		break;
-	}
+$section = '';
+foreach ($vars['fields'][$this->section] as $name => $type) {
+    if ($_GET[underscored($name)] and 'id' != $name) {
+        $section = $name;
+        break;
+    }
 }
 
-if( $this->id and $section and in_array('id',$vars['fields'][$this->section]) ){
-	$cancel_url='?option='.$this->section.'&view=true&id='.$this->id.'&'.$section.'='.$this->content[$section];
-}elseif( $section and in_array('id',$vars['fields'][$this->section]) ){
-	$cancel_url='?option='.$vars['options'][$section].'&view=true&id='.$this->content[underscored($section)];
-}elseif( $this->id ){
-	$cancel_url='?option='.$this->section.'&view=true&id='.$this->id;
-}elseif( in_array('id',$vars['fields'][$this->section]) ){
-	$cancel_url='?option='.$this->section;
+if ($this->id and $section and in_array('id', $vars['fields'][$this->section])) {
+    $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id . '&' . $section . '=' . $this->content[$section];
+} elseif ($section and in_array('id', $vars['fields'][$this->section])) {
+    $cancel_url = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[underscored($section)];
+} elseif ($this->id) {
+    $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id;
+} elseif (in_array('id', $vars['fields'][$this->section])) {
+    $cancel_url = '?option=' . $this->section;
 }
 
 $qs_arr = $_GET;
@@ -32,60 +32,58 @@ unset($qs_arr['view']);
 unset($qs_arr['edit']);
 unset($qs_arr['id']);
 $qs = http_build_query($qs_arr);
-$cancel_url .= '&'.$qs;
+$cancel_url .= '&' . $qs;
 
-if( count($languages) ){
-	$languages=array_merge(array('en'),$languages);
-}else{
-	$languages=array('en');
+if (count($languages)) {
+    $languages = array_merge(['en'], $languages);
+} else {
+    $languages = ['en'];
 }
 
-if( isset($_POST['save']) ){
-	$errors=$this->validate();
+if (isset($_POST['save'])) {
+    $errors = $this->validate();
 
-	if( count( $errors ) ){
-		print json_encode($errors);
-		exit;
-	}elseif( $_POST['validate'] ){
-		print 1;
-		exit;
-	}else{
-		if( $auth->user['admin']==1 or $auth->user['privileges'][$this->section]==2 ){
-			$id=$this->save();
+    if (count($errors)) {
+        print json_encode($errors);
+        exit;
+    } elseif ($_POST['validate']) {
+        print 1;
+        exit;
+    }
+    if (1 == $auth->user['admin'] or 2 == $auth->user['privileges'][$this->section]) {
+        $id = $this->save();
 
-			if( $_POST['add_another'] ){
-				$qs=http_build_query($_GET);
+        if ($_POST['add_another']) {
+            $qs = http_build_query($_GET);
 
-				redirect('?'.$qs.'&add_another=1');
-			}else{
-				if( $section and in_array('id',$vars['fields'][$this->section]) ){
-					$return_url='?option='.$this->section.'&view=true&id='.$id.'&'.$section.'='.$this->content[$section];
-				}elseif( $this->id ){
-					$return_url='?option='.$this->section.'&view=true&id='.$id;
-				}elseif( in_array('id',$vars['fields'][$this->section]) ){
-					$return_url='?option='.$this->section;
-				}
+            redirect('?' . $qs . '&add_another=1');
+        } else {
+            if ($section and in_array('id', $vars['fields'][$this->section])) {
+                $return_url = '?option=' . $this->section . '&view=true&id=' . $id . '&' . $section . '=' . $this->content[$section];
+            } elseif ($this->id) {
+                $return_url = '?option=' . $this->section . '&view=true&id=' . $id;
+            } elseif (in_array('id', $vars['fields'][$this->section])) {
+                $return_url = '?option=' . $this->section;
+            }
 
-				$_SESSION['message']='The item has been saved';
-				redirect($return_url.'&'.$qs);
-			}
-			exit;
-		}else{
-			die('Permission denied, you have read-only access. <a href="?option='.$this->section.'&view=true&id='.$this->id.'">continue</a>');
-		}
-	}
+            $_SESSION['message'] = 'The item has been saved';
+            redirect($return_url . '&' . $qs);
+        }
+        exit;
+    }
+    die('Permission denied, you have read-only access. <a href="?option=' . $this->section . '&view=true&id=' . $this->id . '">continue</a>');
 }
 
 //label
 $label = $this->get_label();
 
-$title=ucfirst($this->section).' | '.($label ? $label : '&lt;blank&gt; | Edit');
+$title = ucfirst($this->section) . ' | ' . ($label ? $label : '&lt;blank&gt; | Edit');
 
 //increment value
-if( $_GET["id"] ){
-    $id = $_GET["id"];
-}else{
-    $row = sql_query("SHOW TABLE STATUS LIKE '".underscored($this->section)."'", 1);
+if ($_GET['id']) {
+    $id = $_GET['id'];
+} else {
+    $row = sql_query("SHOW TABLE STATUS LIKE '" . underscored($this->section) . "'", 1);
     $id = $row['Auto_increment'];
 }
 ?>
@@ -119,101 +117,99 @@ if( $_GET["id"] ){
 </table>
 
 <?php
-if( in_array('language',$vars['fields'][$this->section]) ){
-?>
+if (in_array('language', $vars['fields'][$this->section])) {
+    ?>
 <p>
 Language:
 <select id="language" name="language">
-	<?=html_options($languages);?>
+	<?=html_options($languages); ?>
 </select>
 </p>
 <?php
-}else{
-	$languages=array('en');
-}
+} else {
+        $languages = ['en'];
+    }
 
-foreach( $languages as $language ){
-	$this->language=$language;
-?>
-	<div id="language_<?=$language;?>" <?php if($language!='en'){ ?>style="display:none;"<?php } ?> class="box">
+foreach ($languages as $language) {
+    $this->language = $language; ?>
+	<div id="language_<?=$language; ?>" <?php if ('en' != $language) { ?>style="display:none;"<?php } ?> class="box">
 
 		<?php
-		foreach( $vars['fields'][$this->section] as $name=>$type ){
-			if( in_array($type,array('id','ip','position','timestamp','language','translated-from','deleted')) ){
-				continue;
-			}
-			
-			if ($type=='hidden') {
-			?>
-				<?=$this->get_field($name);?>
+        foreach ($vars['fields'][$this->section] as $name => $type) {
+            if (in_array($type, ['id','ip','position','timestamp','language','translated-from','deleted'])) {
+                continue;
+            }
+            
+            if ('hidden' == $type) {
+                ?>
+				<?=$this->get_field($name); ?>
 			<?php
-				continue;
-			}
+                continue;
+            }
 
-			$label = $vars['label'][$this->section][$name];
+            $label = $vars['label'][$this->section][$name];
 
-			if(!$label) {
-				$label = ucfirst(spaced($name));
-			}
+            if (!$label) {
+                $label = ucfirst(spaced($name));
+            }
 
-			if( $type=='select-multiple' ){
-				$value=$id;
-			}
-			?>
+            if ('select-multiple' == $type) {
+                $value = $id;
+            } ?>
 			
 			<div class="form-group">
 				<?php
-				switch ($type) {
-					case 'checkbox':
-				?>
+                switch ($type) {
+                    case 'checkbox':
+                ?>
 			    <div>
-			    	<?=$this->get_field($name, 'class="'.$class.'" id="'.underscored($name).'"' );?>
+			    	<?=$this->get_field($name, 'class="' . $class . '" id="' . underscored($name) . '"');?>
 			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
 			    </div>
 				<?php
-					break;
-					case 'radio':
-				?>
+                    break;
+                    case 'radio':
+                ?>
 			    <div>
 			    	<?=$label;?>
 			    </div>
 			    <br>
-			    <?=$this->get_field($name, 'class="'.$class.'" id="'.underscored($name).'"' );?>
+			    <?=$this->get_field($name, 'class="' . $class . '" id="' . underscored($name) . '"');?>
 				<?php
-					break;
-					case 'select':
-				?>
+                    break;
+                    case 'select':
+                ?>
 			    <div>
 			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
 			    </div>
-			   	<?=$this->get_field($name, 'id="'.underscored($name).'"' );?>
+			   	<?=$this->get_field($name, 'id="' . underscored($name) . '"');?>
 				<?php
-					break;
-					case 'editor':
-				?>
+                    break;
+                    case 'editor':
+                ?>
 			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			   	<?=$this->get_field($name, 'id="'.underscored($name).'"' );?>
+			   	<?=$this->get_field($name, 'id="' . underscored($name) . '"');?>
 				<?php
-					break;
-					default:
-				?>
+                    break;
+                    default:
+                ?>
 			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			   	<?=$this->get_field($name, 'class="form-control" id="'.underscored($name).'"' );?>
+			   	<?=$this->get_field($name, 'class="form-control" id="' . underscored($name) . '"');?>
 				<?php
-					break;
-				}
-				?>
+                    break;
+                } ?>
 			</div>
 		
-		<?php } ?>
+		<?php
+        } ?>
 
 	</div>
 <?php
 }
 ?>
 
-<?php if( !$_GET['id'] and in_array('id',$vars['fields'][$this->section]) ){ ?>
-<p><label><input type="checkbox" name="add_another" value="1" <?php if( $_GET['add_another'] ){ ?>checked="checked"<?php } ?> /> add another?</label></p>
+<?php if (!$_GET['id'] and in_array('id', $vars['fields'][$this->section])) { ?>
+<p><label><input type="checkbox" name="add_another" value="1" <?php if ($_GET['add_another']) { ?>checked="checked"<?php } ?> /> add another?</label></p>
 <br />
 <?php } ?>
 
@@ -233,9 +229,9 @@ foreach( $languages as $language ){
 
 <script type="text/javascript">
 <?php
-if($this->components){
-?>
-var components = <?=json_encode($this->components);?>;
+if ($this->components) {
+    ?>
+var components = <?=json_encode($this->components); ?>;
 <?php
 }
 ?>
@@ -250,7 +246,7 @@ $(function() {
 
     $('form input:visible, form select:visible').first().focus();
 
-    var phpupload_default_dir = '<?=$_GET["option"];?>/<?=$id;?>';
+    var phpupload_default_dir = '<?=$_GET['option'];?>/<?=$id;?>';
 });
 */
 </script>

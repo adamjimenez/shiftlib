@@ -1,6 +1,6 @@
 <?php
 set_time_limit(0);
-ini_set('memory_limit','256M');
+ini_set('memory_limit', '256M');
 
 require('../../base.php');
 
@@ -9,92 +9,93 @@ ini_set('auto_detect_line_endings', '1');
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 
-function send_msg($id , $msg) {
+function send_msg($id, $msg)
+{
     echo "id: $id" . PHP_EOL;
     echo "data: {\n";
     echo "data: \"msg\": \"$msg\", \n";
     echo "data: \"id\": $id\n";
-	echo "data: }\n";
-	echo PHP_EOL;
-	ob_flush();
-	flush();
+    echo "data: }\n";
+    echo PHP_EOL;
+    ob_flush();
+    flush();
 }
 
 $startedAt = time();
 
 $_POST = $_GET;
 
-$table = str_replace(' ','_',$_POST['section']);
+$table = str_replace(' ', '_', $_POST['section']);
 
-$allowed_exts=array('csv');
+$allowed_exts = ['csv'];
 
-if( !$_POST['csv'] ){
-	$errors[]='csv';
+if (!$_POST['csv']) {
+    $errors[] = 'csv';
 }
 
-if( !$_POST['section'] ){
-	$errors[]='section';
+if (!$_POST['section']) {
+    $errors[] = 'section';
 }
 
-if( !$errors ){
-	$fields=$_POST['fields'];
+if (!$errors) {
+    $fields = $_POST['fields'];
 
-	$i=0;
-	$total=0;
+    $i = 0;
+    $total = 0;
 
-	$csv_path = 'uploads/'.$_SERVER['HTTP_HOST'].'.csv';
+    $csv_path = 'uploads/' . $_SERVER['HTTP_HOST'] . '.csv';
 
-	$handle = fopen($csv_path, "r");
-    if( $handle=== false){
-        die('error opening '.basename($csv_path) );
+    $handle = fopen($csv_path, 'r');
+    if (false === $handle) {
+        die('error opening ' . basename($csv_path));
     }
-	while (($data = fgetcsv($handle, 0, ",")) !== FALSE ) {
-		if( $i!=0 ){
-    	    $row = array();
-    		foreach( $fields as $k=>$v ){
-				$row[$k] = $data[$v];
-			}
+    while (false !== ($data = fgetcsv($handle, 0, ','))) {
+        if (0 != $i) {
+            $row = [];
+            foreach ($fields as $k => $v) {
+                $row[$k] = $data[$v];
+            }
 
-    	    $i++;
+            $i++;
 
-            $query='';
-        	$where='';
-        	$data=array();
+            $query = '';
+            $where = '';
+            $data = [];
 
             //check dropdowns
-        	foreach( $row as $k=>$v ){
-        		$field_name=underscored($k);
+            foreach ($row as $k => $v) {
+                $field_name = underscored($k);
 
-        		if( $k=='related' or $k=='position' ){
-        			continue;
-        		}
+                if ('related' == $k or 'position' == $k) {
+                    continue;
+                }
 
-        		if( $vars['fields'][$_POST['section']][$k]=='select' ){
-        			if( !is_array($vars['options'][$k]) ){
-        				if( !$v ){
-        					$v='';
-        				}elseif( !is_numeric($v) ){
-        					reset($vars['fields'][$vars['options'][$k]]);
+                if ('select' == $vars['fields'][$_POST['section']][$k]) {
+                    if (!is_array($vars['options'][$k])) {
+                        if (!$v) {
+                            $v = '';
+                        } elseif (!is_numeric($v)) {
+                            reset($vars['fields'][$vars['options'][$k]]);
 
-        					$option_id=sql_query("SELECT id FROM `".escape(underscored($vars['options'][$k]))."` WHERE `".underscored(key($vars['fields'][$vars['options'][$k]]))."`='".escape(trim($v))."'",true);
+                            $option_id = sql_query('SELECT id FROM `' . escape(underscored($vars['options'][$k])) . '` WHERE `' . underscored(key($vars['fields'][$vars['options'][$k]])) . "`='" . escape(trim($v)) . "'", true);
 
-        					if( count($option_id) ){
-        						$v=$option_id['id'];
-        					}else{
-        						//CMS SAVE
-        						$cms->set_section($vars['options'][$k]);
+                            if (count($option_id)) {
+                                $v = $option_id['id'];
+                            } else {
+                                //CMS SAVE
+                                $cms->set_section($vars['options'][$k]);
 
-        						$option_data = array(
-        							key($vars['fields'][$vars['options'][$k]])=>trim($v)
-        						);
+                                $option_data = [
+                                    key($vars['fields'][$vars['options'][$k]]) => trim($v),
+                                ];
 
-        						if( count($cms->validate($option_data)) ){
-        							continue;
-        						}else{
-        							$v=$cms->save($option_data);
-        						}
+                                if (count($cms->validate($option_data))) {
+                                    continue;
+                                }
+                                $v = $cms->save($option_data);
+                                
 
-        						/*
+                                /*
         						sql_query("INSERT INTO `".escape($vars['options'][$k])."`
         							SET
         								`".key($vars['fields'][$vars['options'][$k]])."`='".escape(trim($v))."'
@@ -102,100 +103,96 @@ if( !$errors ){
 
         						$v=sql_insert_id();
         						*/
-        					}
-        				}else{
-        					$v=$v;
-        				}
-        			}else{
-        				if( is_assoc_array($vars['options'][$k]) ){
-        					$v=key($vars['options'],$v);
-        				}else{
-        					$v=$v;
-        				}
-        			}
-        		}
+                            }
+                        } else {
+                            $v = $v;
+                        }
+                    } else {
+                        if (is_assoc_array($vars['options'][$k])) {
+                            $v = key($vars['options'], $v);
+                        } else {
+                            $v = $v;
+                        }
+                    }
+                }
 
-        		if( $vars['fields'][$_POST['section']][$k]=='mobile' ){
-        			$v=format_mobile($v);
-        		}
+                if ('mobile' == $vars['fields'][$_POST['section']][$k]) {
+                    $v = format_mobile($v);
+                }
 
-        		if( $vars['fields'][$_POST['section']][$k]=='postcode' ){
-        			$v=format_postcode($v);
-        		}
+                if ('postcode' == $vars['fields'][$_POST['section']][$k]) {
+                    $v = format_postcode($v);
+                }
 
-        		if( $vars['fields'][$_POST['section']][$k]=='select-multiple' or $vars['fields'][$_POST['section']][$k]=='checkboxes' ){
-            	    $data[$field_name] = explode("\n", $v);
+                if ('select-multiple' == $vars['fields'][$_POST['section']][$k] or 'checkboxes' == $vars['fields'][$_POST['section']][$k]) {
+                    $data[$field_name] = explode("\n", $v);
 
                     //trim data
-                    foreach( $data[$field_name] as $key=>$val ){
+                    foreach ($data[$field_name] as $key => $val) {
                         $data[$field_name][$key] = trim($val);
                     }
 
-        			continue;
-        		}
+                    continue;
+                }
 
-        		$v = trim($v);
+                $v = trim($v);
 
-        		if( $v ){
-        			$data[$field_name] = $v;
-        			$query.="`$field_name`='".escape($v)."',\n";
-        			$where.="`$field_name`='".escape($v)."' AND\n";
-        		}
-        	}
+                if ($v) {
+                    $data[$field_name] = $v;
+                    $query .= "`$field_name`='" . escape($v) . "',\n";
+                    $where .= "`$field_name`='" . escape($v) . "' AND\n";
+                }
+            }
 
-        	if( !$where ){
-        		continue;
-        	}
+            if (!$where) {
+                continue;
+            }
 
-        	$query=substr($query,0,-2);
-        	$where=substr($where,0,-4);
+            $query = substr($query, 0, -2);
+            $where = substr($where, 0, -4);
 
-			if($data['id']) {
-				$row_id = $data['id'];
-				$_POST["update"] = 1;
-			} else {
-	    		$qry="SELECT id FROM `$table` WHERE
+            if ($data['id']) {
+                $row_id = $data['id'];
+                $_POST['update'] = 1;
+            } else {
+                $qry = "SELECT id FROM `$table` WHERE
 	    			$where
 	    			LIMIT 1
 	    		";
-	
-	            $row = sql_query($qry, 1);
-	            $row_id = $row['id'];
-			}
+    
+                $row = sql_query($qry, 1);
+                $row_id = $row['id'];
+            }
 
-        	//CMS SAVE
-        	$cms->set_section($_POST['section'], $row_id);
+            //CMS SAVE
+            $cms->set_section($_POST['section'], $row_id);
 
-        	if( $_POST["validate"] and count($cms->validate($data)) ){
-        		$result=0;
-        	}else{
-
-                if( !$row_id or $_POST["update"] ){
-            	    $id = $cms->save($data);
-            	    
-            	    if ($id) {
-		        		if( $row_id ){
-		        			$result = 2;
-		        		}else{
-		        			$result = 1;
-		        		}
-            	    } else {
-		        		$result = 0;
-            	    }
+            if ($_POST['validate'] and count($cms->validate($data))) {
+                $result = 0;
+            } else {
+                if (!$row_id or $_POST['update']) {
+                    $id = $cms->save($data);
+                    
+                    if ($id) {
+                        if ($row_id) {
+                            $result = 2;
+                        } else {
+                            $result = 1;
+                        }
+                    } else {
+                        $result = 0;
+                    }
                 }
-        	}
+            }
 
             send_msg($startedAt, $result);
+        }
 
-		}
+        $i++;
+    }
 
-		$i++;
-	}
-
-	//delete file
-	unlink($csv_path);
-}else{
+    //delete file
+    unlink($csv_path);
+} else {
     print json_encode($errors);
 }
-
-?>

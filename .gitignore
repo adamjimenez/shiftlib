@@ -9,3 +9,6 @@
 /lib.zip
 /_lib/cms/tmp/
 shiftedit-proxy.php
+vendor/
+.idea/
+.php_cs.cache

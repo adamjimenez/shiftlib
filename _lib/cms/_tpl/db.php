@@ -1,43 +1,43 @@
 <?php
-if( $db_config['user'] or $db_connection ){
+if ($db_config['user'] or $db_connection) {
     die('Error: database already configured');
 }
 
 //check config perms
-if( !is_writable('_inc/config.php') ){
+if (!is_writable('_inc/config.php')) {
     die('Error: make sure _inc/config.php has 777 permissions and refresh');
 }
 
-if( isset($_POST['save']) ){
-    $errors = validate($_POST, array('host', 'user', 'pass', 'name'));
+if (isset($_POST['save'])) {
+    $errors = validate($_POST, ['host', 'user', 'pass', 'name']);
 
-    if( !count($errors) ){
+    if (!count($errors)) {
         $connection = mysql_connect($_POST['host'], $_POST['user'], $_POST['pass']);
 
-        if($connection){
+        if ($connection) {
             $result = mysql_select_db($_POST['name']);
 
-            if( !$result ){
+            if (!$result) {
                 $errors[] = 'name';
             }
-        }else{
+        } else {
             $errors[] = 'pass';
         }
     }
 
-    if( count( $errors ) ){
+    if (count($errors)) {
         print json_encode($errors);
         exit;
-    }elseif( $_POST['validate'] ){
+    } elseif ($_POST['validate']) {
         print 1;
         exit;
-    }else{
-        $content = '<?php
+    }
+    $content = '<?php
 #GENERAL SETTINGS
-$db_config["host"] = "'.addslashes($_POST['host']).'";
-$db_config["user"] = "'.addslashes($_POST['user']).'";
-$db_config["pass"] = "'.addslashes($_POST['pass']).'";
-$db_config["name"] = "'.addslashes($_POST['name']).'";
+$db_config["host"] = "' . addslashes($_POST['host']) . '";
+$db_config["user"] = "' . addslashes($_POST['user']) . '";
+$db_config["pass"] = "' . addslashes($_POST['pass']) . '";
+$db_config["name"] = "' . addslashes($_POST['name']) . '";
 
 //fields in each section
 $vars["fields"]["users"]=array(
@@ -67,10 +67,9 @@ $opts["admin"]=array(
 );
 ?>';
 
-        file_put_contents('_inc/config.php', $content);
+    file_put_contents('_inc/config.php', $content);
 
-        redirect('/admin');
-    }
+    redirect('/admin');
 }
 ?>
 

@@ -1,10 +1,9 @@
 <?php
 require('base.php');
 
-if( $auth->user['admin'] ){
+if ($auth->user['admin']) {
     phpinfo();
-}else{
+} else {
     header('HTTP/1.1 403 Forbidden');
     print 'permission denied';
 }
-?>

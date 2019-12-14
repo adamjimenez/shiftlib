@@ -1,9 +1,9 @@
 <?php
-if( !$qs ){
-	$qs = $_GET;
-	unset($qs['option']);
+if (!$qs) {
+    $qs = $_GET;
+    unset($qs['option']);
     unset($qs['id']);
-	$qs = http_build_query($qs);
+    $qs = http_build_query($qs);
 }
 ?>
 
@@ -14,14 +14,14 @@ if( !$qs ){
 
 
 		<?php
-		foreach( $cms_buttons as $k=>$button ){
-			if( $this->section==$button['section'] and $button['page']=='list' ){
+        foreach ($cms_buttons as $k => $button) {
+            if ($this->section == $button['section'] and 'list' == $button['page']) {
                 require('submit.php');
-    		}
-    	}
-    	?>
+            }
+        }
+        ?>
 
-		<?php if( $vars['settings'][$this->section]['shiftmail'] ){ ?>
+		<?php if ($vars['settings'][$this->section]['shiftmail']) { ?>
 		<button class="btn btn-default" type="submit" onclick="return email_selected();">Email</button>
 		<?php } ?>
 
