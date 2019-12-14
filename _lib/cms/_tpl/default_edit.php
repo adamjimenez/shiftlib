@@ -10,7 +10,7 @@ $this->trigger_event('beforeEdit', array($this->id));
 //return url
 $section='';
 foreach( $vars['fields'][$this->section] as $name=>$type ){
-	if( $_GET[$name] and $name!='id' ){
+	if( $_GET[underscored($name)] and $name!='id' ){
 		$section=$name;
 		break;
 	}
@@ -19,7 +19,7 @@ foreach( $vars['fields'][$this->section] as $name=>$type ){
 if( $this->id and $section and in_array('id',$vars['fields'][$this->section]) ){
 	$cancel_url='?option='.$this->section.'&view=true&id='.$this->id.'&'.$section.'='.$this->content[$section];
 }elseif( $section and in_array('id',$vars['fields'][$this->section]) ){
-	$cancel_url='?option='.$vars['options'][$section].'&view=true&id='.$this->content[$section];
+	$cancel_url='?option='.$vars['options'][$section].'&view=true&id='.$this->content[underscored($section)];
 }elseif( $this->id ){
 	$cancel_url='?option='.$this->section.'&view=true&id='.$this->id;
 }elseif( in_array('id',$vars['fields'][$this->section]) ){
@@ -102,8 +102,10 @@ if( $_GET["id"] ){
 <input type="hidden" name="save" value="1">
 
 <!-- fake fields are a workaround for chrome autofill -->
-<input style="display:none" type="text" name="fakeusernameremembered">
-<input style="display:none" type="password" name="fakepasswordremembered">
+<div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
+	<input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername"></input>
+	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
+</div>
 
 <table width="100%">
 <tr>

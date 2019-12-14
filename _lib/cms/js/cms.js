@@ -8,11 +8,11 @@ function debug(log_txt) {
 
 function timeSince(timeStamp) {
 	if (typeof timeStamp === "string") {
-		timeStamp = new Date(timeStamp);
+		timeStamp = new Date(timeStamp.replace(/-/g, "/"));
 	}
 	
 	var now = new Date();
-	var secondsPast = (now.getTime() - timeStamp.getTime() ) / 1000;
+	var secondsPast = parseInt((now.getTime() - timeStamp.getTime() ) / 1000);
 		
 	if(secondsPast <= 86400){
 		var hour = timeStamp.getHours();
@@ -234,7 +234,7 @@ function initForms()
 							alert('Please check the required fields\n'+errors);
 						}
 						
-						$('.errors').html('Pleae check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
+						$('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
 
 						//show first error
 						var tab, node;
@@ -325,7 +325,8 @@ function initForms()
     if( jQuery().datepicker ){
     	jQuery("input[data-type='date']").datepicker({
     		dateFormat: 'yy-mm-dd',
-    		altFormat: 'yy-mm-dd'
+    		altFormat: 'yy-mm-dd',
+    		constrainInput: false
     	});
 
     	//dob
@@ -519,7 +520,7 @@ function initForms()
 
     //upload
     if( jQuery('.upload').length ){
-		jQuery.getScript("/_lib/modules/phpupload/js/jquery.upload.js").done(function(){
+		jQuery.getScript("/_lib/phpupload/js/jquery.upload.js").done(function(){
 			jQuery('.upload').upload();
 		});
 	}
@@ -618,7 +619,7 @@ function initForms()
                 file_picker_callback  :  function(callback, value, meta) {
                     tinymce.activeEditor.windowManager.open({
                         title: "File browser",
-                        url: "/_lib/modules/phpupload/?field=field_name&file=url",
+                        url: "/_lib/phpupload/index.php?field=field_name&file=url",
                         width: 800,
                         height: 600
                     }, {
@@ -717,10 +718,20 @@ function initForms()
 	}
 
 	//combo
-	if( jQuery('input.combo').length ){
-		jQuery('input.combo').each(function() {
+	if( jQuery("input[data-type='combo']").length ){
+		jQuery("input[data-type='combo']").each(function() {
 			jQuery(this).autocomplete({
-				source: '_lib/cms/_ajax/autocomplete.php?field='+this.name
+				source: '_lib/cms/_ajax/autocomplete.php?field=' + $(this).data('field'),
+				select: function (event, ui) {
+					// Set autocomplete element to display the label
+					this.value = ui.item.label;
+					
+					// Store value in hidden field
+					$('input[name=' + $(this).data('field') + ']').val(ui.item.value);
+					
+					// Prevent default behaviour
+					return false;
+				}
 			});
 		});
 	}
@@ -970,34 +981,6 @@ function initForms()
 	}
 }
 
-/*
-function myFileBrowser (field_name, url, type, win) {
-    var cmsURL = '/_lib/modules/phpupload/?field=field_name&file=url';    // script URL - use an absolute path!
-    if (cmsURL.indexOf("?") < 0) {
-        //add the type as the only query parameter
-        cmsURL = cmsURL + "?type=" + type;
-    } else {
-        //add the type as an additional query parameter
-        // (PHP session ID is now included if there is one at all)
-        cmsURL = cmsURL + "&type=" + type;
-    }
-
-    tinyMCE.activeEditor.windowManager.open({
-        file : cmsURL,
-        title : 'File Browser',
-        width : 420,  // Your dimensions may differ - toy around with them!
-        height : 400,
-        resizable : "yes",
-        inline : "yes",  // This parameter only has an effect if you use the inlinepopups plugin!
-        close_previous : "no"
-    }, {
-        window : win,
-        input : field_name
-    });
-    return false;
-}
-*/
-
 function numbersonly(e){
 	var unicode=e.charCode? e.charCode : e.keyCode;
 
@@ -1016,7 +999,7 @@ function addItem(aList,aField) {
 				li = document.createElement("li");
 
 				var itemHTML='<input type="hidden" name="'+aField+'[]" value="'+images[i]+'" size="5"> ';
-				itemHTML+='<img src="_inc/modules/phpupload/?func=preview&file='+images[i]+'" width="100" height="100" /><br /> ';
+				itemHTML+='<img src="_lib/phpupload/?func=preview&file='+images[i]+'" width="100" height="100" /><br /> ';
 				itemHTML+='<label>'+images[i]+'</label><br />';
 				//itemHTML+='<span class="link" onClick="phpUpload(\'image'+rows+'\')">Choose</span> ';
 				itemHTML+='<a href="javascript:void(0)" class="link" onClick="delItem(this)">Delete</a>';
@@ -1042,7 +1025,7 @@ function clearItem(aField) {
 	var label = document.getElementById(aField+'_label');
 
 	field.value='';
-	thumb.src='_inc/modules/phpupload/?func=preview&file=';
+	thumb.src='_lib/phpupload/?func=preview&file=';
 	label.innerHTML='';
 }
 

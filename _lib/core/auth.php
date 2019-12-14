@@ -25,21 +25,21 @@ class auth{
 		$this->cookie_domain = $_SERVER['HTTP_HOST'];
 		$this->cookie_duration = 14;
 
-		$this->hash_password=false;
-		$this->salt='a9u03udk[';
+		$this->hash_password = false;
+		$this->salt = 'a9u03udk[';
 
-		$this->errors=array();
+		$this->errors = array();
 		$this->expiry = 60;
 		
 		$this->check_login_attempts = true;
 
-		foreach( $auth_config as $k=>$v ){
+		foreach($auth_config as $k=>$v) {
 			$this->$k=$v;
 		}
 
 		if( !$email_templates['Password Reminder'] ){
 			if ($this->hash_password) {
-				$email_templates['Password Reminder']='Dear {$name},
+				$email_templates['Password Reminder'] = 'Dear {$name},
 			
 			    You have requested a password reset for your {$domain} member account.
 			    Please use the following link:
@@ -50,7 +50,7 @@ class auth{
 			
 				The {$domain} Team';
 			} else {
-				$email_templates['Password Reminder']='Dear {$name},
+				$email_templates['Password Reminder'] = 'Dear {$name},
 			
 			    You have requested a password reminder for your {$domain} member account.
 			
@@ -62,8 +62,8 @@ class auth{
 			}
 		}
 		
-		if( !$email_templates['Registration Confirmation'] ){
-			$email_templates['Registration Confirmation']='Dear {$name},
+		if(!$email_templates['Registration Confirmation']) {
+			$email_templates['Registration Confirmation'] = 'Dear {$name},
 		
 		    Thank you for registering as a member of {$domain}.
 		
@@ -76,42 +76,25 @@ class auth{
 			The {$domain} Team';
 		}
 
-		if( !$this->table ){
+		if(!$this->table) {
 		    $this->table = 'users';
 		}
 
-		$this->required=$vars["required"][$this->table];
-
-		if( $this->db ){
-			//sql_select_db($this->db);
-		}
-
-		/*
-		$user_fields=array(
-			'name'=>'text',
-			'surname'=>'text',
-			'email'=>'text',
-			'password'=>'password',
-			'address'=>'textarea',
-			'city'=>'text',
-			'postcode'=>'text',
-			'tel'=>'text',
-			'admin'=>'checkbox',
-		);*/
+		$this->required = $vars["required"][$this->table];
 
 		//check for cookies
 		$email='';
 		$password='';
 
 		if( $_COOKIE[$this->cookie_prefix.'_email'] AND $_COOKIE[$this->cookie_prefix.'_password'] ){
-			$email=$_COOKIE[$this->cookie_prefix.'_email'];
-			$password=$_COOKIE[$this->cookie_prefix.'_password'];
+			$email = $_COOKIE[$this->cookie_prefix.'_email'];
+			$password = $_COOKIE[$this->cookie_prefix.'_password'];
 		}elseif( $_SERVER['PHP_AUTH_USER'] and $_SERVER['PHP_AUTH_PW'] ){ //check for basic authentication
-			$email=$_SERVER['PHP_AUTH_USER'];
-			$password=$_SERVER['PHP_AUTH_PW'];
+			$email = $_SERVER['PHP_AUTH_USER'];
+			$password = $_SERVER['PHP_AUTH_PW'];
 		}elseif( $_GET['auth_user'] and $_GET['auth_pw'] ){
-			$email=$_GET['auth_user'];
-			$password=$_GET['auth_pw'];
+			$email = $_GET['auth_user'];
+			$password = $_GET['auth_pw'];
 		}
 
 		if( $email and $password ){
@@ -124,8 +107,6 @@ class auth{
 				if( $password == md5($this->secret_phrase.$result['password']) ){
 					$_SESSION[$this->cookie_prefix.'_email']=$result['email'];
 					$_SESSION[$this->cookie_prefix.'_password']=$result['password'];
-				}elseif( $_SERVER['PHP_AUTH_USER'] and $_SERVER['PHP_AUTH_PW'] ){
-					//die('bad authentication login');
 				}
 			}
 		}
@@ -244,12 +225,7 @@ class auth{
 	function email_in_use( $email )
 	{
 		$select = sql_query("SELECT * FROM ".$this->table." WHERE email='".$email."'", 1);
-
-		if( $select ){
-			return true;
-		}else{
-			return false;
-		}
+		return $select ? true : false;
 	}
 
 	function create_hash($password)
@@ -262,11 +238,6 @@ class auth{
 	{
 		$_SESSION[$this->cookie_prefix.'_email']=$email;
 		$_SESSION[$this->cookie_prefix.'_password']=$pass;
-	}
-
-	function email_confirmation()
-	{
-
 	}
 
 	function failed_login_attempt($email,$password)
@@ -308,8 +279,6 @@ class auth{
 
 	function show_error( $error )
 	{
-		//$_SESSION['error'] = $error;
-
         if($_POST['f']=='html'){
             redirect($this->login);
         }else{
@@ -390,18 +359,8 @@ class auth{
 		    return 1;
 		}
 
-		$data['password'] = $_POST['password'];
-		if( $this->generate_password ){
-			$data['password'] = generate_password();
-		}
+		$data['password'] = $_POST['password'] ?: generate_password();
 		
-		/*
-		// passwords are hashed cms.php
-		if( $this->hash_password ){
-			$data['password'] = $this->create_hash($data['password']);
-		}
-		*/
-
 		$id = $cms->save($data);
 
 		$reps = $_POST;
@@ -763,196 +722,6 @@ class auth{
 		}
 	}
 
-	function login_google()
-	{
-		if( $_GET['u'] ){
-			$_SESSION['request']=$_GET['u'];
-		}
-
-		require_once(dirname(__FILE__).'/../modules/openid/openid.php');
-
-		try {
-			if(!isset($_GET['openid_mode'])) {
-				$openid = new LightOpenID;
-
-				$openid->required = array('namePerson/first', 'namePerson/last', 'contact/email');
-				$openid->identity = 'https://www.google.com/accounts/o8/id';
-
-				header('Location: ' . $openid->authUrl());
-			} elseif($_GET['openid_mode'] == 'cancel') {
-				echo 'User has canceled authentication!';
-			} else {
-				$openid = new LightOpenID;
-
-				if( $openid->validate() ){
-					$attribs=$openid->getAttributes();
-
-					$name=$attribs['namePerson/first'];
-					$surname=$attribs['namePerson/last'];
-					$email=$attribs['contact/email'];
-
-					$row = sql_query("SELECT * FROM ".$this->table." WHERE
-						email='".escape($email)."'
-						LIMIT 1
-					", 1);
-
-					//debug($openid->__get('identity'));
-
-					if( count($row) ){
-						$user = $row;
-						$password = $user['password'];
-					}else{
-						$password = generate_password();
-
-						sql_query("INSERT INTO ".$this->table." SET
-							email='".escape($email)."',
-							name='".escape($name)."',
-							surname='".escape($surname)."',
-							password='".escape($password)."'
-						");
-
-						$user = sql_query("SELECT * FROM ".$this->table." WHERE
-							email='".escape($email)."'
-						", 1);
-
-						$this->trigger_event('registration',$user);
-					}
-
-					if( $this->log_last_login ){
-						sql_query("UPDATE ".$this->table." SET
-							last_login=NOW()
-							WHERE
-								email='".escape($email)."'
-							LIMIT 1
-						");
-					}
-
-					$_SESSION[$this->cookie_prefix.'_email']=$email;
-					$_SESSION[$this->cookie_prefix.'_password']=$password;
-
-					setcookie($this->cookie_prefix.'_email' ,$email, time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
-					setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$password), time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
-
-					if( $_SESSION['request'] ){
-						$request=$_SESSION['request'];
-						unset($_SESSION['request']);
-						redirect($request);
-					}else{
-						redirect('/');
-					}
-
-					$this->check_login();
-				}else{
-					echo 'validation failed';
-				}
-			}
-		} catch(ErrorException $e) {
-			echo $e->getMessage();
-		}
-	}
-
-	function login_facebook()
-	{
-		if( $_GET['u'] ){
-			$_SESSION['request']=$_GET['u'];
-		}
-
-		require_once(dirname(__FILE__).'/../modules/facebook/src/facebook.php');
-
-		// Create our Application instance (replace this with your appId and secret).
-		$facebook = new Facebook(array(
-			'appId'  => $this->facebook_appId,
-			'secret' => $this->facebook_secret
-		));
-
-		// Get User ID
-		$user = $facebook->getUser();
-
-		// We may or may not have this data based on whether the user is logged in.
-		//
-		// If we have a $user id here, it means we know the user is logged into
-		// Facebook, but we don't know if the access token is valid. An access
-		// token is invalid if the user logged out of Facebook.
-
-		if ($user) {
-			try {
-				// Proceed knowing you have a logged in user who's authenticated.
-				$user_profile = $facebook->api('/me');
-			} catch (FacebookApiException $e) {
-				error_log($e);
-				$user = null;
-			}
-		}
-
-		// Login or logout url will be needed depending on current user state.
-		if ($user) {
-			$logoutUrl = $facebook->getLogoutUrl();
-		} else {
-			$loginUrl = $facebook->getLoginUrl(array('scope'=>'email,create_event'));
-		}
-
-		if( !$user ) {
-			redirect($loginUrl);
-		} elseif($user_profile['email']) {
-			$name=$user_profile['first_name'];
-			$surname=$user_profile['last_name'];
-			$email=$user_profile['email'];
-
-			$row = sql_query("SELECT * FROM ".$this->table." WHERE
-				email='".escape($email)."'
-			", 1);
-
-			//debug($openid->__get('identity'));
-
-			if( $row ){
-				$user = $row;
-				$password = $user['password'];
-			}else{
-				$password = generate_password();
-
-				sql_query("INSERT INTO ".$this->table." SET
-					email='".escape($email)."',
-					name='".escape($name)."',
-					surname='".escape($surname)."',
-					password='".escape($password)."'
-				");
-
-				$user_id = sql_query("SELECT * FROM ".$this->table." WHERE
-					email='".escape($email)."'
-				", 1);
-
-				$this->trigger_event('registration',$user_id);
-			}
-
-			if( $this->log_last_login ){
-				sql_query("UPDATE ".$this->table." SET
-					last_login=NOW()
-					WHERE
-						email='".escape($email)."'
-					LIMIT 1
-				");
-			}
-
-			$_SESSION[$this->cookie_prefix.'_email'] = $email;
-			$_SESSION[$this->cookie_prefix.'_password'] = $password;
-
-			setcookie($this->cookie_prefix.'_email' ,$email, time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
-			setcookie($this->cookie_prefix.'_password' ,md5($this->secret_phrase.$password), time()+(86400*$this->cookie_duration), '/', $this->cookie_domain );
-
-			if( $_SESSION['request'] ){
-				$request=$_SESSION['request'];
-				unset($_SESSION['request']);
-				redirect($request);
-			} else {
-				redirect('/');
-			}
-
-			$this->check_login();
-		}else{
-			echo 'validation failed';
-		}
-	}
-
 	function check_login()
 	{
 		if($this->activation_required and $this->user and !$this->user['active']){
@@ -1061,4 +830,3 @@ class auth{
 		return false;
 	}
 }
-?>

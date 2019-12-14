@@ -1,4 +1,4 @@
-<?
+<?php
 require(dirname(__FILE__).'/../../base.php');
 
 $auth->check_admin();

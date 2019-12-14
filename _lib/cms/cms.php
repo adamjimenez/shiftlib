@@ -12,9 +12,6 @@ function send_email_preview(){
 class cms{
 	function cms()
 	{
-	    //enable inline editing
-	    //$this->inline = true;
-
 		$this->opts['rating']=array(
 			1=>'Very Poor',
 			2=>'Poor',
@@ -117,10 +114,7 @@ class cms{
 			}
 			$j=0;
 			foreach($row as $k=>$v){
-				//$v=str_replace("\n","\r\n",$v);
-	
 				$data.='"'.str_replace('"','',$v).'",';
-	
 				$j++;
 			}
 			$data=substr($data,0,-1);
@@ -131,7 +125,6 @@ class cms{
 		header('Pragma: cache');
 		header('Content-Type: text/comma-separated-values; charset=UTF-8');
 		header('Content-Disposition: attachment; filename="'.$section.'.csv"');
-	
 		die($data);
 	}
 
@@ -262,7 +255,6 @@ class cms{
 		if( is_numeric($conditions) ){
 			if( $language == 'en' ){
 				$id = $conditions;
-				//$conditions['id'] = $id;
 			}else{
 				$id = NULL;
 				$conditions = array('translated_from'=>$conditions, 'language'=>$language);
@@ -290,10 +282,7 @@ class cms{
 		$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
 
 		if( is_numeric($id) ){
-			//$where[] = "T_$table.".$field_id."='".escape($id)."'";
-			//$conditions['id'] = $id;
 			$conditions = array('id' => $id);
-	    	//debug($conditions);
 		}
 		
 		// staff perms
@@ -370,16 +359,23 @@ class cms{
 						    if(!$conditions['func'][$field_name]){
 						        $conditions['func'][$field_name] = '=';
 						    }
+						    
+						    if ($value=='now') {
+						    	$start = 'NOW()';
+						    } else if( $conditions['func'][$field_name] == 'month' ){
+						    	$start = dateformat('mY', $value);
+						    } else {
+						    	$start = "'".escape(dateformat('Y-m-d', $value))."'";
+						    }
 
 							if( $conditions['func'][$field_name] == 'month' ){
-								$where[] = "date_format(".$field_name.", '%m%Y') = '".escape($value)."'";
+								$where[] = "date_format(".$field_name.", '%m%Y') = ".$start."";
 							} else if($conditions[$field_name] and $conditions['end'][$field_name]) {
-								$start = $conditions[$field_name];
-								$end = $conditions['end'][$field_name];
+								$end = escape($conditions['end'][$field_name]);
 								
-								$where[] = "(T_".$table.".$field_name >= '".$start."' AND T_".$table.".$field_name <= '".$end."')";
-							}elseif( $conditions['func'][$field_name] ){
-								$where[] = "DATE_FORMAT(T_$table.".$field_name.", '%Y-%m-%d') ".escape($conditions['func'][$field_name])." '".escape(dateformat('Y-m-d', $value))."'";
+								$where[] = "(T_".$table.".$field_name >= ".$start." AND T_".$table.".$field_name <= '".$end."')";
+							} else if( $conditions['func'][$field_name] ){
+								$where[] = "T_$table.".$field_name." ".escape($conditions['func'][$field_name])." ".$start;
 							}
 						break;
 						case 'time':
@@ -696,12 +692,6 @@ class cms{
 				}
 			}
 
-			/*
-			if( $parent_field ){
-				$parent = is_numeric($conditions['parent']) ? $conditions['parent'] : 0;
-				//$where[]="`".$parent_field."`='".$parent."'";
-			}*/
-
             $sql = $this->conditions_to_sql($sections, $conditions, $num_results, $cols);
 
             $where_str = $sql['where_str'];
@@ -804,21 +794,6 @@ class cms{
 						$content[$k][underscored($field).'_label'] = substr($label, 0, -2);
 					}
 				}
-			}
-
-			//inline editing
-			if( $auth->user['admin'] and $this->inline ){
-			    foreach( $content as $k=>$row ){
-			        foreach( $vars['fields'][$section] as $name=>$type ){
-			            $field_name=underscored($name);
-
-			            if( in_array($name, array('heading')) ){
-			                $content[$k][$field_name] = '<span data-section="'.$section.'" data-id="'.$row['id'].'" data-field="'.$name.'" class="cms_'.$type.'">'.$row[$field_name].'</span>';
-			            }elseif( in_array($name, array('copy')) ){
-			                $content[$k][$field_name] = '<div data-section="'.$section.'" data-id="'.$row['id'].'" data-field="'.$name.'" class="cms_'.$type.'">'.$row[$field_name].'</div>';
-			            }
-			        }
-			    }
 			}
 
 			if( !in_array('id', $vars['fields'][$section]) or $id or $sql['num_results']==1 ){
@@ -937,12 +912,6 @@ class cms{
 	{
 		global $vars;
 
-		/*
-		if( count($vars['labels'][$this->section]) ){
-			$field=reset($vars['labels'][$this->section]);
-		}else{
-			$field=underscored(key($vars['fields'][$this->section]));
-		}*/
 		$field = underscored(key($vars['fields'][$this->section]));
 
 		$field_type = $vars['fields'][$this->section][$field];
@@ -1106,7 +1075,6 @@ class cms{
 		<?php
 			break;
 			case 'editor':
-				//$value = mb_detect_encoding($value, "UTF-8") == "UTF-8" ? $value : utf8_encode($value);
 		?>
 			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config["editor"] ? $cms_config["editor"] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
 		<?php
@@ -1116,7 +1084,6 @@ class cms{
 		?>
 			<?php if( $value ){ ?>
 				<input type="hidden" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=$value;?>">
-				<?php /*<a href="/_lib/cms/file.php?f=<?=$value;?>"><?=$file['name'];?></a> <?=file_size($file['size']);?> */?>
 				<?=$file['name'];?>
 				<a href="javascript:;" onClick="clearFile('<?=$field_name;?>')">clear</a>
 			<?php }else{ ?>
@@ -1145,7 +1112,8 @@ class cms{
 					}
 				} elseif($type=='combo') {
 			?>
-				<input type="text" name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?> value="<?=$value;?>" autocomplete="off" class="combo">
+				<input type="hidden" name="<?=$field_name;?>" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?> value="<?=$value;?>">
+				<input type="text" <?php if( $readonly ){ ?>disabled<?php } ?> <?=$attribs;?> value="<?=$this->content[$field_name.'_label'];?>" data-type="combo" data-field="<?=$field_name;?>">
 			<?php
 				} else {
 					if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
@@ -1157,7 +1125,6 @@ class cms{
 							global $auth;
 							
 							$conditions = array();
-							
 							foreach( $auth->user['filters'][$this->section] as $k=>$v ){
 								$conditions[$k] = $v;
 							}
@@ -1265,9 +1232,7 @@ class cms{
 		<?php
 			}else{
 		?>
-				<?php /*
-                Select <a href="javascript:;" onclick="selectAll('<?=$field_name;?>');">All</a>, <a href="javascript:;" onclick="selectNone('<?=$field_name;?>');">None</a><br />
-                */
+				<?php
 
                 $is_assoc = is_assoc_array($vars['options'][$name]);
 
@@ -1450,7 +1415,7 @@ class cms{
 				}
 			}
 
-			$value=implode('<br>'."\n", $array);
+			$value = implode('<br>'."\n", $array);
 		}
 
 		if( $type == 'url' ){
@@ -1739,17 +1704,7 @@ class cms{
 			die('access denied');
 		}
 
-		//don't allow inline editing'
-		$this->inline = false;
-
-		//load blog handlers
-		/*
-		if( $vars['fields']['blog'] ){
-		    $blog = new blog;
-		}
-		*/
-
-		$this->language='en';
+		$this->language = 'en';
 
 		if( file_exists('_tpl/admin/'.underscored($option).'.php') ){
 			$this->template(underscored($option).'.php');
@@ -1877,7 +1832,13 @@ class cms{
 				}
 
 				//check items are valid
-				switch($v){
+				switch($v) {
+					case 'date':
+						if( $data[$name] and !preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $data[$name]) ){
+							$errors[] = $name;
+							continue;
+						}
+					break;
 					case 'url':
 						if( $data[$name]=='http://' ){
 							$data[$name] = '';
@@ -1977,13 +1938,6 @@ class cms{
 			}
 		}
 
-		//antispam
-		/*
-		if( $data['nospam']!='1' ){
-		    $errors[] = 'nospam';
-		}
-		*/
-
 		if( count($errors) ){
 			$errors = array_values(array_unique($errors));
 		}
@@ -2046,9 +2000,6 @@ class cms{
 
 				if( $v=='password' ){
 				    //leave passwords blank to keep
-//print var_dump($data);exit;
-//print var_dump($name);exit;
-//print var_dump($auth->hash_password);exit;
 				    if($data[$name]==''){
 					    continue;
 				    }
@@ -2321,12 +2272,12 @@ class cms{
 			
 			//remember old state
 			if( table_exists('cms_logs') ) {
-				if( $this->id and $language==='en' ){
+				if( $this->id and $language==='en' ) {
 					$row = sql_query("SELECT * FROM `".$this->table."`
 						WHERE
 							`id`='".escape($this->id)."'
 					", 1);
-				}elseif( $this->id and $language!=='en' ){
+				}elseif( $this->id and $language!=='en' ) {
 					$row = sql_query("SELECT * FROM `".$this->table."`
 						WHERE
 							`translated_from`='".escape($this->id)."' AND
@@ -2459,27 +2410,27 @@ class cms{
 
 	function choose_filter()
 	{
-		$this->template('choose_filter.php',true);
+		$this->template('choose_filter.php', true);
 	}
 
 	function configure()
 	{
-		$this->template('configure.php',true);
+		$this->template('configure.php', true);
 	}
 
 	function dropdowns()
 	{
-		$this->template('dropdowns.php',true);
+		$this->template('dropdowns.php', true);
 	}
 
 	function shop_orders()
 	{
-		$this->template('shop_orders.php',true);
+		$this->template('shop_orders.php', true);
 	}
 
 	function shop_order()
 	{
-		$this->template('shop_order.php',true);
+		$this->template('shop_order.php', true);
 	}
 
 	function template($include,$local=false)
@@ -2507,12 +2458,12 @@ class cms{
 
 	function login()
 	{
-		$this->template('login.php',true);
+		$this->template('login.php', true);
 	}
 
 	function main()
 	{
-		$this->template('index.php',true);
+		$this->template('index.php', true);
 	}
 
 	function default_section($option)
@@ -2549,7 +2500,7 @@ class cms{
 			$this->template('default_index.php', true);
 		} elseif($_GET['edit']){
 			$this->template('default_edit.php', true);
-		}elseif( $_GET['view'] or !array_search('id',$vars['fields'][$this->section]) ){
+		}elseif( $_GET['view'] or !array_search('id', $vars['fields'][$this->section]) ){
 			$this->template('default_view.php', true);
 		}else{
 			$this->template('default_list.php', true);
@@ -2616,9 +2567,9 @@ class cms{
 				$vars['email']['body'] = $email_templates[$_GET['subject']];
 			}
 
-			$vars['email']['body'] = str_replace("\t",'',$vars['email']['body']);
+			$vars['email']['body'] = str_replace("\t", '', $vars['email']['body']);
 
-			$this->template('email_templates_edit.php',true);
+			$this->template('email_templates_edit.php', true);
 		}
 	}
 
@@ -2630,4 +2581,3 @@ class cms{
 		redirect("/");
 	}
 }
-?>

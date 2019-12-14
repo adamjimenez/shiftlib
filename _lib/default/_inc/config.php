@@ -44,15 +44,6 @@ $upload_config=array();
 // configure the variables before use.
 $upload_config["upload_dir"]="uploads/";
 $upload_config["web_path"]="";
-$upload_config["max_file_size"]=16000000;
-$upload_config["type"]="dir"; // db or dir
-//$upload_config["user"]=$auth->user['id'];
-
-$upload_config["mysql_table"]="files";
-
-$upload_config["overwrite_files"]=true;
-
-$upload_config["resize_images"]=true;
 $upload_config["resize_dimensions"]=array(800,600);
 
 $upload_config["allowed_exts"]=array(
@@ -119,5 +110,4 @@ $opts["admin"]=array(
 	'3'=>'guest',
 );
 
-$vars["options"]=$opts;
-?>
+$vars["options"] = $opts;

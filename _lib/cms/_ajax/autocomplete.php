@@ -63,7 +63,7 @@ if( in_array('language', $vars['fields'][$vars['options'][$name]]) ){
 				`$field` LIKE '".escape($_GET['term'])."%'
 			ORDER BY `".underscored($field)."`
 			LIMIT 10
-		") or trigger_error("SQL", E_USER_ERROR);
+		");
 
 		$options = array();
 		foreach($rows as $row){
@@ -81,4 +81,3 @@ foreach( $options as $k=>$v ){
 }
 
 print json_encode($results);
-?>

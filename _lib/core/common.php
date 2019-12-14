@@ -1,32 +1,6 @@
 <?php
-$debug_ip = '';
-
-error_reporting(E_ALL ^ E_NOTICE);
-ini_set('error_reporting', E_ALL ^ E_NOTICE);
-
-if( $_SERVER['REMOTE_ADDR']==$debug_ip ){
-	ini_set('display_errors', '1');
-	ini_set('display_startup_errors', '1');
-}else{
-	ini_set('display_errors', '0');
-	ini_set('display_startup_errors', '0');
-}
-
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
-
-ini_set('include_path', '.:/usr/share/pear/:');
-
-if (get_magic_quotes_gpc()) {
-	function stripslashes_gpc(&$value)
-	{
-		$value = stripslashes($value);
-	}
-	array_walk_recursive($_GET, 'stripslashes_gpc');
-	array_walk_recursive($_POST, 'stripslashes_gpc');
-	array_walk_recursive($_COOKIE, 'stripslashes_gpc');
-	array_walk_recursive($_REQUEST, 'stripslashes_gpc');
-}
 
 function imagecreatefromfile($path) {
 	$info = getimagesize($path);
@@ -37,7 +11,6 @@ function imagecreatefromfile($path) {
 		break;
 		case 'image/png':
 			$img = imagecreatefrompng($path);
-			//imagealphablending($img, true);
 			imagesavealpha($img, true);
 		break;
 		case 'image/gif':
@@ -100,11 +73,6 @@ function image($file, $w=null, $h=null, $attribs=true, $crop=false)
 	}
 	
 	if (is_numeric($file)) {
-		/*
-		$row = sql_query("SELECT * FROM files WHERE
-			id='".addslashes($_GET['f'])."'
-		", 1);
-		*/
 		$file = 'files/'.$file;
 	}
 	
@@ -277,16 +245,6 @@ function age($dob)
 	}
 
 	return date('Y') - $y;
-}
-
-function alert($error)
-{
-	//deprecated
-	$error=str_replace("\n",'\n',$error);
-
-	echo '<script>
-			alert("'.$error.'");
-	</script>';
 }
 
 function analytics($id){
@@ -576,10 +534,29 @@ function debug($var, $die=false)
 	}
 }
 
-function shutdown()
-{
-	if( $error=error_get_last() ){
-		error_handler($error['type'],$error['message'],$error['file'],$error['line']);
+function send_mail($opts=array()) {
+	require 'vendor/autoload.php'; // If you're using Composer (recommended)
+	
+	$email = new \SendGrid\Mail\Mail(); 
+	//$email->setFrom("test@example.com", "Example User");
+	$email->setFrom($opts['from_email']);
+	$email->setSubject($opts['subject']);
+	//$email->addTo("adam.jimenez@gmail.com", "Example User");
+	$email->addTo($opts['to_email']);
+	
+	if ($opts['content']!=strip_tags($opts['content'])) {
+		$email->addContent(
+		    "text/html", $opts['content']
+		);
+	}
+	
+	$email->addContent("text/plain", strip_tags($opts['content']));
+
+	$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+	try {
+	    $response = $sendgrid->send($email);
+	} catch (Exception $e) {
+	    echo 'Caught exception: '. $e->getMessage() ."\n";
 	}
 }
 
@@ -632,30 +609,38 @@ function email_template($email, $subject=null, $reps=null, $headers=null, $langu
 	$body = str_replace("\n", "\t\n", $body);
 
 	//mail($email, $template['subject'], $body, $headers);
-
-	$mail = new Rmail();
-
-	//set html or text
-	if( strip_tags($body)!==$body ){
-		$mail->setHtml($body, strip_tags($body));
-	}else{
-		$mail->setText($body);
-	}
-
-	$mail->setHTMLCharset('UTF-8');
-	$mail->setHeadCharset('UTF-8');
-	$mail->setFrom($from_email);
-	$mail->setSubject($template['subject']);
-
-	if( $template['attachments'] ){
-		$attachments = explode("\n", $template['attachments']);
-
-		foreach($attachments as $attachment){
-			$mail->addAttachment(new fileAttachment('uploads/'.$attachment));
+	if (getenv('SENDGRID_API_KEY')) {
+		$opts = array();
+		$opts['from_email'] = $from_email;
+		$opts['to_email'] = $email;
+		$opts['subject'] = $template['subject'];
+		$opts['content'] = $body;
+		send_mail($opts);
+	} else {
+		$mail = new Rmail();
+	
+		//set html or text
+		if( strip_tags($body)!==$body ){
+			$mail->setHtml($body, strip_tags($body));
+		}else{
+			$mail->setText($body);
 		}
+	
+		$mail->setHTMLCharset('UTF-8');
+		$mail->setHeadCharset('UTF-8');
+		$mail->setFrom($from_email);
+		$mail->setSubject($template['subject']);
+	
+		if( $template['attachments'] ){
+			$attachments = explode("\n", $template['attachments']);
+	
+			foreach($attachments as $attachment){
+				$mail->addAttachment(new fileAttachment('uploads/'.$attachment));
+			}
+		}
+	
+		return $mail->send(array($email), 'mail');
 	}
-
-	return $mail->send(array($email), 'mail');
 }
 
 function starts_with($haystack, $needle){
@@ -666,9 +651,11 @@ function ends_with($haystack, $needle){
 	return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
 }
 
-function error($error){
-	echo $error;
-	exit;
+function shutdown()
+{
+	if( $error = error_get_last() ){
+		error_handler($error['type'],$error['message'],$error['file'],$error['line']);
+	}
 }
 
 function error_handler ($errno, $errstr, $errfile, $errline, $errcontext='')
@@ -1154,7 +1141,7 @@ function is_odd($number)
 
 function is_postcode($code)
 {
-	if (!preg_match('^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)^', $code)){
+	if (!preg_match('/^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$/', $code)){
 		return false;
 	}
 	
@@ -1421,15 +1408,6 @@ function array_to_csv_file($rows, $filename='data', $add_header=true)
 	exit;
 }
 
-function num2alpha($n) {
-	$r = '';
-	for ($i = 1; $n >= 0 && $i < 10; $i++) {
-		$r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
-		$n -= pow(26, $i);
-	}
-	return $r;
-}
-
 function options($options,$selected='')
 {
 	if( is_assoc_array($options) ){
@@ -1482,7 +1460,7 @@ function redirect($url, $http_response_code = null) {
 	exit;
 }
 
-function sec2hms ($sec, $padHours = false)
+function sec2hms($sec, $padHours = false)
 {
 	// holds formatted string
 	$hms = "";
@@ -1852,4 +1830,3 @@ function video_info($url) {
 
 	return $data;
 }
-?>

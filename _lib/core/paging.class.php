@@ -307,10 +307,6 @@ class paging {
 
 		$query=http_build_query($qs);
 
-		if( !$label ){
-			$label = $col;
-		}
-
 		$hash = md5($qs['order'].$this->hash_secret);
 
 		$html = 'Items per page ';
