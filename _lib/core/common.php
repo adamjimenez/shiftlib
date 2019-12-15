@@ -784,10 +784,15 @@ function file_size($size)
 	return round($size).substr(' KMGT', $si, 1);
 }
 
-function number_abbr($size)
+function number_abbr($size, $dp=null)
 {
 	for($si = 0; $size >= 1000; $size /= 1000, $si++);
-	return round($size).substr(' KMBT', $si, 1);
+	
+	if ($dp==null and $si==2) {
+		$dp = 1;
+	}
+	
+	return number_format($size, $dp).substr(' KMBT', $si, 1);
 }
 
 function form_to_db($type)
@@ -1045,31 +1050,6 @@ function html_options_optgroup($key, $values, $selected)
 	return $optgroup_html;
 }
 
-function html_to_absolute($txt, $base_url)
-{
-	$needles = array('href="', 'src="', 'background="');
-	$new_txt = '';
-	if(substr($base_url,-1) != '/') $base_url=dirname($base_url).'/';
-	$new_base_url = $base_url;
-	$base_url_parts = parse_url($base_url);
-
-	foreach($needles as $needle){
-		while($pos = strpos($txt, $needle)){
-		$pos += strlen($needle);
-		if(substr($txt,$pos,7) != 'http://' && substr($txt,$pos,8) != 'https://' && substr($txt,$pos,6) != 'ftp://' && substr($txt,$pos,9) != 'mailto://'){
-			if(substr($txt,$pos,1) == '/') $new_base_url = $base_url_parts['scheme'].'://'.$base_url_parts['host'];
-				$new_txt .= substr($txt,0,$pos).$new_base_url;
-			} else {
-				$new_txt .= substr($txt,0,$pos);
-			}
-			$txt = substr($txt,$pos);
-		}
-		$txt = $new_txt.$txt;
-		$new_txt = '';
-	}
-	return $txt;
-}
-
 function is_alphanumeric($string)
 {
 	if($string==''){
@@ -1083,27 +1063,6 @@ function is_alphanumeric($string)
 	}else{
 		return true;
 	}
-}
-
-function is_animated($filename) {
-	if(!($fh = @fopen($filename, 'rb')))
-		return false;
-	$count = 0;
-	//an animated gif contains multiple "frames", with each frame having a
-	//header made up of:
-	// * a static 4-byte sequence (\x00\x21\xF9\x04)
-	// * 4 variable bytes
-	// * a static 2-byte sequence (\x00\x2C)
-
-	// We read through the file til we reach the end of the file, or we've found
-	// at least 2 frame headers
-	while(!feof($fh) && $count < 2) {
-		$chunk = fread($fh, 1024 * 100); //read 100kb at a time
-		$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00\x2C#s', $chunk, $matches);
-	}
-
-	fclose($fh);
-	return $count > 1;
 }
 
 function is_assoc_array($var)
