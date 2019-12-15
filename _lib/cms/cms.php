@@ -369,7 +369,9 @@ class cms{
 						    }
 
 							if( $conditions['func'][$field_name] == 'month' ){
-								$where[] = "date_format(".$field_name.", '%m%Y') = ".$start."";
+								$where[] = "date_format(T_".$table.".".$field_name.", '%m%Y') = '".escape($value)."'";
+							} else if( $conditions['func'][$field_name] == 'year' ){
+								$where[] = "date_format(T_".$table.".".$field_name.", '%Y') = '".escape($value)."'";
 							} else if($conditions[$field_name] and $conditions['end'][$field_name]) {
 								$end = escape($conditions['end'][$field_name]);
 								
