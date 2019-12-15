@@ -18,7 +18,7 @@ if ($_GET['cmd']=='reorder') {
 	$response['success'] = true;
 } else {
 
-	$sql = $cms->conditions_to_sql($_GET['section'], $_GET);
+	$sql = $cms->conditions_to_sql($_GET['section'], $_GET['fields']);
 	
 	$labels = array();
 	
