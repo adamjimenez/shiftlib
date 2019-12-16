@@ -1,6 +1,6 @@
 <?php
-if( $auth->user['admin'] ){
-	redirect('/admin');
+if ($auth->user['admin']) {
+    redirect('/admin');
 }
 ?>
 <!doctype html>
@@ -11,7 +11,7 @@ if( $auth->user['admin'] ){
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>Login</title>
     
-	<?php load_js(array('cms')); ?>
+	<?php load_js(['cms']); ?>
 	
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">

@@ -1,113 +1,113 @@
 <?php
 #GENERAL SETTINGS
-$db_config["host"] = "localhost";
-$db_config["user"] = "";
-$db_config["pass"] = "";
-$db_config["name"] = "";
+$db_config['host'] = 'localhost';
+$db_config['user'] = '';
+$db_config['pass'] = '';
+$db_config['name'] = '';
 
 #TPL
-$tpl_config["catchers"] = array();
+$tpl_config['catchers'] = [];
 
 #USER LOGIN
-$auth_config = array();
+$auth_config = [];
 
 //table where your users are stored
-$auth_config["table"] = "users";
+$auth_config['table'] = 'users';
 
 //required fields when registering and updating
-$auth_config["required"] = array(
+$auth_config['required'] = [
 
-);
+];
 
 //automated emails will be sent from this address
-$from_email="";
-$auth_config["from_email"]="";
+$from_email = '';
+$auth_config['from_email'] = '';
 
 //specify pages where users are redirected
-$auth_config["login"]="login";
-$auth_config["register_success"]="thanks";
-$auth_config["forgot_success"]="index";
+$auth_config['login'] = 'login';
+$auth_config['register_success'] = 'thanks';
+$auth_config['forgot_success'] = 'index';
 
 //automatically generate a password
-$auth_config["generate_password"]=true;
-$auth_config["hash_password"]=true;
+$auth_config['generate_password'] = true;
+$auth_config['hash_password'] = true;
 
 //use a secret term to encrypt cookies
-$auth_config["secret_phrase"]="asdagre3";
+$auth_config['secret_phrase'] = 'asdagre3';
 
 //for use with session and cookie vars
-$auth_config["cookie_prefix"]="site";
+$auth_config['cookie_prefix'] = 'site';
 
 #UPLOADS
-$upload_config=array();
+$upload_config = [];
 
 // configure the variables before use.
-$upload_config["upload_dir"]="uploads/";
-$upload_config["web_path"]="";
-$upload_config["resize_dimensions"]=array(800,600);
+$upload_config['upload_dir'] = 'uploads/';
+$upload_config['web_path'] = '';
+$upload_config['resize_dimensions'] = [800,600];
 
-$upload_config["allowed_exts"]=array(
-	'jpg',
-	'jpeg',
-	'gif',
-	'png',
-	'htm',
-	'html',
-	'txt',
-	'csv',
-	'pdf',
-	'doc',
-	'xls',
-	'ppt',
-	'zip',
-	'mp4',
-);
+$upload_config['allowed_exts'] = [
+    'jpg',
+    'jpeg',
+    'gif',
+    'png',
+    'htm',
+    'html',
+    'txt',
+    'csv',
+    'pdf',
+    'doc',
+    'xls',
+    'ppt',
+    'zip',
+    'mp4',
+];
 
 #ADMIN AREA
-$languages=array();
+$languages = [];
 
-$vars["change_prefs"]=false;
+$vars['change_prefs'] = false;
 
-$vars["email_templates"]=false;
+$vars['email_templates'] = false;
 
 // sections in menu
-$vars["sections"]=array(
-	'users',
-);
+$vars['sections'] = [
+    'users',
+];
 
 //fields in each section
-$vars["fields"]["users"]=array(
-	"name"=>"text",
-	"surname"=>"text",
-	"email"=>"email",
-	"password"=>"password",
-	'address'=>'textarea',
-	'city'=>'text',
-	'postcode'=>'text',
-	'tel'=>'text',
-	'code'=>'text',
-	'code expire'=>'datetime',
-	"admin"=>"select",
-	"id"=>"id",
-);
+$vars['fields']['users'] = [
+    'name' => 'text',
+    'surname' => 'text',
+    'email' => 'email',
+    'password' => 'password',
+    'address' => 'textarea',
+    'city' => 'text',
+    'postcode' => 'text',
+    'tel' => 'text',
+    'code' => 'text',
+    'code expire' => 'datetime',
+    'admin' => 'select',
+    'id' => 'id',
+];
 
-$vars["required"]["users"]=array();
+$vars['required']['users'] = [];
 
-$vars["labels"]["users"]=array("name","surname","email",);
+$vars['labels']['users'] = ['name','surname','email',];
 
-$vars["subsections"]["users"]=array();
+$vars['subsections']['users'] = [];
 
-$vars["files"]["dir"]="uploads/files/"; //folder to store files
+$vars['files']['dir'] = 'uploads/files/'; //folder to store files
 
 #SHOP
-$shop_enabled=false;
-$shop_config["paypal_email"]="";
+$shop_enabled = false;
+$shop_config['paypal_email'] = '';
 
 #OPTIONS
-$opts["admin"]=array(
-	'1'=>'admin',
-	'2'=>'staff',
-	'3'=>'guest',
-);
+$opts['admin'] = [
+    '1' => 'admin',
+    '2' => 'staff',
+    '3' => 'guest',
+];
 
-$vars["options"] = $opts;
+$vars['options'] = $opts;

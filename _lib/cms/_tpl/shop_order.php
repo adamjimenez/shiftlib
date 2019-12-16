@@ -1,58 +1,57 @@
 <?php
-if( !$shop_enabled ){
+if (!$shop_enabled) {
     die('shop is not enabled');
 }
 
-if( $_POST['status'] ){
+if ($_POST['status']) {
     $order = sql_query("SELECT * FROM orders WHERE
-    	id='".escape($_GET['id'])."'
+    	id='" . escape($_GET['id']) . "'
     ", 1);
 
-	sql_query("UPDATE orders SET
-		status='".escape($_POST['status'])."'
+    sql_query("UPDATE orders SET
+		status='" . escape($_POST['status']) . "'
 		WHERE
-		    id='".escape($_GET['id'])."' LIMIT 1
+		    id='" . escape($_GET['id']) . "' LIMIT 1
 	");
 
-	if( $_POST['status'] == 'dispatched' ){
-		sql_query("UPDATE orders SET
+    if ('dispatched' == $_POST['status']) {
+        sql_query("UPDATE orders SET
 			dispatched_date=NOW()
 			WHERE
-			    id='".escape($_GET['id'])."' LIMIT 1
+			    id='" . escape($_GET['id']) . "' LIMIT 1
 		");
 
-		$this->trigger_event('dispatched', array($order));
-	}elseif( $_POST['status'] == 'refunded' ){
-		sql_query("UPDATE orders SET
+        $this->trigger_event('dispatched', [$order]);
+    } elseif ('refunded' == $_POST['status']) {
+        sql_query("UPDATE orders SET
 			refund_date=NOW()
 			WHERE
-			    id='".escape($_GET['id'])."' LIMIT 1
+			    id='" . escape($_GET['id']) . "' LIMIT 1
 		");
-	}
+    }
 }
 
 $order = sql_query("SELECT * FROM orders WHERE
-	id='".escape($_GET['id'])."'
+	id='" . escape($_GET['id']) . "'
 ", 1);
 
-if( !$order ){
-	print 'order not found';
-}else{
-	$items = sql_query("SELECT * FROM order_items WHERE `order`='".escape($_GET['id'])."'");
+if (!$order) {
+    print 'order not found';
+} else {
+    $items = sql_query("SELECT * FROM order_items WHERE `order`='" . escape($_GET['id']) . "'");
 
-	$details = '';
-	foreach( $items as $k=>$item ){
-		$details.=$item['name'].' x '.$item['quantity'].' @ £'.$item['cost'];
-		
-		if ($item['extras']) {
-			$details .= $item['extras'];
-		}
-		
-		$details.= "\n";
-	}
-?>
+    $details = '';
+    foreach ($items as $k => $item) {
+        $details .= $item['name'] . ' x ' . $item['quantity'] . ' @ £' . $item['cost'];
+        
+        if ($item['extras']) {
+            $details .= $item['extras'];
+        }
+        
+        $details .= "\n";
+    } ?>
 <div id="container">
-<h1>Viewing order <span style="color:red"><?=$_GET['id'];?></span></h1>
+<h1>Viewing order <span style="color:red"><?=$_GET['id']; ?></span></h1>
 <div align="center">
 
     <table width="420" border="1" cellspacing="0" cellpadding="4" align="center" style="margin: 5px">
@@ -60,12 +59,12 @@ if( !$order ){
     	<td style="padding: 10px">
     		<h2>Invoice Details</h2>
     		<p>
-    		<p><strong>Date:</strong> <?=dateformat('d/m/Y',$order['date']);?></p>
+    		<p><strong>Date:</strong> <?=dateformat('d/m/Y', $order['date']); ?></p>
     		<br>
     		<strong>Order ref:</strong>
-    		<?=$order['id'];?><br><br>
+    		<?=$order['id']; ?><br><br>
     		<strong>Order status:</strong>
-    		<?=$order['status'];?><br><br>
+    		<?=$order['status']; ?><br><br>
     		
     		<?php if ($order['name']) { ?>
     		<strong>Name:</strong>
@@ -79,7 +78,7 @@ if( !$order ){
     		<?php } ?>
     		
     		<strong>Email:</strong>
-    		<?=$order['email'];?><br><br>
+    		<?=$order['email']; ?><br><br>
     		
     		<?php if ($order['tel']) { ?>
     		<strong>Tel:</strong>
@@ -97,7 +96,7 @@ if( !$order ){
     		<?php } ?>
     		
     		<strong>Details:</strong><br>
-    		<?=nl2br(htmlentities($details));?><br>
+    		<?=nl2br(htmlentities($details)); ?><br>
     		
     		<?php if ($order['note']) { ?>
     		<strong>Note:</strong>
@@ -105,46 +104,46 @@ if( !$order ){
     		<?php } ?>
     		
     		<strong>Delivery:</strong>
-    		&pound;<?=number_format($order['delivery'], 2);?><br>
+    		&pound;<?=number_format($order['delivery'], 2); ?><br>
 
-    		<?php if($order['offer']){ ?>
+    		<?php if ($order['offer']) { ?>
                 <strong>Offer:</strong>
                 <?=$order['offer'];?><br><br>
             <?php } ?>
             
-            <?php if($order['discount']){ ?>
+            <?php if ($order['discount']) { ?>
                 <strong>Discount:</strong>
                 &pound;<?=number_format($order['discount'], 2);?><br><br>
             <?php } ?>
 
-    		<strong>Total:</strong> &pound;<?=number_format($order['total'], 2);?><br>
+    		<strong>Total:</strong> &pound;<?=number_format($order['total'], 2); ?><br>
             <br>
 
             <strong>Payment Method:</strong>
-            <?=$order['method'];?><br><br>
+            <?=$order['method']; ?><br><br>
             
-            <?php if($order['txn_id']){ ?>
+            <?php if ($order['txn_id']) { ?>
             <strong>Txn id:</strong>
             <?=$order['txn_id'];?><br><br>
             <?php } ?>
 
-    		<?php if( $order['event_date'] ){ ?>
+    		<?php if ($order['event_date']) { ?>
     			<p>Event date: <strong><?=dateformat('d/m/Y', $order['event_date']);?></strong></p>
     		<?php } ?>
 
-    		<?php if( $order['session'] ){ ?>
+    		<?php if ($order['session']) { ?>
     			<p>Session: <strong><?=$order['session'];?></strong></p>
     		<?php } ?>
 
-    		<?php if( $order['organiser'] ){ ?>
+    		<?php if ($order['organiser']) { ?>
     			<p>Organiser: <strong><?=$order['organiser'];?></strong></p>
     		<?php } ?>
 
-    		<?php if( $order['status']=='dispatched' ){ ?>
+    		<?php if ('dispatched' == $order['status']) { ?>
     			<p>Dispatched on <strong><?=$order['dispatched_date'];?></strong></p>
     		<?php } ?>
 
-    		<?php if( $order['status']=='refunded' ){ ?>
+    		<?php if ('refunded' == $order['status']) { ?>
     			<p>Refunded on <strong><?=$order['refund_date'];?></strong></p>
     		<?php } ?>
 

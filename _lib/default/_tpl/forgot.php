@@ -1,50 +1,49 @@
 <?php
-if( $_GET['user'] ){
-	//check code
-	$user = sql_query("SELECT id FROM users
+if ($_GET['user']) {
+    //check code
+    $user = sql_query("SELECT id FROM users
 		WHERE
-			code = '".escape($_GET['code'])."' AND
-			id = '".escape($_GET['user'])."' AND
+			code = '" . escape($_GET['code']) . "' AND
+			id = '" . escape($_GET['user']) . "' AND
 			code_expire > CURDATE()
 		LIMIT 1
-	",1);
+	", 1);
 
-	if( $user and isset($_POST['continue']) ){
-		//check fields are completed
-		$errors=array();
+    if ($user and isset($_POST['continue'])) {
+        //check fields are completed
+        $errors = [];
 
-		if( !$_POST['password'] ){
-			$errors[]='password';
-		}
-		if( $values['password'] && strlen($values['password'])<6 ){
-			$errors[]='password min 6 characters';
-		}
+        if (!$_POST['password']) {
+            $errors[] = 'password';
+        }
+        if ($values['password'] && strlen($values['password']) < 6) {
+            $errors[] = 'password min 6 characters';
+        }
 
-		//else trigger error
-		if( count( $errors ) ){
-			print json_encode($errors);
-			exit;
-		}elseif( $_POST['validate'] ){
-			print 1;
-			exit;
-		}else{
-			//hash password
-			$hash = $auth->create_hash($_POST['password']);
+        //else trigger error
+        if (count($errors)) {
+            print json_encode($errors);
+            exit;
+        } elseif ($_POST['validate']) {
+            print 1;
+            exit;
+        }
+        //hash password
+        $hash = $auth->create_hash($_POST['password']);
 
-			// save user
-			sql_query("UPDATE users SET
-				password = '".escape($hash)."'
+        // save user
+        sql_query("UPDATE users SET
+				password = '" . escape($hash) . "'
 				WHERE
-					id='".escape($user['id'])."'
+					id='" . escape($user['id']) . "'
 				LIMIT 1
 			");
 
-			redirect('login');
-		}
-	}
+        redirect('login');
+    }
 
-	if( $user ){
-	?>
+    if ($user) {
+        ?>
 	
 	<div>
 	
@@ -85,8 +84,8 @@ if( $_GET['user'] ){
 	</div>
 	
 <?php
-}else{
-?>
+    } else {
+        ?>
 
 
 <div>
@@ -118,7 +117,9 @@ if( $_GET['user'] ){
 </div>
 
 
-<?php } } else { ?>
+<?php
+    }
+} else { ?>
 
 <div id="header">
 </div>
@@ -140,9 +141,9 @@ if( $_GET['user'] ){
 								<input type="text" name="email" id="email" class="form-control">
 							</div>
 						</div>
-						<? if( in_array('email',$auth->errors) ){ ?>
+						<?php if (in_array('email', $auth->errors)) { ?>
 						<p style="color:red;">Enter your email</p>
-						<? } ?>
+						<?php } ?>
 						<button type="submit" class="submit btn-account pull-right">Send it</button>
 					</form>
 				</div>

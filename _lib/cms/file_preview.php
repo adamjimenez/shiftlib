@@ -1,10 +1,10 @@
 <?php
-require_once(dirname(__FILE__).'/../base.php');
+require_once(dirname(__FILE__) . '/../base.php');
 
 $auth->check_login();
 
-if( $auth->user['admin']!=1 and !$auth->user['privileges']['uploads'] ){
-	die('access denied');
+if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads']) {
+    die('access denied');
 }
 
 // configure these
@@ -16,74 +16,73 @@ $quality = 85;
 $max_width = (isset($_GET['w'])) ? $_GET['w'] : $default_width;
 $max_height = (isset($_GET['h'])) ? $_GET['h'] : $default_height;
 
-function thumb_img($img,$dimensions,$output=true,$margin=false)
+function thumb_img($img, $dimensions, $output = true, $margin = false)
 {
-	$width = imagesx($img);
-	$height = imagesy($img);
-	$scale = min($dimensions[0]/$width, $dimensions[1]/$height);
+    $width = imagesx($img);
+    $height = imagesy($img);
+    $scale = min($dimensions[0] / $width, $dimensions[1] / $height);
 
-	if ($scale < 1) {
-		$new_width = floor($scale*$width);
-		$new_height = floor($scale*$height);
+    if ($scale < 1) {
+        $new_width = floor($scale * $width);
+        $new_height = floor($scale * $height);
 
-		$tmp_img = imagecreatetruecolor($new_width, $new_height);
+        $tmp_img = imagecreatetruecolor($new_width, $new_height);
 
-		imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-		imagedestroy($img);
-		$img = $tmp_img;
-	} else{
-		$new_width = $width;
-		$new_height = $height;
-	}
+        imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+        imagedestroy($img);
+        $img = $tmp_img;
+    } else {
+        $new_width = $width;
+        $new_height = $height;
+    }
 
-	if( $margin ){
-		$dest = imagecreatetruecolor($dimensions[0], $dimensions[1]);
-		imagecolorallocate($dest,255,255,255);
+    if ($margin) {
+        $dest = imagecreatetruecolor($dimensions[0], $dimensions[1]);
+        imagecolorallocate($dest, 255, 255, 255);
 
-		$padding_left=($dimensions[0]-$new_width)/2;
-		$padding_top=($dimensions[1]-$new_height)/2;
+        $padding_left = ($dimensions[0] - $new_width) / 2;
+        $padding_top = ($dimensions[1] - $new_height) / 2;
 
-		imagecopy($dest, $img, $padding_left, $padding_top, 0, 0, $new_width, $new_height);
-		$img = $dest;
-	}
+        imagecopy($dest, $img, $padding_left, $padding_top, 0, 0, $new_width, $new_height);
+        $img = $dest;
+    }
 
-	if( $output ){
-		header("Content-type: image/jpeg");
-		imagejpeg($img, NULL, 85);
-	}else{
-		return $img;
-	}
+    if ($output) {
+        header('Content-type: image/jpeg');
+        imagejpeg($img, null, 85);
+    } else {
+        return $img;
+    }
 }
 
 if (!$_GET['f']) {
-	die('no file');
+    die('no file');
 }
 
 $row = sql_query("SELECT * FROM files WHERE
-	id='".addslashes($_GET['f'])."'
+	id='" . addslashes($_GET['f']) . "'
 ", 1);
 
 
-$img = imageorientationfix($vars['files']['dir'].$row['id']);
-$img = thumb_img($img,array($max_width, $max_height), false);
+$img = imageorientationfix($vars['files']['dir'] . $row['id']);
+$img = thumb_img($img, [$max_width, $max_height], false);
 
-switch( file_ext($row['name']) ){
-	case 'jpg':
-	case 'jpeg':
-		header("Content-type: image/jpg");
-		imagejpeg($img, NULL, 85);
-	break;
-	case 'png':
-		header("Content-type: image/png");
-		imagepng($img);
-	break;
-	case 'gif':
-		header("Content-type: image/gif");
-		imagegif($img);
-	break;
-	default:
-		header("Content-type: image/jpg");
-		imagejpeg($img, NULL, 85);
+switch (file_ext($row['name'])) {
+    case 'jpg':
+    case 'jpeg':
+        header('Content-type: image/jpg');
+        imagejpeg($img, null, 85);
+    break;
+    case 'png':
+        header('Content-type: image/png');
+        imagepng($img);
+    break;
+    case 'gif':
+        header('Content-type: image/gif');
+        imagegif($img);
+    break;
+    default:
+        header('Content-type: image/jpg');
+        imagejpeg($img, null, 85);
     break;
 }
-?>
