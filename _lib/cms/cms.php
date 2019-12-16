@@ -420,7 +420,7 @@ class cms
 									$cols .= ",
 									(
 										SELECT
-											ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-' . $grids[1] . ",2)) * 0.000621371192)
+											ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-" . $grids[1] . ",2)) * 0.000621371192)
 											AS distance
 										FROM postcodes
 										WHERE
