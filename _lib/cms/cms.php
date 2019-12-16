@@ -236,187 +236,188 @@ class cms
 				        section = '" . escape(underscored($section)) . "' AND
 				        item = '$id'
 				");
-            }
-        }
+			}
+		}
 
-        $this->trigger_event('delete', [$ids]);
-    }
+		$this->trigger_event('delete', array($ids));
+	}
 
-    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
-    {
-        global $vars, $auth;
+	function conditions_to_sql($section, $conditions=array(), $num_results=null, $cols=null){
+	    global $vars, $auth;
 
-        //debug($conditions);
+	    //debug($conditions);
 
-        if ($this->language) {
-            $language = $this->language;
-        } else {
-            $language = 'en';
-        }
+		if( $this->language ){
+			$language = $this->language;
+		} else {
+			$language = 'en';
+		}
 
-        if (is_numeric($conditions)) {
-            if ('en' == $language) {
-                $id = $conditions;
-            } else {
-                $id = null;
-                $conditions = ['translated_from' => $conditions, 'language' => $language];
-            }
-            $num_results = 1;
-        } elseif (is_string($conditions)) {
-            if (in_array('page-name', $vars['fields'][$section])) {
-                $page_name = $conditions;
+		if( is_numeric($conditions) ){
+			if( $language == 'en' ){
+				$id = $conditions;
+			}else{
+				$id = NULL;
+				$conditions = array('translated_from'=>$conditions, 'language'=>$language);
+			}
+			$num_results = 1;
+		} elseif ( is_string($conditions) ){
+			if( in_array('page-name', $vars['fields'][$section]) ){
+				$page_name = $conditions;
 
-                $field_page_name = array_search('page-name', $vars['fields'][$section]);
+				$field_page_name = array_search('page-name', $vars['fields'][$section]);
 
-                $conditions = [$field_page_name => $page_name];
+				$conditions = array($field_page_name=>$page_name);
 
-                $num_results = 1;
-            }
-        } else {
-            if (in_array('language', $vars['fields'][$section]) and $language) {
-                $conditions['language'] = $language;
-            } elseif (!in_array('id', $vars['fields'][$section])) {
-                $id = 1;
-            }
-        }
+				$num_results = 1;
+			}
+		} else {
+			if ( in_array('language',$vars['fields'][$section]) and $language ){
+				$conditions['language'] = $language;
+			} elseif ( !in_array('id', $vars['fields'][$section]) ){
+				$id = 1;
+			}
+		}
 
-        $table = underscored($section);
-        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+		$table = underscored($section);
+		$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
 
-        if (is_numeric($id)) {
-            $conditions = ['id' => $id];
-        }
-        
-        // staff perms
-        foreach ($auth->user['filters'][$this->section] as $k => $v) {
-            $conditions[$k] = $v;
-        }
-        //debug($conditions);
-        
-        if (in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id and !$conditions['id']) {
-            $where[] = "T_$table.deleted = 0";
-        }
+		if( is_numeric($id) ){
+			$conditions = array('id' => $id);
+		}
+		
+		// staff perms
+		foreach( $auth->user['filters'][$this->section] as $k=>$v ){
+			$conditions[$k] = $v;
+		}
+	    //debug($conditions);
+		
+		if( in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id and !$conditions['id'] ){
+			$where[] = "T_$table.deleted = 0";
+		}
 
-        if (in_array('language', $vars['fields'][$section]) and 'en' == $language) {
-            $where[] = "`translated_from`='0'";
-        }
+		if( in_array('language', $vars['fields'][$section]) and $language=='en' ){
+			$where[] = "`translated_from`='0'";
+		}
 
-        if (is_array($conditions)) {
-            foreach ($vars['fields'][$section] as $name => $type) {
-                $field_name = underscored($name);
+		if( is_array($conditions) ){
+			foreach( $vars['fields'][$section] as $name=>$type ){
+				$field_name = underscored($name);
 
-                if (
-                    (isset($conditions[$name])) or
-                    (isset($conditions[$field_name]))
-                ) {
-                    $value = $conditions[$name] ? $conditions[$name] : $conditions[$field_name];
+				if(
+					( isset($conditions[$name]) ) or
+					( isset($conditions[$field_name]) )
+				){
+					$value = $conditions[$name] ? $conditions[$name] : $conditions[$field_name];
 
-                    switch ($type) {
-                        case 'select':
-                        case 'combo':
-                        case 'radio':
-                            if ('!=' == $conditions['func'][$field_name]) {
-                                $operator = '!=';
-                            } else {
-                                $operator = '=';
-                            }
-                            
-                            if (is_array($value)) {
-                                $or = '(';
-                                foreach ($conditions[$field_name] as $k => $v) {
-                                    $or .= "T_$table." . $field_name . ' ' . $operator . " '" . escape($v) . "' OR ";
-                                }
-                                $or = substr($or, 0, -4);
-                                $or .= ')';
-    
-                                $where[] = $or;
-                            } else {
-                                $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
-                            }
-                        break;
-                        case 'select-multiple':
-                        case 'checkboxes':
-                            if (1 == count($conditions[$field_name]) and !reset($conditions[$field_name])) {
-                                $conditions[$field_name] = [$conditions[$field_name]];
-                            }
+					switch( $type ){
+						case 'select':
+						case 'combo':
+						case 'radio':
+							if( $conditions['func'][$field_name]=='!=' ){
+								$operator = '!=';
+							}else{
+								$operator = '=';
+							}
+							
+							if (is_array($value)) {
+								$or = '(';
+								foreach( $conditions[$field_name] as $k=>$v ){
+									$or .= "T_$table.".$field_name." ".$operator." '".escape($v)."' OR ";
+								}
+								$or = substr($or, 0, -4);
+								$or.=')';
+	
+								$where[] = $or;
+							} else {
+								$where[] = "T_$table.".$field_name." ".$operator." '".escape($value)."'";
+							}
+						break;
+						case 'select-multiple':
+						case 'checkboxes':
+							if( count($conditions[$field_name])==1 and !reset($conditions[$field_name]) ) {
+								$conditions[$field_name] = array($conditions[$field_name]);
+							}
 
-                            $joins .= ' LEFT JOIN cms_multiple_select T_' . $field_name . ' ON T_' . $field_name . '.item=T_' . $table . '.' . $field_id;
+							$joins .= " LEFT JOIN cms_multiple_select T_".$field_name." ON T_".$field_name.".item=T_".$table.".".$field_id;
 
-                            $or = '(';
+							$or = '(';
 
-                            foreach ($conditions[$field_name] as $k => $v) {
-                                $v = is_array($v) ? $v['value'] : $v;
-                                $or .= 'T_' . $field_name . ".value = '" . escape($v) . "' AND T_" . $field_name . ".field = '" . escape($name) . "' OR ";
-                            }
-                            $or = substr($or, 0, -4);
-                            $or .= ')';
+							foreach( $conditions[$field_name] as $k=>$v ){
+							    $v = is_array($v) ? $v['value'] : $v;
+								$or .= "T_".$field_name.".value = '".escape($v)."' AND T_".$field_name.".field = '".escape($name)."' OR ";
+							}
+							$or = substr($or,0,-4);
+							$or .= ')';
 
-                            $where[] = $or;
-                            $where[] = 'T_' . $field_name . ".section='" . $section . "'";
-                        break;
-                        case 'date':
-                        case 'datetime':
-                        case 'timestamp':
-                        case 'month':
-                            if (!$conditions['func'][$field_name]) {
-                                $conditions['func'][$field_name] = '=';
-                            }
-                            
-                            if ('now' == $value) {
-                                $start = 'NOW()';
-                            } elseif ('month' == $conditions['func'][$field_name]) {
-                                $start = dateformat('mY', $value);
-                            } else {
-                                $start = "'" . escape(dateformat('Y-m-d', $value)) . "'";
-                            }
+							$where[] = $or;
+							$where[] = "T_".$field_name.".section='".$section."'";
+						break;
+						case 'date':
+						case 'datetime':
+						case 'timestamp':
+						case 'month':
+						    if(!$conditions['func'][$field_name]){
+						        $conditions['func'][$field_name] = '=';
+						    }
+						    
+						    if ($value=='now') {
+						    	$start = 'NOW()';
+						    } else if( $conditions['func'][$field_name] == 'month' ){
+						    	$start = dateformat('mY', $value);
+						    } else {
+						    	$start = "'".escape(dateformat('Y-m-d', $value))."'";
+						    }
 
-                            if ('month' == $conditions['func'][$field_name]) {
-                                $where[] = 'date_format(' . $field_name . ", '%m%Y') = " . $start . '';
-                            } elseif ($conditions[$field_name] and $conditions['end'][$field_name]) {
-                                $end = escape($conditions['end'][$field_name]);
-                                
-                                $where[] = '(T_' . $table . ".$field_name >= " . $start . ' AND T_' . $table . ".$field_name <= '" . $end . "')";
-                            } elseif ($conditions['func'][$field_name]) {
-                                $where[] = "T_$table." . $field_name . ' ' . escape($conditions['func'][$field_name]) . ' ' . $start;
-                            }
-                        break;
-                        case 'time':
-                        break;
-                        case 'dob':
-                            if (is_numeric($value) or is_numeric($conditions['func'][$field_name])) {
-                                $where[] = '`' . $field_name . "`!='0000-00-00'";
-                            }
-                            if (is_numeric($value)) {
-                                $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d'))<= " . escape($conditions['func'][$field_name]) . ' ';
-                            }
-                            if (is_numeric($conditions['func'][$field_name])) {
-                                $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d'))>= " . escape($value) . ' ';
-                            }
-                        break;
-                        case 'coords':
-                            if (format_postcode($value) and is_numeric($conditions['func'][$field_name])) {
-                                $grids = calc_grids(format_postcode($value), true);
-                                
-                                // fixme: ST_Distance_Sphere not supported in mariadb yet!
-                                
-                                if ($grids) {
-                                    $cols .= ',
-									ST_Distance(POINT(' . $grids[0] . ', ' . $grids[1] . '), coords) AS distance';
-                                    
-                                    
-    
-                                    $where[] = 'ST_Distance(POINT(' . $grids[0] . ', ' . $grids[1] . '), coords) <= ' . escape($conditions['func'][$field_name]) . '';
-    
-                                    $vars['labels'][$section][] = 'distance';
-                                }
-                            }
-                        break;
-                        case 'postcode':
-                            if (calc_grids($value) and is_numeric($conditions['func'][$field_name])) {
-                                $grids = calc_grids($value);
+							if( $conditions['func'][$field_name] == 'month' ){
+								$where[] = "date_format(T_".$table.".".$field_name.", '%m%Y') = '".escape($value)."'";
+							} else if( $conditions['func'][$field_name] == 'year' ){
+								$where[] = "date_format(T_".$table.".".$field_name.", '%Y') = '".escape($value)."'";
+							} else if($conditions[$field_name] and $conditions['end'][$field_name]) {
+								$end = escape($conditions['end'][$field_name]);
+								
+								$where[] = "(T_".$table.".$field_name >= ".$start." AND T_".$table.".$field_name <= '".$end."')";
+							} else if( $conditions['func'][$field_name] ){
+								$where[] = "T_$table.".$field_name." ".escape($conditions['func'][$field_name])." ".$start;
+							}
+						break;
+						case 'time':
+						break;
+						case 'dob':
+							if( is_numeric($value) or is_numeric($conditions['func'][$field_name]) ){
+								$where[] = "`".$field_name."`!='0000-00-00'";
+							}
+							if( is_numeric($value) ){
+								$where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))<= ".escape($conditions['func'][$field_name])." ";
+							}
+							if( is_numeric($conditions['func'][$field_name]) ){
+								$where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))>= ".escape($value)." ";
+							}
+						break;
+						case 'coords':
+							if( format_postcode($value) and is_numeric($conditions['func'][$field_name]) ){
+								$grids = calc_grids(format_postcode($value), true);
+								
+								// fixme: ST_Distance_Sphere not supported in mariadb yet!
+								
+								if ($grids) {
+									$cols .= ",
+									ST_Distance(POINT(".$grids[0].", ".$grids[1]."), coords) AS distance";
+									
+									
+	
+									$where[] = "ST_Distance(POINT(".$grids[0].", ".$grids[1]."), coords) <= ".escape($conditions['func'][$field_name])."";
+	
+									$vars['labels'][$section][] = 'distance';
+								}
+							}
+						break;
+						case 'postcode':
+							if( calc_grids($value) and is_numeric($conditions['func'][$field_name]) ){
+								$grids = calc_grids($value);
 
-                                if ($grids) {
-                                    $cols .= ',
+								if ($grids) {
+									$cols .= ",
 									(
 										SELECT
 											ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-' . $grids[1] . ",2)) * 0.000621371192)

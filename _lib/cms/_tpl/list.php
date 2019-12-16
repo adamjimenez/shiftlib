@@ -71,7 +71,8 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 </div>
 
 <?php
-$params = $conditions;
+$params = [];
+$params['fields'] = $conditions;
 $params['section'] = $this->section;
 
 $first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
