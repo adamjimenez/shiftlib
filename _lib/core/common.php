@@ -1,5 +1,6 @@
 <?php
 use SendGrid\Mail\Mail;
+
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
