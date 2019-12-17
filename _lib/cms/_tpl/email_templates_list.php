@@ -1,4 +1,3 @@
-
 <div class="box">
 <?php
 if (count($email_templates)) {

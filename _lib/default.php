@@ -26,7 +26,7 @@ function get_tpl_catcher($request)
             return $catcher;
         }
     }
-    
+
     return false;
 }
 
@@ -64,7 +64,7 @@ function stop()
     throw new Exception('stop');
 }
 
-function parse_request()
+function parse_request(): string
 {
     global $tpl_config;
 
@@ -120,12 +120,12 @@ function get_include($request)
         // check pages
         if (in_array('pages', $vars['sections'])) {
             $content = $cms->get('pages', $request);
-            
+
             if ($content) {
                 return $root_folder . '/_tpl/page.php';
             }
         }
-        
+
         if (file_exists('_tpl/' . $request) and !is_dir('_tpl/' . $request)) {
             $url = 'http://' . $_SERVER['SERVER_NAME'] . '/' . str_replace('.php', '', $request);
 
