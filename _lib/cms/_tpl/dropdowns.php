@@ -1,7 +1,7 @@
 <?php
 global $db_config, $auth_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $live_site;
 
-function array_to_csv($array)
+function array_to_csv($array): string
 {
     foreach ($array as $k => $v) {
         $array[$k] = "\t'" . addslashes($v) . "'";
@@ -10,10 +10,10 @@ function array_to_csv($array)
     return implode(",\n", $array);
 }
 
-function str_to_csv($str)
+function str_to_csv($str): string
 {
     if (!$str) {
-        return;
+        return '';
     }
 
     $array = explode("\n", $str);
@@ -25,10 +25,10 @@ function str_to_csv($str)
     return implode(",\n", $array);
 }
 
-function str_to_assoc($str)
+function str_to_assoc($str): string
 {
     if (!$str) {
-        return;
+        return '';
     }
 
     $array = explode("\n", $str);
@@ -41,7 +41,7 @@ function str_to_assoc($str)
     return implode(",\n", $array);
 }
 
-function str_to_bool($str)
+function str_to_bool($str): string
 {
     return $str ? 'true' : 'false';
 }

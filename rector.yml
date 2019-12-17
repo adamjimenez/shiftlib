@@ -5,3 +5,5 @@ parameters:
 services:
   Rector\TypeDeclaration\Rector\Closure\AddClosureReturnTypeRector: ~
   Rector\TypeDeclaration\Rector\FunctionLike\ReturnTypeDeclarationRector: ~
+  Rector\TypeDeclaration\Rector\Property\PropertyTypeDeclarationRector: ~
+  Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector: ~

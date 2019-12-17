@@ -1,4 +1,3 @@
-
 <?php
 $sortable = in_array('position', $vars['fields'][$this->section]);
 ?>

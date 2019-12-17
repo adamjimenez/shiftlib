@@ -1,4 +1,5 @@
 <?php
+use SendGrid\Mail\Mail;
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
@@ -47,7 +48,7 @@ function imageorientationfix($path)
     return $img;
 }
 
-function imagefile($img, $path)
+function imagefile($img, $path): bool
 {
     $ext = file_ext($path);
     
@@ -287,7 +288,7 @@ function array_orderby()
     return array_pop($args);
 }
 
-function bank_holidays($yr)
+function bank_holidays($yr): array
 {
     $bankHols = [];
  
@@ -483,12 +484,12 @@ function check_table($table, $fields)
     }
 }
 
-function clean($string)
+function clean($string): string
 {
     return strip_tags($string);
 }
 
-function current_tab($tab, $class = '')
+function current_tab($tab, $class = ''): string
 {
     global $sections, $request;
 
@@ -501,7 +502,7 @@ function current_tab($tab, $class = '')
     }
 }
 
-function datediff($endDate, $beginDate)
+function datediff($endDate, $beginDate): int
 {
     $date_parts1 = explode('-', $beginDate);
     $date_parts2 = explode('-', $endDate);
@@ -543,7 +544,7 @@ function send_mail($opts = [])
 {
     require 'vendor/autoload.php'; // If you're using Composer (recommended)
     
-    $email = new \SendGrid\Mail\Mail();
+    $email = new Mail();
     //$email->setFrom("test@example.com", "Example User");
     $email->setFrom($opts['from_email']);
     $email->setSubject($opts['subject']);
@@ -650,12 +651,12 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
     }
 }
 
-function starts_with($haystack, $needle)
+function starts_with($haystack, $needle): bool
 {
     return '' === $needle || 0 === strpos($haystack, $needle);
 }
 
-function ends_with($haystack, $needle)
+function ends_with($haystack, $needle): bool
 {
     return '' === $needle || substr($haystack, -strlen($needle)) === $needle;
 }
@@ -767,40 +768,40 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
     }
 }
 
-function escape($string)
+function escape($string): string
 {
     global $db_connection;
     return mysqli_real_escape_string($db_connection, $string);
 }
 
-function escape_strip($string)
+function escape_strip($string): string
 {
     return escape(strip_tags($string));
 }
 
-function escape_clean($string)
+function escape_clean($string): string
 {
     return escape(clean($string));
 }
 
-function file_ext($file)
+function file_ext($file): string
 {
     return strtolower(end(explode('.', $file)));
 }
 
-function file_size($size)
+function file_size($size): string
 {
     for ($si = 0; $size >= 1024; $size /= 1024, $si++);
     return round($size) . substr(' KMGT', $si, 1);
 }
 
-function number_abbr($size)
+function number_abbr($size): string
 {
     for ($si = 0; $size >= 1000; $size /= 1000, $si++);
     return round($size) . substr(' KMBT', $si, 1);
 }
 
-function form_to_db($type)
+function form_to_db($type): string
 {
     switch ($type) {
         case 'id':
@@ -906,7 +907,7 @@ function format_postcode($postcode)
     return false;
 }
 
-function generate_password($length = 8)
+function generate_password($length = 8): string
 {
     $password = '';
 
@@ -939,7 +940,7 @@ function get_client_language($availableLanguages, $default = 'en')
     return $default;
 }
 
-function get_options($table, $field, $where = false)
+function get_options($table, $field, $where = false): array
 {
     $qry = "SELECT id, $field FROM $table";
 
@@ -958,7 +959,7 @@ function get_options($table, $field, $where = false)
     return $options;
 }
 
-function html($string)
+function html($string): string
 {
     return htmlentities($string, ENT_COMPAT, 'UTF-8');
 }
@@ -1038,7 +1039,7 @@ function html_options_optoutput($key, $value, $selected, $disabled)
     return $_html_result;
 }
 
-function html_options_optgroup($key, $values, $selected)
+function html_options_optgroup($key, $values, $selected): string
 {
     $optgroup_html = '<optgroup label="' . htmlspecialchars($key) . '">' . "\n";
 
@@ -1056,7 +1057,7 @@ function html_options_optgroup($key, $values, $selected)
     return $optgroup_html;
 }
 
-function html_to_absolute($txt, $base_url)
+function html_to_absolute($txt, $base_url): string
 {
     $needles = ['href="', 'src="', 'background="'];
     $new_txt = '';
@@ -1085,7 +1086,7 @@ function html_to_absolute($txt, $base_url)
     return $txt;
 }
 
-function is_alphanumeric($string)
+function is_alphanumeric($string): bool
 {
     if ('' == $string) {
         return false;
@@ -1099,7 +1100,7 @@ function is_alphanumeric($string)
     return true;
 }
 
-function is_animated($filename)
+function is_animated($filename): bool
 {
     if (!($fh = @fopen($filename, 'rb'))) {
         return false;
@@ -1122,7 +1123,7 @@ function is_animated($filename)
     return $count > 1;
 }
 
-function is_assoc_array($var)
+function is_assoc_array($var): bool
 {
     if (!is_array($var)) {
         return false;
@@ -1130,7 +1131,7 @@ function is_assoc_array($var)
     return array_keys($var) !== range(0, sizeof($var) - 1);
 }
 
-function is_domain($domain)
+function is_domain($domain): bool
 {
     if (!$domain) {
         return false;
@@ -1152,12 +1153,12 @@ function is_nino($code)
     return preg_match('^^((A[ABEHKLMPRSTWXYZ])|(B[ABEHKLMT])|(C[ABEHKLR])|(E[ABEHKLMPRSTWXYZ])|(GY)|(H[ABEHKLMPRSTWXYZ])|(J[ABCEGHJKLMNPRSTWXYZ])|(K[ABEHKLMPRSTWXYZ])|(L[ABEHKLMPRSTWXYZ])|(M[AWX])|(N[ABEHLMPRSWXYZ])|(O[ABEHKLMPRSX])|(P[ABCEGHJLMNPRSTWXY])|(R[ABEHKMPRSTWXYZ])|(S[ABCGHJKLMNPRSTWXYZ])|(T[ABEHKLMPRSTWXYZ])|(W[ABEKLMP])|(Y[ABEHKLMPRSTWXYZ])|(Z[ABEHKLMPRSTWXY]))\d{6}([A-D]|\s)$^', $code);
 }
 
-function is_odd($number)
+function is_odd($number): int
 {
     return $number & 1; // 0 = even, 1 = odd
 }
 
-function is_postcode($code)
+function is_postcode($code): bool
 {
     if (!preg_match('/^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$/', $code)) {
         return false;
@@ -1263,7 +1264,7 @@ function load_js($libs)
 		<?php /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js"></script>*/ ?>
 		<script src="/_lib/js/jquery.cycle2.js"></script>
 		<script src="/_lib/js/jquery.cycle2.carousel.js"></script>
-	<?php
+<?php
     }
 
     if ($deps['colorbox']) {
@@ -1363,7 +1364,7 @@ function load_js($libs)
         */
         ?>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
-		<?php
+<?php
     }
 }
 
@@ -1480,7 +1481,7 @@ function redirect($url, $http_response_code = null)
     exit;
 }
 
-function sec2hms($sec, $padHours = false)
+function sec2hms($sec, $padHours = false): string
 {
     // holds formatted string
     $hms = '';
@@ -1558,7 +1559,7 @@ function send_html_email($user, $html, $reps)
     mail($user['email'], $subject, $html, $headers);
 }
 
-function sql_affected_rows()
+function sql_affected_rows(): int
 {
     global $db_connection;
     return mysqli_affected_rows($db_connection);
@@ -1570,12 +1571,12 @@ function sql_insert_id()
     return mysqli_insert_id($db_connection);
 }
 
-function sql_num_rows($result)
+function sql_num_rows($result): int
 {
     return mysqli_num_rows($result);
 }
 
-function sql_query($query, $single = false)
+function sql_query($query, $single = false): array
 {
     global $db_connection;
 
@@ -1594,7 +1595,7 @@ function sql_query($query, $single = false)
     return $single ? $return_array[0] : $return_array;
 }
 
-function str_to_pagename($page_name, $strip_slashes = true)
+function str_to_pagename($page_name, $strip_slashes = true): string
 {
     //remove odd chars
     if ($strip_slashes) {
@@ -1627,7 +1628,7 @@ function str_to_pagename($page_name, $strip_slashes = true)
     return $page_name;
 }
 
-function table_exists($table)
+function table_exists($table): bool
 {
     $rows = sql_query("SHOW TABLES LIKE '$table'");
     return count($rows) ? true : false;
@@ -1696,7 +1697,7 @@ function thumb($file, $max_width = 200, $max_height = 200, $default = null, $sav
     }
 }
 
-function time_elapsed($ptime)
+function time_elapsed($ptime): string
 {
     $etime = time() - make_timestamp($ptime);
 
@@ -1717,7 +1718,7 @@ function time_elapsed($ptime)
     }
 }
 
-function truncate($string, $max = 50, $rep = '..')
+function truncate($string, $max = 50, $rep = '..'): string
 {
     $string = strip_tags($string);
 
@@ -1817,7 +1818,7 @@ function youtube_id_from_url($url)
     return $info['id'];
 }
 
-function video_info($url)
+function video_info($url): array
 {
     $data = [];
 
