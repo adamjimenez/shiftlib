@@ -1,0 +1,7 @@
+# rector.yaml
+parameters:
+  import_short_classes: false # this will not import root namespace classes, like \DateTime or \Exception
+  import_doc_blocks: false # this will not import classes used in PHP DocBlocks, like in /** @var \Some\Class */
+services:
+  Rector\TypeDeclaration\Rector\Closure\AddClosureReturnTypeRector: ~
+  Rector\TypeDeclaration\Rector\FunctionLike\ReturnTypeDeclarationRector: ~
