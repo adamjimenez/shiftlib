@@ -1535,14 +1535,19 @@ function sql_query($query, $single = false)
     $result = mysqli_query($db_connection, $query);
 
     if (false === $result) {
-        throw new Exception(mysqli_error());
+        throw new Exception(mysqli_error($db_connection));
     }
 
+    if ($result===true) {
+    	return true;	
+    }
+    
     $return_array = [];
     while ($row = mysqli_fetch_assoc($result)) {
         array_push($return_array, $row);
     }
-    mysqli_free_result($result);
+    
+	mysqli_free_result($result);
 
     return $single ? $return_array[0] : $return_array;
 }
