@@ -177,7 +177,7 @@ class shop
         if ($auth->user) {
             $where_str = " OR B.user='" . $auth->user['id'] . "'";
         }
-        $this->basket = sql_query("SELECT *,B.id FROM basket B
+        $this->basket = sql_query("SELECT *,B.* FROM basket B
 			LEFT JOIN products P ON B.product=P.id
 			WHERE
 				(
@@ -216,6 +216,21 @@ class shop
                     if ($row) {
                         $this->basket[$k]['cost'] += $row['cost'];
                     }
+                }
+            }
+            
+            if ($v['options']) {
+                $values = json_decode($v['options']);
+                foreach ($values as $value) {
+                    $product_value = sql_query("SELECT * FROM product_values WHERE id = '" . escape($value) . "'", 1);
+                    $product_option = sql_query("SELECT * FROM product_options WHERE id = '" . escape($product_value['product_option']) . "'", 1);
+                    $this->basket[$k]['cost'] += $product_value['cost'];
+                    
+                    if ($this->basket[$k]['extras']) {
+                        $this->basket[$k]['extras'] .= "\n";
+                    }
+                    
+                    $this->basket[$k]['extras'] .= $product_option['name'] . ': ' . $product_value['value'];
                 }
             }
 
@@ -276,6 +291,11 @@ class shop
                 }
             }
         }
+        
+        $options = [];
+        if (count($_POST['options'])) {
+            $options = json_encode($_POST['options']);
+        }
 
         if ($auth->user) {
             $where_str = " OR user='" . $auth->user['id'] . "'";
@@ -287,7 +307,8 @@ class shop
 			) AND
 			product='" . escape($product) . "' AND
 			extras='" . escape(trim($extras)) . "' AND
-			variation='" . escape($variation_id) . "'
+			variation='" . escape($variation_id) . "' AND
+			options='" . escape($options) . "'
 		", 1);
 
         if ($row) {
@@ -307,7 +328,8 @@ class shop
 				session='" . session_id() . "' AND
 				product='" . escape($product) . "' AND
 				extras='" . escape(trim($extras)) . "' AND
-				variation='" . escape($variation_id) . "'
+				variation='" . escape($variation_id) . "' AND
+				options='" . escape($options) . "'
 			");
         } else {
             sql_query("INSERT INTO basket SET
@@ -316,7 +338,8 @@ class shop
 				session='" . session_id() . "',
 				product='" . escape($product) . "',
 				extras='" . escape(trim($extras)) . "',
-				variation='" . escape($variation_id) . "'
+				variation='" . escape($variation_id) . "',
+				options='" . escape($options) . "'
 			");
         }
 
@@ -337,7 +360,7 @@ class shop
 					");
                 } elseif ($v > 0) {
                     sql_query("UPDATE basket SET
-						quantity='" . addslashes($v) . "'
+						quantity='" . escape($v) . "'
 						WHERE id='" . escape($k) . "'
 					");
                 }
@@ -427,18 +450,18 @@ class shop
 
         sql_query("INSERT INTO orders SET
 			date=NOW(),
-			customer='" . addslashes($this->cust['id']) . "',
-			name='" . addslashes(($this->cust['name'] . ' ' . $this->cust['surname'])) . "',
-			address='" . addslashes($this->cust['address']) . "\n" . addslashes($this->cust['address2']) . "\n" . addslashes($this->cust['city']) . "\n" . addslashes($this->cust['county']) . "',
-			postcode='" . addslashes($this->cust['postcode']) . "',
-			email='" . addslashes($this->cust['email']) . "',
-			tel='" . addslashes($this->cust['tel']) . "',
-			mobile='" . addslashes($this->cust['mobile']) . "',
-			subtotal='" . addslashes($this->subtotal) . "',
-			offer='" . addslashes($this->promo['name']) . "',
-			discount='" . addslashes($this->discount) . "',
-			delivery='" . addslashes($this->delivery) . "',
-			total='" . addslashes($this->total) . "',
+			customer='" . escape($this->cust['id']) . "',
+			name='" . escape(($this->cust['name'] . ' ' . $this->cust['surname'])) . "',
+			address='" . escape($this->cust['address']) . "\n" . escape($this->cust['address2']) . "\n" . escape($this->cust['city']) . "\n" . escape($this->cust['county']) . "',
+			postcode='" . escape($this->cust['postcode']) . "',
+			email='" . escape($this->cust['email']) . "',
+			tel='" . escape($this->cust['tel']) . "',
+			mobile='" . escape($this->cust['mobile']) . "',
+			subtotal='" . escape($this->subtotal) . "',
+			offer='" . escape($this->promo['name']) . "',
+			discount='" . escape($this->discount) . "',
+			delivery='" . escape($this->delivery) . "',
+			total='" . escape($this->total) . "',
 			status='pending'
 		");
 
@@ -464,13 +487,13 @@ class shop
         //order items
         foreach ($this->basket as $item) {
             sql_query("INSERT IGNORE INTO order_items SET
-				`order`='" . addslashes($this->oid) . "',
-				product='" . addslashes($item['product']) . "',
-				variation='" . addslashes($item['variation']) . "',
-				name='" . addslashes($item['name']) . "',
-				extras='" . addslashes($item['extras']) . "',
-				cost='" . addslashes($item['cost']) . "',
-				quantity='" . addslashes($item['quantity']) . "'
+				`order`='" . escape($this->oid) . "',
+				product='" . escape($item['product']) . "',
+				variation='" . escape($item['variation']) . "',
+				name='" . escape($item['name']) . "',
+				extras='" . escape($item['extras']) . "',
+				cost='" . escape($item['cost']) . "',
+				quantity='" . escape($item['quantity']) . "'
 			");
         }
 
@@ -541,35 +564,6 @@ class shop
         }
     }
 
-    public function worldpay_button($value = 'Pay using worldpay click here')
-    {
-        global $auth;
-
-        $testmode = ($this->worldpay_testmode) ? 100 : 0;
-
-        print '
-			<form method="post" action="https://select.worldpay.com/wcc/purchase">
-			<input type="hidden" name="instId"  value="' . $this->worldpay_installation_id . '">
-			<input type="hidden" name="cartId" value="' . $this->oid . '">
-			<input type="hidden" name="currency" value="GBP">
-			<input type="hidden" name="amount"  value="' . number_format($this->total, 2) . '">
-			<input type="hidden" name="desc" value="Basket contents">
-			<input type="hidden" name="testMode" value="' . $testmode . '">
-
-			<input type="hidden" name="name" value="' . $this->cust['name'] . ' ' . $this->cust['surname'] . '">
-			<input type="hidden" name="address" value="' . $this->cust['address'] . '">
-			<input type="hidden" name="postcode" value="' . $this->cust['postcode'] . '">
-			<input type="hidden" name="country" value="GB">
-			<input type="hidden" name="tel" value="' . $this->cust['tel'] . '">
-
-			<input type="hidden" name="email" value="' . $this->cust['email'] . '">
-			<!-- <input type="hidden" name="MC_callback" value="http://' . $_SERVER['HTTP_HOST'] . '/process_payment"> -->
-
-			<button type="submit">' . $value . '</button>
-			</form>
-		';
-    }
-
     public function process_paypal()
     {
         global $debug, $admin_email;
@@ -636,262 +630,6 @@ class shop
         return $this->complete_order($oid, $ref, 'paypal');
     }
 
-    public function process_gc()
-    {
-        global $admin_email;
-
-        $error = 'test';
-
-        if ($error) {
-            $_POST['error'] = $error;
-            foreach ($_POST as $k => $v) {
-                $msg .= "$k = $v \n";
-            }
-
-            mail($admin_email, 'Order not verified', $msg, $this->headers);
-            exit;
-        }
-
-        exit;
-
-        foreach ($vars as $k => $v) {
-            $msg .= "$k = $v \n";
-        }
-
-        mail($admin_email, 'Order Placed', $msg, $this->headers);
-
-        $oid = $vars['shopping-cart_items_item-1_merchant-item-id'];
-        $ref = $vars['google-order-number'];
-        $status = $vars['fulfillment-order-state'];
-
-        $this->complete_order($oid, $ref, 'google checkout');
-    }
-
-    public function process_netbanx()
-    {
-        global $admin_email;
-
-        $error = '';
-
-        if (!$_GET['_params'] or !$_GET['checksum']) {
-            exit;
-        }
-
-        if (md5($_GET['_params'] . $this->netbanx_key) != $_GET['checksum']) {
-            $error = 'checksum failed';
-        }
-
-        $params = explode('::', $_GET['_params']);
-
-        $vars = [];
-        foreach ($params as $param) {
-            $array = explode('=', $param);
-
-            $vars[$array[0]] = $array[1];
-        }
-
-        if (!$vars['netbanx_reference']) {
-            $error = 'reference missing';
-        }
-
-        if ($error) {
-            $vars['error'] = $error;
-            foreach ($vars as $k => $v) {
-                $msg .= "$k = $v \n";
-            }
-
-            mail($admin_email, 'Order not verified', $msg, $this->headers);
-            exit;
-        }
-
-        foreach ($vars as $k => $v) {
-            $msg .= "$k = $v \n";
-        }
-
-        mail($admin_email, 'Order Placed', $msg, $this->headers);
-
-        $oid = $vars['order_id'];
-        $ref = $vars['netbanx_reference'];
-        $status = $vars['auth'];
-
-        $this->complete_order($oid, $ref, 'netbanx');
-    }
-
-    public function process_netbanx_upp()
-    {
-        global $admin_email;
-
-        $error = '';
-
-        if (!$_POST['nbx_status'] or !$_POST['nbx_checksum']) {
-            $error = 'missing vars';
-        }
-
-        if ($_POST['nbx_checksum'] != sha1($_POST['nbx_payment_amount'] . 'GBP' . $_POST['nbx_merchant_reference'] . $_POST['nbx_netbanx_reference'] . $this->netbanx_key)) {
-            $error = 'checksum failed';
-        }
-
-        if (!$_POST['nbx_netbanx_reference']) {
-            $error = 'reference missing';
-        }
-
-        if ('passed' != $_POST['nbx_status']) {
-            $error = 'status not authorised';
-        }
-
-        if ($error) {
-            $_POST['error'] = $error;
-
-            $_POST['netbanx_key'] = $this->netbanx_key;
-
-            $_POST['str'] = $_POST['nbx_payment_amount'] . 'GBP' . $_POST['nbx_merchant_reference'] . $_POST['nbx_netbanx_reference'] . $this->netbanx_key;
-
-            foreach ($_POST as $k => $v) {
-                $msg .= "$k = $v \n";
-            }
-
-            mail($admin_email, 'Order not verified', $msg, $this->headers);
-
-            die('order not verified');
-        }
-
-        foreach ($_POST as $k => $v) {
-            $msg .= "$k = $v \n";
-        }
-
-        mail($admin_email, 'Order Placed', $msg, $this->headers);
-
-        $oid = $_POST['nbx_merchant_reference'];
-        $ref = $_POST['nbx_netbanx_reference'];
-        $status = $_POST['nbx_status'];
-
-        return $this->complete_order($oid, $ref, 'netbanx');
-    }
-
-    public function process_cardsave()
-    {
-        global $admin_email, $PreSharedKey, $Password;
-
-        $oid = $_POST['OrderID'];
-
-        $error = '';
-
-        // Check the passed HashDigest against our own to check the values passed are legitimate.
-        $hashcode = 'PreSharedKey=' . $PreSharedKey;
-        $hashcode .= '&MerchantID=' . $_POST['MerchantID'];
-        $hashcode .= '&Password=' . $Password;
-        $hashcode .= '&StatusCode=' . $_POST['StatusCode'];
-        $hashcode .= '&Message=' . $_POST['Message'];
-        $hashcode .= '&PreviousStatusCode=' . $_POST['PreviousStatusCode'];
-        $hashcode .= '&PreviousMessage=' . $_POST['PreviousMessage'];
-        $hashcode .= '&CrossReference=' . $_POST['CrossReference'];
-        $hashcode .= '&AddressNumericCheckResult=' . $_POST['AddressNumericCheckResult'];
-        $hashcode .= '&PostCodeCheckResult=' . $_POST['PostCodeCheckResult'];
-        $hashcode .= '&CV2CheckResult=' . $_POST['CV2CheckResult'];
-        if (isset($_POST['ThreeDSecureAuthenticationCheckResult'])) {
-            $hashcode .= '&ThreeDSecureAuthenticationCheckResult=' . $_POST['ThreeDSecureAuthenticationCheckResult'];
-        }
-        $hashcode .= '&CardType=' . $_POST['CardType'];
-        $hashcode .= '&CardClass=' . $_POST['CardClass'];
-        $hashcode .= '&CardIssuer=' . $_POST['CardIssuer'];
-        $hashcode .= '&CardIssuerCountryCode=' . $_POST['CardIssuerCountryCode'];
-        $hashcode .= '&Amount=' . $_POST['Amount'];
-        $hashcode .= '&CurrencyCode=' . $_POST['CurrencyCode'];
-        $hashcode .= '&OrderID=' . $_POST['OrderID'];
-        $hashcode .= '&TransactionType=' . $_POST['TransactionType'];
-        $hashcode .= '&TransactionDateTime=' . $_POST['TransactionDateTime'];
-        $hashcode .= '&OrderDescription=' . $_POST['OrderDescription'];
-        $hashcode .= '&CustomerName=' . $_POST['CustomerName'];
-        $hashcode .= '&Address1=' . $_POST['Address1'];
-        $hashcode .= '&Address2=' . $_POST['Address2'];
-        $hashcode .= '&Address3=' . $_POST['Address3'];
-        $hashcode .= '&Address4=' . $_POST['Address4'];
-        $hashcode .= '&City=' . $_POST['City'];
-        $hashcode .= '&State=' . $_POST['State'];
-        $hashcode .= '&PostCode=' . $_POST['PostCode'];
-        $hashcode .= '&CountryCode=' . $_POST['CountryCode'];
-        $hashcode .= '&EmailAddress=' . $_POST['EmailAddress'];
-        $hashcode .= '&PhoneNumber=' . $_POST['PhoneNumber'];
-        
-        /*
-        $contents = print_r($_POST, true) ;
-        $contents1 = print_r($hashcode, true) ;
-        $result =  ("\r\n CardSave Callback\r\n".PHP_EOL.$contents."\r\n".PHP_EOL);
-        $result .= ("\r\n CardSave Callback\r\n".PHP_EOL."Hashcode=".$contents1."\r\n".PHP_EOL);
-        mail($admin_email, 'Order debug', $result, $this->headers);
-        */
-
-        if ($_POST['HashDigest'] != sha1($hashcode)) {
-            $error = 'Checksum failed';
-        } elseif (0 != $_POST['StatusCode']) {
-            $error = 'Transaction error:' . $_POST['Message'];
-        }
-
-        foreach ($_POST as $k => $v) {
-            $msg .= "$k = $v \n";
-        }
-
-        mail($admin_email, 'Order Details', $msg, $this->headers);
-
-        $ref = $_POST['CrossReference'];
-        $status = $_POST['Message'];
-
-        if ($error) {
-            $this->failed_order($error, $oid, $ref, 'cardsave');
-
-            return false;
-        }
-
-        return $this->complete_order($oid, $ref, 'cardsave');
-    }
-
-    public function process_worldpay()
-    {
-        global $admin_email;
-
-        $oid = $_POST['cartId'];
-        $ref = $_POST['transId'];
-        $status = 'paid';
-
-        $order = sql_query("SELECT * FROM orders WHERE id='" . escape($oid) . "'", 1);
-
-        $error = '';
-
-        foreach ($_POST as $k => $v) {
-            $msg .= "$k = $v \n";
-        }
-
-        mail($admin_email, 'Order Placed', $msg, $this->headers);
-
-        if ($this->worldpay_callback_password != $_POST['callbackPW']) {
-            $error .= 'wrong callback password' . "\n";
-        }
-
-        if ('Y' != $_POST['transStatus']) {
-            $error .= 'transaction not authorised' . "\n";
-        }
-
-        if ('100' == $_POST['testMode'] and !$this->worldpay_testmode) {
-            $error .= 'testmode enabled' . "\n";
-        }
-
-        if ($_POST['authCost'] != $order['total']) {
-            $error .= 'transaction amount incorrect' . "\n";
-        }
-
-        if ($error) {
-            $vars['error'] = $error;
-            foreach ($vars as $k => $v) {
-                $msg .= "$k = $v \n";
-            }
-
-            mail($admin_email, 'Order not verified', $msg, $this->headers);
-            exit;
-        }
-
-        return $this->complete_order($oid, $ref, 'worldpay');
-    }
-    
     public function send_confirmation($oid)
     {
         global $debug, $admin_email;
@@ -1041,7 +779,7 @@ class shop
     {
         global $debug, $admin_email;
 
-        $order = sql_query("SELECT * FROM orders WHERE id='" . addslashes($oid) . "'", 1);
+        $order = sql_query("SELECT * FROM orders WHERE id='" . escape($oid) . "'", 1);
 
         $_POST['error'] = $error;
 

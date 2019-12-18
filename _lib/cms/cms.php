@@ -236,188 +236,189 @@ class cms
 				        section = '" . escape(underscored($section)) . "' AND
 				        item = '$id'
 				");
-			}
-		}
+            }
+        }
 
-		$this->trigger_event('delete', array($ids));
-	}
+        $this->trigger_event('delete', [$ids]);
+    }
 
-	function conditions_to_sql($section, $conditions=array(), $num_results=null, $cols=null){
-	    global $vars, $auth;
+    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
+    {
+        global $vars, $auth;
 
-	    //debug($conditions);
+        //debug($conditions);
 
-		if( $this->language ){
-			$language = $this->language;
-		} else {
-			$language = 'en';
-		}
+        if ($this->language) {
+            $language = $this->language;
+        } else {
+            $language = 'en';
+        }
 
-		if( is_numeric($conditions) ){
-			if( $language == 'en' ){
-				$id = $conditions;
-			}else{
-				$id = NULL;
-				$conditions = array('translated_from'=>$conditions, 'language'=>$language);
-			}
-			$num_results = 1;
-		} elseif ( is_string($conditions) ){
-			if( in_array('page-name', $vars['fields'][$section]) ){
-				$page_name = $conditions;
+        if (is_numeric($conditions)) {
+            if ('en' == $language) {
+                $id = $conditions;
+            } else {
+                $id = null;
+                $conditions = ['translated_from' => $conditions, 'language' => $language];
+            }
+            $num_results = 1;
+        } elseif (is_string($conditions)) {
+            if (in_array('page-name', $vars['fields'][$section])) {
+                $page_name = $conditions;
 
-				$field_page_name = array_search('page-name', $vars['fields'][$section]);
+                $field_page_name = array_search('page-name', $vars['fields'][$section]);
 
-				$conditions = array($field_page_name=>$page_name);
+                $conditions = [$field_page_name => $page_name];
 
-				$num_results = 1;
-			}
-		} else {
-			if ( in_array('language',$vars['fields'][$section]) and $language ){
-				$conditions['language'] = $language;
-			} elseif ( !in_array('id', $vars['fields'][$section]) ){
-				$id = 1;
-			}
-		}
+                $num_results = 1;
+            }
+        } else {
+            if (in_array('language', $vars['fields'][$section]) and $language) {
+                $conditions['language'] = $language;
+            } elseif (!in_array('id', $vars['fields'][$section])) {
+                $id = 1;
+            }
+        }
 
-		$table = underscored($section);
-		$field_id = in_array('id',$vars['fields'][$section]) ? array_search('id',$vars['fields'][$section]) : 'id';
+        $table = underscored($section);
+        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
 
-		if( is_numeric($id) ){
-			$conditions = array('id' => $id);
-		}
-		
-		// staff perms
-		foreach( $auth->user['filters'][$this->section] as $k=>$v ){
-			$conditions[$k] = $v;
-		}
-	    //debug($conditions);
-		
-		if( in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id and !$conditions['id'] ){
-			$where[] = "T_$table.deleted = 0";
-		}
+        if (is_numeric($id)) {
+            $conditions = ['id' => $id];
+        }
+        
+        // staff perms
+        foreach ($auth->user['filters'][$this->section] as $k => $v) {
+            $conditions[$k] = $v;
+        }
+        //debug($conditions);
+        
+        if (in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id and !$conditions['id']) {
+            $where[] = "T_$table.deleted = 0";
+        }
 
-		if( in_array('language', $vars['fields'][$section]) and $language=='en' ){
-			$where[] = "`translated_from`='0'";
-		}
+        if (in_array('language', $vars['fields'][$section]) and 'en' == $language) {
+            $where[] = "`translated_from`='0'";
+        }
 
-		if( is_array($conditions) ){
-			foreach( $vars['fields'][$section] as $name=>$type ){
-				$field_name = underscored($name);
+        if (is_array($conditions)) {
+            foreach ($vars['fields'][$section] as $name => $type) {
+                $field_name = underscored($name);
 
-				if(
-					( isset($conditions[$name]) ) or
-					( isset($conditions[$field_name]) )
-				){
-					$value = $conditions[$name] ? $conditions[$name] : $conditions[$field_name];
+                if (
+                    (isset($conditions[$name])) or
+                    (isset($conditions[$field_name]))
+                ) {
+                    $value = $conditions[$name] ? $conditions[$name] : $conditions[$field_name];
 
-					switch( $type ){
-						case 'select':
-						case 'combo':
-						case 'radio':
-							if( $conditions['func'][$field_name]=='!=' ){
-								$operator = '!=';
-							}else{
-								$operator = '=';
-							}
-							
-							if (is_array($value)) {
-								$or = '(';
-								foreach( $conditions[$field_name] as $k=>$v ){
-									$or .= "T_$table.".$field_name." ".$operator." '".escape($v)."' OR ";
-								}
-								$or = substr($or, 0, -4);
-								$or.=')';
-	
-								$where[] = $or;
-							} else {
-								$where[] = "T_$table.".$field_name." ".$operator." '".escape($value)."'";
-							}
-						break;
-						case 'select-multiple':
-						case 'checkboxes':
-							if( count($conditions[$field_name])==1 and !reset($conditions[$field_name]) ) {
-								$conditions[$field_name] = array($conditions[$field_name]);
-							}
+                    switch ($type) {
+                        case 'select':
+                        case 'combo':
+                        case 'radio':
+                            if ('!=' == $conditions['func'][$field_name]) {
+                                $operator = '!=';
+                            } else {
+                                $operator = '=';
+                            }
+                            
+                            if (is_array($value)) {
+                                $or = '(';
+                                foreach ($conditions[$field_name] as $k => $v) {
+                                    $or .= "T_$table." . $field_name . ' ' . $operator . " '" . escape($v) . "' OR ";
+                                }
+                                $or = substr($or, 0, -4);
+                                $or .= ')';
+    
+                                $where[] = $or;
+                            } else {
+                                $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
+                            }
+                        break;
+                        case 'select-multiple':
+                        case 'checkboxes':
+                            if (1 == count($conditions[$field_name]) and !reset($conditions[$field_name])) {
+                                $conditions[$field_name] = [$conditions[$field_name]];
+                            }
 
-							$joins .= " LEFT JOIN cms_multiple_select T_".$field_name." ON T_".$field_name.".item=T_".$table.".".$field_id;
+                            $joins .= ' LEFT JOIN cms_multiple_select T_' . $field_name . ' ON T_' . $field_name . '.item=T_' . $table . '.' . $field_id;
 
-							$or = '(';
+                            $or = '(';
 
-							foreach( $conditions[$field_name] as $k=>$v ){
-							    $v = is_array($v) ? $v['value'] : $v;
-								$or .= "T_".$field_name.".value = '".escape($v)."' AND T_".$field_name.".field = '".escape($name)."' OR ";
-							}
-							$or = substr($or,0,-4);
-							$or .= ')';
+                            foreach ($conditions[$field_name] as $k => $v) {
+                                $v = is_array($v) ? $v['value'] : $v;
+                                $or .= 'T_' . $field_name . ".value = '" . escape($v) . "' AND T_" . $field_name . ".field = '" . escape($name) . "' OR ";
+                            }
+                            $or = substr($or, 0, -4);
+                            $or .= ')';
 
-							$where[] = $or;
-							$where[] = "T_".$field_name.".section='".$section."'";
-						break;
-						case 'date':
-						case 'datetime':
-						case 'timestamp':
-						case 'month':
-						    if(!$conditions['func'][$field_name]){
-						        $conditions['func'][$field_name] = '=';
-						    }
-						    
-						    if ($value=='now') {
-						    	$start = 'NOW()';
-						    } else if( $conditions['func'][$field_name] == 'month' ){
-						    	$start = dateformat('mY', $value);
-						    } else {
-						    	$start = "'".escape(dateformat('Y-m-d', $value))."'";
-						    }
+                            $where[] = $or;
+                            $where[] = 'T_' . $field_name . ".section='" . $section . "'";
+                        break;
+                        case 'date':
+                        case 'datetime':
+                        case 'timestamp':
+                        case 'month':
+                            if (!$conditions['func'][$field_name]) {
+                                $conditions['func'][$field_name] = '=';
+                            }
+                            
+                            if ('now' == $value) {
+                                $start = 'NOW()';
+                            } elseif ('month' == $conditions['func'][$field_name]) {
+                                $start = dateformat('mY', $value);
+                            } else {
+                                $start = "'" . escape(dateformat('Y-m-d', $value)) . "'";
+                            }
 
-							if( $conditions['func'][$field_name] == 'month' ){
-								$where[] = "date_format(T_".$table.".".$field_name.", '%m%Y') = '".escape($value)."'";
-							} else if( $conditions['func'][$field_name] == 'year' ){
-								$where[] = "date_format(T_".$table.".".$field_name.", '%Y') = '".escape($value)."'";
-							} else if($conditions[$field_name] and $conditions['end'][$field_name]) {
-								$end = escape($conditions['end'][$field_name]);
-								
-								$where[] = "(T_".$table.".$field_name >= ".$start." AND T_".$table.".$field_name <= '".$end."')";
-							} else if( $conditions['func'][$field_name] ){
-								$where[] = "T_$table.".$field_name." ".escape($conditions['func'][$field_name])." ".$start;
-							}
-						break;
-						case 'time':
-						break;
-						case 'dob':
-							if( is_numeric($value) or is_numeric($conditions['func'][$field_name]) ){
-								$where[] = "`".$field_name."`!='0000-00-00'";
-							}
-							if( is_numeric($value) ){
-								$where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))<= ".escape($conditions['func'][$field_name])." ";
-							}
-							if( is_numeric($conditions['func'][$field_name]) ){
-								$where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(".$field_name.", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(".$field_name.", '00-%m-%d'))>= ".escape($value)." ";
-							}
-						break;
-						case 'coords':
-							if( format_postcode($value) and is_numeric($conditions['func'][$field_name]) ){
-								$grids = calc_grids(format_postcode($value), true);
-								
-								// fixme: ST_Distance_Sphere not supported in mariadb yet!
-								
-								if ($grids) {
-									$cols .= ",
-									ST_Distance(POINT(".$grids[0].", ".$grids[1]."), coords) AS distance";
-									
-									
-	
-									$where[] = "ST_Distance(POINT(".$grids[0].", ".$grids[1]."), coords) <= ".escape($conditions['func'][$field_name])."";
-	
-									$vars['labels'][$section][] = 'distance';
-								}
-							}
-						break;
-						case 'postcode':
-							if( calc_grids($value) and is_numeric($conditions['func'][$field_name]) ){
-								$grids = calc_grids($value);
+                            if ('month' == $conditions['func'][$field_name]) {
+                                $where[] = 'date_format(T_' . $table . '.' . $field_name . ", '%m%Y') = '" . escape($value) . "'";
+                            } elseif ('year' == $conditions['func'][$field_name]) {
+                                $where[] = 'date_format(T_' . $table . '.' . $field_name . ", '%Y') = '" . escape($value) . "'";
+                            } elseif ($conditions[$field_name] and $conditions['end'][$field_name]) {
+                                $end = escape($conditions['end'][$field_name]);
+                                
+                                $where[] = '(T_' . $table . ".$field_name >= " . $start . ' AND T_' . $table . ".$field_name <= '" . $end . "')";
+                            } elseif ($conditions['func'][$field_name]) {
+                                $where[] = "T_$table." . $field_name . ' ' . escape($conditions['func'][$field_name]) . ' ' . $start;
+                            }
+                        break;
+                        case 'time':
+                        break;
+                        case 'dob':
+                            if (is_numeric($value) or is_numeric($conditions['func'][$field_name])) {
+                                $where[] = '`' . $field_name . "`!='0000-00-00'";
+                            }
+                            if (is_numeric($value)) {
+                                $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d'))<= " . escape($conditions['func'][$field_name]) . ' ';
+                            }
+                            if (is_numeric($conditions['func'][$field_name])) {
+                                $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d'))>= " . escape($value) . ' ';
+                            }
+                        break;
+                        case 'coords':
+                            if (format_postcode($value) and is_numeric($conditions['func'][$field_name])) {
+                                $grids = calc_grids(format_postcode($value), true);
+                                
+                                // fixme: ST_Distance_Sphere not supported in mariadb yet!
+                                
+                                if ($grids) {
+                                    $cols .= ',
+									ST_Distance(POINT(' . $grids[0] . ', ' . $grids[1] . '), coords) AS distance';
+                                    
+                                    
+    
+                                    $where[] = 'ST_Distance(POINT(' . $grids[0] . ', ' . $grids[1] . '), coords) <= ' . escape($conditions['func'][$field_name]) . '';
+    
+                                    $vars['labels'][$section][] = 'distance';
+                                }
+                            }
+                        break;
+                        case 'postcode':
+                            if (calc_grids($value) and is_numeric($conditions['func'][$field_name])) {
+                                $grids = calc_grids($value);
 
-								if ($grids) {
-									$cols .= ",
+                                if ($grids) {
+                                    $cols .= ",
 									(
 										SELECT
 											ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-" . $grids[1] . ",2)) * 0.000621371192)
@@ -1072,12 +1073,12 @@ class cms
             break;
             case 'textarea':
         ?>
-			<textarea name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs ? $attribs : 'class="autogrow"';?>><?=$value;?></textarea>
+			<textarea name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs ?: 'class="autogrow"';?>><?=$value;?></textarea>
 		<?php
             break;
             case 'editor':
         ?>
-			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config['editor'] ? $cms_config['editor'] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
+			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ?: 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config['editor'] ? $cms_config['editor'] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
 		<?php
             break;
             case 'file':
@@ -1319,22 +1320,22 @@ class cms
             break;
             case 'date':
         ?>
-			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> autocomplete="off" />
+			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: 'style="width:75px;"';?> autocomplete="off" />
 		<?php
             break;
             case 'month':
         ?>
-			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: 'style="width:75px;"';?> />
 		<?php
             break;
             case 'dob':
         ?>
-			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: 'style="width:75px;"';?> />
 		<?php
             break;
             case 'time':
         ?>
-			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=('00:00:00' != $value) ? substr($value, 0, -3) : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ?: '';?> />
+			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=('00:00:00' != $value) ? substr($value, 0, -3) : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs;?> />
 		<?php
             break;
             case 'datetime':
@@ -1343,8 +1344,8 @@ class cms
                 $date = explode(' ', $value);
             }
         ?>
-			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and '0000-00-00' != $date[0]) ? $date[0] : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : '';?> />
-			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and '00:00:00' != $date[1]) ? substr($date[1], 0, 5) : '00:00:00';?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ? $attribs : '';?> />
+			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and '0000-00-00' != $date[0]) ? $date[0] : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: '';?> />
+			<input type="time" step="1" name="time[<?=$field_name;?>]" value="<?=$date[1];?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs;?>>
 		<?php
             break;
             case 'rating':
@@ -1723,26 +1724,11 @@ class cms
 
         $msg = nl2br($msg);
 
-        //$headers = 'From: auto@'.$_SERVER["HTTP_HOST"]."\n";
-
-        $mail = new Rmail();
-
-        if ($_POST['email']) {
-            $headers .= 'Reply-to: ' . $_POST['email'] . "\n";
-            $mail->setHeader('Reply-to', $_POST['email']);
-        }
-
-        $mail->setHTMLCharset('UTF-8');
-        $mail->setHeadCharset('UTF-8');
-        $mail->setHtml($msg);
-        $mail->setFrom('auto@' . $_SERVER['HTTP_HOST']);
-        $mail->setSubject($subject);
-
-        if (!is_string($to)) {
-            $to = $from_email;
-        }
-
-        $result = $mail->send([$to], 'mail');
+        send_mail([
+            'subject' => $subject,
+            'content' => $msg,
+            'to_email' => $to,
+        ]);
     }
 
     public function submit($notify = null, $other_errors = [])
@@ -2315,13 +2301,7 @@ class cms
                     }
                 }
                 
-                sql_query("INSERT INTO cms_logs SET
-					user = '" . $auth->user['id'] . "',
-					section = '" . escape($this->section) . "',
-					item = '" . escape($this->id) . "',
-					task = '" . $task . "',
-					details = '" . escape($details) . "'
-				");
+                $this->save_log($this->section, $this->id, $task, $details);
             }
 
             foreach ($languages as $language) {
@@ -2370,6 +2350,19 @@ class cms
 
         return $this->id;
     }
+    
+    public function save_log($section, $id, $task, $details)
+    {
+        global $auth;
+                
+        sql_query("INSERT INTO cms_logs SET
+			user = '" . $auth->user['id'] . "',
+			section = '" . escape($section) . "',
+			item = '" . escape($id) . "',
+			task = '" . $task . "',
+			details = '" . escape($details) . "'
+		");
+    }
 
     public function trigger_event($event, $args)
     {
@@ -2409,11 +2402,13 @@ class cms
         $this->template('dropdowns.php', true);
     }
 
+    // deprecated
     public function shop_orders()
     {
         $this->template('shop_orders.php', true);
     }
 
+    // deprecated
     public function shop_order()
     {
         $this->template('shop_order.php', true);
@@ -2421,7 +2416,7 @@ class cms
 
     public function template($include, $local = false)
     {
-        global $vars, $auth, $shop_enabled, $email_templates, $languages, $live_site, $sms_config, $mailer_config, $cms_buttons, $message, $admin_config;
+        global $vars, $auth, $shop_enabled, $languages, $live_site, $sms_config, $mailer_config, $cms_buttons, $message, $admin_config;
 
         ob_start();
         if ($local) {
@@ -2490,72 +2485,6 @@ class cms
             $this->template('default_view.php', true);
         } else {
             $this->template('default_list.php', true);
-        }
-    }
-
-    public function email_templates()
-    {
-        global $vars, $email_templates;
-
-        $fields = [
-            'subject' => 'text',
-            'body' => 'textarea',
-            'id' => 'id',
-        ];
-        check_table('email_templates', $fields);
-
-        if (!isset($_GET['edit'])) {
-            $vars['content'] = sql_query('SELECT * FROM email_templates ORDER BY subject');
-
-            if (!count($vars['content'])) {
-                foreach ($email_templates as $k => $v) {
-                    sql_query("INSERT INTO email_templates SET
-						body='" . escape($v) . "',
-						subject='" . escape($k) . "'
-					");
-                }
-                $vars['content'] = sql_query('SELECT * FROM email_templates ORDER BY subject');
-            }
-
-            $this->template('email_templates_list.php', true);
-        } else {
-            if ($_POST['save']) {
-                $rows = sql_query("SELECT * FROM email_templates
-					WHERE
-						subject='" . escape($_GET['subject']) . "'
-				");
-
-                if ($rows) {
-                    sql_query("UPDATE email_templates SET
-						body='" . escape($_POST['body']) . "'
-					WHERE
-						subject='" . escape($_GET['subject']) . "'
-					");
-                } else {
-                    sql_query("INSERT INTO email_templates SET
-						body='" . escape($_POST['body']) . "',
-						subject='" . escape($_GET['subject']) . "'
-					");
-                }
-
-                redirect('?option=email_templates');
-            }
-
-            $row = sql_query("SELECT * FROM email_templates
-				WHERE
-					subject='" . escape($_GET['subject']) . "'
-			", 1);
-
-            if ($row) {
-                $vars['email'] = $row;
-            } else {
-                $vars['email']['subject'] = $_GET['subject'];
-                $vars['email']['body'] = $email_templates[$_GET['subject']];
-            }
-
-            $vars['email']['body'] = str_replace("\t", '', $vars['email']['body']);
-
-            $this->template('email_templates_edit.php', true);
         }
     }
 

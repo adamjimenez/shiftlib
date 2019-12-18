@@ -65,40 +65,6 @@ function serializeAll (form) {
 	return $.param(arr);
 };
 
-function remove_options(select)
-{
-	jQuery('option:not(:first-child)', select).remove();
-	select.disabled=true;
-	return true;
-}
-
-function add_options(result,target_option, value)
-{
-	models = eval('('+result+')');
-
-	var mod=target_option;
-	var selectedIndex=0;
-
-	if( !models ){
-		optval="";
-		opttext="Not Applicable";
-		mod.options[0]=new Option(opttext,optval, true,true);
-	}else{
-		for( i=0;i<models.length;i++ ){
-			mod.options[i+1]=new Option(models[i],i, true,true);
-
-			if( models[i].replace(/-/,'').toLowerCase()===value.replace(/-/,'').toLowerCase() ){
-				selectedIndex=i+1;
-			}
-		}
-
-		mod.options[0].value="";
-		mod.options[0].text="";
-		mod.disabled=false;
-	}
-	mod.options.selectedIndex=selectedIndex;
-}
-
 function showProgress(on){
 	if( !jQuery.dialog ){
 		return;
@@ -532,13 +498,12 @@ function initForms()
 		ratingCss.attr({
 			rel:  "stylesheet",
 			type: "text/css",
-			href: "/_lib/js/rateit/rateit.css"
+			href: "https://cdnjs.cloudflare.com/ajax/libs/jquery.rateit/1.1.3/rateit.css"
 		});
 
-		jQuery.getScript("/_lib/js/rateit/jquery.rateit.js").done(function(){
+		jQuery.getScript("https://cdnjs.cloudflare.com/ajax/libs/jquery.rateit/1.1.3/jquery.rateit.js").done(function(){
             $("select.rating").each(function(index) {
                 var field = $(this);
-                field.hide();
 
 				var starwidth = field.attr('data-rateit-starwidth') ? field.attr('data-rateit-starwidth') : 16;
 				var starheight = field.attr('data-rateit-starheight') ? field.attr('data-rateit-starheight') : 16;
@@ -548,7 +513,7 @@ function initForms()
 				var readonly = $(this).attr('disabled');
 
                 field.after('<div class="'+cls+'"></div>').next().rateit({
-                    backingfld: field.attr('id'),
+                    backingfld: field,
                     resetable: false,
                     ispreset: true,
                     step: 1,
@@ -561,7 +526,7 @@ function initForms()
                     field.val(value);
 
                     if( field.attr('data-section') ){
-                        jQuery.ajax('/_lib/cms/_ajax/rating.php', {
+                        jQuery.ajax('/_lib/api/?cmd=rating', {
                             dataType: 'json',
                 			type: 'post',
                 			data: {
@@ -721,7 +686,7 @@ function initForms()
 	if( jQuery("input[data-type='combo']").length ){
 		jQuery("input[data-type='combo']").each(function() {
 			jQuery(this).autocomplete({
-				source: '_lib/cms/_ajax/autocomplete.php?field=' + $(this).data('field'),
+				source: '/_lib/api/?cmd=autocomplete&field=' + $(this).data('field'),
 				select: function (event, ui) {
 					// Set autocomplete element to display the label
 					this.value = ui.item.label;
@@ -780,7 +745,7 @@ function initForms()
 				//get values
 	            $.ajax({
 	                type: "GET",
-	                url: '/_lib/cms/_ajax/chained.php',
+	                url: '/_lib/api/?cmd=chained',
 	                data: {
 	                    section: section,
 	                    value: value,
@@ -879,105 +844,6 @@ function initForms()
               reader.readAsDataURL(f);
             }
 		});
-	}
-
-	//cms inline editing
-	if( jQuery('span[data-id]').length ){
-        jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
-            var cms_save = function(){
-                $('#saveButton').attr('disabled','disabled');
-
-                //get edited data
-                var data = [];
-                var item = {};
-                $("span[data-edited='true']").each(function( index ) {
-                    item = $(this).data();
-                    item.value = $(this).html();
-                    data.push(item);
-                });
-
-                //console.log(data);
-
-                //save it
-                $.ajax({
-                    type: "POST",
-                    url: '/_lib/cms/_ajax/save.php',
-                    data: {
-                        data: JSON.stringify(data)
-                    },
-                    success: function(data, textStatus, jqXHR){
-                        //console.log(data);
-                        $('#saveDiv').remove();
-                    },
-                    dataType: 'json'
-                });
-            };
-
-            var cms_cancel = function(){
-                $('#saveDiv').remove();
-            };
-
-            var tinymce_onchange = function (ed) {
-                ed.on('change', function(e) {
-                    //set data attribute edited
-                    ed.bodyElement.dataset.edited = true;
-
-                    //show save button
-                    if( !document.getElementById('saveDiv') ){
-                        var div = document.createElement("div");
-                        div.id = 'saveDiv';
-                        div.style.position = 'fixed';
-                        div.style.bottom = 0;
-                        div.style.left = 0;
-                        div.style.right = 0;
-                        div.style.zIndex = 1000;
-                        div.style.textAlign = 'center';
-                        div.style.background = '#999';
-                        div.style.padding = '3px';
-
-                        var saveBtn = document.createElement("BUTTON");
-                        saveBtn.id = 'saveButton';
-                        saveBtn.type = 'button';
-                        saveBtn.innerText = 'Save changes';
-                        saveBtn.style.margin = '0px 5px';
-                        div.appendChild(saveBtn);
-                        saveBtn.onclick = cms_save;
-
-                        var cancelBtn = document.createElement("BUTTON");
-                        cancelBtn.id = 'cancelButton';
-                        cancelBtn.type = 'button';
-                        cancelBtn.innerText = 'Cancel';
-                        cancelBtn.style.margin = '0px 5px';
-                        div.appendChild(cancelBtn);
-                        cancelBtn.onclick = cms_cancel;
-
-                        document.body.appendChild(div);
-                    }
-                });
-            };
-
-            $('span.cms_text').tinymce({
-                script_url: tinymce_url+'tinymce.min.js',
-                selector: "span.cms_text",
-                inline: true,
-                toolbar: "undo redo",
-                menubar: false,
-                setup : tinymce_onchange
-            });
-
-            $('div.cms_editor').tinymce({
-                script_url: tinymce_url+'tinymce.min.js',
-                selector: "div.cms_editor",
-                inline: true,
-                plugins: [
-                    "advlist autolink lists link image charmap print preview anchor",
-                    "searchreplace visualblocks code fullscreen",
-                    "insertdatetime media table contextmenu paste"
-                ],
-                toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
-                setup : tinymce_onchange
-            });
-        });
 	}
 }
 

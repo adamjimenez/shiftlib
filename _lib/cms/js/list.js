@@ -64,13 +64,10 @@ function changeFile()
         });
 
         jQuery.ajax({
-            url: '/_lib/cms/_ajax/csv_upload.php',  //server script to process data
+            url: '/_lib/api/?cmd=csv_upload',  //server script to process data
             type: 'POST',
             //Ajax events
-            success: completeHandler = function(data) {
-                //open preview
-                result=jQuery.parseJSON(data);
-
+            success: completeHandler = function(result) {
             	if( result.error ){
             		alert( result.error );
             	}else{
@@ -98,7 +95,7 @@ var file_field_html;
 function loadFile(file)
 {
 	jQuery.ajax(
-		'/_lib/cms/_ajax/csv_fields.php',
+		'/_lib/api/?cmd=csv_fields',
 		{
 			type: 'post',
 			data: 'csv='+file,
@@ -111,24 +108,40 @@ function loadFile(file)
 					return false;
 				}
 
-				jQuery.ajax('/_lib/cms/_ajax/csv_preview.php',{
+				jQuery.ajax('/_lib/api/?cmd=csv_preview',{
 					type: 'post',
 					parameters: 'csv='+file,
-                    success: function(data) {
-                        $("#csv_preview").html(data);
+                    success: function(result) {
+                    	html = '\
+							<h4>Preview</h4>\
+							<table class="box">\
+						';
+						
+						result.rows.forEach(function(row, index) {
+							html += '<tr>';
+							
+							row.forEach(function(item) {
+								html += '<td>'+item+'</td>';
+							});
+							
+							html += '</tr>';
+						});
+						
+						html += '</table>';
+                    	
+                        $("#csv_preview").html(html);
                     }
 				});
 
 				for( var j in fields ){
 					if( typeof(fields[j])=='string' ){
 						remove_options(document.getElementById('field_'+fields[j]));
-						add_options(result,document.getElementById('field_'+fields[j]),fields[j]);
+						add_options(result.options, document.getElementById('field_'+fields[j]),fields[j]);
 					}
 				}
 				$('#csv_loaded').show();
 
 				document.getElementById('file_field').innerHTML='<strong>'+file+'</strong> <a href="#" onclick="changeFile();">change</a><input type="hidden" name="csv" value="'+file+'">';
-
 			}
 		}
 	);
@@ -153,10 +166,12 @@ function checkForm()
     var pars = $('#importForm').serialize();
 
     console.log(pars);
+    
+    $('#importModal').modal('hide');
 
-    var source = new EventSource('/_lib/cms/_ajax/import.php?'+pars);
+    var source = new EventSource('/_lib/api/?cmd=csv_import&'+pars);
 
-    $( "#progress" ).dialog({modal:true});
+    $( '<div id="progress" title="Importing"></div>' ).appendTo('body').dialog({modal:true});
 
     var results = {
         0: 0,
@@ -165,7 +180,7 @@ function checkForm()
     };
 	source.addEventListener('message', function(event) {
 		var data = JSON.parse(event.data);
-        console.log(data);
+        //console.log(data);
         results[data.msg]++;
 
         $('#progress').html('invalid: '+results[0]+'<br>imported: '+results[1]+'<br>updated: '+results[2]+'<br><br>');
@@ -180,4 +195,38 @@ function checkForm()
 	}, false);
 
 	return false;
+}
+
+function remove_options(select)
+{
+	jQuery('option:not(:first-child)', select).remove();
+	select.disabled=true;
+	return true;
+}
+
+function add_options(models,target_option, value)
+{
+	console.log(models)
+
+	var mod=target_option;
+	var selectedIndex=0;
+
+	if( !models ){
+		optval="";
+		opttext="Not Applicable";
+		mod.options[0]=new Option(opttext,optval, true,true);
+	}else{
+		for( i=0;i<models.length;i++ ){
+			mod.options[i+1]=new Option(models[i],i, true,true);
+
+			if( models[i].replace(/-/,'').toLowerCase()===value.replace(/-/,'').toLowerCase() ){
+				selectedIndex=i+1;
+			}
+		}
+
+		mod.options[0].value="";
+		mod.options[0].text="";
+		mod.disabled=false;
+	}
+	mod.options.selectedIndex=selectedIndex;
 }

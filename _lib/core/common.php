@@ -1,5 +1,8 @@
 <?php
 use SendGrid\Mail\Mail;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
@@ -540,31 +543,69 @@ function debug($var, $die = false)
     }
 }
 
-function send_mail($opts = [])
+function send_mail($opts = []): bool
 {
-    require 'vendor/autoload.php'; // If you're using Composer (recommended)
+    global $from_email;
     
-    $email = new Mail();
-    //$email->setFrom("test@example.com", "Example User");
-    $email->setFrom($opts['from_email']);
-    $email->setSubject($opts['subject']);
-    //$email->addTo("adam.jimenez@gmail.com", "Example User");
-    $email->addTo($opts['to_email']);
-    
-    if ($opts['content'] != strip_tags($opts['content'])) {
-        $email->addContent(
-            'text/html',
-            $opts['content']
-        );
+    if (!$opts['from_email']) {
+        $opts['from_email'] = $from_email;
     }
     
-    $email->addContent('text/plain', strip_tags($opts['content']));
-
-    $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-    try {
-        $response = $sendgrid->send($email);
-    } catch (Exception $e) {
-        echo 'Caught exception: ' . $e->getMessage() . "\n";
+    $is_html = ($opts['content'] !== strip_tags($opts['content']));
+    
+    if (getenv('SENDGRID_API_KEY')) {
+        $email = new Mail();
+        //$email->setFrom("test@example.com", "Example User");
+        $email->setFrom($opts['from_email']);
+        $email->setSubject($opts['subject']);
+        //$email->addTo("adam.jimenez@gmail.com", "Example User");
+        $email->addTo($opts['to_email']);
+        
+        if ($is_html) {
+            $email->addContent(
+                'text/html',
+                $opts['content']
+            );
+        }
+        
+        $email->addContent('text/plain', strip_tags($opts['content']));
+    
+        $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+        try {
+            $response = $sendgrid->send($email);
+        } catch (Exception $e) {
+            echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
+    } elseif (class_exists('PHPMailer')) {
+        $mail = new PHPMailer();
+        $mail->SetFrom($opts['from_email']);
+        $mail->Subject = $opts['subject'];
+        $mail->Body = $opts['content'];
+        $mail->AddAddress($opts['to_email']);
+        $mail->isHTML($is_html);
+        
+        if ($opts['attachments']) {
+            $attachments = explode("\n", $opts['attachments']);
+    
+            foreach ($attachments as $attachment) {
+                $mail->AddAttachment('uploads/' . $attachment, basename($attachment));
+            }
+        }
+        
+        return $mail->Send();
+    } else {
+        $headers = '';
+        
+        if ($is_html) {
+            $headers = 'MIME-Version: 1.0' . "\n";
+            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
+        }
+        
+        if ($opts['from_email']) {
+            $headers .= 'From: ' . $from_email . "\n";
+        }
+        
+        mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
     }
 }
 
@@ -609,46 +650,16 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
     //replace empty tokens
     $body = preg_replace('/{\$[A-Za-z0-9]+}/', '', $body);
 
-    if ($from_email) {
-        $headers .= 'From: ' . $from_email . "\n";
-    }
-
     //fix for outlook clipping new lines
     $body = str_replace("\n", "\t\n", $body);
 
-    //mail($email, $template['subject'], $body, $headers);
-    if (getenv('SENDGRID_API_KEY')) {
-        $opts = [];
-        $opts['from_email'] = $from_email;
-        $opts['to_email'] = $email;
-        $opts['subject'] = $template['subject'];
-        $opts['content'] = $body;
-        send_mail($opts);
-    } else {
-        $mail = new Rmail();
-    
-        //set html or text
-        if (strip_tags($body) !== $body) {
-            $mail->setHtml($body, strip_tags($body));
-        } else {
-            $mail->setText($body);
-        }
-    
-        $mail->setHTMLCharset('UTF-8');
-        $mail->setHeadCharset('UTF-8');
-        $mail->setFrom($from_email);
-        $mail->setSubject($template['subject']);
-    
-        if ($template['attachments']) {
-            $attachments = explode("\n", $template['attachments']);
-    
-            foreach ($attachments as $attachment) {
-                $mail->addAttachment(new fileAttachment('uploads/' . $attachment));
-            }
-        }
-    
-        return $mail->send([$email], 'mail');
-    }
+    $opts = [];
+    $opts['from_email'] = $from_email;
+    $opts['to_email'] = $email;
+    $opts['subject'] = $template['subject'];
+    $opts['content'] = $body;
+    $opts['attachments'] = $template['attachments'];
+    send_mail($opts);
 }
 
 function starts_with($haystack, $needle): bool
@@ -795,15 +806,15 @@ function file_size($size): string
     return round($size) . substr(' KMGT', $si, 1);
 }
 
-function number_abbr($size, $dp=null): string
+function number_abbr($size, $dp = null): string
 {
-	for($si = 0; $size >= 1000; $size /= 1000, $si++);
-	
-	if ($dp==null and $si==2) {
-		$dp = 1;
-	}
-	
-	return number_format($size, $dp) . substr(' KMBT', $si, 1);
+    for ($si = 0; $size >= 1000; $size /= 1000, $si++);
+    
+    if (null == $dp and 2 == $si) {
+        $dp = 1;
+    }
+    
+    return number_format($size, $dp) . substr(' KMBT', $si, 1);
 }
 
 function form_to_db($type): string
@@ -1143,29 +1154,15 @@ function load_js($libs)
         $libs = [$libs];
     }
 
-    $ssl = false;
-    if (443 == $_SERVER['SERVER_PORT'] or $_SERVER['HTTPS'] or 'https' == $_SERVER['HTTP_X_FORWARDED_PROTO']) {
-        $ssl = true;
-    }
-
-    // prototype jquery lightbox swfobject cms
-
     //work out dependencies
     $deps = [];
     foreach ($libs as $lib) {
         switch ($lib) {
             case 'jqueryui':
             case 'cycle':
-            case 'cycle2':
             case 'colorbox':
             case 'lightbox':
-                $deps['jquery'] = true;
-            break;
-            case 'jquery':
-            case 'prototype':
-            break;
             case 'cms':
-                //$deps['jqueryui']=true;
                 $deps['jquery'] = true;
             break;
         }
@@ -1188,7 +1185,7 @@ function load_js($libs)
 
     if ($deps['cms']) {
         ?>
-		<script src="/_lib/cms/js/cms.js" async></script>
+		<script src="/_lib/cms/js/cms.js?v=3" async></script>
 	<?php
     }
 
@@ -1209,46 +1206,6 @@ function load_js($libs)
     if ($deps['cycle']) {
         ?>
 		<script src="//cdn.jsdelivr.net/cycle/3.0.2/jquery.cycle.all.js"></script>
-	<?php
-    }
-
-    if ($deps['cycle2']) {
-        ?>
-		<?php /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js"></script>*/ ?>
-		<script src="/_lib/js/jquery.cycle2.js"></script>
-		<script src="/_lib/js/jquery.cycle2.carousel.js"></script>
-<?php
-    }
-
-    if ($deps['colorbox']) {
-        ?>
-		<link rel="stylesheet" href="/_lib/js/jquery.colorbox/colorbox.css" type="text/css" media="screen" />
-		<script src="/_lib/js/jquery.colorbox/jquery.colorbox.js"></script>
-	<?php
-    }
-
-    if ($deps['placeholder']) {
-        ?>
-		<script src="//cdn.jsdelivr.net/placeholder-shiv/0.2/placeholder-shiv.jquery.js"></script>
-	<?php
-    }
-
-    if ($deps['equalheights']) {
-        ?>
-		<script src="//cdn.jsdelivr.net/jquery.equalheights/1.3/jquery.equalheights.min.js"></script>
-	<?php
-    }
-
-    if ($deps['responsive-nav']) {
-        ?>
-		<link rel="stylesheet" href="//cdn.jsdelivr.net/responsive-nav/1.0.15/responsive-nav.css" type="text/css" />
-		<script src="//cdn.jsdelivr.net/responsive-nav/1.0.15/responsive-nav.js"></script>
-	<?php
-    }
-
-    if ($deps['swfobject']) {
-        ?>
-		<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
 	<?php
     }
 
@@ -1309,12 +1266,6 @@ function load_js($libs)
     }
 
     if ($deps['fontawesome']) {
-        /*
-    ?>
-        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <?php
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-        */
         ?>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
 <?php
@@ -1536,13 +1487,18 @@ function sql_query($query, $single = false): array
     $result = mysqli_query($db_connection, $query);
 
     if (false === $result) {
-        throw new Exception(mysqli_error());
+        throw new Exception(mysqli_error($db_connection));
     }
 
+    if (true === $result) {
+        return true;
+    }
+    
     $return_array = [];
     while ($row = mysqli_fetch_assoc($result)) {
         array_push($return_array, $row);
     }
+    
     mysqli_free_result($result);
 
     return $single ? $return_array[0] : $return_array;
