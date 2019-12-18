@@ -697,7 +697,7 @@ foreach ($languages as $language) {
 						WHERE
 							section='" . escape($_GET['option']) . "' AND
 							item='" . escape($id) . "'
-						ORDER BY L.date DESC
+						ORDER BY L.id DESC
 					";
                 //}
                 
@@ -710,18 +710,6 @@ foreach ($languages as $language) {
 			<div style="overflow: scroll; background: #fff;">
 			<?php
                 foreach ($logs as $k => $v) {
-                    switch ($v['task']) {
-                        case 'edit':
-                            $action = 'edited';
-                        break;
-                        case 'delete':
-                            $action = 'deleted';
-                        break;
-                        case 'add':
-                            $action = 'created';
-                        break;
-                    }
-            
                     if ('users' == $_GET['option']) {
                         $item_table = underscored($v['section']);
                         
@@ -734,7 +722,7 @@ foreach ($languages as $language) {
             
                     $name = $v['name'] ? $v['name'] . ' ' . $v['surname'] : $v['email']; ?>
 			<p>
-				<strong><a href="?option=<?=$v['section']; ?>&view=true&id=<?=$v['item']; ?>"><?=$item_name; ?></a> <?=ucfirst($action); ?> by <a href="?option=users&view=true&id=<?=$v['user']; ?>"><?=$name; ?></a> on <?=$v['date']; ?></strong><br>
+				<strong><a href="?option=<?=$v['section']; ?>&view=true&id=<?=$v['item']; ?>"><?=$item_name; ?></a> <?=ucfirst($v['task']);?> by <a href="?option=users&view=true&id=<?=$v['user']; ?>"><?=$name; ?></a> on <?=$v['date']; ?></strong><br>
 				<?=nl2br($v['details']); ?>
 			</p>
 			<br>
