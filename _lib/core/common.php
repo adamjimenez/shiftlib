@@ -498,11 +498,14 @@ function current_tab($tab, $class = ''): string
 
     $index = 0;
 
+	$str = '';
     if ($sections[$index] == $tab or $tab == $request) {
-        return ' class="current active ' . $class . '"';
+        $str = ' class="current active ' . $class . '"';
     } elseif ($class) {
-        return ' class="' . $class . '"';
+        $str = ' class="' . $class . '"';
     }
+    
+    return $str;
 }
 
 function datediff($endDate, $beginDate): int
@@ -1480,7 +1483,7 @@ function sql_num_rows($result): int
     return mysqli_num_rows($result);
 }
 
-function sql_query($query, $single = false): array
+function sql_query($query, $single = false)
 {
     global $db_connection;
 
