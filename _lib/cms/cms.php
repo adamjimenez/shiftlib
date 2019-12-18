@@ -2415,11 +2415,13 @@ class cms
         $this->template('dropdowns.php', true);
     }
 
+	// deprecated
     public function shop_orders()
     {
         $this->template('shop_orders.php', true);
     }
 
+	// deprecated
     public function shop_order()
     {
         $this->template('shop_order.php', true);
@@ -2427,7 +2429,7 @@ class cms
 
     public function template($include, $local = false)
     {
-        global $vars, $auth, $shop_enabled, $email_templates, $languages, $live_site, $sms_config, $mailer_config, $cms_buttons, $message, $admin_config;
+        global $vars, $auth, $shop_enabled, $languages, $live_site, $sms_config, $mailer_config, $cms_buttons, $message, $admin_config;
 
         ob_start();
         if ($local) {
@@ -2496,72 +2498,6 @@ class cms
             $this->template('default_view.php', true);
         } else {
             $this->template('default_list.php', true);
-        }
-    }
-
-    public function email_templates()
-    {
-        global $vars, $email_templates;
-
-        $fields = [
-            'subject' => 'text',
-            'body' => 'textarea',
-            'id' => 'id',
-        ];
-        check_table('email_templates', $fields);
-
-        if (!isset($_GET['edit'])) {
-            $vars['content'] = sql_query('SELECT * FROM email_templates ORDER BY subject');
-
-            if (!count($vars['content'])) {
-                foreach ($email_templates as $k => $v) {
-                    sql_query("INSERT INTO email_templates SET
-						body='" . escape($v) . "',
-						subject='" . escape($k) . "'
-					");
-                }
-                $vars['content'] = sql_query('SELECT * FROM email_templates ORDER BY subject');
-            }
-
-            $this->template('email_templates_list.php', true);
-        } else {
-            if ($_POST['save']) {
-                $rows = sql_query("SELECT * FROM email_templates
-					WHERE
-						subject='" . escape($_GET['subject']) . "'
-				");
-
-                if ($rows) {
-                    sql_query("UPDATE email_templates SET
-						body='" . escape($_POST['body']) . "'
-					WHERE
-						subject='" . escape($_GET['subject']) . "'
-					");
-                } else {
-                    sql_query("INSERT INTO email_templates SET
-						body='" . escape($_POST['body']) . "',
-						subject='" . escape($_GET['subject']) . "'
-					");
-                }
-
-                redirect('?option=email_templates');
-            }
-
-            $row = sql_query("SELECT * FROM email_templates
-				WHERE
-					subject='" . escape($_GET['subject']) . "'
-			", 1);
-
-            if ($row) {
-                $vars['email'] = $row;
-            } else {
-                $vars['email']['subject'] = $_GET['subject'];
-                $vars['email']['body'] = $email_templates[$_GET['subject']];
-            }
-
-            $vars['email']['body'] = str_replace("\t", '', $vars['email']['body']);
-
-            $this->template('email_templates_edit.php', true);
         }
     }
 
