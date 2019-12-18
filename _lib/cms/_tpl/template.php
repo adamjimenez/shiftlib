@@ -7,17 +7,12 @@
     
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
-	<?php
-    /*
-    <link href="/_lib/cms/css/cms-new.css" rel="stylesheet" type="text/css">
-    */
-    ?>
 	<script type="text/javascript">
-	var section='<?=$vars['section'];?>';
-	var fields=(<?=json_encode($fields);?>);
+		var section='<?=$vars['section'];?>';
+		var fields=(<?=json_encode($fields);?>);
 	</script>
 	<?php load_js(['jqueryui', 'cms', 'google', 'lightbox', 'fontawesome']); ?>
-	<script type="text/javascript" src="/_lib/cms/js/list.js"></script>
+	<script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
     
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,10 +20,6 @@
     <link rel="stylesheet" href="/_lib/cms/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/metisMenu.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/slicknav.min.css">
-    <?php /*
-    <!-- amchart css -->
-    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
-    */ ?>
     
     <!-- Start datatable css -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.css">
@@ -260,7 +251,6 @@
     <!-- bootstrap 4 js -->
     <script src="/_lib/cms/assets/js/popper.min.js"></script>
     <script src="/_lib/cms/assets/js/bootstrap.min.js"></script>
-    <script src="/_lib/cms/assets/js/owl.carousel.min.js"></script>
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>

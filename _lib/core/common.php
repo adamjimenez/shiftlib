@@ -1142,29 +1142,15 @@ function load_js($libs)
         $libs = [$libs];
     }
 
-    $ssl = false;
-    if (443 == $_SERVER['SERVER_PORT'] or $_SERVER['HTTPS'] or 'https' == $_SERVER['HTTP_X_FORWARDED_PROTO']) {
-        $ssl = true;
-    }
-
-    // prototype jquery lightbox swfobject cms
-
     //work out dependencies
     $deps = [];
     foreach ($libs as $lib) {
         switch ($lib) {
             case 'jqueryui':
             case 'cycle':
-            case 'cycle2':
             case 'colorbox':
             case 'lightbox':
-                $deps['jquery'] = true;
-            break;
-            case 'jquery':
-            case 'prototype':
-            break;
             case 'cms':
-                //$deps['jqueryui']=true;
                 $deps['jquery'] = true;
             break;
         }
@@ -1187,7 +1173,7 @@ function load_js($libs)
 
     if ($deps['cms']) {
         ?>
-		<script src="/_lib/cms/js/cms.js" async></script>
+		<script src="/_lib/cms/js/cms.js?v=3" async></script>
 	<?php
     }
 
@@ -1208,46 +1194,6 @@ function load_js($libs)
     if ($deps['cycle']) {
         ?>
 		<script src="//cdn.jsdelivr.net/cycle/3.0.2/jquery.cycle.all.js"></script>
-	<?php
-    }
-
-    if ($deps['cycle2']) {
-        ?>
-		<?php /*<script src="//cdn.jsdelivr.net/cycle2/20130502/jquery.cycle2.js"></script>*/ ?>
-		<script src="/_lib/js/jquery.cycle2.js"></script>
-		<script src="/_lib/js/jquery.cycle2.carousel.js"></script>
-	<?php
-    }
-
-    if ($deps['colorbox']) {
-        ?>
-		<link rel="stylesheet" href="/_lib/js/jquery.colorbox/colorbox.css" type="text/css" media="screen" />
-		<script src="/_lib/js/jquery.colorbox/jquery.colorbox.js"></script>
-	<?php
-    }
-
-    if ($deps['placeholder']) {
-        ?>
-		<script src="//cdn.jsdelivr.net/placeholder-shiv/0.2/placeholder-shiv.jquery.js"></script>
-	<?php
-    }
-
-    if ($deps['equalheights']) {
-        ?>
-		<script src="//cdn.jsdelivr.net/jquery.equalheights/1.3/jquery.equalheights.min.js"></script>
-	<?php
-    }
-
-    if ($deps['responsive-nav']) {
-        ?>
-		<link rel="stylesheet" href="//cdn.jsdelivr.net/responsive-nav/1.0.15/responsive-nav.css" type="text/css" />
-		<script src="//cdn.jsdelivr.net/responsive-nav/1.0.15/responsive-nav.js"></script>
-	<?php
-    }
-
-    if ($deps['swfobject']) {
-        ?>
-		<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
 	<?php
     }
 
@@ -1308,12 +1254,6 @@ function load_js($libs)
     }
 
     if ($deps['fontawesome']) {
-        /*
-    ?>
-        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <?php
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-        */
         ?>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
 		<?php

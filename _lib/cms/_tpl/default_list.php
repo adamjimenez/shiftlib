@@ -529,7 +529,7 @@ if ('email' == $_POST['action']) {
 						</div>
 					
 						<div id="csv_loaded" style="display:none; width:auto;">
-							<div id="csv_preview" style="margin:1em; border: 1px solid #000; padding:0.5em; overflow:auto; width:750px;"></div>
+							<div id="csv_preview" style="margin:1em; border: 1px solid #000;"></div>
 					
 							<p>Match up the columns with the spreadsheet columns below.</p>
 					
@@ -565,17 +565,11 @@ if ('email' == $_POST['action']) {
 					    	<p>
 								<label><input type="checkbox" name="validate" value="1" /> validate?</label>
 							</p>
-							<br />
-							<p>
-								<button type="submit" id="submitButton">Import data</button>
-								&nbsp; &nbsp;
-							</p>
-							<br />
 						</div>
 
 	                </div>
 	                <div class="modal-footer">
-	                    <button type="submit" class="btn btn-primary">Save</button>
+	                    <button type="submit" class="btn btn-primary">Import</button>
 	                </div>
 	            </div>
 	        </div>
@@ -621,8 +615,6 @@ if ('email' == $_POST['action']) {
 		</td>
 	</tr>
 	</table>
-
-	<div id="progress" title="Importing"></div>
 
 	<?php
     $conditions = $_GET;
