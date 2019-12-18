@@ -1072,12 +1072,12 @@ class cms
             break;
             case 'textarea':
         ?>
-			<textarea name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs ? $attribs : 'class="autogrow"';?>><?=$value;?></textarea>
+			<textarea name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs ?: 'class="autogrow"';?>><?=$value;?></textarea>
 		<?php
             break;
             case 'editor':
         ?>
-			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ? $attribs : 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config['editor'] ? $cms_config['editor'] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
+			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ?: 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config['editor'] ? $cms_config['editor'] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
 		<?php
             break;
             case 'file':
@@ -1319,22 +1319,22 @@ class cms
             break;
             case 'date':
         ?>
-			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> autocomplete="off" />
+			<input type="text" data-type="date" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: 'style="width:75px;"';?> autocomplete="off" />
 		<?php
             break;
             case 'month':
         ?>
-			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" class="month" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: 'style="width:75px;"';?> />
 		<?php
             break;
             case 'dob':
         ?>
-			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : 'style="width:75px;"';?> />
+			<input type="text" data-type="dob" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=($value && '0000-00-00' != $value) ? $value : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: 'style="width:75px;"';?> />
 		<?php
             break;
             case 'time':
         ?>
-			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=('00:00:00' != $value) ? substr($value, 0, -3) : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ?: '';?> />
+			<input type="time" step="1" data-type="time" id="<?=$field_name;?>" name="<?=$field_name;?>" value="<?=('00:00:00' != $value) ? substr($value, 0, -3) : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs;?> />
 		<?php
             break;
             case 'datetime':
@@ -1343,8 +1343,8 @@ class cms
                 $date = explode(' ', $value);
             }
         ?>
-			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and '0000-00-00' != $date[0]) ? $date[0] : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ? $attribs : '';?> />
-			<input type="time" step="60" name="time[<?=$field_name;?>]" value="<?=($date[1] and '00:00:00' != $date[1]) ? substr($date[1], 0, 5) : '00:00:00';?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ? $attribs : '';?> />
+			<input type="date" name="<?=$field_name;?>" value="<?=($date[0] and '0000-00-00' != $date[0]) ? $date[0] : '';?>" <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?=$attribs ?: '';?> />
+			<input type="time" step="1" name="time[<?=$field_name;?>]" value="<?=$date[1];?>" <? if($readonly){ ?>disabled<? } ?> <?=$attribs;?>>
 		<?php
             break;
             case 'rating':
@@ -2314,14 +2314,8 @@ class cms
                         }
                     }
                 }
-                
-                sql_query("INSERT INTO cms_logs SET
-					user = '" . $auth->user['id'] . "',
-					section = '" . escape($this->section) . "',
-					item = '" . escape($this->id) . "',
-					task = '" . $task . "',
-					details = '" . escape($details) . "'
-				");
+				
+				$this->save_log($this->section, $this->id, $task, $details);
             }
 
             foreach ($languages as $language) {
@@ -2369,6 +2363,18 @@ class cms
         $this->saved = true;
 
         return $this->id;
+    }
+    
+    public function save_log($section, $id, $task, $details) {
+		global $auth;
+                
+        sql_query("INSERT INTO cms_logs SET
+			user = '" . $auth->user['id'] . "',
+			section = '" . escape($section) . "',
+			item = '" . escape($id) . "',
+			task = '" . $task . "',
+			details = '" . escape($details) . "'
+		");
     }
 
     public function trigger_event($event, $args)
