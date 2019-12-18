@@ -1,4 +1,8 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
@@ -624,29 +628,22 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
         $opts['content'] = $body;
         send_mail($opts);
     } else {
-        $mail = new Rmail();
-    
-        //set html or text
-        if (strip_tags($body) !== $body) {
-            $mail->setHtml($body, strip_tags($body));
-        } else {
-            $mail->setText($body);
-        }
-    
-        $mail->setHTMLCharset('UTF-8');
-        $mail->setHeadCharset('UTF-8');
-        $mail->setFrom($from_email);
-        $mail->setSubject($template['subject']);
-    
+		$mail = new PHPMailer();
+		$mail->SetFrom($from_email);
+		$mail->Subject = $template['subject'];
+		$mail->Body = $body;
+		$mail->AddAddress($email);
+		$mail->isHTML($body!=strip_tags($body));
+		
         if ($template['attachments']) {
             $attachments = explode("\n", $template['attachments']);
     
             foreach ($attachments as $attachment) {
-                $mail->addAttachment(new fileAttachment('uploads/' . $attachment));
+				$mail->AddAttachment( 'uploads/' . $attachment , basename($attachment) );
             }
         }
-    
-        return $mail->send([$email], 'mail');
+		
+		return $mail->Send();
     }
 }
 

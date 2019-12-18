@@ -3,13 +3,11 @@
 //$admin_email = 'adam@shiftcreate.com';
 
 $admin_email = $_SERVER['SERVER_ADMIN'];
-
-require(dirname(__FILE__) . '/autoload.php');
-
-//symlinked dir?
 $root_folder = $_SERVER['DOCUMENT_ROOT'];
 chdir($root_folder);
 
+include('vendor/autoload.php');
+require(dirname(__FILE__) . '/autoload.php');
 require_once(dirname(__FILE__) . '/core/common.php');
 require($root_folder . '/_inc/config.php');
 
