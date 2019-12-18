@@ -4,54 +4,21 @@ File:		default.php
 Author:		Adam Jimenez
 */
 
-require_once(dirname(__FILE__) . '/core/common.php');
-
-function add_components($html)
-{
-    return preg_replace_callback('/{\$([A-Za-z0-9]+)}/', function ($match) {
-        $include = $match[1];
-        return file_get_contents('https://' . $_SERVER['HTTP_HOST'] . '/components/' . $include);
-    }, $html);
-}
+require(dirname(__FILE__) . '/base.php');
 
 function get_tpl_catcher($request)
 {
     global $tpl_config;
 
-    if (!$tpl_config or !is_array($tpl_config['catchers'])) {
-        return false;
-    }
-    foreach ($tpl_config['catchers'] as $catcher) {
-        if (substr($request, 0, strlen($catcher) + 1) == $catcher . '/') {
-            return $catcher;
-        }
+    if (is_array($tpl_config['catchers'])) {
+	    foreach ($tpl_config['catchers'] as $catcher) {
+	        if (substr($request, 0, strlen($catcher) + 1) == $catcher . '/') {
+	            return $catcher;
+	        }
+	    }
     }
     
     return false;
-}
-
-function timer()
-{
-    global $auth;
-
-    if (!$auth->user['admin']) {
-        return;
-    }
-
-    global $timer_start;
-
-    if (!$timer_start) {
-        $timer_start = microtime(true);
-        $timer_now = $timer_start;
-    } else {
-        $timer_now = microtime(true);
-    }
-
-    $diff = $timer_now - $timer_start;
-
-    $timer_start = $timer_now;
-
-    print '<p>' . round($diff, 4) . '</p>';
 }
 
 function trigger_404()
@@ -59,15 +26,8 @@ function trigger_404()
     throw new Exception(404);
 }
 
-function stop()
-{
-    throw new Exception('stop');
-}
-
 function parse_request()
 {
-    global $tpl_config;
-
     $script_url = rawurldecode($_SERVER['REQUEST_URI']);
     $pos = strpos($script_url, '?');
 
@@ -75,22 +35,18 @@ function parse_request()
         $script_url = substr($script_url, 0, $pos);
     }
 
-    if ('/index' == substr($script_url, -6)) { //redirect /index to /
+    if (ends_with($script_url, '/index')) { //redirect /index to /
         redirect(substr($script_url, 0, -5), true);
-    }
-
-    if ('index' == $script_url) {
-        redirect('/');
     }
 
     $request = $script_url ?: 'index';
 
-    if ('/' == substr($request, -1)) {
+    if (ends_with($request, '/')) {
         $request .= 'index';
     }
 
-    //strip prepending slash
-    if ('/' == substr($request, 0, 1)) {
+    // strip prepending slash
+    if (starts_with($request, '/')) {
         $request = (substr($request, 1));
     }
 
@@ -99,7 +55,7 @@ function parse_request()
 
 function get_include($request)
 {
-    global $tpl_config, $root_folder, $catcher, $sections, $vars, $cms, $content;
+    global $tpl_config, $root_folder, $catcher, $vars, $cms, $content;
 
     $include_file = false;
 
@@ -154,14 +110,9 @@ function get_include($request)
     return $include_file;
 }
 
-//comes before base.php so that custom.php can use request variable
-if (!$request) {
-    $request = parse_request();
-}
+$request = parse_request();
 
-require(dirname(__FILE__) . '/base.php');
-
-//ssl - must come after base.php
+//enforce ssl
 if (!$_SERVER['HTTPS'] and ($tpl_config['ssl'] or in_array($request, $tpl_config['secure']))) {
     if ('index' == substr($request, -5)) {
         $request = substr($request, 0, -5);
@@ -215,11 +166,8 @@ $sections = explode('/', $request);
 $catcher = '';
 $include_file = get_include($request);
 
-//ob_start("ob_gzhandler"); // breaks server side event streaming
-
-if ('template' == end($sections)) {
-    $trigger_404 = true;
-} elseif (false === $include_file) {
+// get include content
+if ('template' == end($sections) or false === $include_file) {
     $trigger_404 = true;
 } elseif ($include_file) {
     ob_start();
@@ -230,13 +178,9 @@ if ('template' == end($sections)) {
             case 404:
                 $trigger_404 = true;
             break;
-            case 'stop':
-                $stop = true;
-            break;
             default:
                 $msg = $e->getMessage() . "\n" . $e->getTraceAsString();
                 $msg = nl2br($msg);
-
                 error_handler(E_USER_ERROR, $msg, $e->getFile(), $e->getLine());
             break;
         }
@@ -245,55 +189,42 @@ if ('template' == end($sections)) {
     ob_end_clean();
 }
 
-if ($stop) {
-    echo $include_content;
-} else {
-    if ($trigger_404) {
-        header('HTTP/1.0 404 Not Found');
+// handle 404
+if ($trigger_404) {
+    header('HTTP/1.0 404 Not Found');
 
-        if (file_exists($root_folder . '/_tpl/404.php')) {
-            ob_start();
-            require($root_folder . '/_tpl/404.php');
-            $include_content = ob_get_contents();
-            ob_end_clean();
-        } else {
-            $include_content = '<h1>404 - Page can not be found</h1>';
-        }
-    }
-
-    $title = strip_tags($title);
-
-    if (!$title and false !== $title and preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches)) {
-        $title = strip_tags($matches[1]);
-        $title = trim(preg_replace("/\r|\n/", '', $title));
-    }
-
-    header('Access-Control-Allow-Origin: *');
-
-    if (false === $use_template) {
-        echo $include_content;
-    } elseif (file_exists($root_folder . '/_tpl/' . dirname($request) . '/template.php')) {
-        require($root_folder . '/_tpl/' . dirname($request) . '/template.php');
-    } elseif ($catcher and file_exists($root_folder . '/_tpl/' . dirname($catcher) . '/template.php')) {
-        require($root_folder . '/_tpl/' . dirname($catcher) . '/template.php');
+    if (file_exists($root_folder . '/_tpl/404.php')) {
+        ob_start();
+        require($root_folder . '/_tpl/404.php');
+        $include_content = ob_get_contents();
+        ob_end_clean();
     } else {
-        require($root_folder . '/_tpl/template.php');
-    }
-
-    $time_end = microtime(true);
-    $time = $time_end - $time_start;
-
-    if ($auth->user['admin'] and $_GET['time']) {
-        echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0;">Loaded in ' . number_format($time, 3) . ' seconds</span>';
+        $include_content = '<h1>404 - Page can not be found</h1>';
     }
 }
 
-//log slow pages
+// get page title from h1 tag if it doesn't exist
+if (!$title and preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches)) {
+    $title = trim(preg_replace("/\r|\n/", '', strip_tags($matches[1])));
+}
+
 /*
-if( $time>1 ){
-$body='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'?'.$_SERVER['QUERY_STRING']."\n";
-$body.='time: '.$time;
-
-mail($admin_email,'Slow page', $body, $headers );
-}
+find template file
+- check current folder
+- check for any catchers
+- fall back to root folder
 */
+if (file_exists($root_folder . '/_tpl/' . dirname($request) . '/template.php')) {
+    require($root_folder . '/_tpl/' . dirname($request) . '/template.php');
+} elseif ($catcher and file_exists($root_folder . '/_tpl/' . dirname($catcher) . '/template.php')) {
+    require($root_folder . '/_tpl/' . dirname($catcher) . '/template.php');
+} else {
+    require($root_folder . '/_tpl/template.php');
+}
+
+// debug page speed
+if ($auth->user['admin'] and $_GET['debug']) {
+	$time_end = microtime(true);
+	$time = $time_end - $time_start;
+    echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0; z-index: 100;">Loaded in ' . number_format($time, 3) . 's</span>';
+}
