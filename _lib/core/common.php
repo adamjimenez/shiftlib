@@ -545,29 +545,73 @@ function debug($var, $die = false)
 
 function send_mail($opts = [])
 {
-    require 'vendor/autoload.php'; // If you're using Composer (recommended)
+    global $from_email;
     
-    $email = new \SendGrid\Mail\Mail();
-    //$email->setFrom("test@example.com", "Example User");
-    $email->setFrom($opts['from_email']);
-    $email->setSubject($opts['subject']);
-    //$email->addTo("adam.jimenez@gmail.com", "Example User");
-    $email->addTo($opts['to_email']);
-    
-    if ($opts['content'] != strip_tags($opts['content'])) {
-        $email->addContent(
-            'text/html',
-            $opts['content']
-        );
+    if (!$opts['from_email']) {
+    	$opts['from_email'] = $from_email;
     }
     
-    $email->addContent('text/plain', strip_tags($opts['content']));
-
-    $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-    try {
-        $response = $sendgrid->send($email);
-    } catch (Exception $e) {
-        echo 'Caught exception: ' . $e->getMessage() . "\n";
+	$is_html = ($opts['content'] !== strip_tags($opts['content']));
+	
+    if (getenv('SENDGRID_API_KEY')) {
+    	
+	    $email = new \SendGrid\Mail\Mail();
+	    //$email->setFrom("test@example.com", "Example User");
+	    $email->setFrom($opts['from_email']);
+	    $email->setSubject($opts['subject']);
+	    //$email->addTo("adam.jimenez@gmail.com", "Example User");
+	    $email->addTo($opts['to_email']);
+	    
+	    if ($is_html) {
+	        $email->addContent(
+	            'text/html',
+	            $opts['content']
+	        );
+	    }
+	    
+	    $email->addContent('text/plain', strip_tags($opts['content']));
+	
+	    $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+	    try {
+	        $response = $sendgrid->send($email);
+	    } catch (Exception $e) {
+	        echo 'Caught exception: ' . $e->getMessage() . "\n";
+	    }
+	    
+    } else if(class_exists('PHPMailer')){
+    	
+		$mail = new PHPMailer();
+		$mail->SetFrom($opts['from_email']);
+		$mail->Subject = $opts['subject'];
+		$mail->Body = $opts['content'];
+		$mail->AddAddress($opts['to_email']);
+		$mail->isHTML($is_html);
+		
+        if ($opts['attachments']) {
+            $attachments = explode("\n", $opts['attachments']);
+    
+            foreach ($attachments as $attachment) {
+				$mail->AddAttachment( 'uploads/' . $attachment , basename($attachment) );
+            }
+        }
+        
+		return $mail->Send();
+		
+    } else {
+    	
+    	$headers = '';
+    	
+    	if ($is_html) {
+        	$headers = 'MIME-Version: 1.0' . "\n";
+        	$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
+    	}
+    	
+	    if ($opts['from_email']) {
+	        $headers .= 'From: ' . $from_email . "\n";
+	    }
+    	
+    	mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
+    	
     }
 }
 
@@ -612,39 +656,16 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
     //replace empty tokens
     $body = preg_replace('/{\$[A-Za-z0-9]+}/', '', $body);
 
-    if ($from_email) {
-        $headers .= 'From: ' . $from_email . "\n";
-    }
-
     //fix for outlook clipping new lines
     $body = str_replace("\n", "\t\n", $body);
 
-    //mail($email, $template['subject'], $body, $headers);
-    if (getenv('SENDGRID_API_KEY')) {
-        $opts = [];
-        $opts['from_email'] = $from_email;
-        $opts['to_email'] = $email;
-        $opts['subject'] = $template['subject'];
-        $opts['content'] = $body;
-        send_mail($opts);
-    } else {
-		$mail = new PHPMailer();
-		$mail->SetFrom($from_email);
-		$mail->Subject = $template['subject'];
-		$mail->Body = $body;
-		$mail->AddAddress($email);
-		$mail->isHTML($body!=strip_tags($body));
-		
-        if ($template['attachments']) {
-            $attachments = explode("\n", $template['attachments']);
-    
-            foreach ($attachments as $attachment) {
-				$mail->AddAttachment( 'uploads/' . $attachment , basename($attachment) );
-            }
-        }
-		
-		return $mail->Send();
-    }
+    $opts = [];
+    $opts['from_email'] = $from_email;
+    $opts['to_email'] = $email;
+    $opts['subject'] = $template['subject'];
+    $opts['content'] = $body;
+    $opts['attachments'] = $template['attachments'];
+    send_mail($opts);
 }
 
 function starts_with($haystack, $needle)

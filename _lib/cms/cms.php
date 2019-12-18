@@ -1723,26 +1723,11 @@ class cms
 
         $msg = nl2br($msg);
 
-        //$headers = 'From: auto@'.$_SERVER["HTTP_HOST"]."\n";
-
-        $mail = new Rmail();
-
-        if ($_POST['email']) {
-            $headers .= 'Reply-to: ' . $_POST['email'] . "\n";
-            $mail->setHeader('Reply-to', $_POST['email']);
-        }
-
-        $mail->setHTMLCharset('UTF-8');
-        $mail->setHeadCharset('UTF-8');
-        $mail->setHtml($msg);
-        $mail->setFrom('auto@' . $_SERVER['HTTP_HOST']);
-        $mail->setSubject($subject);
-
-        if (!is_string($to)) {
-            $to = $from_email;
-        }
-
-        $result = $mail->send([$to], 'mail');
+        send_mail([
+        	'subject' => $subject,
+        	'content' => $msg,
+        	'to_email' => $to,
+        ]);
     }
 
     public function submit($notify = null, $other_errors = [])
