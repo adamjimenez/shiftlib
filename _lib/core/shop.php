@@ -177,7 +177,7 @@ class shop
         if ($auth->user) {
             $where_str = " OR B.user='" . $auth->user['id'] . "'";
         }
-        $this->basket = sql_query("SELECT *,B.id FROM basket B
+        $this->basket = sql_query("SELECT *,B.* FROM basket B
 			LEFT JOIN products P ON B.product=P.id
 			WHERE
 				(
@@ -217,6 +217,21 @@ class shop
                         $this->basket[$k]['cost'] += $row['cost'];
                     }
                 }
+            }
+            
+            if ($v['options']) {
+            	$values = json_decode($v['options']);
+            	foreach($values as $value) {
+            		$product_value = sql_query("SELECT * FROM product_values WHERE id = '".escape($value)."'", 1);
+            		$product_option = sql_query("SELECT * FROM product_options WHERE id = '".escape($product_value['product_option'])."'", 1);
+            		$this->basket[$k]['cost'] += $product_value['cost'];
+            		
+            		if ($this->basket[$k]['extras']) {
+            			$this->basket[$k]['extras'] .= "\n";
+            		}
+            		
+            		$this->basket[$k]['extras'] .= $product_option['name'].': '.$product_value['value'];
+            	}
             }
 
             $this->subtotal += $v['quantity'] * $this->basket[$k]['cost'];
@@ -276,6 +291,11 @@ class shop
                 }
             }
         }
+        
+        $options = [];
+        if (count($_POST['options'])) {
+        	$options = json_encode($_POST['options']);
+        }
 
         if ($auth->user) {
             $where_str = " OR user='" . $auth->user['id'] . "'";
@@ -287,7 +307,8 @@ class shop
 			) AND
 			product='" . escape($product) . "' AND
 			extras='" . escape(trim($extras)) . "' AND
-			variation='" . escape($variation_id) . "'
+			variation='" . escape($variation_id) . "' AND
+			options='" . escape($options) . "'
 		", 1);
 
         if ($row) {
@@ -307,7 +328,8 @@ class shop
 				session='" . session_id() . "' AND
 				product='" . escape($product) . "' AND
 				extras='" . escape(trim($extras)) . "' AND
-				variation='" . escape($variation_id) . "'
+				variation='" . escape($variation_id) . "' AND
+				options='" . escape($options) . "'
 			");
         } else {
             sql_query("INSERT INTO basket SET
@@ -316,7 +338,8 @@ class shop
 				session='" . session_id() . "',
 				product='" . escape($product) . "',
 				extras='" . escape(trim($extras)) . "',
-				variation='" . escape($variation_id) . "'
+				variation='" . escape($variation_id) . "',
+				options='" . escape($options) . "'
 			");
         }
 
