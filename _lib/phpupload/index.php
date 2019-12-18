@@ -170,7 +170,7 @@ if ($_GET['cmd']) {
             $files = [];
             
             $paths = glob($path . '*');
-            usort($paths, function ($a, $b) {
+            usort($paths, function ($a, $b): int {
                 $a = strtolower($a);
                 $b = strtolower($b);
                 $aIsDir = is_dir($a);

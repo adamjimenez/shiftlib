@@ -11,13 +11,13 @@ function get_tpl_catcher($request)
     global $tpl_config;
 
     if (is_array($tpl_config['catchers'])) {
-	    foreach ($tpl_config['catchers'] as $catcher) {
-	        if (substr($request, 0, strlen($catcher) + 1) == $catcher . '/') {
-	            return $catcher;
-	        }
-	    }
+        foreach ($tpl_config['catchers'] as $catcher) {
+            if (substr($request, 0, strlen($catcher) + 1) == $catcher . '/') {
+                return $catcher;
+            }
+        }
     }
-    
+
     return false;
 }
 
@@ -26,7 +26,7 @@ function trigger_404()
     throw new Exception(404);
 }
 
-function parse_request()
+function parse_request(): string
 {
     $script_url = rawurldecode($_SERVER['REQUEST_URI']);
     $pos = strpos($script_url, '?');
@@ -76,12 +76,12 @@ function get_include($request)
         // check pages
         if (in_array('pages', $vars['sections'])) {
             $content = $cms->get('pages', $request);
-            
+
             if ($content) {
                 return $root_folder . '/_tpl/page.php';
             }
         }
-        
+
         if (file_exists('_tpl/' . $request) and !is_dir('_tpl/' . $request)) {
             $url = 'http://' . $_SERVER['SERVER_NAME'] . '/' . str_replace('.php', '', $request);
 
@@ -224,7 +224,7 @@ if (file_exists($root_folder . '/_tpl/' . dirname($request) . '/template.php')) 
 
 // debug page speed
 if ($auth->user['admin'] and $_GET['debug']) {
-	$time_end = microtime(true);
-	$time = $time_end - $time_start;
+    $time_end = microtime(true);
+    $time = $time_end - $time_start;
     echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0; z-index: 100;">Loaded in ' . number_format($time, 3) . 's</span>';
 }

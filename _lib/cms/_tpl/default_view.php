@@ -128,14 +128,14 @@ if ($_POST['sms']) {
             $next_link = '?id=' . $next['id'] . '&' . $qs;
         }
     }
-    
-    
+
+
     $qs_arr = $_GET;
     unset($qs_arr['option']);
     unset($qs_arr['view']);
     unset($qs_arr['id']);
     $qs = http_build_query($qs_arr);
-    
+
     $section = '';
     foreach ($vars['fields'][$this->section] as $name => $type) {
         if ($_GET[underscored($name)] and 'id' != $name and 'select' == $type) {
@@ -240,26 +240,26 @@ Language:
             </ul>
             <div class="tab-content mt-3" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
-                	
+
                 	<div>
 				        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;">Edit</button>
-				
+
 						<?php
                         foreach ($cms_buttons as $k => $button) {
                             if ($this->section == $button['section'] and 'view' == $button['page']) {
                                 require('includes/button.php');
                             }
                         } ?>
-				
+
 						&nbsp;
-				
+
 				        <form method="post" style="display:inline;">
 					        <input type="hidden" name="delete" value="1">
 					        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
 				        </form>
                 	</div>
 
-    				
+
 
 
 <?php
@@ -388,7 +388,7 @@ foreach ($languages as $language) {
             } ?>
 				<?=$file[0]['name']; ?>
 				</a> 
-				
+
 				<span style="font-size:9px;"><?=file_size($file[0]['size']); ?></span>
 
 				<?php
@@ -528,10 +528,10 @@ foreach ($languages as $language) {
                         } ?>
 
 
-    
-    
+
+
                 </div>
-                
+
 <?php
     foreach ($vars['subsections'][$this->section] as $count => $subsection) {
         if (count($vars['fields'][$subsection])) {
@@ -555,7 +555,7 @@ foreach ($languages as $language) {
                     //$order='T_'.$label.'.'.underscored(key($vars['fields'][$vars['options'][$label]]));
                 }
                 //$order="T_$table.".underscored($vars['labels'][$this->section][0]);
-                
+
                 $limit = 10;
             }
 
@@ -573,7 +573,7 @@ foreach ($languages as $language) {
             }
 
             $qs = http_build_query($qs);
-            
+
             $first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
             $asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? false : true;
 
@@ -610,7 +610,7 @@ foreach ($languages as $language) {
             (2 == $content['admin'] or 3 == $content['admin'])
          ) {
             check_table('cms_privileges', $this->cms_privileges_fields);
-        
+
             $rows = sql_query("SELECT * FROM cms_privileges WHERE user='" . $this->id . "'");
             foreach ($rows as $row) {
                 $privileges[$row['section']] = $row;
@@ -700,11 +700,11 @@ foreach ($languages as $language) {
 						ORDER BY L.id DESC
 					";
                 //}
-                
+
                 $p = new paging($query, 20);
-                
+
                 $logs = sql_query($p->query);
-            
+
                 if (count($logs)) {
                     ?>
 			<div style="overflow: scroll; background: #fff;">
@@ -712,17 +712,17 @@ foreach ($languages as $language) {
                 foreach ($logs as $k => $v) {
                     if ('users' == $_GET['option']) {
                         $item_table = underscored($v['section']);
-                        
+
                         if ($vars['fields'][$v['section']]) {
                             $item = sql_query("SELECT * FROM `$item_table` WHERE id='" . escape($v['item']) . "'", 1);
                             $label = key($vars['fields'][$v['section']]);
                             $item_name = $item[$label];
                         }
                     }
-            
+
                     $name = $v['name'] ? $v['name'] . ' ' . $v['surname'] : $v['email']; ?>
 			<p>
-				<strong><a href="?option=<?=$v['section']; ?>&view=true&id=<?=$v['item']; ?>"><?=$item_name; ?></a> <?=ucfirst($v['task']);?> by <a href="?option=users&view=true&id=<?=$v['user']; ?>"><?=$name; ?></a> on <?=$v['date']; ?></strong><br>
+				<strong><a href="?option=<?=$v['section']; ?>&view=true&id=<?=$v['item']; ?>"><?=$item_name; ?></a> <?=ucfirst($v['task']); ?> by <a href="?option=users&view=true&id=<?=$v['user']; ?>"><?=$name; ?></a> on <?=$v['date']; ?></strong><br>
 				<?=nl2br($v['details']); ?>
 			</p>
 			<br>
@@ -733,7 +733,7 @@ foreach ($languages as $language) {
 				<?=$p->get_paging(); ?>
 			</p>
 			</div>
-			
+
 			<br />
 			<br />
 			<?php

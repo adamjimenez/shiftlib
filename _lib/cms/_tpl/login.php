@@ -10,9 +10,9 @@ if ($auth->user['admin']) {
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>Login</title>
-    
+
 	<?php load_js(['cms']); ?>
-	
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
     <link rel="stylesheet" href="/_lib/cms/assets/css/bootstrap.min.css">
@@ -108,7 +108,7 @@ if ($auth->user['admin']) {
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
-    
+
     <!-- others plugins -->
     <script src="/_lib/cms/assets/js/plugins.js"></script>
     <script src="/_lib/cms/assets/js/scripts.js"></script>

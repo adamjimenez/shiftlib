@@ -1,13 +1,23 @@
 {
-  "name": "ShiftLib",
+  "name": "adamjimenez/shiftlib",
   "description": "A CMS framework",
+  "require": {
+    "ext-calendar": "*",
+    "ext-curl": "*",
+    "ext-exif": "*",
+    "ext-gd": "*",
+    "ext-json": "*",
+    "ext-memcache": "*",
+    "ext-mysql": "*",
+    "ext-mysqli": "*",
+    "phpmailer/phpmailer": "^6.1"
+  },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "2.16"
+    "friendsofphp/php-cs-fixer": "2.16",
+    "rector/rector": "^0.6.1"
   },
   "scripts": {
-    "php-cs-fixer": "vendor/bin/php-cs-fixer fix"
-  },
-  "require": {
-    "phpmailer/phpmailer": "^6.1"
+    "php-cs-fixer": "vendor/bin/php-cs-fixer fix",
+    "rector": "vendor/bin/rector process _lib/"
   }
 }

@@ -220,18 +220,18 @@ class shop
             }
             
             if ($v['options']) {
-            	$values = json_decode($v['options']);
-            	foreach($values as $value) {
-            		$product_value = sql_query("SELECT * FROM product_values WHERE id = '".escape($value)."'", 1);
-            		$product_option = sql_query("SELECT * FROM product_options WHERE id = '".escape($product_value['product_option'])."'", 1);
-            		$this->basket[$k]['cost'] += $product_value['cost'];
-            		
-            		if ($this->basket[$k]['extras']) {
-            			$this->basket[$k]['extras'] .= "\n";
-            		}
-            		
-            		$this->basket[$k]['extras'] .= $product_option['name'].': '.$product_value['value'];
-            	}
+                $values = json_decode($v['options']);
+                foreach ($values as $value) {
+                    $product_value = sql_query("SELECT * FROM product_values WHERE id = '" . escape($value) . "'", 1);
+                    $product_option = sql_query("SELECT * FROM product_options WHERE id = '" . escape($product_value['product_option']) . "'", 1);
+                    $this->basket[$k]['cost'] += $product_value['cost'];
+                    
+                    if ($this->basket[$k]['extras']) {
+                        $this->basket[$k]['extras'] .= "\n";
+                    }
+                    
+                    $this->basket[$k]['extras'] .= $product_option['name'] . ': ' . $product_value['value'];
+                }
             }
 
             $this->subtotal += $v['quantity'] * $this->basket[$k]['cost'];
@@ -294,7 +294,7 @@ class shop
         
         $options = [];
         if (count($_POST['options'])) {
-        	$options = json_encode($_POST['options']);
+            $options = json_encode($_POST['options']);
         }
 
         if ($auth->user) {
