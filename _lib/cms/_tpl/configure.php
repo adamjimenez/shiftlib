@@ -5,7 +5,7 @@ if (1 != $auth->user['admin']) {
 
 $max_input_vars = ini_get('max_input_vars');
 
-global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $mailer_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields, $admin_config, $cms_config;
+global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields, $admin_config, $cms_config;
 
 $cms_multiple_select_fields = [
     'section' => 'text',
@@ -85,17 +85,9 @@ $section_templates['cms logs'] = [
     'id' => 'id',
 ];
 
-$section_templates['blank'] = [
-];
+$section_templates['blank'] = [];
 
-$themes = glob(dirname(__FILE__) . '/../css/themes/*.css');
-
-$theme_opts = [];
-foreach ($themes as $v) {
-    $theme_opts[] = str_replace('.css', '', basename($v));
-}
-
-function array_to_csv($array = []): string
+function array_to_csv($array) // returns null or string
 {
     if (null === $array) {
         return '';
@@ -145,6 +137,77 @@ function str_to_bool($str): string
         return 'true';
     }
     return 'false';
+}
+
+function form_to_db($type): string
+{
+    switch ($type) {
+        case 'id':
+        case 'select-multiple':
+        case 'checkboxes':
+        case 'separator':
+        case 'sql':
+        case 'array':
+        break;
+        case 'textarea':
+        case 'editor':
+        case 'files':
+        case 'phpuploads':
+            return 'TEXT';
+        break;
+        case 'read':
+        case 'deleted':
+        case 'checkbox':
+        case 'rating':
+            return 'TINYINT';
+        break;
+        case 'int':
+        case 'parent':
+        case 'position':
+        case 'translated-from':
+            return 'INT';
+        break;
+        case 'datetime':
+            return 'DATETIME';
+        break;
+        case 'timestamp':
+            return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
+        break;
+        case 'date':
+        case 'dob':
+        case 'month':
+            return 'DATE';
+        break;
+        case 'time':
+            return 'TIME';
+        break;
+        case 'blob':
+            return 'BLOB';
+        break;
+        case 'polygon':
+            return 'POLYGON';
+        break;
+        case 'coords':
+            return 'POINT';
+        break;
+        case 'language':
+            return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
+            //$query.='`translated_from` INT NOT NULL';
+        break;
+        case 'select':
+        case 'radio':
+        case 'combo':
+            return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+            //$query.='`translated_from` INT NOT NULL';
+        break;
+        case 'color':
+            return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
+            //$query.='`translated_from` INT NOT NULL';
+        break;
+        default:
+            return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
+        break;
+    }
 }
 
 $field_opts = [
@@ -410,14 +473,11 @@ $db_config["dev_pass"]="' . $db_config['dev_pass'] . '";
 $db_config["dev_name"]="' . $db_config['dev_name'] . '";
 
 $live_site=' . str_to_bool($_POST['live_site']) . ';
-$admin_config["theme"]="' . $_POST['admin_config']['theme'] . '";
 
 #TPL
 $tpl_config["catchers"]=array(' . str_to_csv($_POST['tpl_config']['catchers']) . ');
 
 $tpl_config["redirects"]=array(' . str_to_assoc($_POST['tpl_config']['redirects']) . ');
-
-$tpl_config["secure"]=array(' . str_to_csv($_POST['tpl_config']['secure']) . ');
 
 $tpl_config["ssl"]=' . str_to_bool($_POST['tpl_config']['ssl']) . ';
 
@@ -557,11 +617,6 @@ $vars["label"]["' . $section . '"]=array(' . $label . ');
 
 $vars["subsections"]["' . $section . '"]=array(' . $subsections . ');
 
-$vars["settings"]["' . $section . '"]["import"]=' . str_to_bool($_POST['vars']['settings'][$section_id]['import']) . ';
-$vars["settings"]["' . $section . '"]["export"]=' . str_to_bool($_POST['vars']['settings'][$section_id]['export']) . ';
-$vars["settings"]["' . $section . '"]["shiftmail"]=' . str_to_bool($_POST['vars']['settings'][$section_id]['shiftmail']) . ';
-$vars["settings"]["' . $section . '"]["sms"]=' . str_to_bool($_POST['vars']['settings'][$section_id]['sms']) . ';
-$vars["settings"]["' . $section . '"]["show_id"]=' . str_to_bool($_POST['vars']['settings'][$section_id]['show_id']) . ';
 ';
     }
 
@@ -577,12 +632,6 @@ $shop_enabled=' . str_to_bool($_POST['shop_enabled']) . ';
 
 $shop_config["paypal_email"]="' . $_POST['shop_config']['paypal_email'] . '";
 $shop_config["include_vat"]=' . str_to_bool($_POST['shop_config']['include_vat']) . ';
-
-#mailer
-$mailer_config["provider"]="' . $_POST['mailer_config']['provider'] . '";
-$mailer_config["username"]="' . $_POST['mailer_config']['username'] . '";
-$mailer_config["password"]="' . $_POST['mailer_config']['password'] . '";
-$mailer_config["originator"]="' . $_POST['mailer_config']['originator'] . '";
 
 #OPTIONS
 ';
@@ -787,21 +836,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<label>
 				<input type="checkbox" name="vars[settings][{$count}][display]" value="1" checked="checked"> display
 			</label>
-			<label>
-				<input type="checkbox" name="vars[settings][{$count}][import]" value="1"> import
-			</label>
-			<label>
-				<input type="checkbox" name="vars[settings][{$count}][export]" value="1"> export
-			</label>
-			<label>
-				<input type="checkbox" name="vars[settings][{$count}][shiftmail]" value="1"> shiftmail
-			</label>
-			<label>
-				<input type="checkbox" name="vars[settings][{$count}][sms]" value="1"> sms
-			</label>
-			<label>
-				<input type="checkbox" name="vars[settings][{$count}][show_id]" value="1"> show id
-			</label>
 			<br>
 			<br />
 
@@ -962,21 +996,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<h4>Settings</h4>
         				<label>
         					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][display]" value="1" <?php if (in_array($section, $vars['sections'])) { ?> checked<?php } ?>> display
-        				</label>
-        				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][import]" value="1" <?php if ($vars['settings'][$section]['import']) { ?> checked<?php } ?>> import
-        				</label>
-        				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][export]" value="1" <?php if ($vars['settings'][$section]['export']) { ?> checked<?php } ?>> export
-        				</label>
-        				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][shiftmail]" value="1" <?php if ($vars['settings'][$section]['shiftmail']) { ?> checked<?php } ?>> shiftmail
-        				</label>
-        				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][sms]" value="1" <?php if ($vars['settings'][$section]['sms']) { ?> checked<?php } ?>> sms
-        				</label>
-        				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][show_id]" value="1" <?php if ($vars['settings'][$section]['show_id']) { ?> checked<?php } ?>> show id
         				</label>
         				<br>
         				<br />
@@ -1176,52 +1195,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         			</td>
         		</tr>
         		<tr>
-        			<th>sms provider</th>
-        			<td>
-        				<select name="sms_config[provider]">
-        					<option value=""></option>
-        					<?=html_options(['esendex','txtlocal'], $sms_config['provider']);?>
-        				</select>
-        			</td>
-        		</tr>
-        		<tr>
-        			<th>sms username</th>
-        			<td><input type="text" name="sms_config[username]" value="<?=$sms_config['username'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>sms password</th>
-        			<td><input type="text" name="sms_config[password]" value="<?=$sms_config['password'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>sms account</th>
-        			<td><input type="text" name="sms_config[account]" value="<?=$sms_config['account'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>sms originator</th>
-        			<td><input type="text" name="sms_config[originator]" value="<?=$sms_config['originator'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>mailer provider</th>
-        			<td>
-        				<select name="mailer_config[provider]">
-        					<option value=""></option>
-        					<?=html_options(['shiftmail'], $mailer_config['provider']);?>
-        				</select>
-        			</td>
-        		</tr>
-        		<tr>
-        			<th>mailer username</th>
-        			<td><input type="text" name="mailer_config[username]" value="<?=$mailer_config['username'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>mailer password</th>
-        			<td><input type="password" name="mailer_config[password]" value="<?=$mailer_config['password'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>mailer originator</th>
-        			<td><input type="text" name="mailer_config[originator]" value="<?=$mailer_config['originator'];?>"></td>
-        		</tr>
-        		<tr>
         			<th>twitter consumer key</th>
         			<td><input type="text" name="vars[twitter][consumer_key]" value="<?=$vars['twitter']['consumer_key'];?>"></td>
         		</tr>
@@ -1236,15 +1209,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>twitter oauth secret</th>
         			<td><input type="text" name="vars[twitter][oauth_secret]" value="<?=$vars['twitter']['oauth_secret'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>Theme</th>
-        			<td>
-        				<select name="admin_config[theme]">
-        					<option value="">Default</option>
-        					<?=html_options($theme_opts, $admin_config['theme']);?>
-        				</select>
-        			</td>
         		</tr>
         		</table>
         	</div>
@@ -1270,19 +1234,6 @@ var section_templates=<?=json_encode($section_templates);?>;
                         $redirects = trim($redirects);
                         ?>
         				<textarea name="tpl_config[redirects]" cols="70" class="autogrow"><?=$redirects;?></textarea>
-        			</td>
-        		</tr>
-        		<tr>
-        			<th valign="top">Secure</th>
-        			<td>
-        				<?php
-                        $secure = '';
-                        foreach ($tpl_config['secure'] as $v) {
-                            $secure .= $v . "\n";
-                        }
-                        $secure = trim($secure);
-                        ?>
-        				<textarea name="tpl_config[secure]" cols="70" class="autogrow"><?=$secure;?></textarea>
         			</td>
         		</tr>
         		<tr>

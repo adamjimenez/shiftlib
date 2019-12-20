@@ -487,22 +487,20 @@ function check_table($table, $fields)
     }
 }
 
-function clean($string): string
-{
-    return strip_tags($string);
-}
-
 function current_tab($tab, $class = ''): string
 {
     global $sections, $request;
 
     $index = 0;
 
+	$str = '';
     if ($sections[$index] == $tab or $tab == $request) {
-        return ' class="current active ' . $class . '"';
+        $str = ' class="current active ' . $class . '"';
+    } elseif ($class) {
+        $str = ' class="' . $class . '"';
     }
-
-    return ' class="' . $class . '"';
+    
+    return $str;
 }
 
 function datediff($endDate, $beginDate): int
@@ -779,20 +777,10 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
     }
 }
 
-function escape($string): string
+function escape($string) // can return null
 {
     global $db_connection;
     return mysqli_real_escape_string($db_connection, $string);
-}
-
-function escape_strip($string)
-{
-    return escape(strip_tags($string));
-}
-
-function escape_clean($string)
-{
-    return escape(clean($string));
 }
 
 function file_ext($file): string
@@ -815,79 +803,6 @@ function number_abbr($size, $dp = null): string
     }
     
     return number_format($size, $dp) . substr(' KMBT', $si, 1);
-}
-
-function form_to_db($type): string
-{
-    switch ($type) {
-        case 'id':
-        case 'select-multiple':
-        case 'checkboxes':
-        case 'separator':
-        case 'sql':
-        case 'array':
-        break;
-        case 'textarea':
-        case 'editor':
-        case 'files':
-        case 'phpuploads':
-            return 'TEXT';
-        break;
-        case 'read':
-        case 'deleted':
-        case 'checkbox':
-        case 'rating':
-            return 'TINYINT';
-        break;
-        case 'int':
-        case 'parent':
-        case 'position':
-        case 'translated-from':
-            return 'INT';
-        break;
-        case 'datetime':
-            return 'DATETIME';
-        break;
-        case 'timestamp':
-            return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
-        break;
-        case 'date':
-        case 'dob':
-        case 'month':
-            return 'DATE';
-        break;
-        case 'time':
-            return 'TIME';
-        break;
-        case 'blob':
-            return 'BLOB';
-        break;
-        case 'polygon':
-            return 'POLYGON';
-        break;
-        case 'coords':
-            return 'POINT';
-        break;
-        case 'language':
-            return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
-            //$query.='`translated_from` INT NOT NULL';
-        break;
-        case 'select':
-        case 'radio':
-        case 'combo':
-            return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
-            //$query.='`translated_from` INT NOT NULL';
-        break;
-        case 'color':
-            return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
-            //$query.='`translated_from` INT NOT NULL';
-        break;
-        default:
-            return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
-        break;
-    }
-
-    return '';
 }
 
 function format_mobile($mobile)
@@ -1482,7 +1397,7 @@ function sql_num_rows($result): int
     return mysqli_num_rows($result);
 }
 
-function sql_query($query, $single = false): array
+function sql_query($query, $single = false)
 {
     global $db_connection;
 
