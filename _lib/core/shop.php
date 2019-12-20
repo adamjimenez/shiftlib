@@ -1,9 +1,46 @@
 <?php
+
 class shop
 {
-    public function shop()
+    public $basket;
+    public $cust;
+    public $delivery;
+    public $disable_confirmation_email;
+
+    /**
+     * @var int
+     */
+    public $discount;
+    public $from_email;
+
+    /**
+     * @var array
+     */
+    public $guest;
+
+    public $headers;
+    public $include_vat;
+    public $item_count;
+    public $oid;
+    public $paypal_email;
+    public $promo;
+    public $redirect_on_add;
+    public $stock_control;
+    public $subtotal;
+    public $test;
+    public $total;
+
+    /**
+     * @var float
+     */
+    public $vat_rate;
+    public $vat;
+    public $cc;
+
+
+    public function __construct()
     {
-        global $shop_config,$auth,$from_email;
+        global $shop_config, $auth, $from_email;
 
         $this->vat_rate = 0.2;
 
@@ -138,7 +175,6 @@ class shop
             $this->update_basket();
         }
 
-
         $this->delivery = 0;
         $this->get_basket();
 
@@ -161,6 +197,8 @@ class shop
 
     public function remove($product)
     {
+        global $auth;
+
         sql_query("DELETE FROM basket
 			WHERE
 				(session='" . session_id() . "' OR user='" . $auth->user['id'] . "') AND
@@ -174,6 +212,7 @@ class shop
     {
         global $auth;
 
+        $where_str = '';
         if ($auth->user) {
             $where_str = " OR B.user='" . $auth->user['id'] . "'";
         }
@@ -203,7 +242,6 @@ class shop
             if (table_exists('extras')) {
                 $lines = explode("\n", $v['extras']);
 
-                $extras = [];
                 foreach ($lines as $line) {
                     $arr = explode(': ', $line);
 
@@ -218,18 +256,18 @@ class shop
                     }
                 }
             }
-            
+
             if ($v['options']) {
                 $values = json_decode($v['options']);
                 foreach ($values as $value) {
                     $product_value = sql_query("SELECT * FROM product_values WHERE id = '" . escape($value) . "'", 1);
                     $product_option = sql_query("SELECT * FROM product_options WHERE id = '" . escape($product_value['product_option']) . "'", 1);
                     $this->basket[$k]['cost'] += $product_value['cost'];
-                    
+
                     if ($this->basket[$k]['extras']) {
                         $this->basket[$k]['extras'] .= "\n";
                     }
-                    
+
                     $this->basket[$k]['extras'] .= $product_option['name'] . ': ' . $product_value['value'];
                 }
             }
@@ -246,7 +284,7 @@ class shop
         $this->vat = $this->subtotal * $this->vat_rate;
     }
 
-    public function add_to_basket($product, $quantity = 1, $buy_now = false, $variation_id = null, $extras_arr = '')
+    public function add_to_basket($product, int $quantity = 1, bool $buy_now = false, $variation_id = null, $extras_arr = '')
     {
         global $auth;
 
@@ -254,7 +292,7 @@ class shop
             return false;
         }
 
-        if ($buy_now) {
+        if (true === $buy_now) {
             sql_query("DELETE FROM basket WHERE session='" . session_id() . "' OR user='" . $auth->user['id'] . "'");
         }
 
@@ -291,12 +329,13 @@ class shop
                 }
             }
         }
-        
+
         $options = [];
         if (count($_POST['options'])) {
             $options = json_encode($_POST['options']);
         }
 
+        $where_str = '';
         if ($auth->user) {
             $where_str = " OR user='" . $auth->user['id'] . "'";
         }
@@ -381,12 +420,12 @@ class shop
     public function empty_basket()
     {
         global $auth;
-        
+
         sql_query("DELETE FROM basket
 		    WHERE
 		        session='" . session_id() . "' 
 		");
-        
+
         if ($auth->user['id']) {
             sql_query("DELETE FROM basket
 				WHERE
@@ -440,8 +479,6 @@ class shop
 
     public function prepare()
     {
-        global $auth;
-
         $this->update_total();
 
         if (!$this->total) {
@@ -500,7 +537,7 @@ class shop
         return $this->oid;
     }
 
-    public function paypal_button($value = 'Checkout with PayPal')
+    public function paypal_button(string $value = 'Checkout with PayPal')
     {
         if ($this->test) {
             print '
@@ -566,12 +603,13 @@ class shop
 
     public function process_paypal()
     {
-        global $debug, $admin_email;
+        global $admin_email;
 
         //check posts to make sure all is well
 
         if (!$this->test) {
             if ($_POST and 'true' != $_POST['for_auction']) {
+                $msg = '';
                 foreach ($_POST as $k => $v) {
                     $msg .= "$k = $v \n";
                 }
@@ -633,19 +671,19 @@ class shop
     public function send_confirmation($oid)
     {
         global $debug, $admin_email;
-        
+
         $order = sql_query("SELECT * FROM orders WHERE id='" . escape($oid) . "'", 1);
-        
+
         $items = sql_query("SELECT * FROM order_items WHERE `order`='" . $order['id'] . "'");
 
         $details = '';
         foreach ($items as $k => $item) {
             $details .= $item['name'] . ' x ' . $item['quantity'] . ' £' . $item['cost'];
-            
+
             if ($item['extras']) {
                 $details .= ' (' . $item['extras'] . ')';
             }
-                
+
             $details .= "\n";
         }
 
@@ -663,7 +701,7 @@ class shop
 
             if (!$this->disable_confirmation_email) {
                 email_template($order['email'], 'Order Confirmation', $reps);
-                
+
                 if ($order['email'] != $this->paypal_email) {
                     email_template($this->paypal_email, 'Order Confirmation', $reps);
                 }
@@ -740,7 +778,7 @@ class shop
                 if ($this->cc) {
                     $this->headers .= 'Cc: ' . $this->cc . "\n";
                 }
-                
+
                 mail($order['email'], 'Order Confirmation', $msg, $this->headers);
 
                 if ($order['email'] != $this->paypal_email) {
@@ -775,14 +813,15 @@ class shop
         return false;
     }
 
-    public function failed_order($error, $oid, $ref, $method)
+    public function failed_order($error, $oid)
     {
-        global $debug, $admin_email;
+        global $admin_email;
 
         $order = sql_query("SELECT * FROM orders WHERE id='" . escape($oid) . "'", 1);
 
         $_POST['error'] = $error;
 
+        $msg = '';
         foreach ($_POST as $k => $v) {
             $msg .= "$k = $v \n";
         }
