@@ -500,9 +500,9 @@ function current_tab($tab, $class = ''): string
 
     if ($sections[$index] == $tab or $tab == $request) {
         return ' class="current active ' . $class . '"';
-    } elseif ($class) {
-        return ' class="' . $class . '"';
     }
+
+    return ' class="' . $class . '"';
 }
 
 function datediff($endDate, $beginDate): int
@@ -886,6 +886,8 @@ function form_to_db($type): string
             return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
         break;
     }
+
+    return '';
 }
 
 function format_mobile($mobile)

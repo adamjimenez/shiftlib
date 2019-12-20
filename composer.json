@@ -16,6 +16,9 @@
     "friendsofphp/php-cs-fixer": "2.16",
     "rector/rector": "^0.6.1"
   },
+  "suggest": {
+    "sendgrid/sendgrid": "Allows sending of email via sendGrid"
+  },
   "scripts": {
     "php-cs-fixer": "vendor/bin/php-cs-fixer fix",
     "rector": "vendor/bin/rector process _lib/"

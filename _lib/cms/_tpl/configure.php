@@ -95,8 +95,12 @@ foreach ($themes as $v) {
     $theme_opts[] = str_replace('.css', '', basename($v));
 }
 
-function array_to_csv($array): string
+function array_to_csv($array = []): string
 {
+    if (null === $array) {
+        return '';
+    }
+
     foreach ($array as $k => $v) {
         $array[$k] = "\t'" . addslashes($v) . "'";
     }
