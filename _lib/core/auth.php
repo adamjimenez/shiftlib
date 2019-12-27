@@ -223,8 +223,7 @@ class auth
         }
     }
 
-    /* private function */
-    public function email_in_use($email)
+    private function email_in_use($email)
     {
         $select = sql_query('SELECT * FROM ' . $this->table . " WHERE email='" . $email . "'", 1);
         return $select ? true : false;
@@ -235,8 +234,7 @@ class auth
         return hash('sha256', $this->salt . $password);
     }
 
-    /* private function */
-    public function set_login($email, $pass)
+    private function set_login($email, $pass)
     {
         $_SESSION[$this->cookie_prefix . '_email'] = $email;
         $_SESSION[$this->cookie_prefix . '_password'] = $pass;
@@ -798,6 +796,7 @@ class auth
         redirect('/');
     }
 
+	/*
     public function trigger_event($event)
     {
         global $auth_config;
@@ -837,4 +836,5 @@ class auth
 
         return false;
     }
+    */
 }
