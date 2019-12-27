@@ -28,9 +28,10 @@ if (in_array('select-distance', $vars['fields'][$this->section])) {
     $opts['distance'][array_search('select-distance', $vars['fields'][$this->section])] = 'specified ' . array_search('select-distance', $vars['fields'][$this->section]);
 }
 
-// search filters
-check_table('cms_filters', $this->cms_filters);
+// check table exists
+$this->check_table('cms_filters', $this->cms_filters);
 
+// search filters
 if ($_POST['delete_filter']) {
     $qs = http_build_query($_GET);
     

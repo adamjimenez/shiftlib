@@ -1,8 +1,4 @@
 <?php
-use SendGrid\Mail\Mail;
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\PHPMailer;
-
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
@@ -462,31 +458,6 @@ function calc_distance($postcode_a, $postcode_b)
     return round(sqrt(pow($grid_a[0] - $grid_b[0], 2) + pow($grid_a[1] - $grid_b[1], 2)) * 0.000621371192);
 }
 
-function check_table($table, $fields)
-{
-    $select = sql_query("SHOW TABLES LIKE '$table'");
-    if (!$select) {
-        //build table query
-        $query = '';
-        foreach ($fields as $name => $type) {
-            $name = underscored(trim($name));
-
-            $db_field = form_to_db($type);
-
-            if ($db_field) {
-                $query .= '`' . $name . '` ' . $db_field . ' NOT NULL,';
-            }
-        }
-
-        sql_query("CREATE TABLE `$table` (
-			`id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-			$query
-			PRIMARY KEY ( `id` )
-			)
-		");
-    }
-}
-
 function current_tab($tab, $class = ''): string
 {
     global $sections, $request;
@@ -552,7 +523,7 @@ function send_mail($opts = []): bool
     $is_html = ($opts['content'] !== strip_tags($opts['content']));
     
     if (getenv('SENDGRID_API_KEY')) {
-        $email = new Mail();
+        $email = new SendGrid\Mail\Mail();
         //$email->setFrom("test@example.com", "Example User");
         $email->setFrom($opts['from_email']);
         $email->setSubject($opts['subject']);
@@ -574,8 +545,10 @@ function send_mail($opts = []): bool
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
-    } elseif (class_exists('PHPMailer')) {
-        $mail = new PHPMailer();
+        
+        return $response;
+    } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+        $mail = new PHPMailer\PHPMailer\PHPMailer();
         $mail->SetFrom($opts['from_email']);
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
@@ -603,7 +576,7 @@ function send_mail($opts = []): bool
             $headers .= 'From: ' . $from_email . "\n";
         }
         
-        mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
+        return mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
     }
 }
 
@@ -718,7 +691,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 
             $errorstring .= "<p>Error in line $errline of file '$errfile'.</p>\n";
             $errorstring .= "<p>Script: '{$_SERVER['PHP_SELF']}'.</p>\n";
-
             $errorstring .= '<p><a href="' . $url . '">' . $url . '</a></p>' . "\n";
 
             $var_dump = print_r($_GET, true);
@@ -1635,13 +1607,6 @@ function wget($url)
     curl_close($ch);
     
     return $data;
-}
-
-//deprecated, use video_info instead
-function youtube_id_from_url($url)
-{
-    $info = video_info($url);
-    return $info['id'];
 }
 
 function video_info($url): array

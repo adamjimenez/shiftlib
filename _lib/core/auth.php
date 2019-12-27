@@ -242,11 +242,13 @@ class auth
 
     public function failed_login_attempt($email, $password)
     {
+    	global $cms;
+    	
         if (!$auth_config['check_login_attempts']) {
             return false;
         }
         
-        check_table('login_attempts', $this->login_attempts_fields);
+        $cms->check_table('login_attempts', $this->login_attempts_fields);
 
         sql_query("INSERT INTO login_attempts SET
 			email='" . escape($email) . "',
@@ -257,11 +259,13 @@ class auth
 
     public function check_login_attempts()
     {
+    	global $cms;
+    	
         if (!$auth_config['check_login_attempts']) {
             return false;
         }
         
-        check_table('login_attempts', $this->login_attempts_fields);
+        $cms->check_table('login_attempts', $this->login_attempts_fields);
 
         sql_query('DELETE FROM login_attempts WHERE
 			`date`<DATE_SUB(NOW(),INTERVAL 10 MINUTE)
@@ -738,10 +742,10 @@ class auth
 
     public function check_admin()
     {
-        global $vars;
+        global $vars, $cms;
 
         if (!table_exists($this->table)) {
-            check_table($this->table, $vars['fields'][$this->table]);
+            $cms->check_table($this->table, $vars['fields'][$this->table]);
             sql_query('ALTER TABLE `users` ADD UNIQUE `email` ( `email` )');
         }
 

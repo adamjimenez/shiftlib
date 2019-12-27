@@ -71,6 +71,102 @@ class cms
             ];
         }
     }
+    
+	function check_table($table, $fields)
+	{
+	    $select = sql_query("SHOW TABLES LIKE '$table'");
+	    if (!$select) {
+	        //build table query
+	        $query = '';
+	        foreach ($fields as $name => $type) {
+	            $name = underscored(trim($name));
+	
+	            $db_field = form_to_db($type);
+	
+	            if ($db_field) {
+	                $query .= '`' . $name . '` ' . $db_field . ' NOT NULL,';
+	            }
+	        }
+	
+	        sql_query("CREATE TABLE `$table` (
+				`id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+				$query
+				PRIMARY KEY ( `id` )
+				)
+			");
+	    }
+	}
+	
+	function form_to_db($type): string
+	{
+	    switch ($type) {
+	        case 'id':
+	        case 'select-multiple':
+	        case 'checkboxes':
+	        case 'separator':
+	        case 'sql':
+	        case 'array':
+	        break;
+	        case 'textarea':
+	        case 'editor':
+	        case 'files':
+	        case 'phpuploads':
+	            return 'TEXT';
+	        break;
+	        case 'read':
+	        case 'deleted':
+	        case 'checkbox':
+	        case 'rating':
+	            return 'TINYINT';
+	        break;
+	        case 'int':
+	        case 'parent':
+	        case 'position':
+	        case 'translated-from':
+	            return 'INT';
+	        break;
+	        case 'datetime':
+	            return 'DATETIME';
+	        break;
+	        case 'timestamp':
+	            return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
+	        break;
+	        case 'date':
+	        case 'dob':
+	        case 'month':
+	            return 'DATE';
+	        break;
+	        case 'time':
+	            return 'TIME';
+	        break;
+	        case 'blob':
+	            return 'BLOB';
+	        break;
+	        case 'polygon':
+	            return 'POLYGON';
+	        break;
+	        case 'coords':
+	            return 'POINT';
+	        break;
+	        case 'language':
+	            return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
+	            //$query.='`translated_from` INT NOT NULL';
+	        break;
+	        case 'select':
+	        case 'radio':
+	        case 'combo':
+	            return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+	            //$query.='`translated_from` INT NOT NULL';
+	        break;
+	        case 'color':
+	            return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
+	            //$query.='`translated_from` INT NOT NULL';
+	        break;
+	        default:
+	            return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
+	        break;
+	    }
+	}
 
     public function db_field_name($section, $field) //convert a field name into a database field name - needed mostly for composite fields
     {
@@ -1697,10 +1793,10 @@ class cms
         } elseif (method_exists($this, $option)) {
             $this->$option();
         } elseif ('index' != $option) {
-            check_table('cms_filters', $this->cms_filters);
+            $this->check_table('cms_filters', $this->cms_filters);
             $this->default_section($option);
         } else {
-            check_table('cms_filters', $this->cms_filters);
+            $this->check_table('cms_filters', $this->cms_filters);
             $this->main();
         }
     }
@@ -2007,7 +2103,7 @@ class cms
                     $data[$name] .= '-01';
                 } elseif ('file' == $v) {
                     if ('UPLOAD_ERR_OK' == $_FILES[$name]['error']) {
-                        check_table('files', $this->file_fields);
+                        $this->check_table('files', $this->file_fields);
 
                         $size = filesize($_FILES[$name]['tmp_name']);
 
@@ -2068,7 +2164,7 @@ class cms
                     if (is_array($_FILES[$name])) {
                         foreach ($_FILES[$name]['error'] as $key => $error) {
                             if ('UPLOAD_ERR_OK' == $error) {
-                                check_table('files', $this->file_fields);
+                                $this->check_table('files', $this->file_fields);
 
                                 $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
 
@@ -2464,14 +2560,14 @@ class cms
         $this->table = underscored($option);
 
         if ($vars['fields'][$this->section]) {
-            check_table($this->table, $vars['fields'][$this->section]);
+            $this->check_table($this->table, $vars['fields'][$this->section]);
 
             //check files table
             if (
                 in_array('file', $vars['fields'][$this->section]) or
                 in_array('files', $vars['fields'][$this->section])
             ) {
-                check_table('files', $this->file_fields);
+                $this->check_table('files', $this->file_fields);
             }
         } else {
             $index = true;

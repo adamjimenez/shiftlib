@@ -135,77 +135,6 @@ function str_to_bool($str): string
     return 'false';
 }
 
-function form_to_db($type): string
-{
-    switch ($type) {
-        case 'id':
-        case 'select-multiple':
-        case 'checkboxes':
-        case 'separator':
-        case 'sql':
-        case 'array':
-        break;
-        case 'textarea':
-        case 'editor':
-        case 'files':
-        case 'phpuploads':
-            return 'TEXT';
-        break;
-        case 'read':
-        case 'deleted':
-        case 'checkbox':
-        case 'rating':
-            return 'TINYINT';
-        break;
-        case 'int':
-        case 'parent':
-        case 'position':
-        case 'translated-from':
-            return 'INT';
-        break;
-        case 'datetime':
-            return 'DATETIME';
-        break;
-        case 'timestamp':
-            return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
-        break;
-        case 'date':
-        case 'dob':
-        case 'month':
-            return 'DATE';
-        break;
-        case 'time':
-            return 'TIME';
-        break;
-        case 'blob':
-            return 'BLOB';
-        break;
-        case 'polygon':
-            return 'POLYGON';
-        break;
-        case 'coords':
-            return 'POINT';
-        break;
-        case 'language':
-            return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
-            //$query.='`translated_from` INT NOT NULL';
-        break;
-        case 'select':
-        case 'radio':
-        case 'combo':
-            return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
-            //$query.='`translated_from` INT NOT NULL';
-        break;
-        case 'color':
-            return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
-            //$query.='`translated_from` INT NOT NULL';
-        break;
-        default:
-            return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
-        break;
-    }
-}
-
 $field_opts = [
     'text',
     'textarea',
@@ -270,7 +199,7 @@ if (!file_exists($config_file)) {
 
 function loop_fields($field_arr) // should be anonymous function
 {
-    global $vars, $table_dropped, $count, $section, $table, $fields;
+    global $vars, $table_dropped, $count, $section, $table, $fields, $cms;
 
     foreach ($field_arr as $k => $v) {
         $count['fields']++;
@@ -312,7 +241,7 @@ function loop_fields($field_arr) // should be anonymous function
             }
 
             if (underscored($k) != underscored($new_name) or $v != $new_type) {
-                $db_field = form_to_db($new_type);
+                $db_field = $cms->form_to_db($new_type);
 
                 if ($db_field) {
                     $query = "ALTER TABLE `$table` CHANGE `" . underscored($k) . '` `' . underscored($new_name) . '` ' . $db_field . ' ';
@@ -349,8 +278,8 @@ if ($_POST['save']) {
         die('Error: config file is not writable: ' . $config_file);
     }
 
-    check_table('cms_multiple_select', $cms_multiple_select_fields);
-    check_table('cms_privileges', $this->cms_privileges_fields);
+    $this->check_table('cms_multiple_select', $cms_multiple_select_fields);
+    $this->check_table('cms_privileges', $this->cms_privileges_fields);
 
     $count['sections'] = 0;
     $count['fields'] = 0;
@@ -391,7 +320,7 @@ if ($_POST['save']) {
             if (in_array($field['name'], $fields)) {
                 $after = underscored($field['name']);
             } else {
-                $db_field = form_to_db($field['value']);
+                $db_field = $this->form_to_db($field['value']);
 
                 if (!$db_field) {
                     continue;
@@ -430,7 +359,7 @@ if ($_POST['save']) {
             }
 
             if (count($fields)) {
-                check_table($table, $fields);
+                $this->check_table($table, $fields);
             }
         }
     }
@@ -1154,10 +1083,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         			<td><textarea type="text" name="languages"><?=implode("\n", $languages);?></textarea></td>
         		</tr>
         		<tr>
-        			<th>configure dropdowns</th>
-        			<td><input type="checkbox" name="vars[configure_dropdowns]" value="1" <?php if ($vars['configure_dropdowns']) { ?> checked<?php } ?>></td>
-        		</tr>
-        		<tr>
         			<th>folder to store upload data</th>
         			<td><input type="text" name="vars[files][dir]" value="<?=$vars['files']['dir'];?>"></td>
         		</tr>
@@ -1168,14 +1093,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>paypal email</th>
         			<td><input type="text" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>"></td>
-        		</tr>
-            	<tr>
-        			<th>gc merchant id</th>
-        			<td><input type="text" name="shop_config[gc_merchant_id]" value="<?=$shop_config['gc_merchant_id'];?>"></td>
-        		</tr>
-                <tr>
-        			<th>gc merchant key</th>
-        			<td><input type="text" name="shop_config[gc_merchant_key]" value="<?=$shop_config['gc_merchant_key'];?>"></td>
         		</tr>
         		<tr>
         			<th>vat</th>
@@ -1189,22 +1106,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         					<?=html_options(['xinha','tinymce'], $cms_config['editor']);?>
         				</select>
         			</td>
-        		</tr>
-        		<tr>
-        			<th>twitter consumer key</th>
-        			<td><input type="text" name="vars[twitter][consumer_key]" value="<?=$vars['twitter']['consumer_key'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>twitter consumer secret</th>
-        			<td><input type="text" name="vars[twitter][consumer_secret]" value="<?=$vars['twitter']['consumer_secret'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>twitter oauth token</th>
-        			<td><input type="text" name="vars[twitter][oauth_token]" value="<?=$vars['twitter']['oauth_token'];?>"></td>
-        		</tr>
-        		<tr>
-        			<th>twitter oauth secret</th>
-        			<td><input type="text" name="vars[twitter][oauth_secret]" value="<?=$vars['twitter']['oauth_secret'];?>"></td>
         		</tr>
         		</table>
         	</div>
