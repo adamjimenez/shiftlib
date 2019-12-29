@@ -666,7 +666,7 @@ class cms
 
         $cols = '';
         foreach ($vars['fields'][$section] as $k => $v) {
-            if (in_array($v, ['select-multiple', 'checkboxes', 'separator'])) {
+            if (!in_array($v, ['select-multiple', 'checkboxes', 'separator'])) {
                 if ('coords' == $v) {
                     $cols .= "\tAsText(T_$table." . underscored($k) . ') AS ' . underscored($k) . ',' . "\n";
                 } else {
