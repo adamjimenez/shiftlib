@@ -1,4 +1,6 @@
 <?php
+// deprecated
+
 if (!$shop_enabled) {
     die('shop is not enabled');
 }

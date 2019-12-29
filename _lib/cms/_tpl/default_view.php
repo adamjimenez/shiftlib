@@ -402,7 +402,7 @@ foreach ($languages as $language) {
         } elseif ('phpupload' == $type) { ?>
             <input type="text" name="<?=$name;?>" class="upload" value="<?=$value;?>" readonly="true">
 		<?php
-        } elseif ('select' == $type or 'combo' == $type or 'radio' == $type or 'select-distance' == $type) {
+        } elseif (in_array($type, ['select', 'combo', 'radio'])) {
             if (!is_array($vars['options'][$name])) {
                 if ('0' == $value) {
                     $value = '';

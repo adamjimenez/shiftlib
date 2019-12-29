@@ -7,6 +7,28 @@ $max_input_vars = ini_get('max_input_vars');
 
 global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields, $admin_config, $cms_config;
 
+// internal tables
+$file_fields = [
+    'date' => 'date',
+    'name' => 'text',
+    'size' => 'text',
+    'type' => 'text',
+];
+
+$cms_privileges_fields = [
+    'user' => 'text',
+    'section' => 'text',
+    'access' => 'int',
+    'filter' => 'text',
+];
+
+$cms_filters = [
+    'user' => 'text',
+    'section' => 'text',
+    'name' => 'text',
+    'filter' => 'textarea',
+];
+
 $cms_multiple_select_fields = [
     'section' => 'text',
     'field' => 'text',
@@ -160,7 +182,6 @@ $field_opts = [
     'avg-rating',
     'select',
     'select-multiple',
-    'select-distance',
     'radio',
     'combo',
     'password',
@@ -180,8 +201,6 @@ $field_opts = [
     'deleted',
     'id',
     'separator',
-    'sql',
-    'array',
     'color',
 ];
 
@@ -231,7 +250,7 @@ function loop_fields($field_arr) // should be anonymous function
 
             //drop fields
             if (!$_POST['vars']['fields'][$count['sections']][$count['fields']]) {
-                if ('id' == $v or 'separator' == $v or 'sql' == $v or 'checkboxes' == $v) { //don't drop id!
+                if (in_array($v, ['id', 'separator', 'checkboxes'])) { //don't drop id!
                     continue;
                 }
 
@@ -278,8 +297,10 @@ if ($_POST['save']) {
         die('Error: config file is not writable: ' . $config_file);
     }
 
+    $this->check_table('cms_filters', $cms_filters);
+    $this->check_table('files', $file_fields);
     $this->check_table('cms_multiple_select', $cms_multiple_select_fields);
-    $this->check_table('cms_privileges', $this->cms_privileges_fields);
+    $this->check_table('cms_privileges', $cms_privileges_fields);
 
     $count['sections'] = 0;
     $count['fields'] = 0;
@@ -309,11 +330,11 @@ if ($_POST['save']) {
 
         $after = '';
         foreach ($_POST['vars']['fields'][$count['sections']] as $field_id => $field) {
-            if ('separator' == $field['value'] or 'array' == $field['value'] or 'checkboxes' == $field['value']) {
+            if (in_array($field['value'], ['separator', 'checkboxes'])) {
                 continue;
             }
 
-            if ('select' == $field['value'] or 'select-multiple' == $field['value'] or 'radio' == $field['value']) {
+            if (in_array($field['value'], ['select', 'select-multiple', 'radio'])) {
                 $field_options[] = $field['name'];
             }
 
@@ -430,12 +451,8 @@ $auth_config["forgot_success"]="' . $_POST['auth_config']['forgot_success'] . '"
 //hash passwords
 $auth_config["hash_password"]=' . str_to_bool($_POST['auth_config']['hash_password']) . ';
 
-//activation_required
+//email activation
 $auth_config["email_activation"]=' . str_to_bool($_POST['auth_config']['email_activation']) . ';
-$auth_config["activation_required"]=' . str_to_bool($_POST['auth_config']['activation_required']) . ';
-
-//auto login on register
-$auth_config["register_login"]=' . str_to_bool($_POST['auth_config']['register_login']) . ';
 
 //use a secret term to encrypt cookies
 $auth_config["secret_phrase"]="' . $_POST['auth_config']['secret_phrase'] . '";
@@ -488,33 +505,7 @@ $vars["sections"]=array(
                 $label .= '"' . $field['name'] . '" => "' . $_POST['vars']['fields'][$section_id][$field_id]['label'] . '", ';
             }
 
-            if ($field['parent']) {
-                continue;
-            }
-
-            if ('array' == $field['value']) {
-                $fields .= "\t" . '"' . $field['name'] . '"=>array(' . "\n";
-
-                foreach ($_POST['vars']['fields'][$section_id] as $k => $v) {
-                    if ($v['parent'] != $field_id) {
-                        continue;
-                    }
-
-                    $fields .= "\t" . '"' . $v['name'] . '"=>"' . $v['value'] . '",' . "\n";
-
-                    if ($_POST['vars']['required'][$k]) {
-                        $required .= '"' . $v['name'] . '",';
-                    }
-
-                    if ($_POST['vars']['labels'][$k]) {
-                        $labels .= '"' . $v['name'] . '",';
-                    }
-                }
-
-                $fields .= ')' . ',' . "\n";
-            } else {
-                $fields .= "\t" . '"' . $field['name'] . '"=>"' . $field['value'] . '",' . "\n";
-            }
+            $fields .= "\t" . '"' . $field['name'] . '"=>"' . $field['value'] . '",' . "\n";
 
             if ($_POST['vars']['required'][$field_id]) {
                 $required .= '"' . $field['name'] . '",';
@@ -868,11 +859,8 @@ var section_templates=<?=json_encode($section_templates);?>;
                         foreach ($vars['fields'][$section] as $k => $v) {
                             $count['fields']++;
 
-                            if (is_array($v)) {
-                                $field_type = 'array';
-                            } else {
-                                $field_type = $v;
-                            } ?>
+                            $field_type = $v;
+                            ?>
         				<tr class="draggable">
         					<td><div class="handle">&nbsp;</div></td>
         					<td><input type="text" name="vars[fields][<?=$count['sections']; ?>][<?=$count['fields']; ?>][name]" value="<?=$k; ?>" /></td>
@@ -1169,14 +1157,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>email activation</th>
         			<td><input type="checkbox" name="auth_config[email_activation]" value="1" <?php if ($auth_config['email_activation']) { ?> checked<?php } ?>></td>
-        		</tr>
-        		<tr>
-        			<th>activation required</th>
-        			<td><input type="checkbox" name="auth_config[activation_required]" value="1" <?php if ($auth_config['activation_required']) { ?> checked<?php } ?>></td>
-        		</tr>
-        		<tr>
-        			<th>register login</th>
-        			<td><input type="checkbox" name="auth_config[register_login]" value="1" <?php if ($auth_config['register_login']) { ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
         			<th>secret phrase</th>

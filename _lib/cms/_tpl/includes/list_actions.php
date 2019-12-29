@@ -12,7 +12,6 @@ if (!$qs) {
 	<td valign="top">
 		<button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section;?>&edit=1&<?=$qs;?>'; return false;" style="font-weight:bold;">Create New</button>
 
-
 		<?php
         foreach ($cms_buttons as $k => $button) {
             if ($this->section == $button['section'] and 'list' == $button['page']) {

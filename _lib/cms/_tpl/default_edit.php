@@ -227,7 +227,7 @@ foreach ($languages as $language) {
 }
 </style>
 
-<script type="text/javascript">
+<script>
 <?php
 if ($this->components) {
     ?>
@@ -235,18 +235,4 @@ var components = <?=json_encode($this->components); ?>;
 <?php
 }
 ?>
-
-/*
-$(function() {
-    if( document.getElementById('language') ){
-		$('#language').on('change',set_language);
-	}
-
-	init_tabs();
-
-    $('form input:visible, form select:visible').first().focus();
-
-    var phpupload_default_dir = '<?=$_GET['option'];?>/<?=$id;?>';
-});
-*/
 </script>

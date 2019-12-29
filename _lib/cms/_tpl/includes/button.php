@@ -25,4 +25,3 @@ if (false !== $label) {
 	<?php
     }
 }
-?>

@@ -2,7 +2,6 @@
 /*
     File:		auth.php
     Author:		Adam Jimenez
-    Modified:	7/10/2007
 */
 
 session_start();
@@ -10,9 +9,9 @@ session_start();
 class auth
 {
     /* constructor function */
-    public function auth()
+    public function auth($config = [])
     {
-        global $auth_config, $vars, $email_templates;
+        global $vars, $email_templates;
 
         $this->login_attempts_fields = [
             'email' => 'email',
@@ -33,8 +32,28 @@ class auth
         $this->expiry = 60;
         
         $this->check_login_attempts = true;
+        
+		$this->from_email = "";
+		
+		//specify pages where users are redirected
+		$this->login = "login";
+		$this->register_success = "thanks";
+		$this->forgot_success = "index";
+		
+		//email activation
+		$this->email_activation = false;
+		
+		//use a secret term to encrypt cookies
+		$this->secret_phrase = "asdagre3";
+		
+		//for use with session and cookie vars
+		$this->cookie_prefix = "site";
+		
+		$this->login_wherestr = "";
+		
+        $this->table = 'users';
 
-        foreach ($auth_config as $k => $v) {
+        foreach ($config as $k => $v) {
             $this->$k = $v;
         }
 
@@ -68,17 +87,13 @@ class auth
 		
 		    Thank you for registering as a member of {$domain}.
 		
-		    To login to your new member account, visit http://{$domain}/login and login using the following information:
+		    To login to your new member account, visit https://{$domain}/login and login using the following information:
 		
 		    Username: {$email}
 		    Password: {$password}
 		
 			Kind regards
 			The {$domain} Team';
-        }
-
-        if (!$this->table) {
-            $this->table = 'users';
         }
 
         $this->required = $vars['required'][$this->table];
@@ -152,37 +167,8 @@ class auth
             $this->forgot_password();
         }
 
-        if ($_POST['update_details']) {
-            $this->update_details();
-        }
-
         if ($_GET['u']) {
             $_SESSION['request'] = $_GET['u'];
-        }
-
-        global $request;
-
-        if (
-            (
-                $this->check_all and
-                !in_array($request, $this->skip_checks)
-            ) and (
-                $this->check_all and
-                true !== $this->skip_check
-            ) and
-            $_SERVER['REQUEST_URI'] != $this->login and
-            '/sitemap.xml' != $_SERVER['REQUEST_URI'] and
-            '/robots.txt' != $_SERVER['REQUEST_URI']
-        ) {
-            $this->check_login();
-        }
-
-        if (
-            $this->check_all_admin and
-            !$this->skip_check and
-            $_SERVER['REQUEST_URI'] != $this->login
-        ) {
-            $this->check_admin();
         }
     }
 
@@ -196,25 +182,6 @@ class auth
 
         if ($result) {
             $this->user = $result;
-
-            if ($this->user['admin'] > 1 and table_exists('cms_privileges')) {
-                $rows = sql_query("SELECT * FROM cms_privileges WHERE
-					user='" . escape($this->user['id']) . "'
-				");
-
-                foreach ($rows as $row) {
-                    $this->user['privileges'][$row['section']] = $row['access'];
-
-                    $pairs = explode('&', $row['filter']);
-
-                    foreach ($pairs as $pair) {
-                        $arr = explode('=', $pair);
-
-                        $this->user['filters'][$row['section']][underscored($arr[0])] = urldecode($arr[1]);
-                    }
-                }
-            }
-
             $_SESSION[$this->cookie_prefix . '_user'] = $this->user;
             $_SESSION[$this->cookie_prefix . '_expires'] = time() + $this->expiry;
         } else {
@@ -231,7 +198,7 @@ class auth
 
     public function create_hash($password)
     {
-        return hash('sha256', $this->salt . $password);
+        return $this->hash_password ? hash('sha256', $this->salt . $password) : $password;
     }
 
     private function set_login($email, $pass)
@@ -242,17 +209,12 @@ class auth
 
     public function failed_login_attempt($email, $password)
     {
-    	global $cms;
-    	
-        if (!$auth_config['check_login_attempts']) {
+        if (!$this->check_login_attempts) {
             return false;
         }
         
-        $cms->check_table('login_attempts', $this->login_attempts_fields);
-
         sql_query("INSERT INTO login_attempts SET
 			email='" . escape($email) . "',
-			password='" . escape($password) . "',
 			ip='" . escape($_SERVER['REMOTE_ADDR']) . "'
 		");
     }
@@ -261,7 +223,7 @@ class auth
     {
     	global $cms;
     	
-        if (!$auth_config['check_login_attempts']) {
+        if (!$this->check_login_attempts) {
             return false;
         }
         
@@ -283,63 +245,8 @@ class auth
 
     public function show_error($error)
     {
-        if ('html' == $_POST['f']) {
-            redirect($this->login);
-        } else {
-            print json_encode($this->errors);
-        }
+        print json_encode($error);
         exit;
-    }
-
-    public function do_register($data) //invoked by $_POST['register']
-    {
-        global $cms;
-
-        unset($data['admin']);
-        $cms->set_section($this->table, null, array_keys($data));
-        
-        $errors = $cms->validate();
-        
-        if (isset($data['confirm']) and $data['confirm'] != $data['password']) {
-            $errors[] = 'password passwords do not match';
-        }
-
-        if ($errors) {
-            return $errors;
-        }
-
-        $id = $cms->save($data);
-
-        $reps = $_POST;
-
-        if ($this->email_activation) {
-            //activation code
-            $code = substr(md5(rand(0, 10000)), 0, 10);
-
-            sql_query('UPDATE ' . $this->table . " SET
-				code = '" . escape($code) . "',
-				code_expire = DATE_ADD(CURDATE(), INTERVAL 1 HOUR)
-				WHERE
-					id='" . $id . "'
-				LIMIT 1
-			");
-
-            $reps['link'] = 'http://' . $_SERVER['HTTP_HOST'] . '/activate?user=' . $id . '&code=' . $code;
-        }
-
-        $reps['domain'] = $_SERVER['HTTP_HOST'];
-
-        email_template($data['email'], 'Registration Confirmation', $reps);
-
-        $_SESSION[$this->cookie_prefix . '_email'] = $_POST['email'];
-        
-        if ($this->hash_password) {
-            $_SESSION[$this->cookie_prefix . '_password'] = $this->create_hash($data['password']);
-        } else {
-            $_SESSION[$this->cookie_prefix . '_password'] = $data['password'];
-        }
-
-        return true;
     }
 
     public function register() //invoked by $_POST['register']
@@ -358,7 +265,7 @@ class auth
         }
 
         if ($errors) {
-            return json_encode($errors);
+            $this->show_error($errors);
         } elseif ($_POST['validate']) {
             return 1;
         }
@@ -388,78 +295,15 @@ class auth
 
         email_template($_POST['email'], 'Registration Confirmation', $reps);
 
-        if ($this->registration_notification) {
-            global $from_email;
-
-            $headers = 'From: ' . $from_email . "\n";
-
-            $msg = 'New user registration:
-			http://' . $_SERVER['HTTP_HOST'] . '/admin?option=users&view=true&id=' . $id;
-
-            $msg = str_replace("\t", '', $msg);
-
-            mail($from_email, 'New user registration', $msg, $headers);
-        }
-
-        if ($this->register_login) {
-            $_SESSION[$this->cookie_prefix . '_email'] = $_POST['email'];
-            
-            if ($this->hash_password) {
-                $_SESSION[$this->cookie_prefix . '_password'] = $this->create_hash($data['password']);
-            } else {
-                $_SESSION[$this->cookie_prefix . '_password'] = $data['password'];
-            }
-        }
+		// login
+        $data['password'] = $this->create_hash($data['password']);
+        
+        $this->set_login($_POST['email'], $data['password']);
 
         return true;
     }
 
-    public function update_details()
-    {
-        global $cms;
-
-        $cms->set_section($this->table, $this->user['id']);
-
-        $errors = $cms->validate();
-
-        if ($errors) {
-            $this->show_error('Check the following fields:\n' . implode("\n", $errors));
-            return false;
-        } elseif ($_POST['validate']) {
-            print 1;
-            exit;
-        }
-
-        if ($_POST['password']) {
-            if ($this->hash_password) {
-                $_POST['password'] = $this->create_hash($_POST['password']);
-            }
-        } else {
-            unset($_POST['password']);
-        }
-
-        $id = $cms->save();
-
-        //update session email and password if neccessary
-        if ($_POST['email']) {
-            $_SESSION[$this->cookie_prefix . '_email'] = $_POST['email'];
-        }
-
-        if ($_POST['password']) {
-            $_SESSION[$this->cookie_prefix . '_password'] = $_POST['password'];
-        }
-
-        $row = sql_query('SELECT * FROM ' . $this->table . "
-			WHERE
-				id='" . escape($id) . "'
-		", 1);
-
-        $this->user = $row;
-
-        $this->update_success = true;
-    }
-
-    public function do_forgot($email) //invoked by $_POST['forgot_password']
+    public function do_forgot($email)
     {
         $error = '';
         if (!is_email($email)) {
@@ -490,7 +334,6 @@ class auth
     
         email_template($email, 'Password Reminder', $reps);
         
-        
         return $error ?: true;
     }
     
@@ -498,14 +341,12 @@ class auth
     {
         if (!$code) {
             return 'missing code';
-        }
-        
-        if (!$password) {
+        } else if (!$password) {
             return 'missing password';
         }
         
         //check code
-        $user = sql_query("SELECT id FROM users
+        $user = sql_query("SELECT id FROM " . $this->table . "
 			WHERE
 				code = '" . escape($code) . "' AND
 				code_expire > CURDATE()
@@ -514,11 +355,11 @@ class auth
     
         if ($user) {
             //hash password
-            $hash = $this->create_hash($password);
+            $password = $this->create_hash($password);
 
             // save user
-            sql_query("UPDATE users SET
-				password = '" . escape($hash) . "'
+            sql_query("UPDATE " . $this->table . " SET
+				password = '" . escape($password) . "'
 				WHERE
 					id='" . escape($user['id']) . "'
 				LIMIT 1
@@ -526,42 +367,38 @@ class auth
             
             return true;
         }
+        
         return 'code expired';
     }
 
     public function forgot_password($email = null) //invoked by $_POST['forgot_password']
     {
+    	// default to post value
         if (!$email) {
             $email = $_POST['email'];
         }
 
+		// check email is valid
         if (!is_email($email)) {
-            $errors[] = 'email';
-
-            print json_encode($errors);
-            exit;
+            $this->show_error(['email']);
         }
 
-        $row = sql_query('SELECT * FROM ' . $this->table . "
+		// check user exists
+        $user = sql_query('SELECT * FROM ' . $this->table . "
 			WHERE
 				email = '" . escape($email) . "'
 		", 1);
 
-        if ($row) {
-            $user = $row;
-
+        if ($user) {
             if ($_POST['validate']) {
                 print 1;
                 exit;
             }
         } else {
-            $this->errors[] = 'email not recognised';
-            $this->show_error('Email address is not in use.');
-
-            //redirect('forgot');
-            return false;
+            $this->show_error('email is not in use');
         }
 
+        $reps = $user;
         if ($this->hash_password) {
             //activation code
             $code = substr(md5(rand(0, 10000)), 0, 10);
@@ -576,22 +413,20 @@ class auth
     
             $reps['user_id'] = $user['id'];
             $reps['code'] = $code;
-            $reps['link'] = 'http://' . $_SERVER['HTTP_HOST'] . '/forgot?user=' . $user['id'] . '&code=' . $code;
+            $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/forgot?user=' . $user['id'] . '&code=' . $code;
         } else {
+        	// deprecated
             if (!$user['password']) {
-                $password = generate_password();
+                $user['password'] = generate_password();
 
                 sql_query('UPDATE ' . $this->table . " SET
-						password = '" . addslashes($password) . "'
+						password = '" . addslashes($user['password']) . "'
 					WHERE
 						id = '" . $user['id'] . "'
 					LIMIT 1
 				");
-
-                $user['password'] = $password;
             }
 
-            $reps = $user;
             $reps['password'] = $user['password'];
             $reps['domain'] = $_SERVER['HTTP_HOST'];
         }
@@ -609,19 +444,19 @@ class auth
         if ($email and $password) {
             $this->check_login_attempts();
 
-            $password_hash = $this->create_hash($password);
+            $password = $this->create_hash($password);
 
             $row = sql_query('SELECT * FROM ' . $this->table . "
 				WHERE
 					email='" . escape($email) . "' AND
-					password='" . escape($password_hash) . "'
+					password='" . escape($password) . "'
 			", 1);
 
             if ($row) {
                 $this->user = $row;
                 $_SESSION[$this->cookie_prefix . '_user'] = $this->user;
                 $_SESSION[$this->cookie_prefix . '_email'] = $email;
-                $_SESSION[$this->cookie_prefix . '_password'] = $password_hash;
+                $_SESSION[$this->cookie_prefix . '_password'] = $password;
                 $_SESSION[$this->cookie_prefix . '_expires'] = time() + $this->expiry;
 
                 if ($this->log_last_login) {
@@ -653,83 +488,24 @@ class auth
 
     public function login() //invoked by $_POST['login']
     {
-        if ($_POST['email'] and $_POST['password']) {
-            $this->check_login_attempts();
-
-            $password = $_POST['password'];
-            if ($this->hash_password) {
-                $password = $this->create_hash($_POST['password']);
-            }
-
-            $row = sql_query('SELECT * FROM ' . $this->table . "
-				WHERE
-					email='" . escape($_POST['email']) . "' AND
-					password='" . escape($password) . "'
-					" . ($this->login_wherestr ? 'AND ' . $this->login_wherestr : '') . '
-			', 1);
-
-            if ($row) {
-                $this->user = $row;
-                $_SESSION[$this->cookie_prefix . '_user'] = $this->user;
-                
-                $_SESSION[$this->cookie_prefix . '_email'] = $_POST['email'];
-                $_SESSION[$this->cookie_prefix . '_password'] = $password;
-                $_SESSION[$this->cookie_prefix . '_expires'] = time() + $this->expiry;
-
-                if ($this->log_last_login) {
-                    sql_query('UPDATE ' . $this->table . " SET
-						last_login=NOW()
-						WHERE
-							email='" . escape($_POST['email']) . "'
-						LIMIT 1
-					");
-                }
-                
-                // load cms privileges
-                $this->load();
-
-                //cookies
-                if ($_POST['remember']) {
-                    setcookie($this->cookie_prefix . '_email', $_POST['email'], time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
-                    setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $password), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
-                }
-
-                if ($_POST['validate']) {
-                    print 1;
-                    exit;
-                }
-
-                if ($_SESSION['request']) {
-                    $request = $_SESSION['request'];
-                    unset($_SESSION['request']);
-                    redirect($request);
-                }
-            } else {
-                $this->errors[] = 'password incorrect';
-
-                $this->show_error('login incorrect');
-
-                $this->failed_login_attempt($_POST['email'], $_POST['password']);
-            }
-        } else {
-            $this->errors[] = 'email';
-            $this->errors[] = 'password';
-
-            $this->show_error('missing email or password');
-        }
+    	$result = $this->do_login($_POST['email'], $_POST['password']);
+    	
+    	if ($result!==true) {
+    		$this->errors[] = $result;
+    	}
 
         if (count($this->errors)) {
-            print json_encode($this->errors);
-            exit;
+            $this->show_error($this->errors);
         } elseif ($_POST['validate']) {
             print 1;
             exit;
         }
     }
 
+	// force user to log in
     public function check_login()
     {
-        if ($this->activation_required and $this->user and !$this->user['active']) {
+        if ($this->email_activation and $this->user and !$this->user['active']) {
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
             redirect('/activate');
         }
@@ -740,44 +516,14 @@ class auth
         }
     }
 
-    public function check_admin()
+	// log out the user
+    public function logout($redirect = true)
     {
-        global $vars, $cms;
-
-        if (!table_exists($this->table)) {
-            $cms->check_table($this->table, $vars['fields'][$this->table]);
-            sql_query('ALTER TABLE `users` ADD UNIQUE `email` ( `email` )');
-        }
-
-        $row = sql_query('SELECT * FROM ' . $this->table . ' WHERE admin>0 LIMIT 1', 1);
-        if (!$row) {
-            $default_pass = '123';
-            if ($this->hash_password) {
-                $default_pass = $this->create_hash($default_pass);
-            }
-            
-            sql_query('INSERT INTO ' . $this->table . " SET email='admin', password='" . $default_pass . "', admin='1'");
-        }
-
-        if (!$this->user['admin']) {
-            $_SESSION['request'] = $_SERVER['REQUEST_URI'];
-            redirect('?option=login');
-        }
-    }
-
-    public function do_logout()
-    {
-        $_SESSION = [];
-
+    	// unset cookies
         setcookie($this->cookie_prefix . '_email', '', time() - (86400 * $this->cookie_duration), '/', $this->cookie_domain);
         setcookie($this->cookie_prefix . '_password', '', time() - (86400 * $this->cookie_duration), '/', $this->cookie_domain);
 
-        setcookie($this->cookie_prefix . '_email', '', time() - (86400 * $this->cookie_duration), '/');
-        setcookie($this->cookie_prefix . '_password', '', time() - (86400 * $this->cookie_duration), '/');
-
-        setcookie($this->cookie_prefix . '_email', '', time() - (86400 * $this->cookie_duration), '/', str_replace('www', '', $this->cookie_domain));
-        setcookie($this->cookie_prefix . '_password', '', time() - (86400 * $this->cookie_duration), '/', str_replace('www', '', $this->cookie_domain));
-
+		// unset session cookie
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(
@@ -791,54 +537,12 @@ class auth
             );
         }
 
+		// destroy session
+        $_SESSION = [];
         session_destroy();
+        
+		if ($redirect) {
+        	redirect('/');
+		}
     }
-
-    public function logout()
-    {
-        $this->do_logout();
-        redirect('/');
-    }
-
-	/*
-    public function trigger_event($event)
-    {
-        global $auth_config;
-
-        $args = func_get_args();
-
-        if (is_array($auth_config['handlers'])) {
-            foreach ($auth_config['handlers'] as $handler) {
-                if ($handler['event'] == $event) {
-                    $handler['handler']($args[1]);
-                }
-            }
-        }
-    }
-
-    public function get_formkey()
-    {
-        $token = dechex($this->user['id']) . '.' . dechex(mt_rand());
-        $hash = sha1($this->form_secret . '-' . $token);
-        return htmlspecialchars($token . '-' . $hash);
-    }
-
-    public function check_formkey($formkey)
-    {
-        $parts = explode('-', $formkey);
-
-        if (2 == count($parts)) {
-            list($token, $hash) = $parts;
-
-            $arr = explode('.', $token);
-            $userid = hexdec($arr[0]);
-
-            if ($userid == $this->user['id'] and $hash == sha1($this->form_secret . '-' . $token)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    */
 }

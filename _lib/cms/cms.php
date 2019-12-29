@@ -1,19 +1,10 @@
 <?php
-function send_email_preview()
-{
-    global $auth, $cms;
-
-    $content = $cms->get('email templates', $_GET['id']);
-
-    email_template($auth->user['email'], $content['id'], $auth->user);
-
-    $_SESSION['message'] = 'Preview sent';
-}
-
 class cms
 {
     public function cms()
     {
+        global $cms_buttons, $auth, $vars;
+        
         $this->opts['rating'] = [
             1 => 'Very Poor',
             2 => 'Poor',
@@ -22,45 +13,18 @@ class cms
             5 => 'Excellent',
         ];
 
-        $this->file_fields = [
-            'date' => 'date',
-            'name' => 'text',
-            'size' => 'text',
-            'type' => 'text',
-            'data' => 'blob',
-        ];
-
-        /* these aren;t used yet - see configure.php */
-        $this->cms_multiple_select_fields = [
-            'section' => 'text',
-            'field' => 'text',
-            'item' => 'int',
-            'value' => 'text',
-        ];
-
-        $this->cms_privileges_fields = [
-            'user' => 'text',
-            'section' => 'text',
-            'access' => 'int',
-            'filter' => 'text',
-        ];
-
-        $this->cms_filters = [
-            'user' => 'text',
-            'section' => 'text',
-            'name' => 'text',
-            'filter' => 'textarea',
-        ];
-
         //built in extensions
-
-        global $cms_buttons, $auth, $vars;
-
         $cms_buttons[] = [
             'section' => 'email templates',
             'page' => 'view',
             'label' => 'Send Preview',
-            'handler' => 'send_email_preview',
+            'handler' => function () {
+			    global $auth, $cms;
+			
+			    $content = $cms->get('email templates', $_GET['id']);
+			    email_template($auth->user['email'], $content['id'], $auth->user);
+			    $_SESSION['message'] = 'Preview sent';
+			},
         ];
 
         if (!$vars['fields']['email templates']) {
@@ -104,8 +68,6 @@ class cms
 	        case 'select-multiple':
 	        case 'checkboxes':
 	        case 'separator':
-	        case 'sql':
-	        case 'array':
 	        break;
 	        case 'textarea':
 	        case 'editor':
@@ -139,9 +101,6 @@ class cms
 	        case 'time':
 	            return 'TIME';
 	        break;
-	        case 'blob':
-	            return 'BLOB';
-	        break;
 	        case 'polygon':
 	            return 'POLYGON';
 	        break;
@@ -150,17 +109,14 @@ class cms
 	        break;
 	        case 'language':
 	            return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
-	            //$query.='`translated_from` INT NOT NULL';
 	        break;
 	        case 'select':
 	        case 'radio':
 	        case 'combo':
 	            return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
-	            //$query.='`translated_from` INT NOT NULL';
 	        break;
 	        case 'color':
 	            return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
-	            //$query.='`translated_from` INT NOT NULL';
 	        break;
 	        default:
 	            return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
@@ -168,26 +124,7 @@ class cms
 	    }
 	}
 
-    public function db_field_name($section, $field) //convert a field name into a database field name - needed mostly for composite fields
-    {
-        global $vars;
-
-        $table = underscored($section);
-        $type = $vars['fields'][$section][$field];
-
-        if (is_array($type)) {
-            $concat = 'CONCAT(';
-            foreach ($type as $k2 => $v2) {
-                $concat .= underscored($k2) . ",' ',";
-            }
-            $concat = substr($concat, 0, -5);
-            $concat .= ')';
-
-            return $concat;
-        }
-        return $field;
-    }
-    
+	// export items to csv
     public function export_items($section, $items)
     {
         global $vars;
@@ -222,7 +159,8 @@ class cms
         header('Pragma: cache');
         header('Content-Type: text/comma-separated-values; charset=UTF-8');
         header('Content-Disposition: attachment; filename="' . $section . '.csv"');
-        die($data);
+        print($data);
+        exit;
     }
 
     public function delete_items($section, $items) // used in admin system
@@ -266,11 +204,7 @@ class cms
 
             $this->delete($section, $items);
 
-            if (count($rows) > 1) {
-                $_SESSION['message'] = 'The items have been deleted';
-            } else {
-                $_SESSION['message'] = 'The item has been deleted';
-            }
+            $_SESSION['message'] = 'The items have been deleted';
         } else {
             $_SESSION['message'] = 'Permission denied, you have read-only access.';
         }
@@ -338,6 +272,7 @@ class cms
         $this->trigger_event('delete', [$ids]);
     }
 
+	// create search params
     public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
     {
         global $vars, $auth;
@@ -627,13 +562,13 @@ class cms
                     }
                 }
             }
-        }
-
-        //additional custom conditions
-        foreach ($conditions as $k => $v) {
-            if (is_int($k)) {
-                $where[] = $v;
-            }
+            
+	        //additional custom conditions
+	        foreach ($conditions as $k => $v) {
+	            if (is_int($k)) {
+	                $where[] = $v;
+	            }
+	        }
         }
 
         if (count($where)) {
@@ -681,13 +616,7 @@ class cms
 
                     $type = $vars['fields'][$vars['options'][$key]][$option];
 
-                    if (is_array($type)) {
-                        $db_field_name = $this->db_field_name($vars['options'][$key], $option);
-
-                        $cols .= ',' . $db_field_name . ' AS `' . underscored($key) . '_label`' . "\n";
-                    } else {
-                        $cols .= ',T_' . underscored($key) . '.' . underscored($option) . " AS '" . underscored($key) . "_label'";
-                    }
+                    $cols .= ',T_' . underscored($key) . '.' . underscored($option) . " AS '" . underscored($key) . "_label'";
                 }
             }
         }
@@ -703,6 +632,7 @@ class cms
         ];
     }
 
+	// retrieve cms rows
     public function get($sections, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false)
     {
         global $vars, $auth;
@@ -736,17 +666,9 @@ class cms
 
         $cols = '';
         foreach ($vars['fields'][$section] as $k => $v) {
-            if ('select-multiple' != $v and 'checkboxes' != $v and 'separator' != $v) {
-                //$cols.="\t"."T_$table.".underscored($k)." AS `".$k."`,"."\n";
-
+            if (in_array($v, ['select-multiple', 'checkboxes', 'separator'])) {
                 if ('coords' == $v) {
                     $cols .= "\tAsText(T_$table." . underscored($k) . ') AS ' . underscored($k) . ',' . "\n";
-                } elseif ('sql' == $v) {
-                    $cols .= "\t" . $k . ',' . "\n";
-                } elseif (is_array($v)) {
-                    $db_field_name = $this->db_field_name($this->section, $k);
-
-                    $cols .= "\t" . $db_field_name . ' AS `' . underscored($k) . '`,' . "\n";
                 } else {
                     $cols .= "\t" . "T_$table.`" . underscored($k) . '` AS `' . underscored($k) . '`,' . "\n";
                 }
@@ -770,7 +692,7 @@ class cms
 
                 $type = $vars['fields'][$this->section][$label];
 
-                if (('select' == $type or 'combo' == $type or 'radio' == $type) and !is_array($vars['opts'][$label])) {
+                if (in_array($type, ['select','combo', 'radio']) and !is_array($vars['opts'][$label])) {
                     foreach ($vars['fields'][$vars['options'][$label]] as $k => $v) {
                         if ('separator' != $v) {
                             if (is_array($v)) {
@@ -902,6 +824,7 @@ class cms
         return $content;
     }
 
+	// set cms section to be saved to
     public function set_section($section, $id = null, $editable_fields = null)
     {
         global $vars, $languages, $auth;
@@ -1001,11 +924,13 @@ class cms
         }
     }
 
+	// set current language
     public function set_language($language)
     {
         $this->language = $language;
     }
 
+	// get field label
     public function get_label()
     {
         global $vars;
@@ -1041,6 +966,7 @@ class cms
         return truncate(strip_tags($value));
     }
 
+	// get parent fields child rows
     public function get_children($section, $parent_field, $parent = 0, $depth = 0)
     {
         global $vars;
@@ -1077,6 +1003,7 @@ class cms
         return $parents;
     }
 
+	// get field widget
     public function get_field($name, $attribs = '', $placeholder = '', $separator = null, $where = false)
     {
         global $vars, $id, $strs, $cms_config;
@@ -1196,7 +1123,6 @@ class cms
             break;
             case 'select':
             case 'combo':
-            case 'select-distance':
             case 'radio':
                 if ('radio' == $type) {
                     $vars['options'][$name] = $this->get_options($name, $where);
@@ -1271,13 +1197,7 @@ class cms
                         $raw_option = $vars['fields'][$vars['options'][$name]][$field];
 
                         $cols = '';
-                        if (is_array($raw_option)) {
-                            $db_field_name = $this->db_field_name($vars['options'][$name], $field);
-
-                            $cols .= '' . underscored($db_field_name) . ' AS `' . underscored($field) . '`' . "\n";
-                        } else {
-                            $cols .= '`' . underscored($field) . '`';
-                        }
+                        $cols .= '`' . underscored($field) . '`';
 
                         $rows = sql_query("SELECT id,$cols FROM
 							$table
@@ -1456,6 +1376,7 @@ class cms
         }
     }
 
+	// get formatted value
     public function get_value($name, $return = true)
     {
         global $vars;
@@ -1468,7 +1389,7 @@ class cms
 
         $id = $this->id;
 
-        if ('select-multiple' == $type or 'checkboxes' == $type) {
+        if (in_array($type, ['select-multiple', 'checkboxes'])) {
             $array = [];
 
             if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
@@ -1533,7 +1454,7 @@ class cms
 			<img src="/_lib/modules/phpupload/?func=preview&file=<?=$value;?>&w=320&h=240" id="<?=$name;?>_thumb" /><br />
 			<label id="<?=$name;?>_label"><?=$value;?></label>
 		<?php
-        } elseif ('select' == $type or 'combo' == $type or 'radio' == $type or 'select-distance' == $type) {
+        } elseif (in_array($type, ['select', 'combo', 'radio'])) {
             if (!is_array($vars['options'][$name])) {
                 if ('0' == $value) {
                     $value = '';
@@ -1644,6 +1565,7 @@ class cms
         print $value;
     }
 
+	// get select options
     public function get_options($name, $where = false)
     {
         global $vars, $strs;
@@ -1664,13 +1586,7 @@ class cms
 
             $raw_option = $vars['fields'][$vars['options'][$name]][$field];
 
-            $cols = '';
-            if (is_array($raw_option)) {
-                $db_field_name = $this->db_field_name($vars['options'][$name], $field);
-                $cols .= underscored($db_field_name) . ' AS `' . underscored($field) . '`' . "\n";
-            } else {
-                $cols .= '`' . underscored($field) . '`';
-            }
+            $cols = '`' . underscored($field) . '`';
 
             //sortable
             $sortable = in_array('position', $vars['fields'][$vars['options'][$name]]);
@@ -1756,9 +1672,10 @@ class cms
         return $vars['options'][$name];
     }
 
+	// loads the current view
     public function admin()
     {
-        global $auth, $vars, $blog;
+        global $auth, $vars;
 
         if (!$auth) {
             die('database settings not configured');
@@ -1771,36 +1688,61 @@ class cms
         if ($pos) {
             $section = substr($option, 0, $pos);
         }
-
-        if ('login' != $_GET['option']) {
-            $auth->check_admin();
+        
+        if ('login' != $_GET['option'] and !$auth->user['admin']) {
+			// check table exists
+	        if (!table_exists($auth->table)) {
+	            $cms->check_table($auth->table, $vars['fields'][$this->table]);
+	            sql_query('ALTER TABLE `' . $auth->table . '` ADD UNIQUE `email` ( `email` )');
+	        }
+	
+			// check admin user exists
+	        $row = sql_query('SELECT * FROM ' . $auth->table . ' LIMIT 1', 1);
+	        if (!$row) {
+	            $default_pass = '123';
+	            if ($auth->hash_password) {
+	                $default_pass = $auth->create_hash($default_pass);
+	            }
+	            
+	            sql_query('INSERT INTO ' . $auth->table . " SET email='admin', password='" . $default_pass . "', admin='1'");
+	        }
+	
+	        redirect('/admin?option=login');
         }
 
-        if (
-            2 == $auth->user['admin'] and
-            $_GET['option'] and 'preferences' != $section and
-            'logout' != $_GET['option'] and
-            'login' != $_GET['option'] and
-            !array_key_exists($section, $auth->user['privileges'])
-        ) {
-            die('access denied');
+        if ($auth->user['admin'] > 1 and table_exists('cms_privileges')) {
+            $rows = sql_query("SELECT * FROM cms_privileges
+            	WHERE
+					user='" . escape($auth->user['id']) . "'
+			");
+
+            foreach ($rows as $row) {
+                $auth->user['privileges'][$row['section']] = $row['access'];
+                $pairs = explode('&', $row['filter']);
+
+                foreach ($pairs as $pair) {
+                    $arr = explode('=', $pair);
+                    $auth->user['filters'][$row['section']][underscored($arr[0])] = urldecode($arr[1]);
+                }
+            }
         }
 
         $this->language = 'en';
 
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');
-        } elseif (method_exists($this, $option)) {
-            $this->$option();
+        } elseif (in_array($option, ['configure', 'choose_filter', 'shop_order', 'shop_orders'])) {
+    		$this->template($option.'.php', true);
+        } elseif ('login' == $option) {
+            $this->login();
         } elseif ('index' != $option) {
-            $this->check_table('cms_filters', $this->cms_filters);
             $this->default_section($option);
         } else {
-            $this->check_table('cms_filters', $this->cms_filters);
             $this->main();
         }
     }
 
+	// send admin notification
     public function notify($subject = null, $to = null)
     {
         global $vars, $from_email;
@@ -1827,6 +1769,7 @@ class cms
         ]);
     }
 
+	// handle ajax form submission
     public function submit($notify = null, $other_errors = [])
     {
         global $vars;
@@ -1854,6 +1797,7 @@ class cms
         return $this->id;
     }
 
+	// validate fields before saving
     public function validate($data = null)
     {
         global $vars, $languages, $strs;
@@ -2013,6 +1957,7 @@ class cms
         return $errors;
     }
 
+	// build update query from array
     public function build_query($field_arr, $data)
     {
         global $vars, $languages, $auth;
@@ -2027,11 +1972,10 @@ class cms
         }
 
         foreach ($field_arr as $k => $v) {
-            if ('id' == $v or 'related' == $v or 'timestamp' == $v or 'separator' == $v or 'translated-from' == $v or 'polygon' == $v) {
-                continue;
-            }
-
-            if ($this->editable_fields and !in_array($k, $this->editable_fields)) {
+            if (
+           		in_array($v, ['id', 'related', 'timestamp', 'separator', 'translated-from', 'polygon']) or
+            	$this->editable_fields and !in_array($k, $this->editable_fields)
+            ) {
                 continue;
             }
 
@@ -2076,19 +2020,8 @@ class cms
                     }
                 }
 
-                //protected vars
-                if (!$auth->user['admin'] and 'admin' == $k) {
-                    continue;
-                }
-
-                if (
-                    (
-                        in_array($k, $vars['protected'][$this->section]) or
-                        in_array(spaced($k), $vars['protected'][$this->section])
-                    )
-                    and
-                    !$auth->user['admin']
-                ) {
+                // only admin can set admin permission
+                if ($auth->user['admin'] !== 1 and 'admin' == $k) {
                     continue;
                 }
 
@@ -2103,8 +2036,6 @@ class cms
                     $data[$name] .= '-01';
                 } elseif ('file' == $v) {
                     if ('UPLOAD_ERR_OK' == $_FILES[$name]['error']) {
-                        $this->check_table('files', $this->file_fields);
-
                         $size = filesize($_FILES[$name]['tmp_name']);
 
                         $result = sql_query("INSERT INTO files SET
@@ -2164,8 +2095,6 @@ class cms
                     if (is_array($_FILES[$name])) {
                         foreach ($_FILES[$name]['error'] as $key => $error) {
                             if ('UPLOAD_ERR_OK' == $error) {
-                                $this->check_table('files', $this->file_fields);
-
                                 $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
 
                                 sql_query("INSERT INTO files SET
@@ -2239,9 +2168,7 @@ class cms
                 } elseif ('coords' == $v) {
                     $this->query .= "`$k`=GeomFromText('POINT(" . escape($data[$name]) . ")'),\n";
                     continue;
-                } elseif ('text' == $v) {
-                    $data[$name] = strip_tags($data[$name]);
-                } elseif ('textarea' == $v and !$auth->user['admin']) {
+                } elseif ('text' == $v or 'textarea' == $v) {
                     $data[$name] = strip_tags($data[$name]);
                 } elseif ('editor' == $v) {
                     $doc = new DOMDocument();
@@ -2279,6 +2206,7 @@ class cms
         }
     }
 
+	// save data, called after set_section
     public function save($data = null)
     {
         global $vars, $languages, $auth;
@@ -2483,36 +2411,9 @@ class cms
         }
     }
 
-    public function choose_filter()
-    {
-        $this->template('choose_filter.php', true);
-    }
-
-    public function configure()
-    {
-        $this->template('configure.php', true);
-    }
-
-    public function dropdowns()
-    {
-        $this->template('dropdowns.php', true);
-    }
-
-    // deprecated
-    public function shop_orders()
-    {
-        $this->template('shop_orders.php', true);
-    }
-
-    // deprecated
-    public function shop_order()
-    {
-        $this->template('shop_order.php', true);
-    }
-
     public function template($include, $local = false)
     {
-        global $vars, $auth, $shop_enabled, $languages, $live_site, $sms_config, $mailer_config, $cms_buttons, $message, $admin_config;
+        global $vars, $auth, $shop_enabled, $languages, $live_site, $cms_buttons, $message, $admin_config;
 
         ob_start();
         if ($local) {
@@ -2561,14 +2462,6 @@ class cms
 
         if ($vars['fields'][$this->section]) {
             $this->check_table($this->table, $vars['fields'][$this->section]);
-
-            //check files table
-            if (
-                in_array('file', $vars['fields'][$this->section]) or
-                in_array('files', $vars['fields'][$this->section])
-            ) {
-                $this->check_table('files', $this->file_fields);
-            }
         } else {
             $index = true;
         }
@@ -2577,18 +2470,10 @@ class cms
             $this->template('default_index.php', true);
         } elseif ($_GET['edit']) {
             $this->template('default_edit.php', true);
-        } elseif ($_GET['view'] or !array_search('id', $vars['fields'][$this->section])) {
+        } elseif ($_GET['view'] or !in_array('id', $vars['fields'][$this->section])) {
             $this->template('default_view.php', true);
         } else {
             $this->template('default_list.php', true);
         }
-    }
-
-    public function logout()
-    {
-        global $auth;
-
-        $auth->logout();
-        redirect('/');
     }
 }

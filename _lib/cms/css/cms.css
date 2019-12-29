@@ -9,6 +9,8 @@
 
 .logo a {
 	max-width: initial;
+	color: #fff;
+	font-size: 20px;
 }
 
 .mce-notification {

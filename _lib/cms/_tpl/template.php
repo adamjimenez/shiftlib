@@ -40,15 +40,7 @@
     <!-- modernizr css -->
     <script src="/_lib/cms/assets/js/vendor/modernizr-2.8.3.min.js"></script>
 
-
     <link rel="stylesheet" href="/_lib/cms/css/cms.css">
-
-    <style>
-    	.logo a {
-    		color: #fff;
-    		font-size: 20px;
-    	}
-    </style>
 </head>
 
 <body>
@@ -197,7 +189,7 @@
                          	<?php if ($auth->user['admin']) { ?>
 								<li>Hello, <?=$auth->user['name'] ? $auth->user['name'] . ' ' . $auth->user['surname'] : $auth->user['email'];?></li>
 								<li><a href="../">Website</a></li>
-								<li><a href="?option=logout">Log out</a></li>
+								<li><a href="/logout">Log out</a></li>
 							<?php } else { ?>
 								<li><a href="?option=login">Log in</a></li>
 							<?php } ?>
