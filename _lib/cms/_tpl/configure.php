@@ -862,8 +862,7 @@ var section_templates=<?=json_encode($section_templates);?>;
                         foreach ($vars['fields'][$section] as $k => $v) {
                             $count['fields']++;
 
-                            $field_type = $v;
-                            ?>
+                            $field_type = $v; ?>
         				<tr class="draggable">
         					<td><div class="handle">&nbsp;</div></td>
         					<td><input type="text" name="vars[fields][<?=$count['sections']; ?>][<?=$count['fields']; ?>][name]" value="<?=$k; ?>" /></td>
