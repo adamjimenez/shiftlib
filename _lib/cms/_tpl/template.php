@@ -27,9 +27,9 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
 
-	<link type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.5/css/rowReorder.dataTables.min.css" rel="stylesheet" />
-	<link type="text/css" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" rel="stylesheet" />
-	<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/css/dataTables.checkboxes.css" rel="stylesheet" />
+	<link type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.5/css/rowReorder.dataTables.min.css" rel="stylesheet">
+	<link type="text/css" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" rel="stylesheet">
+	<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/css/dataTables.checkboxes.css" rel="stylesheet">
 
 
     <!-- others css -->
@@ -156,7 +156,7 @@
 
 							<?php if (1 == $auth->user['admin']) { ?>
 							<li <?php if ('configure' == $_GET['option']) { ?>id="current"<?php } ?>>
-								<a href="?option=configure"><span>Configure</span></a>
+								<a href="/admin?option=configure"><span>Configure</span></a>
 							</li>
 							<?php } ?>
                         </ul>
@@ -188,10 +188,10 @@
 
                          	<?php if ($auth->user['admin']) { ?>
 								<li>Hello, <?=$auth->user['name'] ? $auth->user['name'] . ' ' . $auth->user['surname'] : $auth->user['email'];?></li>
-								<li><a href="../">Website</a></li>
+								<li><a href="/">Website</a></li>
 								<li><a href="/logout">Log out</a></li>
 							<?php } else { ?>
-								<li><a href="?option=login">Log in</a></li>
+								<li><a href="/admin?option=login">Log in</a></li>
 							<?php } ?>
 
                         </ul>
@@ -201,7 +201,6 @@
             <!-- header area end -->
 
             <div <?php if (!strstr($include_content, 'main-content-inner')) { ?>class="main-content-inner"<?php } ?>>
-
 
 				<?php
                 if ($_SESSION['message']) {
@@ -246,7 +245,6 @@
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
-
 
     <!-- Start datatable js -->
     <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>

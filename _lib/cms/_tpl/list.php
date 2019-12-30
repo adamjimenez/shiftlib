@@ -6,7 +6,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 <div class="col-12">
     <div class="card">
         <div class="card-body">
-            <h4 class="header-title"><?=$this->section;?></h4>
+            <h1 class="header-title"><?=ucwords($this->section);?></h1>
             <div class="data-tables datatable-primary">
             	<form method="post">
             		<input type="hidden" name="section" value="<?=$this->section;?>">

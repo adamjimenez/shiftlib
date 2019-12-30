@@ -1,6 +1,10 @@
 <?php
 if ($auth->user['admin']) {
-    redirect('/admin');
+	if ($_SESSION['request']) {
+		redirect($_SESSION['request']);
+	} else {
+    	redirect('/admin');
+	}
 }
 ?>
 <!doctype html>

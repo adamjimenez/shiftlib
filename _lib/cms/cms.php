@@ -746,13 +746,6 @@ class cms
         global $auth, $vars;
         
         $option = $_GET['option'] ?: 'index';
-        $section = $option;
-        $pos = strpos($section, '/');
-
-        // TODO: Adam, this isn't used
-        if ($pos) {
-            $section = substr($section, 0, $pos);
-        }
 
         // redirect if logged out
         if ('login' != $option and !$auth->user['admin']) {
@@ -773,6 +766,7 @@ class cms
                 sql_query('INSERT INTO ' . $auth->table . " SET email='admin', password='" . $default_pass . "', admin='1'");
             }
 
+			$_SESSION['request'] = $_SERVER['REQUEST_URI'];
             redirect('/admin?option=login');
         }
 
@@ -1294,11 +1288,12 @@ class cms
         $include_content = ob_get_contents();
         ob_end_clean();
 
-        // TODO: Adam, this isn't used
-        if (!$title and preg_match('/<h1>([\s\S]*?)<\/h1>/i', $include_content, $matches)) {
+        // page title used in template.php
+        if (!$title and preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches)) {
             $title = strip_tags($matches[1]);
         }
 
+		// user privileges
         $this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
 
         require(dirname(__FILE__) . '/_tpl/template.php');
