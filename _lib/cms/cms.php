@@ -410,6 +410,10 @@ class cms
         $where_str = '';
         if (count($where)) {
             foreach ($where as $w) {
+            	if (!$w) {
+            		continue;
+            	}
+            	
                 $where_str .= "\t" . $w . ' AND' . "\n";
             }
             $where_str = "WHERE \n" . substr($where_str, 0, -5);
@@ -419,6 +423,10 @@ class cms
         $having_str = '';
         if (count($having)) {
             foreach ($having as $w) {
+            	if (!$w) {
+            		continue;
+            	}
+            	
                 $having_str .= "\t" . $w . ' AND' . "\n";
             }
             $having_str = "HAVING \n" . substr($having_str, 0, -5);
@@ -760,7 +768,7 @@ class cms
     }
 
     // get name of the id field
-    private function get_id_field($section)
+    public function get_id_field($section)
     {
         global $vars;
         return in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
@@ -1034,6 +1042,10 @@ class cms
 
                     $where_str = '';
                     foreach ($where as $w) {
+		            	if (!$w) {
+		            		continue;
+		            	}
+            	
                         $where_str .= "\t" . $w . ' AND' . "\n";
                     }
                     $where_str = "WHERE \n" . substr($where_str, 0, -5);
@@ -1128,7 +1140,7 @@ class cms
             }
 
             // only admin can set admin permission
-            if (1 !== $auth->user['admin'] and 'admin' == $field_name) {
+            if (1 !== (int)$auth->user['admin'] and 'admin' == $field_name) {
                 continue;
             }
 

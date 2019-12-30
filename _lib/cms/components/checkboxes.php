@@ -1,14 +1,14 @@
 <?php
 namespace cms;
 
-class checkboxes extends component
+class checkboxes extends select
 {
 	public $field_sql = null;
 	
 	function field($field_name, $value = '', $options = []) {
 		global $vars, $cms;
 		
-		$name = $field_name;
+		$name = spaced($field_name);
 		
         $value = [];
 
@@ -68,7 +68,7 @@ class checkboxes extends component
                 //make sure we get the first field
                 reset($vars['fields'][$vars['options'][$name]]);
 
-                $vars['options'][$name] = $cms->get_options($name, $where);
+                $vars['options'][$name] = $this->get_options($name, $where);
             }
         } else {
             if ($cms->id) {
@@ -138,5 +138,10 @@ class checkboxes extends component
 
         $value = implode('<br>' . "\n", $array);
         return $value;
+	}
+	
+	// generates sql code for use in where statement
+	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+        return null;
 	}
 }

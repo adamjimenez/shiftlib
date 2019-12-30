@@ -1,7 +1,7 @@
 <?php
 namespace cms;
 
-class files extends component
+class files extends file
 {
 	public $field_sql = "TEXT";
 	

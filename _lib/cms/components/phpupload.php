@@ -12,7 +12,7 @@ class phpupload extends component
 	function value($value, $name) {
 		if ($value) {
 			$value = '
-                <img src="/_lib/modules/phpupload/?func=preview&file='.$value.'&w=320&h=240" id="'.$name.'_thumb"><br>
+                <img src="/_lib/phpupload/?func=preview&file='.$value.'&w=320&h=240" id="'.$name.'_thumb"><br>
                 <label id="'.$name.'_label">'.$value.'</label>
 			';
 		}
