@@ -1845,7 +1845,7 @@ class cms
                 if ('language' == $v) {
                     $this->query .= "`$k`='" . escape($this->language) . "',\n";
 
-                    if ('en' != $this->language) {
+                    if ('en' !== $this->language) {
                         $this->query .= "`translated_from`='" . escape($this->id) . "',\n";
                     }
                     continue;
@@ -1952,25 +1952,27 @@ class cms
 
                     if (is_array($_FILES[$name])) {
                         foreach ($_FILES[$name]['error'] as $key => $error) {
-                            if ('UPLOAD_ERR_OK' == $error) {
-                                $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
-
-                                sql_query("INSERT INTO files SET
-                                    date=NOW(),
-                                    name='" . escape($_FILES[$name]['name'][$key]) . "',
-                                    size='" . escape(strlen($content)) . "',
-                                    type='" . escape($_FILES[$name]['type'][$key]) . "'
-                                ");
-
-                                $files[] = sql_insert_id();
-
-                                //check folder exists
-                                if (!file_exists($vars['files']['dir'])) {
-                                    mkdir($vars['files']['dir']);
-                                }
-
-                                file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
+                            if ('UPLOAD_ERR_OK' !== $error) {
+                                continue;   
                             }
+                            
+                            $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
+
+                            sql_query("INSERT INTO files SET
+                                date=NOW(),
+                                name='" . escape($_FILES[$name]['name'][$key]) . "',
+                                size='" . escape(strlen($content)) . "',
+                                type='" . escape($_FILES[$name]['type'][$key]) . "'
+                            ");
+
+                            $files[] = sql_insert_id();
+
+                            //check folder exists
+                            if (!file_exists($vars['files']['dir'])) {
+                                mkdir($vars['files']['dir']);
+                            }
+
+                            file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
                         }
                     }
 
@@ -2060,12 +2062,13 @@ class cms
     {
         global $vars, $languages, $auth;
 
-        if (!isset($data)) {
+        // default to post data
+        if ($data === null) {
             $data = $_POST;
         }
 
+        // fire event
         $result = $this->trigger_event('beforeSave', ['data' => $data]);
-        
         if (is_array($result)) {
             $data = $result;
         }
@@ -2075,13 +2078,11 @@ class cms
             $data[$k] = $v;
         }
 
-        if (count($languages) and !in_array('en', $languages)) {
-            $languages = array_merge(['en'], $languages);
-        } elseif (!count($languages)) {
+        //remember language
+        if (!count($languages)) {
             $languages = ['en'];
         }
-
-        //remember language
+        
         $current_language = $this->language;
 
         foreach ($languages as $language) {
@@ -2089,40 +2090,37 @@ class cms
 
             //build query
             $this->query = '';
-
             $this->build_query($vars['fields'][$this->section], $data);
-
             $this->query = substr($this->query, 0, -2);
 
-            //debug($this->query,true);
-
-            if ($this->id and 'en' === $language) {
-                $language_exists = true;
-
-                $where_str = $this->field_id . "='" . escape($this->id) . "'";
-            } elseif ($this->id and 'en' !== $language) {
-                $row = sql_query('SELECT * FROM `' . $this->table . "`
-                    WHERE
-                        `translated_from`='" . escape($this->id) . "' AND
-                        language='" . escape($language) . "'
-                ", 1);
-
-                if ($row) {
+            if ($this->id) {
+                if ('en' === $language) {
                     $language_exists = true;
-                    $where_str = "`translated_from`='" . escape($this->id) . "' AND language='" . escape($language) . "'";
+                    $where_str = $this->field_id . "='" . escape($this->id) . "'";
                 } else {
-                    $language_exists = false;
+                    $row = sql_query('SELECT * FROM `' . $this->table . "`
+                        WHERE
+                            `translated_from`='" . escape($this->id) . "' AND
+                            language='" . escape($language) . "'
+                    ", 1);
+    
+                    if ($row) {
+                        $language_exists = true;
+                        $where_str = "`translated_from`='" . escape($this->id) . "' AND language='" . escape($language) . "'";
+                    } else {
+                        $language_exists = false;
+                    }
                 }
             }
             
-            //remember old state
-            if (table_exists('cms_logs')) {
-                if ($this->id and 'en' === $language) {
+            // remember old state
+            if ($this->id) {
+                if ('en' === $language) {
                     $row = sql_query('SELECT * FROM `' . $this->table . "`
                         WHERE
                             `id`='" . escape($this->id) . "'
                     ", 1);
-                } elseif ($this->id and 'en' !== $language) {
+                } else {
                     $row = sql_query('SELECT * FROM `' . $this->table . "`
                         WHERE
                             `translated_from`='" . escape($this->id) . "' AND
@@ -2131,7 +2129,8 @@ class cms
                 }
             }
 
-            if ($this->id and ($language_exists)) {
+            // save data
+            if ($this->id and $language_exists) {
                 sql_query('UPDATE `' . $this->table . '` SET
                     ' . $this->query . "
                     WHERE $where_str
@@ -2154,12 +2153,12 @@ class cms
                 if ($this->id) {
                     $task = 'edit';
                 
-                    if ($this->id and 'en' === $language) {
+                    if ('en' === $language) {
                         $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
                             WHERE
                                 `id`='" . escape($this->id) . "'
                         ", 1);
-                    } elseif ($this->id and 'en' !== $language) {
+                    } else {
                         $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
                             WHERE
                                 `translated_from`='" . escape($this->id) . "' AND
@@ -2167,6 +2166,7 @@ class cms
                         ", 1);
                     }
                     
+                    // find changes
                     foreach ($updated_row as $k => $v) {
                         if ($row[$k] != $v) {
                             $details .= $k . '=' . $v . "\n";
@@ -2177,48 +2177,38 @@ class cms
                 $this->save_log($this->section, $this->id, $task, $details);
             }
 
-            foreach ($languages as $language) {
-                foreach ($vars['fields'][$this->section] as $k => $v) {
-                    if ($this->editable_fields and !in_array($k, $this->editable_fields)) {
-                        continue;
-                    }
-
-                    if ('checkboxes' == $v) {
-                        if ('en' == $language) {
-                            $name = $k;
-                        } else {
-                            $name = $language . '_' . $k;
-                        }
-
-                        $name = underscored($name);
-
-                        sql_query("DELETE FROM cms_multiple_select
-                            WHERE
-                                section='" . escape($this->section) . "' AND
-                                field='" . escape($k) . "' AND
-                                item='" . escape($this->id) . "'
-                        ");
-
-                        foreach ($data[$name] as $v) {
-                            sql_query("INSERT INTO cms_multiple_select SET
-                                section='" . escape($this->section) . "',
-                                field='" . escape($k) . "',
-                                item='" . escape($this->id) . "',
-                                value='" . escape($v) . "'
-                            ");
-                        }
-
-                        continue;
-                    }
+            foreach ($vars['fields'][$this->section] as $k => $v) {
+                if ('checkboxes' !== $v or ($this->editable_fields and !in_array($k, $this->editable_fields))) {
+                    continue;
                 }
+
+                $name = ('en' == $language) ? $k : $language . '_' . $k;
+                $name = underscored($name);
+
+                sql_query("DELETE FROM cms_multiple_select
+                    WHERE
+                        section='" . escape($this->section) . "' AND
+                        field='" . escape($k) . "' AND
+                        item='" . escape($this->id) . "'
+                ");
+
+                foreach ($data[$name] as $v) {
+                    sql_query("INSERT INTO cms_multiple_select SET
+                        section='" . escape($this->section) . "',
+                        field='" . escape($k) . "',
+                        item='" . escape($this->id) . "',
+                        value='" . escape($v) . "'
+                    ");
+                }
+
+                continue;
             }
         }
 
         //restore language
         $this->language = $current_language;
-
+        
         $this->trigger_event('save', [$this->id, $data]);
-
         $this->saved = true;
 
         return $this->id;
