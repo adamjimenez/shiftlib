@@ -689,8 +689,7 @@ class cms
                     reset($vars['fields'][$vars['options'][$field]]);
                     $key = key($vars['fields'][$vars['options'][$field]]);
 
-                    $rows = sql_query(
-                        'SELECT `' . underscored($key) . '`,T1.value FROM cms_multiple_select T1
+                    $rows = sql_query('SELECT `' . underscored($key) . '`,T1.value FROM cms_multiple_select T1
                             INNER JOIN `' . escape(underscored($vars['options'][$field])) . "` T2 
                             ON T1.value = T2.$join_id
                             WHERE
@@ -846,43 +845,6 @@ class cms
         global $vars;
         return in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
     }
-
-    // get parent fields child rows
-    public function get_children($section, $parent_field, int $parent = 0, int $depth = 0)
-    {
-        global $vars;
-
-        reset($vars['fields'][$section]);
-        $label = key($vars['fields'][$section]);
-
-        $rows = sql_query("SELECT id,`$label` FROM `" . underscored($section) . '`
-            WHERE
-                `' . underscored($parent_field) . "` = '$parent'
-            ORDER BY `$label`
-        ");
-
-        $indent = '';
-        for ($i = 0; $i < $depth; $i++) {
-            $indent .= '-';
-        }
-
-        $parents = [];
-        foreach ($rows as $row) {
-            if ($row['id'] === $this->id and $section === $this->section) {
-                continue;
-            }
-
-            $parents[$row['id']] = $indent . ' ' . $row[$label];
-
-            $children = $this->get_children($section, $parent_field, $row['id'], $depth + 1);
-
-            if (count($children)) {
-                $parents = $parents + $children;
-            }
-        }
-
-        return $parents;
-    }
     
     function type_to_class($class) {
 		$class = str_replace('parent', 'select_parent', $class);
@@ -938,105 +900,6 @@ class cms
         }
         
         print $value;
-    }
-
-    // get select options
-    public function get_options(string $name, $where = false)
-    {
-        global $vars, $strs;
-
-        if (!isset($vars['options'][$name])) {
-            return false;
-        }
-
-        if (!is_array($vars['options'][$name])) {
-            $table = underscored($vars['options'][$name]);
-
-            foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-                if ('separator' != $v) {
-                    $field = $k;
-                    break;
-                }
-            }
-
-            $cols = '`' . underscored($field) . '`';
-
-            //sortable
-            $order = in_array('position', $vars['fields'][$vars['options'][$name]]) ? 'position' : $field;
-
-            if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
-                $where_str = '';
-                if ($where) {
-                    $where_str = 'AND ' . $where;
-                }
-
-                $language = $this->language ?: 'en';
-
-                $rows = sql_query("SELECT id, $cols FROM
-                    $table
-                    WHERE
-                        language='" . $language . "'
-                        $where_str
-                    ORDER BY `" . underscored($order) . '`
-                ');
-
-                $options = [];
-                foreach ($rows as $row) {
-                    if ($row['translated_from']) {
-                        $id = $row['translated_from'];
-                    } else {
-                        $id = $row['id'];
-                    }
-
-                    $options[$id] = $row[underscored($field)];
-                }
-            } else {
-                $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
-
-                if (false !== $parent_field) {
-                    $options = $this->get_children($vars['options'][$name], $parent_field);
-                } else {
-                    $where_str = '';
-                    if ($where) {
-                        $where_str = 'WHERE ' . $where;
-                    }
-
-                    $rows = sql_query("SELECT id, $cols FROM
-                        $table
-                        $where_str
-                        ORDER BY `" . underscored($order) . '`
-                    ');
-
-                    $options = [];
-                    foreach ($rows as $row) {
-                        $options[$row['id']] = $row[underscored($field)];
-                    }
-                }
-            }
-
-            $vars['options'][$name] = $options;
-        } elseif (is_object($strs)) {
-            if (is_assoc_array($vars['options'][$name])) {
-                foreach ($vars['options'][$name] as $k => $v) {
-                    if ($strs->$v) {
-                        $vars['options'][$name][$k] = $strs->$v;
-                    }
-                }
-            } else {
-                $new_options = [];
-                foreach ($vars['options'][$name] as $k => $v) {
-                    if ($strs->$v) {
-                        $new_options[$v] = $strs->$v;
-                    } else {
-                        $new_options[$v] = $v;
-                    }
-                }
-
-                $vars['options'][$name] = $new_options;
-            }
-        }
-
-        return $vars['options'][$name];
     }
 
     // loads the current view
@@ -1675,6 +1538,7 @@ class cms
 
     public function template($include, $local = false)
     {
+    	// globals are needed for the page templates
         global $vars, $auth, $shop_enabled, $languages, $live_site, $cms_buttons, $message;
 
         ob_start();
@@ -1712,7 +1576,6 @@ class cms
         global $vars;
 
         $this->section = $option;
-
         $this->table = underscored($option);
 
         if ($vars['fields'][$this->section]) {

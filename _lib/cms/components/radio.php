@@ -1,15 +1,13 @@
 <?php
 namespace cms;
 
-class radio extends component
+class radio extends select
 {
-	public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
-	
 	function field($field_name, $value = '', $options = []) {
 		global $cms, $vars;
 		
 		$name = spaced($field_name);
-        $vars['options'][$name] = $cms->get_options($name, $where);
+        $vars['options'][$name] = $this->get_options($name, $where);
         
         $assoc = is_assoc_array($vars['options'][$name]);
         foreach ($vars['options'][$name] as $k => $v) {
