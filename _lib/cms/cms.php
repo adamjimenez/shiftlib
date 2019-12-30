@@ -46,7 +46,6 @@ class cms
             $query = '';
             foreach ($fields as $name => $type) {
                 $name = underscored(trim($name));
-
                 $db_field = $this->form_to_db($type);
 
                 if ($db_field) {
@@ -140,16 +139,14 @@ class cms
         }
 
         if (1 == $auth->user['admin'] or 2 == $auth->user['privileges'][$section]) {
-            $response = $this->delete($section, $items);
-
-            if (false !== $response) {
+            if (false !== $this->delete($section, $items)) {
                 $_SESSION['message'] = 'The items have been deleted';
-                return;
+                return true;
             }
         }
 
         $_SESSION['message'] = 'Permission denied';
-        return;
+        return false;
     }
 
     public function delete_all_pages($section, $conditions) // used in admin system
@@ -167,9 +164,11 @@ class cms
             $this->delete($section, $items);
 
             $_SESSION['message'] = 'The items have been deleted';
-        } else {
-            $_SESSION['message'] = 'Permission denied, you have read-only access';
+            return true;
         }
+        
+        $_SESSION['message'] = 'Permission denied, you have read-only access';
+        return false;
     }
 
     public function delete($section, $ids) // no security checks
@@ -180,14 +179,11 @@ class cms
             $ids = [$ids];
         }
 
-        $field_id = $this->get_id_field($section);
-
-        $response = $this->trigger_event('beforeDelete', [$ids]);
-
-        if (false === $response) {
+        if (false === $this->trigger_event('beforeDelete', [$ids])) {
             return false;
         }
 
+        $field_id = $this->get_id_field($section);
         $has_languages = in_array('language', $vars['fields'][$section]);
 
         foreach ($ids as $id) {
@@ -335,7 +331,6 @@ class cms
                                         REPLACE(SUBSTRING(SUBSTRING_INDEX(T_$table.$field_name, ' ', 1), LENGTH(SUBSTRING_INDEX(T_$table.$field_name, ' ', 0)) + 1), ',', '')
 
                                 ) AS distance";
-
 
                                 $having[] = 'distance <= ' . escape($conditions['func'][$field_name]) . '';
 
@@ -618,25 +613,25 @@ class cms
                     $key = key($vars['fields'][$vars['options'][$field]]);
 
                     $rows = sql_query('SELECT `' . underscored($key) . '`,T1.value FROM cms_multiple_select T1
-                            INNER JOIN `' . escape(underscored($vars['options'][$field])) . "` T2 
-                            ON T1.value = T2.$join_id
-                            WHERE
-                                T1.section='" . escape($section) . "' AND
-                                T1.field='" . escape($field) . "' AND
-                                T1.item='" . escape($v['id']) . "'
-                            GROUP BY T1.value
-                            ORDER BY T2." . underscored($key)
+                        INNER JOIN `' . escape(underscored($vars['options'][$field])) . "` T2 
+                        ON T1.value = T2.$join_id
+                        WHERE
+                            T1.section='" . escape($section) . "' AND
+                            T1.field='" . escape($field) . "' AND
+                            T1.item='" . escape($v['id']) . "'
+                        GROUP BY T1.value
+                        ORDER BY T2." . underscored($key)
                     );
                 } else {
                     $key = 'value';
 
                     $rows = sql_query("SELECT value FROM cms_multiple_select
-                            WHERE
-                                section='" . escape($section) . "' AND
-                                field='" . escape($field) . "' AND
-                                item='" . $v['id'] . "'
-                            ORDER BY id
-                        ");
+                        WHERE
+                            section='" . escape($section) . "' AND
+                            field='" . escape($field) . "' AND
+                            item='" . $v['id'] . "'
+                        ORDER BY id
+                    ");
                 }
 
                 // create cpmma separated label

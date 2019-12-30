@@ -3,7 +3,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 ?>
 
 <!-- Primary table start -->
-<div class="col-12 mt-5">
+<div class="col-12">
     <div class="card">
         <div class="card-body">
             <h4 class="header-title"><?=$this->section;?></h4>
@@ -77,8 +77,6 @@ $params['section'] = $this->section;
 $first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
 $asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? 'desc' : 'asc';
 
-//debug($first_field_type,1);
-
 $order = 3;
 ?>
 
@@ -135,18 +133,9 @@ $(document).ready(function() {
  
     table.on( 'row-reorder', function ( e, diff, edit ) {
     	var table = $(this).DataTable();
-    	
-    	/*
-    	console.log(arguments);
-    	console.log(edit.triggerRow.data());
-    	
-        */
-        //var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
- 
 		var items = [];
         for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
             var rowData = table.row( diff[i].node ).data();
-            //result += rowData[1]+' updated to be in position '+ diff[i].newData+' (was '+diff[i].oldData+')<br>';
             
             if (diff[i].newData) {
             	items.push({
@@ -155,11 +144,6 @@ $(document).ready(function() {
             	});
             }
         }
-		
-		//console.log(diff)
-		//console.log(items)
-		//console.log(result)
-		//return
 		
         jQuery.ajax('/_lib/api/?cmd=reorder&<?=http_build_query($params);?>', {
             dataType: 'json',
