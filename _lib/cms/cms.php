@@ -37,10 +37,10 @@ class cms
 
     /**
      * @param string $table
-     * @param array $fields
+     * @param array $fields OR NULL
      * @throws Exception
      */
-    public function check_table(string $table, array $fields = [])
+    public function check_table(string $table, $fields = [])
     {
         $select = sql_query("SHOW TABLES LIKE '$table'");
         if (!$select) {
@@ -1796,7 +1796,7 @@ class cms
 
     public function template($include, $local = false)
     {
-        global $auth;
+        global $vars, $auth, $shop_enabled, $languages, $live_site, $cms_buttons, $message;
 
         ob_start();
         if ($local) {
