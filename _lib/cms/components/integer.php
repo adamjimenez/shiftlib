@@ -16,6 +16,8 @@ class integer extends component
 	}
 	
 	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+		// todo strict func checking
+		
         $pos = strrpos($value, '-');
 
         if ($func) {

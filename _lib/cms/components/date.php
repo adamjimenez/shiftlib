@@ -23,6 +23,8 @@ class date extends component
 	}
 	
 	function conditions_to_sql($field_name, $value, $func = '=', $table_prefix='') {
+		// todo strict func checking
+		
 		if ('now' == $value) {
 		    $start = 'NOW()';
 		} elseif ('month' == $func) {
