@@ -751,7 +751,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 
             if ($_SERVER['REMOTE_ADDR'] == $debug_ip or $auth->user['admin']) {
                 echo "<p>The following has been reported to the administrator:</p>\n";
-                echo "<b>$errorstring\n</b></font>";
+                echo "<strong><pre>$errorstring\n</pre></strong>";
             }
 
             $headers = 'MIME-Version: 1.0' . "\n";
