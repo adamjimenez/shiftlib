@@ -17,4 +17,11 @@ class month extends component
         }
 		return $value;
 	}
+	
+	function format_value($value) {
+        if ($value) {
+            $value .= '-01';
+        }
+		return $value;
+	}
 }

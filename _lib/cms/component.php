@@ -24,6 +24,6 @@ abstract class component
 	}
 	
 	function format_value($value) {
-		return $value;
+		return strip_tags($value);
 	}
 }

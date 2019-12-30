@@ -151,7 +151,7 @@ class cms
             }
         }
 
-        $_SESSION['message'] = 'Permission denied.';
+        $_SESSION['message'] = 'Permission denied';
         return;
     }
 
@@ -171,7 +171,7 @@ class cms
 
             $_SESSION['message'] = 'The items have been deleted';
         } else {
-            $_SESSION['message'] = 'Permission denied, you have read-only access.';
+            $_SESSION['message'] = 'Permission denied, you have read-only access';
         }
     }
 
@@ -1212,10 +1212,6 @@ class cms
 			        if (class_exists($class)) {
 			        	$component = new $class;
 			        	$is_valid = $component->is_valid($data[$name]);
-			        	
-			        	if ($is_valid) {
-			        		$data[$name] = $component->format_value($data[$name]);
-			        	}
 			        }
                 }
 
@@ -1288,239 +1284,201 @@ class cms
     {
         global $vars, $auth;
 
+		// find null fields
         $column_data = sql_query('SHOW COLUMNS FROM `' . $this->table . '`');
-
         $null_fields = [];
         foreach ($column_data as $v) {
             if ('YES' == $v['Null']) {
                 $null_fields[] = $v['Field'];
             }
         }
-
-        foreach ($field_arr as $k => $v) {
+        foreach ($field_arr as $name => $type) {
             if (
-                in_array($v, ['id', 'related', 'timestamp', 'separator', 'translated-from', 'polygon']) or
-                $this->editable_fields and !in_array($k, $this->editable_fields)
+                in_array($type, ['id', 'related', 'timestamp', 'separator', 'translated-from', 'polygon']) or
+                $this->editable_fields and !in_array($name, $this->editable_fields)
             ) {
                 continue;
             }
 
-            if (is_array($v)) {
-                $this->build_query($v, $data);
+            $field_name = underscored($name);
+
+            if ('language' == $type) {
+                $this->query .= "`$field_name`='" . escape($this->language) . "',\n";
+
+                if ('en' !== $this->language) {
+                    $this->query .= "`translated_from`='" . escape($this->id) . "',\n";
+                }
+                continue;
+            }
+
+            if ('en' == $this->language) {
+                $name = $field_name;
             } else {
-                $k = underscored($k);
+                $name = $this->language . '_' . $field_name;
+            }
+            
+			$class = $this->type_to_class($type);
+			if (class_exists($class)) {
+			    $component = new $class;
+			    $data[$name] = $component->format_value($data[$name]);
+			}
 
-                if ('language' == $v) {
-                    $this->query .= "`$k`='" . escape($this->language) . "',\n";
+            if ('position' == $type and !$this->id and !isset($data[$name])) {
+                //find last position
+                $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $this->table . '`', 1);
+                $max_pos = $max_pos['max_pos'] + 1;
 
-                    if ('en' !== $this->language) {
-                        $this->query .= "`translated_from`='" . escape($this->id) . "',\n";
-                    }
+                $this->query .= "`$field_name`='" . escape($max_pos) . "',\n";
+                continue;
+            } elseif ('position' == $type and !isset($data[$name])) {
+                continue;
+            }
+
+            if ('password' == $type) {
+                //leave passwords blank to keep
+                if ('' == $data[$name]) {
                     continue;
                 }
-
-                if ('en' == $this->language) {
-                    $name = $k;
-                } else {
-                    $name = $this->language . '_' . $k;
+                if ($auth->hash_password) {
+                    $data[$name] = $auth->create_hash($data[$name]);
                 }
+            }
 
-                if ('position' == $v and !$this->id and !isset($data[$name])) {
-                    //find last position
-                    $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $this->table . '`', 1);
-                    $max_pos = $max_pos['max_pos'] + 1;
+            // only admin can set admin permission
+            if (1 !== $auth->user['admin'] and 'admin' == $field_name) {
+                continue;
+            }
 
-                    $this->query .= "`$k`='" . escape($max_pos) . "',\n";
-                    continue;
-                } elseif ('position' == $v and !isset($data[$name])) {
-                    continue;
-                }
+            if ('date' == $type or 'dob' == $type) {
+            } elseif ('file' == $type) {
+                if ('UPLOAD_ERR_OK' == $_FILES[$name]['error']) {
+                    $size = filesize($_FILES[$name]['tmp_name']);
 
-                if ('password' == $v) {
-                    //leave passwords blank to keep
-                    if ('' == $data[$name]) {
-                        continue;
+                    sql_query("INSERT INTO files SET
+                        date=NOW(),
+                        name='" . escape($_FILES[$name]['name']) . "',
+                        size='" . escape($size) . "',
+                        type='" . escape($_FILES[$name]['type']) . "'
+                    ");
+
+                    $data[$name] = sql_insert_id();
+
+                    //check folder exists
+                    if (!file_exists($vars['files']['dir'])) {
+                        mkdir($vars['files']['dir']);
                     }
-                    if ($auth->hash_password) {
-                        $data[$name] = $auth->create_hash($data[$name]);
-                    }
-                }
 
-                // only admin can set admin permission
-                if (1 !== $auth->user['admin'] and 'admin' == $k) {
-                    continue;
-                }
-
-                if ('url' == $v and 'http://' == $data[$name]) {
-                    $data[$name] = '';
-                } elseif ('datetime' == $v) {
-                    if ($data['time']) {
-                        $data[$name] .= ' ' . $data['time'][$name] . ':00';
+                    if ($vars['files']['dir']) {
+                        rename($_FILES[$name]['tmp_name'], $vars['files']['dir'] . $data[$name]);
+                    } else {
+                        sql_query("UPDATE files SET
+                            data='" . escape(file_get_contents($_FILES[$name]['tmp_name'])) . "'
+                            WHERE
+                                id='" . escape($data[$name]) . "'
+                        ");
                     }
-                } elseif ('date' == $v or 'dob' == $v) {
-                } elseif ('month' == $v) {
-                    $data[$name] .= '-01';
-                } elseif ('file' == $v) {
-                    if ('UPLOAD_ERR_OK' == $_FILES[$name]['error']) {
-                        $size = filesize($_FILES[$name]['tmp_name']);
+
+                    //thumb
+                    if ($_POST[$name . '_thumb']) {
+                        // Grab the MIME type and the data with a regex for convenience
+                        if (preg_match('/data:([^;]*);base64,(.*)/', $_POST[$name . '_thumb'], $matches)) {
+                            // Decode the data
+                            $thumb = $matches[2];
+                            $thumb = str_replace(' ', '+', $thumb);
+                            $thumb = base64_decode($thumb);
+
+                            $file_name = $vars['files']['dir'] . $data[$name] . '_thumb';
+                            file_put_contents($file_name, $thumb);
+                        } else {
+                            die('no mime type');
+                        }
+                    }
+                } elseif (!$data[$name] and $row[$name]) {
+                    sql_query("DELETE FROM files
+                        WHERE
+                        id='" . escape($row[$name]) . "'
+                    ");
+
+                    if ($vars['files']['dir']) {
+                        unlink($vars['files']['dir'] . $row[$name]);
+                    }
+
+                    $data[$name] = 0;
+                }
+            } elseif ('files' == $type) {
+                $files = $data[$name];
+
+                if (is_array($_FILES[$name])) {
+                    foreach ($_FILES[$name]['error'] as $key => $error) {
+                        if ('UPLOAD_ERR_OK' !== $error) {
+                            continue;
+                        }
+
+                        $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
 
                         sql_query("INSERT INTO files SET
                             date=NOW(),
-                            name='" . escape($_FILES[$name]['name']) . "',
-                            size='" . escape($size) . "',
-                            type='" . escape($_FILES[$name]['type']) . "'
+                            name='" . escape($_FILES[$name]['name'][$key]) . "',
+                            size='" . escape(strlen($content)) . "',
+                            type='" . escape($_FILES[$name]['type'][$key]) . "'
                         ");
 
-                        $data[$name] = sql_insert_id();
+                        $files[] = sql_insert_id();
 
                         //check folder exists
                         if (!file_exists($vars['files']['dir'])) {
                             mkdir($vars['files']['dir']);
                         }
 
-                        if ($vars['files']['dir']) {
-                            rename($_FILES[$name]['tmp_name'], $vars['files']['dir'] . $data[$name]);
-                        } else {
-                            sql_query("UPDATE files SET
-                                data='" . escape(file_get_contents($_FILES[$name]['tmp_name'])) . "'
+                        file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
+                    }
+                }
+
+                if ($this->id) {
+                    //clean up old files
+                    $row = sql_query("SELECT `$name` FROM `" . $this->table . '`', 1);
+
+                    $old_files = explode("\n", $row[$name]);
+
+                    foreach ($old_files as $old_file) {
+                        if (in_array($old_file, $files)) {
+                            sql_query("DELETE FROM files
                                 WHERE
-                                    id='" . escape($data[$name]) . "'
-                            ");
-                        }
-
-                        //thumb
-                        if ($_POST[$name . '_thumb']) {
-                            // Grab the MIME type and the data with a regex for convenience
-                            if (preg_match('/data:([^;]*);base64,(.*)/', $_POST[$name . '_thumb'], $matches)) {
-                                // Decode the data
-                                $thumb = $matches[2];
-                                $thumb = str_replace(' ', '+', $thumb);
-                                $thumb = base64_decode($thumb);
-
-                                $file_name = $vars['files']['dir'] . $data[$name] . '_thumb';
-                                file_put_contents($file_name, $thumb);
-                            } else {
-                                die('no mime type');
-                            }
-                        }
-                    } elseif (!$data[$name] and $row[$name]) {
-                        sql_query("DELETE FROM files
-                            WHERE
-                            id='" . escape($row[$name]) . "'
-                        ");
-
-                        if ($vars['files']['dir']) {
-                            unlink($vars['files']['dir'] . $row[$name]);
-                        }
-
-                        $data[$name] = 0;
-                    }
-                } elseif ('files' == $v) {
-                    $files = $data[$name];
-
-                    if (is_array($_FILES[$name])) {
-                        foreach ($_FILES[$name]['error'] as $key => $error) {
-                            if ('UPLOAD_ERR_OK' !== $error) {
-                                continue;
-                            }
-
-                            $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
-
-                            sql_query("INSERT INTO files SET
-                                date=NOW(),
-                                name='" . escape($_FILES[$name]['name'][$key]) . "',
-                                size='" . escape(strlen($content)) . "',
-                                type='" . escape($_FILES[$name]['type'][$key]) . "'
+                                id='" . escape($old_file['id']) . "'
                             ");
 
-                            $files[] = sql_insert_id();
-
-                            //check folder exists
-                            if (!file_exists($vars['files']['dir'])) {
-                                mkdir($vars['files']['dir']);
-                            }
-
-                            file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
-                        }
-                    }
-
-                    if ($this->id) {
-                        //clean up old files
-                        $row = sql_query("SELECT `$name` FROM `" . $this->table . '`', 1);
-
-                        $old_files = explode("\n", $row[$name]);
-
-                        foreach ($old_files as $old_file) {
-                            if (in_array($old_file, $files)) {
-                                sql_query("DELETE FROM files
-                                    WHERE
-                                    id='" . escape($old_file['id']) . "'
-                                ");
-
-                                if ($vars['files']['dir']) {
-                                    unlink($vars['files']['dir'] . $old_file['id']);
-                                }
+                            if ($vars['files']['dir']) {
+                                unlink($vars['files']['dir'] . $old_file['id']);
                             }
                         }
                     }
+                }
 
-                    if (is_array($files)) {
-                        $data[$name] = implode("\n", $files);
-                    }
-                    $data[$name] = trim($data[$name]);
-                } elseif ('checkboxes' == $v) {
+                if (is_array($files)) {
+                    $data[$name] = implode("\n", $files);
+                }
+                $data[$name] = trim($data[$name]);
+            } elseif ('checkboxes' == $type) {
+                continue;
+            } elseif ('ip' == $type) {
+                if (!$this->id) {
+                    $data[$name] = $_SERVER['REMOTE_ADDR'];
+                } elseif (!$data[$name]) {
                     continue;
-                } elseif ('postcode' == $v) {
-                    $data[$name] = format_postcode($data[$name]);
-                } elseif ('mobile' == $v) {
-                    if ($data[$name]) {
-                        $data[$name] = format_mobile($data[$name]);
-                    }
-                } elseif ('ip' == $v) {
-                    if (!$this->id) {
-                        $data[$name] = $_SERVER['REMOTE_ADDR'];
-                    } elseif (!$data[$name]) {
-                        continue;
-                    }
-                } elseif ('page-name' == $v) {
-                    $data[$name] = str_to_pagename($data[$name], false);
-                } elseif ('coords' == $v) {
-                    $this->query .= "`$k`=GeomFromText('POINT(" . escape($data[$name]) . ")'),\n";
-                    continue;
-                } elseif ('text' == $v or 'textarea' == $v) {
-                    $data[$name] = strip_tags($data[$name]);
-                } elseif ('editor' == $v) {
-                    $doc = new DOMDocument();
-                    $doc->loadHTML('<div>' . $data[$name] . '</div>');
-
-                    $container = $doc->getElementsByTagName('div')->item(0);
-                    $container = $container->parentNode->removeChild($container);
-                    while ($doc->firstChild) {
-                        $doc->removeChild($doc->firstChild);
-                    }
-
-                    while ($container->firstChild) {
-                        $doc->appendChild($container->firstChild);
-                    }
-
-                    // remove script tags
-                    $script = $doc->getElementsByTagName('script');
-                    foreach ($script as $item) {
-                        $item->parentNode->removeChild($item);
-                    }
-
-                    $data[$name] = $doc->saveHTML();
                 }
+            } elseif ('coords' == $type) {
+                $this->query .= "`$field_name`=GeomFromText('POINT(" . escape($data[$name]) . ")'),\n";
+                continue;
+            }
 
-                if (is_array($data[$name])) {
-                    $data[$name] = implode("\n", strip_tags($data[$name]));
-                }
+            if (is_array($data[$name])) {
+                $data[$name] = implode("\n", strip_tags($data[$name]));
+            }
 
-                if ((!isset($data[$name]) or '' === $data[$name]) and in_array($k, $null_fields)) {
-                    $this->query .= "`$k`=NULL,\n";
-                } else {
-                    $this->query .= "`$k`='" . escape($data[$name]) . "',\n";
-                }
+            if ((!isset($data[$name]) or '' === $data[$name]) and in_array($field_name, $null_fields)) {
+                $this->query .= "`$field_name`=NULL,\n";
+            } else {
+                $this->query .= "`$field_name`='" . escape($data[$name]) . "',\n";
             }
         }
     }
