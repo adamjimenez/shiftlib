@@ -661,24 +661,13 @@ foreach ($languages as $language) {
 	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
 	    <div class="box" style="clear:both;">
 			<?php
-                /*
-                if( $_GET['option']=='users' ){
-                    $query = "SELECT *,L.date FROM cms_logs L
-                        INNER JOIN users U ON L.user=U.id
-                        WHERE
-                            user='".escape($_GET['id'])."'
-                        ORDER BY L.date DESC
-                    ";
-                }else{
-                */
-                    $query = "SELECT *,L.date FROM cms_logs L
-						LEFT JOIN users U ON L.user=U.id
-						WHERE
-							section='" . escape($_GET['option']) . "' AND
-							item='" . escape($id) . "'
-						ORDER BY L.id DESC
-					";
-                //}
+                $query = "SELECT *,L.date FROM cms_logs L
+					LEFT JOIN users U ON L.user=U.id
+					WHERE
+						section='" . escape($_GET['option']) . "' AND
+						item='" . escape($id) . "'
+					ORDER BY L.id DESC
+				";
 
                 $p = new paging($query, 20);
 

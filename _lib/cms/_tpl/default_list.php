@@ -648,14 +648,6 @@ jQuery(document).ready(function() {
 });
 </script>
 <script>
-/*
-$(document).keydown(function(e){
-    if( !$(e.target).is('input, textarea, select, [contenteditable]') && !e.ctrlKey ){
-        $('#s').focus();
-    }
-});
-*/
-
 //omit empty fields on search
 $("#search_form").submit(function() {
     $(this).find(":input").filter(function() {

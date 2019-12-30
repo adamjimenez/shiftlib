@@ -5,6 +5,9 @@ class cms
     {
         global $cms_buttons, $vars;
         
+        $this->language = 'en';
+        
+        // rating widget options
         $this->opts['rating'] = [
             1 => 'Very Poor',
             2 => 'Poor',
@@ -45,7 +48,7 @@ class cms
 	        foreach ($fields as $name => $type) {
 	            $name = underscored(trim($name));
 	
-	            $db_field = form_to_db($type);
+	            $db_field = $this->form_to_db($type);
 	
 	            if ($db_field) {
 	                $query .= '`' . $name . '` ' . $db_field . ' NOT NULL,';
@@ -491,11 +494,7 @@ class cms
                             $where[] = "T_$table." . $field_name . ' > 0';
                         break;
                         default:
-                            if ('!=' == $conditions['func'][$field_name]) {
-                                $operator = '!=';
-                            } else {
-                                $operator = 'LIKE';
-                            }
+                            $operator = in_array($conditions['func'][$field_name], ['!=']) ? $conditions['func'][$field_name] :  'LIKE';
 
                             $value = str_replace('*', '%', $value);
                             $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
@@ -504,6 +503,7 @@ class cms
                 }
             }
 
+			// full text search
             if ($conditions['s'] or $conditions['w']) {
                 if ($conditions['w']) {
                     $conditions['s'] = $conditions['w'];
@@ -571,6 +571,7 @@ class cms
 	        }
         }
 
+		// create where string
         if (count($where)) {
             foreach ($where as $w) {
                 $where_str .= "\t" . $w . ' AND' . "\n";
@@ -578,6 +579,7 @@ class cms
             $where_str = "WHERE \n" . substr($where_str, 0, -5);
         }
 
+		// create having string
         if (count($having)) {
             foreach ($having as $w) {
                 $having_str .= "\t" . $w . ' AND' . "\n";
@@ -585,6 +587,7 @@ class cms
             $having_str = "HAVING \n" . substr($having_str, 0, -5);
         }
 
+		// create joins
         if (in_array('select', $vars['fields'][$section]) or in_array('combo', $vars['fields'][$section]) or in_array('radio', $vars['fields'][$section])) {
             $selects = array_keys($vars['fields'][$section], 'select');
             $radios = array_keys($vars['fields'][$section], 'radio');
@@ -611,8 +614,6 @@ class cms
                             break;
                         }
                     }
-
-                    $type = $vars['fields'][$vars['options'][$key]][$option];
 
                     $cols .= ',T_' . underscored($key) . '.' . underscored($option) . " AS '" . underscored($key) . "_label'";
                 }
@@ -862,7 +863,7 @@ class cms
 
             $fields = '';
             foreach ($vars['fields'][$section] as $k => $v) {
-                if ('separator' == $v or 'checkboxes' == $v) {
+                if (in_array($v, ['separator', 'checkboxes'])) {
                     continue;
                 }
 
@@ -1042,13 +1043,11 @@ class cms
             case 'decimal':
             case 'page-name':
             case 'tel':
-        ?>
-			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
-		<?php
-            break;
             case 'hidden':
+            case 'email':
+            case 'url':
         ?>
-			<input type="hidden" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
+			<input type="<?=$type;?>" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
 		<?php
             break;
             case 'int':
@@ -1059,16 +1058,6 @@ class cms
             case 'coords':
         ?>
 			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars(substr($value, 6, -1));?>" <?php if ($readonly) { ?>disabled<?php } ?> size="50" <?=$attribs;?> placeholder="coordinates">
-		<?php
-            break;
-            case 'email':
-        ?>
-			<input type="email" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?=$placeholder;?>"<?php } ?> <?=$attribs;?>>
-		<?php
-            break;
-            case 'url':
-        ?>
-			<input type="text" name="<?=$field_name;?>" value="<?=htmlspecialchars($value);?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs;?>>
 		<?php
             break;
             case 'postcode':
@@ -1600,7 +1589,7 @@ class cms
                     $where_str = 'AND ' . $where;
                 }
 
-                $language = $this->language ? $this->language : 'en';
+                $language = $this->language ?: 'en';
 
                 $rows = sql_query("SELECT id, $cols FROM
 					$table
@@ -1724,8 +1713,6 @@ class cms
             }
         }
 
-        $this->language = 'en';
-
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');
         } elseif (in_array($option, ['configure', 'choose_filter', 'shop_order', 'shop_orders'])) {
@@ -1811,6 +1798,7 @@ class cms
             $errors = [];
         }
 
+		// validate unique keys
         $table_keys = sql_query('SHOW keys FROM `' . $this->table . '`');
 
         $keys = [];
@@ -2396,10 +2384,7 @@ class cms
                 }
                 
                 if (
-                    (
-                        !$this->section or
-                        in_array($this->section, $handler['section'])
-                    ) and
+                    in_array($this->section, $handler['section']) and
                     $handler['event'] === $event
                 ) {
                     return call_user_func_array($handler['handler'], (array) $args);
