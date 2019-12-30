@@ -146,7 +146,6 @@ class cms
                 }
                 $data = substr($data, 0, -1);
                 $data .= "\n";
-    
                 $j++;
             }
             $j = 0;
@@ -222,8 +221,6 @@ class cms
         }
 
         $field_id = $this->get_id_field($section);
-        
-        $soft_delete = in_array('deleted', spaced($vars['fields'][$section]));
 
         $response = $this->trigger_event('beforeDelete', [$ids]);
 
@@ -239,7 +236,7 @@ class cms
                 continue;
             }
             
-            if ($soft_delete) {
+            if (in_array('deleted', spaced($vars['fields'][$section]))) {
                 $this->set_section($section, $id, ['deleted']);
                 $this->save(['deleted' => 1]);
     
@@ -298,16 +295,12 @@ class cms
             $num_results = 1;
         } elseif (is_string($conditions)) {
             if (in_array('page-name', $vars['fields'][$section])) {
-                $page_name = $conditions;
-
                 $field_page_name = array_search('page-name', $vars['fields'][$section]);
-
-                $conditions = [$field_page_name => $page_name];
-
+                $conditions = [$field_page_name => $conditions];
                 $num_results = 1;
             }
         } else {
-            if (in_array('language', $vars['fields'][$section]) and $language) {
+            if (in_array('language', $vars['fields'][$section])) {
                 $conditions['language'] = $language;
             } elseif (!in_array('id', $vars['fields'][$section])) {
                 $id = 1;
@@ -515,18 +508,7 @@ class cms
                     $or = [];
 
                     foreach ($vars['fields'][$section] as $name => $type) {
-                        if (
-                            (
-                                'text' == $type or
-                                'textarea' == $type or
-                                'editor' == $type or
-                                'email' == $type or
-                                'mobile' == $type or
-                                'select' == $type or
-                                'id' == $type
-                            ) &&
-                            !in_array($name, $vars['non_searchable'][$section])
-                        ) {
+                        if ( in_array($type, ['text', 'textarea', 'editor', 'email', 'mobile', 'select', 'id'])) {
                             $value = str_replace('*', '%', $word);
 
                             if ('select' == $type) {
@@ -636,9 +618,6 @@ class cms
     {
         global $vars, $auth;
 
-        if (is_array($sections)) {
-            die('array of sections not yet supported');
-        }
         $section = $sections;
         $table = underscored($sections);
 
@@ -885,31 +864,24 @@ class cms
         global $vars;
 
         $field = underscored(key($vars['fields'][$this->section]));
-
         $field_type = $vars['fields'][$this->section][$field];
 
-        $value = $this->content[$field];
-
-        switch ($field_type) {
-            case 'select':
-            case 'combo':
-                if (!is_array($vars['options'][$field])) {
-                    if (0 == $value) {
-                        $value = '';
-                    } else {
-                        $join_id = $this->get_id_field($field);
-
-                        $row = sql_query('SELECT `' . underscored(key($vars['fields'][$vars['options'][$field]])) . '` FROM `' . escape(underscored($vars['options'][$field])) . "` WHERE $join_id='" . escape($value) . "'");
-                        $value = '<a href="?option=' . escape($vars['options'][$field]) . '&view=true&id=' . $value . '">' . reset($row[0]) . '</a>';
-                    }
+		if (in_array($field_type, ['select', 'combo'])) {
+            if (!is_array($vars['options'][$field])) {
+                if (0 == $value) {
+                    $value = '';
                 } else {
-                    if (is_assoc_array($vars['options'][$field])) {
-                        $value = $vars['options'][$field][$value];
-                    }
-                }
+                    $join_id = $this->get_id_field($field);
 
-            break;
-        }
+                    $row = sql_query('SELECT `' . underscored(key($vars['fields'][$vars['options'][$field]])) . '` FROM `' . escape(underscored($vars['options'][$field])) . "` WHERE $join_id='" . escape($value) . "'");
+                    $value = '<a href="?option=' . escape($vars['options'][$field]) . '&view=true&id=' . $value . '">' . reset($row[0]) . '</a>';
+                }
+            } else {
+                $value = $vars['options'][$field][$value];
+            }
+		} else {
+        	$value = $this->content[$field];
+		}
 
         return truncate($value);
     }
