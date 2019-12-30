@@ -1,0 +1,5 @@
+parameters:
+    autoload_files:
+        - _lib/autoload.php
+    bootstrap: phpstan-bootstrap.php
+    checkMissingIterableValueType: false

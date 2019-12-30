@@ -109,8 +109,12 @@ $section_templates['cms logs'] = [
 
 $section_templates['blank'] = [];
 
-function array_to_csv($array) // returns null or string
+function array_to_csv($array): ?string // returns null or string
 {
+    if (null === $array) {
+        return '';
+    }
+
     foreach ($array as $k => $v) {
         $array[$k] = "\t'" . addslashes($v) . "'";
     }

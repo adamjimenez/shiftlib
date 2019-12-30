@@ -49,7 +49,7 @@ function send_msg($id, $msg)
 
 // check permissions
 if (!$auth->user['admin'] and !$auth->user['privileges'][$_GET['section']]) {
-	die('permission denied');
+    die('permission denied');
 }
 
 $response = [];

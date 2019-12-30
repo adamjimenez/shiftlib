@@ -1,4 +1,5 @@
 <?php
+
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
@@ -52,7 +53,7 @@ function imageorientationfix($path)
 function imagefile($img, $path): bool
 {
     $ext = file_ext($path);
-    
+
     if ('gif' == $ext) {
         $result = imagegif($img, $path);
     } elseif ('png' == $ext) {
@@ -60,7 +61,7 @@ function imagefile($img, $path): bool
     } else {
         $result = imagejpeg($img, $path, 90);
     }
-    
+
     return $result;
 }
 */
@@ -476,7 +477,7 @@ function current_tab($tab, $class = ''): string
 
     $index = 0;
 
-	$str = '';
+    $str = '';
     if ($sections[$index] == $tab or $tab == $request) {
         $str = ' class="active ' . $class . '"';
     } elseif ($class) {
@@ -529,13 +530,13 @@ function debug($var, $die = false)
 
 // send an email
 /*
-	$opts = [
-		from_email
-		to_email
-		subject
-		content
-		attachments
-	]
+    $opts = [
+        from_email
+        to_email
+        subject
+        content
+        attachments
+    ]
 */
 function send_mail($opts = []): bool
 {
@@ -548,7 +549,7 @@ function send_mail($opts = []): bool
     $is_html = ($opts['content'] !== strip_tags($opts['content']));
     
     if (getenv('SENDGRID_API_KEY')) {
-        $email = new SendGrid\Mail\Mail();
+        $email = new \SendGrid\Mail\Mail();
         //$email->setFrom("test@example.com", "Example User");
         $email->setFrom($opts['from_email']);
         $email->setSubject($opts['subject']);
@@ -573,7 +574,7 @@ function send_mail($opts = []): bool
         
         return $response;
     } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-        $mail = new PHPMailer\PHPMailer\PHPMailer();
+        $mail = new \PHPMailer\PHPMailer\PHPMailer();
         $mail->SetFrom($opts['from_email']);
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
@@ -589,20 +590,19 @@ function send_mail($opts = []): bool
         }
         
         return $mail->Send();
-    } else {
-        $headers = '';
-        
-        if ($is_html) {
-            $headers = 'MIME-Version: 1.0' . "\n";
-            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
-        }
-        
-        if ($opts['from_email']) {
-            $headers .= 'From: ' . $from_email . "\n";
-        }
-        
-        return mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
     }
+    $headers = '';
+        
+    if ($is_html) {
+        $headers = 'MIME-Version: 1.0' . "\n";
+        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
+    }
+        
+    if ($opts['from_email']) {
+        $headers .= 'From: ' . $from_email . "\n";
+    }
+        
+    return mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
 }
 
 // send an email form the CMS - TODO move to cms class
@@ -774,7 +774,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 }
 
 // prevent sql injectoin
-function escape($string) // can return null
+function escape($string): ?string
 {
     global $db_connection;
     return mysqli_real_escape_string($db_connection, $string);
@@ -787,7 +787,7 @@ function file_ext($file): string
 }
 
 // retun file size abbreviation e.g. 10K
-function file_size($size): int
+function file_size($size): string
 {
     for ($si = 0; $size >= 1024; $size /= 1024, $si++);
     return round($size) . substr(' KMGT', $si, 1);
@@ -1130,8 +1130,7 @@ function load_js($libs)
     }
 
     if ($deps['bootstrap']) {
-        $version = '4.4.1'; 
-    ?>
+        $version = '4.4.1'; ?>
 	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js" async></script>
 	<?php

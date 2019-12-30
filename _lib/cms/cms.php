@@ -39,7 +39,7 @@ class cms
         }
     }
     
-    function check_table($table, $fields)
+    public function check_table($table, $fields)
     {
         $select = sql_query("SHOW TABLES LIKE '$table'");
         if (!$select) {
@@ -56,15 +56,15 @@ class cms
             }
     
             sql_query("CREATE TABLE `$table` (
-                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-                $query
-                PRIMARY KEY ( `id` )
+                   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+                   $query
+                   PRIMARY KEY ( `id` )
                 )
             ");
         }
     }
     
-    function form_to_db($type): string
+    public function form_to_db($type): string
     {
         switch ($type) {
             case 'id':
@@ -846,7 +846,8 @@ class cms
     }
     
     // get name of the id field
-    private function get_id_field($section) {
+    private function get_id_field($section)
+    {
         global $vars;
         return in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
     }
@@ -1585,7 +1586,7 @@ class cms
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');
         } elseif (in_array($option, ['configure', 'choose_filter', 'shop_order', 'shop_orders'])) {
-            $this->template($option.'.php', true);
+            $this->template($option . '.php', true);
         } elseif ('login' == $option) {
             $this->login();
         } elseif ('index' != $option) {
@@ -1878,7 +1879,7 @@ class cms
                 }
 
                 // only admin can set admin permission
-                if ($auth->user['admin'] !== 1 and 'admin' == $k) {
+                if (1 !== $auth->user['admin'] and 'admin' == $k) {
                     continue;
                 }
 
