@@ -205,7 +205,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 				<?php if ($has_priveleges) { ?>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-priveleges-tab" data-toggle="pill" href="#pills-priveleges" role="tab" aria-controls="pills-priveleges" aria-selected="true">
-						Priveleges
+						Privileges
 					</a>
 				</li>
 				<?php } ?>
@@ -249,6 +249,7 @@ foreach ($languages as $language) {
                             } ?>
 	<div id="language_<?=$language; ?>" <?php if ('en' != $language) { ?>style="display:none;"<?php } ?> class="box">
 	<table border="0" cellspacing="0" cellpadding="5" width="100%">
+
 	<?php
     foreach ($vars['fields'][$this->section] as $name => $type) {
         $label = $vars['label'][$this->section][$name];
@@ -256,256 +257,26 @@ foreach ($languages as $language) {
         if (!$label) {
             $label = ucfirst(str_replace('_', ' ', $name));
         }
-
-        $value = $content[$name];
-        $name = $name;
-
-        if ('select-multiple' == $type or 'checkboxes' == $type) {
-            if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
-                $join_id = array_search('id', $vars['fields'][$vars['options'][$name]]);
-
-                if (!$join_id) {
-                    trigger_error('No Join id', E_USER_ERROR);
-                }
-
-                $rows = sql_query('SELECT `' . underscored(key($vars['fields'][$vars['options'][$name]])) . '`,T1.value FROM cms_multiple_select T1
-					INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 ON T1.value = T2.$join_id
-					WHERE
-						T1.field='" . escape($name) . "' AND
-						T1.item='" . $id . "' AND
-						T1.section='" . $this->section . "'
-					GROUP BY T1.value
-					ORDER BY T2." . underscored(key($vars['fields'][$vars['options'][$name]])) . '
-				');
-
-                $value = '';
-                foreach ($rows as $row) {
-                    $value .= '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $row['value'] . '">' . current($row) . '</a><br>' . "\n";
-                }
-            } else {
-                $rows = sql_query("SELECT value FROM cms_multiple_select
-					WHERE
-						field='" . escape($name) . "' AND
-						item='" . $id . "'
-					ORDER BY id
-				");
-
-                $value = '';
-                foreach ($rows as $row) {
-                    if (is_assoc_array($vars['options'][$name])) {
-                        $value .= $vars['options'][$name][$row['value']] . '<br>' . "\n";
-                    } else {
-                        $value .= current($row) . '<br>' . "\n";
-                    }
-                }
-            }
+        
+        $value = $this->get_value($name);
+        
+        if (!$value) {
+        	continue;
         }
-
-        if (('' == $value or '0000-00-00' == $value or '00:00:00' == $value or 'password' == $type) and 'separator' != $type and !is_array($type)) {
-            continue;
-        }
-
-        if (in_array($type, ['position','language','translated-from'])) {
-            continue;
-        }
-
-        if ('id' == $type and !$vars['settings'][$this->section]['show_id']) {
-            continue;
-        }
-
-        if ('separator' == $type) {
-            ?>
-		<tr>
-			<td colspan="2">
-				<br />
-				<h2><?=ucfirst($name); ?></h2>
-			</td>
-		</tr>
-		<?php
-        } else {
-            ?>
+        ?>
 
 		<tr>
 			<th align="left" valign="top" width="20%"><?=$label; ?></th>
 			<td>
-		<?php
-        if (in_array($type, ['text','float','decimal','int','id','page-name','hidden','ip','deleted'])) {
-            if (is_numeric($value) and 0 == $value) {
-                continue;
-            } ?>
-			<?=$value; ?>
-		<?php
-        } elseif (is_array($type)) { ?>
-			<?=$value;?>
-		<?php } elseif ('mobile' == $type || 'tel' == $type) { ?>
-			<?=$value;?>
-		<?php } elseif ('url' == $type) { ?>
-			<a href="<?=$value;?>" target="_blank"><?=$value;?></a>
-		<?php } elseif ('email' == $type) { ?>
-			<a href="mailto:<?=$value;?>" target="_blank"><?=$value;?></a>
-		<?php } elseif ('postcode' == $type) { ?>
-			<?=$value;?>
-			<a href="http://maps.google.co.uk/maps?f=q&source=s_q&hl=en&geocode=&q=<?=$value;?>" target="_blank">(view map)</a>
-		<?php } elseif ('coords' == $type) { ?>
-			<?=htmlspecialchars(substr($value, 6, -1));?>
-		<?php } elseif ('textarea' == $type) { ?>
-			<?=nl2br(strip_tags($value));?>
-		<?php } elseif ('editor' == $type) { ?>
-			<?=$value;?>
-		<?php
-        } elseif ('file' == $type) {
-            if ($value) {
-                $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'");
-            } ?>
-				<a href="/_lib/cms/file.php?f=<?=$file[0]['id']; ?>" target="_blank">
-				<?php
-                $image_types = ['jpg','jpeg','gif','png'];
-            if (in_array(file_ext($file[0]['name']), $image_types)) {
-                ?>
-					<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id']; ?>&w=400&h=400" id="<?=$name; ?>_thumb" /><br />
-				<?php
-            } ?>
-				<?=$file[0]['name']; ?>
-				</a> 
-
-				<span style="font-size:9px;"><?=file_size($file[0]['size']); ?></span>
-
-				<?php
-                $doc_types = ['pdf','doc','docx','xls','tiff'];
-            if (in_array(file_ext($file[0]['name']), $doc_types)) {
-                ?>
-				<a href="http://docs.google.com/viewer?url=<?=rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file[0]['id'] . '&auth_user=' . $_SESSION[$auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($auth->secret_phrase . $_SESSION[$auth->cookie_prefix . '_password'])); ?>" target="_blank">(view)</a>
-				<?php
-            } ?>
-		<?php
-        } elseif ('phpupload' == $type) { ?>
-            <input type="text" name="<?=$name;?>" class="upload" value="<?=$value;?>" readonly="true">
-		<?php
-        } elseif (in_array($type, ['select', 'combo', 'radio'])) {
-            if (!is_array($vars['options'][$name])) {
-                if ('0' == $value) {
-                    $value = '';
-                } else {
-                    $value = '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $value . '">' . $content[underscored($name) . '_label'] . '</a>';
-                }
-            } else {
-                if (is_assoc_array($vars['options'][$name])) {
-                    $value = $vars['options'][$name][$value];
-                }
-            } ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('parent' == $type) {
-            reset($vars['fields'][$this->section]);
-
-            $field = key($vars['fields'][$this->section]);
-
-            $row = sql_query("SELECT id,`$field` FROM `" . $this->table . "` WHERE id='" . escape($value) . "' ORDER BY `" . underscored($label) . '`');
-
-            $value = '<a href="?option=' . escape($this->section) . '&view=true&id=' . $value . '">' . ($row[0][$field]) . '</a>'; ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('select-multiple' == $type or 'checkboxes' == $type) {
-            ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('checkbox' == $type) { ?>
-			<?=$value ? 'Yes' : 'No' ;?>
-		<?php } elseif ('files' == $type) {
-            if ($value) {
-                $value = explode("\n", $value);
-            } ?>
-				<ul id="<?=$name; ?>_files" class="files">
-				<?php
-                $count = 0;
-
-            if (is_array($value)) {
-                foreach ($value as $key => $val) {
-                    $count++;
-
-                    if ($value) {
-                        $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'");
-                    } ?>
-				<img src="/_lib/cms/file_preview.php?f=<?=$file[0]['id']; ?>&w=320&h=240" id="<?=$name; ?>_thumb" /><br />
-				<a href="/_lib/cms/file.php?f=<?=$file[0]['id']; ?>"><?=$file[0]['name']; ?></a><br />
-				<br />
-				<?php
-                }
-            } ?>
-				</ul>
-		<?php
-        } elseif ('phpuploads' == $type) { ?>
-            <textarea name="<?=$field_name;?>" class="upload" readonly="true"><?=$value;?></textarea>
-		<?php
-        } elseif ('color' == $type) {
-            ?>
-			<input type="color" value="<?=$value; ?>" disabled >
-		<?php
-        } elseif ('date' == $type) {
-            if ('0000-00-00' != $value and '' != $value) {
-                $value = dateformat('d/m/Y', $value);
-            } ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('month' == $type) {
-            if ('0000-00-00' != $value and '' != $value) {
-                $value = dateformat('F Y', $value);
-            } ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('dob' == $type) {
-            if ('0000-00-00' != $value and '' != $value) {
-                $age = age($value);
-                $value = dateformat('d/m/Y', $value);
-            } ?>
-			<?=$value; ?> (<?=$age; ?>)
-		<?php
-        } elseif ('time' == $type) {
-            ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('datetime' == $type) {
-            if ('0000-00-00 00:00:00' != $value) {
-                $date = explode(' ', $value);
-                $value = dateformat('d/m/Y', $date[0]) . ' ' . $date[1];
-            } ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('timestamp' == $type) {
-            if ('0000-00-00 00:00:00' != $value) {
-                $date = explode(' ', $value);
-                $value = dateformat('d/m/Y', $date[0]) . ' ' . $date[1];
-            } ?>
-			<?=$value; ?>
-		<?php
-        } elseif ('rating' == $type) {
-            $opts['rating'] = [
-                    1 => 'Very Poor',
-                    2 => 'Poor',
-                    3 => 'Average',
-                    4 => 'Good',
-                    5 => 'Excellent',
-                ]; ?>
-			<select name="<?=$field_name; ?>" class="rating" disabled="disabled">
-				<option value=""></option>
-				<?=html_options($opts['rating'], $value); ?>
-			</select>
-		<?php
-        } elseif ('number' == $type) { ?>
-			<?=number_format($value, 2);?>
-		<?php } ?>
-
+        		<?=$value;?>
 			</td>
 		</tr>
-		<?php
-        } ?>
 	<?php
     } ?>
 	</table>
 	</div>
 <?php
-                        } ?>
-
+} ?>
 
 
 
@@ -524,17 +295,10 @@ foreach ($languages as $language) {
             }
 
             if (in_array('position', $vars['fields'][$this->section])) {
-                //$order = 'position';
                 $limit = null;
             } else {
                 $label = $vars['labels'][$this->section][0];
-
                 $type = array_search($label, $vars['fields'][$this->section]);
-                if (('select' == $typw or 'combo' == $typw) and !is_array($vars['opts'][$label])) {
-                    //$order='T_'.$label.'.'.underscored(key($vars['fields'][$vars['options'][$label]]));
-                }
-                //$order="T_$table.".underscored($vars['labels'][$this->section][0]);
-
                 $limit = 10;
             }
 
@@ -544,9 +308,7 @@ foreach ($languages as $language) {
             foreach ($vars['fields'][$this->section] as $k => $v) {
                 if (('select' == $v or 'combo' == $v or 'radio' == $v) and $vars['options'][$k] == $_GET['option']) {
                     $conditions[$k] = escape($this->id);
-
                     $qs[$k] = $this->id;
-
                     break;
                 }
             }
@@ -569,7 +331,6 @@ foreach ($languages as $language) {
         require('_tpl/admin/' . $subsection . '.php');
     } ?>
 </div>
-
 
 <script>
 	$('#tab_<?=$count; ?>').text('<?=ucfirst($subsection); ?> (<?=$p->total; ?>)');
@@ -718,8 +479,6 @@ foreach ($languages as $language) {
 
 	</div>
 </div>
-
-
 
 <script>
 function init()

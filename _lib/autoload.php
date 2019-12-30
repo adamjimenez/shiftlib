@@ -21,5 +21,14 @@ spl_autoload_register(function ($class) {
             require(dirname(__FILE__) . '/core/shop.php');
             return;
         break;
+        case 'cms\component':
+            require_once(dirname(__FILE__) . '/cms/component.php');
+            return;
+        break;
+        default:
+        	$class = str_replace('cms\\', '', $class);
+            include_once(dirname(__FILE__) . '/cms/components/'.basename($class).'.php');
+            return;
+        break;
     }
 });

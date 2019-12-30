@@ -1,4 +1,5 @@
 <?php
+use cms;
 
 class cms
 {
@@ -7,24 +8,10 @@ class cms
      */
     public $language = 'en';
 
-    /**
-     * @var array
-     */
-    public $opts = [
-        'rating' => [
-            1 => 'Very Poor',
-            2 => 'Poor',
-            3 => 'Average',
-            4 => 'Good',
-            5 => 'Excellent',
-        ],
-    ];
-
-
     public function __construct()
     {
         global $cms_buttons, $vars;
-
+        
         //built in extensions
         $cms_buttons[] = [
             'section' => 'email templates',
@@ -932,6 +919,13 @@ class cms
 
         return $parents;
     }
+    
+    function type_to_class($class) {
+		$class = str_replace('parent', 'select_parent', $class);
+		$class = str_replace('int', 'integer', $class);
+        $class = 'cms\\'.str_replace('-', '_', $class);
+        return $class;
+    }
 
     // get field widget
     public function get_field(string $name, $attribs = '', $placeholder = '', $separator = null, $where = false)
@@ -942,391 +936,20 @@ class cms
             $name = spaced($name);
         }
 
-        if ($vars['fields'][$this->section][$name]) {
-            $type = $vars['fields'][$this->section][$name];
-        } else {
-            foreach ($vars['fields'][$this->section] as $k => $v) {
-                if ($vars['fields'][$this->section][$k][$name]) {
-                    $type = $vars['fields'][$this->section][$k][$name];
-                    break;
-                }
-            }
-        }
-
+		$type = $vars['fields'][$this->section][$name];
+		$class = $this->type_to_class($type);
         $field_name = underscored($name);
-
         $value = $this->content[$field_name];
 
         if ('en' != $this->language and '' != $this->language and in_array('language', $vars['fields'][$this->section])) {
             $value = $this->content[$this->language][$field_name];
-
             $field_name = $this->language . '_' . $field_name;
         }
 
-        $readonly = false;
-
-        if (is_array($this->editable_fields) and !in_array($name, $this->editable_fields)) {
-            $readonly = true;
-        }
-
-        switch ($type) {
-            case 'text':
-            case 'float':
-            case 'decimal':
-            case 'page-name':
-            case 'tel':
-            case 'hidden':
-            case 'email':
-            case 'url':
-                ?>
-                <input type="<?= $type; ?>" name="<?= $field_name; ?>" value="<?= htmlspecialchars($value); ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?>
-                       <?php if ($placeholder) { ?>placeholder="<?= $placeholder; ?>"<?php } ?> <?= $attribs; ?>>
-                <?php
-                break;
-            case 'int':
-                ?>
-                <input type="number" name="<?= $field_name; ?>" value="<?= htmlspecialchars($value); ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?>
-                       <?php if ($placeholder) { ?>placeholder="<?= $placeholder; ?>"<?php } ?> <?= $attribs; ?>>
-                <?php
-                break;
-            case 'coords':
-                ?>
-                <input type="text" name="<?= $field_name; ?>" value="<?= htmlspecialchars(substr($value, 6, -1)); ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="50" <?= $attribs; ?> placeholder="coordinates">
-                <?php
-                break;
-            case 'postcode':
-                ?>
-                <input type="text" name="<?= $field_name; ?>" value="<?= $value; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?>
-                       <?php if ($placeholder) { ?>placeholder="<?= $placeholder; ?>"<?php } ?> size="10"
-                       <?= $attribs; ?>>
-                <?php
-                break;
-            case 'mobile':
-                ?>
-                <input type="text" name="<?= $field_name; ?>" value="<?= $value; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="14" <?= $attribs; ?>>
-                <?php
-                break;
-            case 'password':
-                global $auth;
-
-                if ($auth->hash_password) {
-                    $value = '';
-                }
-                ?>
-                <input type="password" name="<?= $field_name; ?>" value="<?= $value; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>>
-                <?php
-                break;
-            case 'textarea':
-                ?>
-                <textarea name="<?= $field_name; ?>"
-                          <?php if ($readonly) { ?>disabled<?php } ?> <?php if ($placeholder) { ?>placeholder="<?= $placeholder; ?>"<?php } ?> <?= $attribs ?: 'class="autogrow"'; ?>><?= $value; ?></textarea>
-                <?php
-                break;
-            case 'editor':
-                ?>
-                <textarea id="<?= $field_name; ?>" name="<?= $field_name; ?>"
-                          <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs ?: 'rows="25" style="width:100%; height: 400px;"'; ?>
-                          class="tinymce"><?= htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8'); ?></textarea>
-                <?php
-                break;
-            case 'file':
-                $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
-                ?>
-                <?php if ($value) { ?>
-                <input type="hidden" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= $value; ?>">
-                <?= $file['name']; ?>
-                <a href="javascript:;" onClick="clearFile('<?= $field_name; ?>')">clear</a>
-            <?php } else { ?>
-                <input type="file" id="<?= $field_name; ?>" name="<?= $field_name; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>/>
-            <?php } ?>
-                <?php
-                break;
-            case 'phpupload':
-                ?>
-                <input type="text" name="<?= $field_name; ?>" class="upload" value="<?= $value; ?>">
-                <?php
-                break;
-            case 'select':
-            case 'combo':
-            case 'radio':
-                if ('radio' == $type) {
-                    $vars['options'][$name] = $this->get_options($name, $where);
-
-                    $assoc = is_assoc_array($vars['options'][$name]);
-                    foreach ($vars['options'][$name] as $k => $v) {
-                        $val = $assoc ? $k : $v; ?>
-                    <label <?= $attribs; ?>><input type="radio" name="<?= $field_name; ?>" value="<?= $val; ?>"
-                                                   <?php if ($readonly) { ?>disabled<?php } ?>
-                                                   <?php if (isset($value) and $val == $value) { ?>checked="checked"<?php } ?>
-                                                   <?= $attribs; ?>> <?= $v; ?> &nbsp;</label><?= $separator; ?>
-                        <?php
-                    }
-                } elseif ('combo' == $type) {
-                    ?>
-                    <input type="hidden" name="<?= $field_name; ?>" <?php if ($readonly) { ?>disabled<?php } ?>
-                           <?= $attribs; ?> value="<?= $value; ?>">
-                    <input type="text" <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>
-                           value="<?= $this->content[$field_name . '_label']; ?>" data-type="combo"
-                           data-field="<?= $field_name; ?>">
-                    <?php
-                } else {
-                    if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
-                        ?>
-                        <div class="chained" data-name="<?= $field_name; ?>"
-                             data-section="<?= $vars['options'][$name]; ?>" data-value="<?= $value; ?>"></div>
-                        <?php
-                    } else {
-                        if (!is_array($vars['options'][$name])) {
-                            global $auth;
-
-                            $conditions = [];
-                            foreach ($auth->user['filters'][$this->section] as $k => $v) {
-                                $conditions[$k] = $v;
-                            }
-
-                            $vars['options'][$name] = $this->get_options($name, $where);
-                        } ?>
-                        <select name="<?= $field_name; ?>" <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>>
-                            <option value=""><?= $placeholder ?: 'Choose'; ?></option>
-                            <?= html_options($vars['options'][$name], $value); ?>
-                        </select>
-                        <?php
-                    }
-                }
-                break;
-            case 'checkboxes':
-                $value = [];
-
-                if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
-                    if ($this->id) {
-                        $join_id = $this->get_id_field($name);
-
-                        $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
-                            INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 ON T1.value=T2.$join_id
-                            WHERE
-                                section='" . escape($this->section) . "' AND
-                                field='" . escape($name) . "' AND
-                                item='" . $this->id . "'
-                        ");
-
-                        foreach ($rows as $row) {
-                            $value[] = $row['value'];
-                        }
-                    }
-
-                    if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
-                        $language = $this->language ? $this->language : 'en';
-                        $table = underscored($vars['options'][$name]);
-
-                        foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-                            if ('separator' != $v) {
-                                $field = $k;
-                                break;
-                            }
-                        }
-
-                        // TODO: Adam, this isn't used
-                        $raw_option = $vars['fields'][$vars['options'][$name]][$field];
-
-                        $cols = '';
-                        $cols .= '`' . underscored($field) . '`';
-
-                        $rows = sql_query("SELECT id,$cols FROM
-                            $table
-                            WHERE
-                                language='" . $language . "'
-                            ORDER BY `" . underscored($field) . '`
-                        ');
-
-                        $options = [];
-                        foreach ($rows as $row) {
-                            if ($row['translated_from']) {
-                                $id = $row['translated_from'];
-                            } else {
-                                $id = $row['id'];
-                            }
-
-                            $options[$id] = $row[underscored($field)];
-                        }
-
-                        $vars['options'][$name] = $options;
-                    } else {
-                        //make sure we get the first field
-                        reset($vars['fields'][$vars['options'][$name]]);
-
-                        $vars['options'][$name] = $this->get_options($name, $where);
-                    }
-                } else {
-                    if ($this->id) {
-                        $rows = sql_query("SELECT value FROM cms_multiple_select
-                            WHERE
-                                section='" . escape($this->section) . "' AND
-                                field='" . escape($name) . "' AND
-                                item='" . $this->id . "'
-                        ");
-
-                        foreach ($rows as $row) {
-                            $value[] = $row['value'];
-                        }
-                    }
-                }
-
-                ?>
-                <?php
-
-                $is_assoc = is_assoc_array($vars['options'][$name]);
-
-                print '<ul class="checkboxes">';
-
-                foreach ($vars['options'][$name] as $k => $v) {
-                    $val = $is_assoc ? $k : $v; ?>
-                    <li><label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>"
-                                      <?php if ($readonly) { ?>readonly<?php } ?>
-                                      <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?= $v; ?>
-                        </label></li>
-                    <?php
-                }
-
-                print '</ul>';
-
-                break;
-            case 'parent':
-                // TODO: Adam, this isn't used
-                $parent_field = array_search('parent', $vars['fields'][$this->section]);
-
-                reset($vars['fields'][$this->section]);
-
-                $label = key($vars['fields'][$this->section]);
-
-                $rows = sql_query("SELECT id,`$label` FROM `" . $this->table . "` ORDER BY `$label`");
-
-                $parents = [];
-                foreach ($rows as $row) {
-                    if ($row['id'] == $this->id) {
-                        continue;
-                    }
-                    $parents[$row['id']] = $row[$label];
-                }
-                ?>
-                <select name="<?= $field_name; ?>" <?php if ($readonly) { ?>readonly<?php } ?>>
-                    <option value=""></option>
-                    <?= html_options($parents, $value); ?>
-                </select>
-                <?php
-                break;
-            case 'checkbox':
-                ?>
-                <input type="checkbox" name="<?= $field_name; ?>" value="1" <?php if ($readonly) { ?>disabled<?php } ?>
-                       <?php if ($value) { ?>checked<?php } ?> <?= $attribs; ?>/>
-                <?php
-                break;
-            case 'files':
-
-                if ($value) {
-                    $value = explode("\n", $value);
-                }
-                ?>
-
-                <ul class="files">
-                    <?php
-                    if (is_array($value)) {
-                        foreach ($value as $key => $val) {
-                            $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'"); ?>
-                            <li>
-                                <?php if ($file) { ?>
-                                    <input type="hidden" name="<?= $field_name; ?>[]" value="<?= $val; ?>"
-                                           <?php if ($readonly) { ?>readonly<?php } ?>>
-                                    <a href="/_lib/cms/file.php?f=<?= $val; ?>">
-                                        <img src="/_lib/cms/file.php?f=<?= $val; ?>"
-                                             style="max-width: 100px; max-height: 100px;"><br>
-                                        <?= $file[0]['name']; ?>
-                                    </a>
-                                    <a href="javascript:;" class="link" onClick="delItem(this)">Delete</a>
-                                <?php } ?>
-                            </li>
-                            <?php
-                        }
-                    }
-                    ?>
-
-                    <li>
-                        <input type="file" name="<?= $field_name; ?>[]" multiple="multiple"
-                               <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>/>
-                    </li>
-                </ul>
-                <?php
-                break;
-            case 'phpuploads':
-                ?>
-                <textarea name="<?= $field_name; ?>" class="upload"><?= $value; ?></textarea>
-                <?php
-                break;
-            case 'color':
-                ?>
-                <input type="color" name="<?= $field_name; ?>" value="<?= $value; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="6" <?= $attribs; ?>/>
-                <?php
-                break;
-            case 'date':
-                ?>
-                <input type="text" data-type="date" id="<?= $field_name; ?>" name="<?= $field_name; ?>"
-                       value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?= $attribs ?: 'style="width:75px;"'; ?>
-                       autocomplete="off"/>
-                <?php
-                break;
-            case 'month':
-                ?>
-                <input type="text" class="month" id="<?= $field_name; ?>" name="<?= $field_name; ?>"
-                       value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?= $attribs ?: 'style="width:75px;"'; ?>/>
-                <?php
-                break;
-            case 'dob':
-                ?>
-                <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>"
-                       value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?= $attribs ?: 'style="width:75px;"'; ?>/>
-                <?php
-                break;
-            case 'time':
-                ?>
-                <input type="time" step="1" data-type="time" id="<?= $field_name; ?>" name="<?= $field_name; ?>"
-                       value="<?= ('00:00:00' != $value) ? substr($value, 0, -3) : ''; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>/>
-                <?php
-                break;
-            case 'datetime':
-
-                if ($value) {
-                    $date = explode(' ', $value);
-                }
-                ?>
-                <input type="date" name="<?= $field_name; ?>"
-                       value="<?= ($date[0] and '0000-00-00' != $date[0]) ? $date[0] : ''; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> size="10" <?= $attribs ?: ''; ?>/>
-                <input type="time" step="1" name="time[<?= $field_name; ?>]" value="<?= $date[1]; ?>"
-                       <?php if ($readonly) { ?>disabled<?php } ?> <?= $attribs; ?>>
-                <?php
-                break;
-            case 'rating':
-            case 'avg-rating':
-                ?>
-                <select name="<?= $field_name; ?>" class="rating" data-section="<?= $this->section; ?>"
-                        data-item="<?= $this->content['id']; ?>"
-                        <?php if ('avg-rating' == $type) { ?>data-avg='data-avg'<?php } ?> <?= $attribs; ?>>
-                    <option value="">Choose</option>
-                    <?= html_options($this->opts['rating'], $value, true); ?>
-                </select>
-                <?php
-                break;
+        if (class_exists($class)) {
+        	$readonly = !in_array($name, $this->editable_fields);
+        	$component = new $class;
+        	$component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
         }
     }
 
@@ -1336,190 +959,20 @@ class cms
         global $vars;
 
         $type = $vars['fields'][$this->section][$name];
-
+		$class = $this->type_to_class($type);
         $field_name = underscored($name);
-
         $value = $this->content[$field_name];
 
-        $id = $this->id;
-
-        if (in_array($type, ['checkboxes'])) {
-            $array = [];
-
-            if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
-                $join_id = $this->get_id_field($name);
-
-                //make sure we get the label from the first array item
-                reset($vars['fields'][$vars['options'][$name]]);
-
-                $rows = sql_query('SELECT `' . underscored(key($vars['fields'][$vars['options'][$name]])) . '`,T1.value FROM cms_multiple_select T1
-                    INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 ON T1.value = T2.$join_id
-                    WHERE
-                        T1.field='" . escape($name) . "' AND
-                        T1.item='" . $id . "' AND
-                        T1.section='" . $this->section . "'
-                    GROUP BY T1.value
-                    ORDER BY T2." . underscored(key($vars['fields'][$vars['options'][$name]])) . '
-                ');
-
-                foreach ($rows as $row) {
-                    $array[] = '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $row['value'] . '">' . current($row) . '</a>';
-                }
-            } else {
-                $rows = sql_query("SELECT value FROM cms_multiple_select
-                    WHERE
-                        field='" . escape($name) . "' AND
-                        item='" . $id . "'
-                    ORDER BY id
-                ");
-
-                foreach ($rows as $row) {
-                    if (is_assoc_array($vars['options'][$name])) {
-                        $array[] = $vars['options'][$name][$row['value']];
-                    } else {
-                        $array[] = current($row);
-                    }
-                }
-            }
-
-            $value = implode('<br>' . "\n", $array);
-        }
-
-        if ('url' == $type) {
-            $value = '<a href="' . $value . '" target="_blank">' . $value . '</a>';
-        } elseif ('email' == $type) {
-            $value = '<a href="mailto:' . $value . '" target="_blank">' . $value . '</a>';
-        } elseif ('file' == $type) {
-            if ($value) {
-                $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'");
-
-                $image_types = ['jpg', 'jpeg', 'gif', 'png'];
-                if (in_array(file_ext($file[0]['name']), $image_types)) {
-                    $value = '<img src="http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file_preview.php?f=' . $file[0]['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
-                }
-                $value .= '<a href="http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file[0]['id'] . '">' . $file[0]['name'] . '</a> <span style="font-size:9px;">' . file_size($file[0]['size']) . '</span>';
-
-                $doc_types = ['pdf', 'doc', 'docx', 'xls', 'tiff'];
-                if (in_array(file_ext($file[0]['name']), $doc_types)) {
-                    $value .= '<a href="http://docs.google.com/viewer?url=' . rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file[0]['id'] . '&auth_user=' . $_SESSION[$auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($auth->secret_phrase . $_SESSION[$auth->cookie_prefix . '_password'])) . '" target="_blank">(view)</a>';
-                }
-            }
-        } elseif ('phpupload' == $type) { ?>
-            <img src="/_lib/modules/phpupload/?func=preview&file=<?= $value; ?>&w=320&h=240" id="<?= $name; ?>_thumb"/>
-            <br/>
-            <label id="<?= $name; ?>_label"><?= $value; ?></label>
-            <?php
-        } elseif (in_array($type, ['select', 'combo', 'radio'])) {
-            if (!is_array($vars['options'][$name])) {
-                if ('0' == $value) {
-                    $value = '';
-                } else {
-                    $value = '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $value . '">' . $this->content[underscored($name) . '_label'] . '</a>';
-                }
-            } else {
-                if (is_assoc_array($vars['options'][$name])) {
-                    $value = $vars['options'][$name][$value];
-                }
-            } ?>
-            <?php
-        } elseif ('parent' == $type) {
-            reset($vars['fields'][$this->section]);
-
-            $field = key($vars['fields'][$this->section]);
-
-            $row = sql_query("SELECT id,`$field` FROM `" . $this->table . "` WHERE id='" . escape($value) . "' ORDER BY `$field`");
-
-            $value = '<a href="?option=' . escape($this->section) . '&view=true&id=' . $value . '">' . ($row[0][$field]) . '</a>'; ?>
-            <?php
-        } elseif ('checkbox' == $type) {
-            $value = $value ? 'Yes' : 'No';
-        } elseif ('files' == $type) {
-            if ($value) {
-                $value = explode("\n", $value);
-            } ?>
-            <ul id="<?= $name; ?>_files" class="files">
-                <?php
-                $count = 0;
-
-            if (is_array($value)) {
-                $array = $value;
-                foreach ($array as $key => $val) {
-                    $count++;
-
-                    if ($val) {
-                        $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'");
-                    }
-
-                    // TODO: Adma, $image_types doesn't exist
-                    if (in_array(file_ext($file[0]['name']), $image_types)) {
-                        $value = '<img src="http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file_preview.php?f=' . $file[0]['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
-                    }
-                    $value .= '<a href="http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file[0]['id'] . '">' . $file[0]['name'] . '</a> <span style="font-size:9px;">' . file_size($file[0]['size']) . '</span><br><br>';
-                }
-            } ?>
-            </ul>
-            <?php
-        } elseif ('phpuploads' == $type) {
-            if ($value) {
-                $value = explode("\n", $value);
-            } ?>
-            <ul id="<?= $name; ?>_files">
-                <?php
-                $count = 0;
-
-            if (is_array($value)) {
-                foreach ($value as $key => $val) {
-                    $count++; ?>
-                        <li id="item_<?= $name; ?>_<?= $count; ?>">
-                            <img src="/_lib/modules/phpupload/?func=preview&file=<?= $val; ?>"
-                                 id="file_<?= $name; ?>_<?= $count; ?>_thumb"/><br/>
-                            <label id="file_<?= $name; ?>_<?= $count; ?>_label"><?= $val; ?></label>
-                        </li>
-                        <?php
-                }
-            } ?>
-            </ul>
-            <?php
-        } elseif ('date' == $type) {
-            if ('0000-00-00' != $value and '' != $value) {
-                $value = dateformat('d/m/Y', $value);
-            }
-        } elseif ('dob' == $type) {
-            if ('0000-00-00' != $value and '' != $value) {
-                // TODO: Adam, this isn't used
-                $age = age($value);
-                $value = dateformat('d/m/Y', $value);
-            }
-
-            $value = $value . ' (<?=$age;?>)';
-        } elseif ('month' == $type) {
-            if ('0000-00-00' != $value and '' != $value) {
-                $value = dateformat('F Y', $value);
-            }
-        } elseif ('datetime' == $type) {
-            if ('0000-00-00 00:00:00' != $value) {
-                $date = explode(' ', $value);
-                $value = dateformat('d/m/Y', $date[0]) . ' ' . $date[1];
-            }
-        } elseif ('timestamp' == $type) {
-            if ('0000-00-00 00:00:00' != $value) {
-                $date = explode(' ', $value);
-                $value = dateformat('d/m/Y', $date[0]) . ' ' . $date[1];
-            }
-        } elseif ('number' == $type) {
-            $value = number_format($value, 2);
-        } elseif ('rating' == $type) {
-            $value = '<select name="' . $field_name . '" class="rating" disabled="disabled">
-                <option value="">Choose</option>
-                ' . html_options($this->opts['rating'], $value, true) . '
-            </select>';
-        } elseif ('coords' == $type) {
-            $value = '<input type="text" class="map" name="' . $field_name . '" value="' . htmlspecialchars(substr($value, 6, -1)) . '" size="50" ' . $attribs . '>';
+        if (class_exists($class)) {
+        	$readonly = !in_array($name, $this->editable_fields);
+        	$component = new $class;
+        	$value = $component->value($value, $name);
         }
 
         if ($return) {
             return $value;
         }
+        
         print $value;
     }
 
@@ -1629,9 +1082,9 @@ class cms
     public function admin()
     {
         global $auth, $vars;
-
-        $option = $_GET['option'];
-        $section = $option ?: 'index';
+        
+        $option = $_GET['option'] ?: 'index';
+        $section = $option;
         $pos = strpos($section, '/');
 
         // TODO: Adam, this isn't used
@@ -2071,7 +1524,7 @@ class cms
                     }
 
                     if ($this->id) {
-                        //clean up
+                        //clean up old files
                         $row = sql_query("SELECT `$name` FROM `" . $this->table . '`', 1);
 
                         $old_files = explode("\n", $row[$name]);
@@ -2238,36 +1691,36 @@ class cms
                     $this->id = sql_insert_id();
                 }
             }
-
-            //log it
-            if (table_exists('cms_logs')) {
-                $details = '';
-
-                $task = 'add';
-                if ($this->id) {
-                    $task = 'edit';
-
-                    if ('en' === $language) {
-                        $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
-                            WHERE
-                                `id`='" . escape($this->id) . "'
-                        ", 1);
-                    } else {
-                        $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
-                            WHERE
-                                `translated_from`='" . escape($this->id) . "' AND
-                                language='" . escape($language) . "'
-                        ", 1);
-                    }
-
-                    // find changes
-                    foreach ($updated_row as $k => $v) {
-                        if ($row[$k] != $v) {
-                            $details .= $k . '=' . $v . "\n";
-                        }
+            
+            // log it
+            $details = '';
+            $task = 'add';
+            
+            // find changes
+            if ($this->id) {
+                $task = 'edit';
+            
+                if ('en' === $language) {
+                    $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
+                        WHERE
+                            `id`='" . escape($this->id) . "'
+                    ", 1);
+                } else {
+                    $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
+                        WHERE
+                            `translated_from`='" . escape($this->id) . "' AND
+                            language='" . escape($language) . "'
+                    ", 1);
+                }
+                
+                foreach ($updated_row as $k => $v) {
+                    if ($row[$k] != $v) {
+                        $details .= $k . '=' . $v . "\n";
                     }
                 }
-
+            }
+            
+            if (table_exists('cms_logs')) {
                 $this->save_log($this->section, $this->id, $task, $details);
             }
 

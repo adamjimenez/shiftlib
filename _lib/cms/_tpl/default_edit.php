@@ -141,9 +141,7 @@ foreach ($languages as $language) {
             }
             
             if ('hidden' == $type) {
-                ?>
-				<?=$this->get_field($name); ?>
-			<?php
+            	print $this->get_field($name);
                 continue;
             }
 
@@ -152,10 +150,7 @@ foreach ($languages as $language) {
             if (!$label) {
                 $label = ucfirst(spaced($name));
             }
-
-            if ('select-multiple' == $type) {
-                $value = $id;
-            } ?>
+            ?>
 			
 			<div class="form-group">
 				<?php
@@ -175,20 +170,6 @@ foreach ($languages as $language) {
 			    </div>
 			    <br>
 			    <?=$this->get_field($name, 'class="' . $class . '" id="' . underscored($name) . '"');?>
-				<?php
-                    break;
-                    case 'select':
-                ?>
-			    <div>
-			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			    </div>
-			   	<?=$this->get_field($name, 'id="' . underscored($name) . '"');?>
-				<?php
-                    break;
-                    case 'editor':
-                ?>
-			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			   	<?=$this->get_field($name, 'id="' . underscored($name) . '"');?>
 				<?php
                     break;
                     default:
