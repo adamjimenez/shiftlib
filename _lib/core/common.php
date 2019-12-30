@@ -1,5 +1,4 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
 use SendGrid\Mail\Mail;
 
 set_error_handler('error_handler');
@@ -576,7 +575,7 @@ function send_mail($opts = []): bool
         
         return $response;
     } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-        $mail = new PHPMailer();
+        $mail = new \PHPMailer\PHPMailer\PHPMailer();
         $mail->SetFrom($opts['from_email']);
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
