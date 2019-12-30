@@ -3,6 +3,8 @@ namespace cms;
 
 class checkboxes extends component
 {
+	public $field_sql = null;
+	
 	function field($field_name, $value = '', $options = []) {
 		global $vars, $cms;
 		

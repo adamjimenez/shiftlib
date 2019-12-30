@@ -3,6 +3,8 @@ namespace cms;
 
 class files extends component
 {
+	public $field_sql = "TEXT";
+	
 	function field($field_name, $value = '', $options = []) {
         if ($value) {
             $value = explode("\n", $value);

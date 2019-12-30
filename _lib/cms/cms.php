@@ -67,63 +67,27 @@ class cms
 
     /**
      * @param string $type
-     * @return string
+     * @return string|null
      */
-    public function form_to_db(string $type): string
+    public function form_to_db(string $type)
     {
+		$class = $this->type_to_class($type);
+		if (class_exists($class)) {
+		    $component = new $class;
+		    return $component->field_sql;
+		}
+    	
         switch ($type) {
             case 'id':
-            case 'checkboxes':
             case 'separator':
-                break;
-            case 'textarea':
-            case 'editor':
-            case 'files':
-            case 'phpuploads':
-                return 'TEXT';
                 break;
             case 'read':
             case 'deleted':
-            case 'checkbox':
-            case 'rating':
                 return 'TINYINT';
                 break;
-            case 'int':
-            case 'parent':
             case 'position':
             case 'translated-from':
                 return 'INT';
-                break;
-            case 'datetime':
-                return 'DATETIME';
-                break;
-            case 'timestamp':
-                return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
-                break;
-            case 'date':
-            case 'dob':
-            case 'month':
-                return 'DATE';
-                break;
-            case 'time':
-                return 'TIME';
-                break;
-            case 'polygon':
-                return 'POLYGON';
-                break;
-            case 'coords':
-                return 'POINT';
-                break;
-            case 'language':
-                return "VARCHAR( 32 ) NOT NULL DEFAULT ''";
-                break;
-            case 'select':
-            case 'radio':
-            case 'combo':
-                return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
-                break;
-            case 'color':
-                return "VARCHAR( 7 ) NOT NULL DEFAULT ''";
                 break;
             default:
                 return "VARCHAR( 140 ) NOT NULL DEFAULT ''";

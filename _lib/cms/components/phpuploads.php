@@ -3,6 +3,8 @@ namespace cms;
 
 class phpuploads extends component
 {
+	public $field_sql = "TEXT";
+	
 	function field($field_name, $value = '', $options = []) {
         ?>
         <textarea name="<?=$field_name;?>" class="upload"><?=$value;?></textarea>

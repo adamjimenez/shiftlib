@@ -3,6 +3,8 @@ namespace cms;
 
 class select_parent extends component
 {
+	public $field_sql = "INT";
+	
 	function field($field_name, $value = '', $options = []) {
 		global $vars, $cms;
 

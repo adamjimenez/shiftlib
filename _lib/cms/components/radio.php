@@ -3,6 +3,8 @@ namespace cms;
 
 class radio extends component
 {
+	public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+	
 	function field($field_name, $value = '', $options = []) {
 		global $cms, $vars;
 		

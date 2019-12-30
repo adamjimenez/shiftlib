@@ -3,6 +3,8 @@ namespace cms;
 
 class rating extends component
 {
+	public $field_sql = "TINYINT";
+	
     // rating widget options
     public $rating_opts = [
         1 => 'Very Poor',

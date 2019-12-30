@@ -3,6 +3,8 @@ namespace cms;
 
 class datetime extends component
 {
+	public $field_sql = "DATETIME";
+	
 	function field($field_name, $value = '', $options = []) {
         if ($value) {
             $date = explode(' ', $value);

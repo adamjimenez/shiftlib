@@ -4,6 +4,7 @@ namespace cms;
 abstract class component
 {
 	public $field_type = 'text';
+	public $field_sql = "VARCHAR( 140 ) NOT NULL DEFAULT ''";
 	
 	function component() {
 	}

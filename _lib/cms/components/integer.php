@@ -4,6 +4,7 @@ namespace cms;
 class integer extends component
 {
 	public $field_type = 'number';
+	public $field_sql = "INT";
 	
 	function value($value) {
         $value = number_format($value);
