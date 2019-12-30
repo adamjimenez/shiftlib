@@ -80,12 +80,6 @@ if (
     }
 }
 
-if ($languages) {
-    $languages = array_merge(['en'], $languages);
-} else {
-    $languages = ['en'];
-}
-
 if ($_POST['delete'] and $this->id) {
     $this->delete_items($this->section, $this->id);
 
@@ -242,13 +236,9 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
 
 <?php
-foreach ($languages as $language) {
-    if ('en' !== $language and in_array('language', $vars['fields'][$this->section])) {
-        $this->language = $language;
-        $content = $this->get($this->section, $_GET['id']);
-    } 
+    $content = $this->get($this->section, $_GET['id']);
 ?>
-	<div id="language_<?=$language; ?>" <?php if ('en' != $language) { ?>style="display:none;"<?php } ?> class="box">
+	<div class="box">
 	<table border="0" cellspacing="0" cellpadding="5" width="100%">
 
 	<?php
@@ -277,7 +267,7 @@ foreach ($languages as $language) {
 	</table>
 	</div>
 <?php
-} ?>
+?>
 
 </div>
 
@@ -365,24 +355,7 @@ foreach ($languages as $language) {
 <script>
 function init()
 {
-	if( jQuery('#language') ){
-		jQuery('#language').on('change', set_language);
-	}
-
 	init_tabs();
-}
-
-function set_language()
-{
-	var option=document.getElementById('language');
-
-	for( j=0; j<option.options.length; j++ ){;
-		if( document.getElementById('language_'+option.options[j].value).style.display!='none' ){
-			document.getElementById('language_'+option.options[j].value).style.display='none';
-		}
-	}
-
-	document.getElementById('language_'+jQuery('#language').val()).style.display='block';
 }
 
 function choose_filter(field)

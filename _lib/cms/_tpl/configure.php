@@ -197,8 +197,6 @@ $field_opts = [
     'ip',
     'page_name',
     'approve',
-    'language',
-    'translated_from',
     'parent',
     'position',
     'read',
@@ -487,8 +485,6 @@ $upload_config["resize_dimensions"]=array(' . str_replace('x', ',', $_POST['uplo
 $upload_config["allowed_exts"]=array(' . str_to_csv($_POST['upload_config']['allowed_exts']) . ');
 
 #ADMIN AREA
-$languages=array(' . str_to_csv($_POST['languages']) . ');
-
 // sections in menu
 $vars["sections"]=array(
 ' . array_to_csv($display) . '
@@ -1003,10 +999,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<tr>
         			<th>From email</th>
         			<td><input type="text" name="from_email" value="<?=$from_email;?>"></td>
-        		</tr>
-        		<tr>
-        			<th>languages</th>
-        			<td><textarea type="text" name="languages"><?=implode("\n", $languages);?></textarea></td>
         		</tr>
         		<tr>
         			<th>folder to store upload data</th>

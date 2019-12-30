@@ -1,11 +1,6 @@
 <?php
 class cms
 {
-    /**
-     * @var string
-     */
-    public $language = 'en';
-
     public function __construct()
     {
         global $cms_buttons, $vars;
@@ -83,7 +78,6 @@ class cms
                 return 'TINYINT';
                 break;
             case 'position':
-            case 'translated-from':
                 return 'INT';
                 break;
             default:
@@ -184,7 +178,6 @@ class cms
         }
 
         $field_id = $this->get_id_field($section);
-        $has_languages = in_array('language', $vars['fields'][$section]);
 
         foreach ($ids as $id) {
             // cheeck perms
@@ -197,26 +190,11 @@ class cms
             if (in_array('deleted', spaced($vars['fields'][$section]))) {
                 $this->set_section($section, $id, ['deleted']);
                 $this->save(['deleted' => 1]);
-
-                if ($has_languages) {
-                    sql_query('UPDATE `' . escape(underscored($section)) . "` SET
-                        deleted = 1
-                        WHERE
-                            translated_from='$id'
-                    ");
-                }
             } else {
                 sql_query('DELETE FROM `' . escape(underscored($section)) . '`
                     WHERE ' . $field_id . "='$id'
                         LIMIT 1
                 ");
-
-                if ($has_languages) {
-                    sql_query('DELETE FROM `' . escape(underscored($section)) . "`
-                        WHERE
-                            translated_from='$id'
-                    ");
-                }
 
                 //multiple select items
                 sql_query("DELETE FROM cms_multiple_select
@@ -237,16 +215,11 @@ class cms
 
         $table = underscored($section);
         $field_id = $this->get_id_field($section);
-        $has_languages = in_array('language', $vars['fields'][$section]);
 
         // check for id or page name
         $id = null;
         if (is_numeric($conditions)) {
-            if ('en' == $this->language) {
-                $id = $conditions;
-            } else {
-                $conditions = ['translated_from' => $conditions, 'language' => $this->language];
-            }
+            $id = $conditions;
             $num_results = 1;
         } elseif (is_string($conditions)) {
             if (in_array('page-name', $vars['fields'][$section])) {
@@ -255,9 +228,7 @@ class cms
                 $num_results = 1;
             }
         } else {
-            if ($has_languages) {
-                $conditions['language'] = $this->language;
-            } elseif (!in_array('id', $vars['fields'][$section])) {
+            if (!in_array('id', $vars['fields'][$section])) {
                 $id = 1;
             }
         }
@@ -274,11 +245,6 @@ class cms
         // filter deleted
         if (in_array('deleted', $vars['fields'][$section]) and !isset($conditions['deleted']) and !$id) {
             $where[] = "T_$table.deleted = 0";
-        }
-
-        // filter other translations
-        if ($has_languages and 'en' == $this->language) {
-            $where[] = "`translated_from`='0'";
         }
 
         $joins = '';
@@ -666,7 +632,7 @@ class cms
      */
     public function set_section($section, $id = null, $editable_fields = null)
     {
-        global $vars, $languages, $auth;
+        global $vars, $auth;
 
         if (!$vars['fields'][$section]) {
             throw new Exception('Section does not exist: ' . $section, E_USER_ERROR);
@@ -706,32 +672,10 @@ class cms
             if (!$this->content) {
                 $this->id = null;
             }
-
-            if (in_array('language', $vars['fields'][$this->section])) {
-                foreach ($languages as $language) {
-                    if ('en' === $language) {
-                        continue;
-                    }
-
-                    $this->content[$language] = sql_query('SELECT * FROM `' . $this->table . "`
-                        WHERE
-                            `translated_from`='" . escape($this->id) . "' AND
-                            `language`='" . escape($language) . "'
-                    ", true);
-                }
-            }
         } else {
             $this->content = $_GET;
             $this->id = null;
         }
-    }
-
-    /**
-     * @param string $language
-     */
-    public function set_language(string $language): void
-    {
-        $this->language = $language;
     }
 
     // get field label
@@ -789,11 +733,6 @@ class cms
 		$class = $this->type_to_class($type);
         $field_name = underscored($name);
         $value = $this->content[$field_name];
-
-        if ('en' != $this->language and '' != $this->language and in_array('language', $vars['fields'][$this->section])) {
-            $value = $this->content[$this->language][$field_name];
-            $field_name = $this->language . '_' . $field_name;
-        }
 
         if (class_exists($class)) {
         	$readonly = !in_array($name, $this->editable_fields);
@@ -948,7 +887,7 @@ class cms
     // validate fields before saving
     public function validate($data = null)
     {
-        global $vars, $languages, $strs;
+        global $vars;
 
         if (!is_array($data)) {
             $data = $_POST;
@@ -970,94 +909,81 @@ class cms
             }
         }
 
-        if (count($languages) and in_array('language', $vars['fields'][$this->section])) {
-            $languages = array_merge(['en'], $languages);
-        } else {
-            $languages = ['en'];
-        }
+        foreach ($vars['fields'][$this->section] as $k => $v) {
+            if ($this->editable_fields and !in_array($k, $this->editable_fields)) {
+                continue;
+            }
 
-        foreach ($languages as $language) {
-            foreach ($vars['fields'][$this->section] as $k => $v) {
-                if ($this->editable_fields and !in_array($k, $this->editable_fields)) {
+            $field_name = underscored($k);
+            $name = $field_name;
+
+            //check items are valid
+            $is_valid = true;
+            
+            if ($data[$name]) {
+				$class = $this->type_to_class($v);
+		        if (class_exists($class)) {
+		        	$component = new $class;
+		        	$is_valid = $component->is_valid($data[$name]);
+		        }
+            }
+
+            if (false === $is_valid) {
+                $errors[] = $name;
+            }
+
+            // check required fields
+            if (
+                in_array($k, $vars['required'][$this->section]) and
+                ('' === $data[$name] or !isset($data[$name]))
+            ) {
+                if ($_FILES[$name]) {
                     continue;
                 }
 
-                $field_name = underscored($k);
-
-                if ('en' == $language) {
-                    $name = $field_name;
-                } else {
-                    $name = $language . '_' . $field_name;
-                }
-
-                //check items are valid
-                $is_valid = true;
-                
-                if ($data[$name]) {
-					$class = $this->type_to_class($v);
-			        if (class_exists($class)) {
-			        	$component = new $class;
-			        	$is_valid = $component->is_valid($data[$name]);
-			        }
-                }
-
-                if (false === $is_valid) {
-                    $errors[] = $name;
-                }
-
-                // check required fields
-                if (
-                    in_array($k, $vars['required'][$this->section]) and
-                    ('' === $data[$name] or !isset($data[$name]))
-                ) {
-                    if ($_FILES[$name]) {
-                        continue;
-                    }
-
-                    if ('password' == $v and $this->id) {
-                        continue;
-                    }
-
-                    $errors[] = $name;
+                if ('password' == $v and $this->id) {
                     continue;
                 }
 
-                //check keys
-                $in_use = is_object($strs) ? $strs->inUse : 'in use';
-                foreach ($keys as $key => $fields) {
-                    if (!in_array($name, $fields)) {
-                        continue;
-                    }
+                $errors[] = $name;
+                continue;
+            }
 
-                    $where = [];
+            //check keys
+            $in_use = is_object($strs) ? $strs->inUse : 'in use';
+            foreach ($keys as $key => $fields) {
+                if (!in_array($name, $fields)) {
+                    continue;
+                }
+
+                $where = [];
+                foreach ($fields as $field) {
+                    $where[] = '`' . escape($field) . "`='" . escape($data[$field]) . "'";
+                }
+                $where[] = '`' . $this->field_id . "`!='" . escape($this->id) . "'";
+
+                $where_str = '';
+                foreach ($where as $w) {
+	            	if (!$w) {
+	            		continue;
+	            	}
+        	
+                    $where_str .= "\t" . $w . ' AND' . "\n";
+                }
+                $where_str = "WHERE \n" . substr($where_str, 0, -5);
+
+                $field = sql_query('SELECT * FROM `' . $this->table . "`
+                    $where_str
+                    LIMIT 1
+                ", 1);
+
+                if ($field) {
+                    $errors[] = $key . ' ' . $in_use;
+
                     foreach ($fields as $field) {
-                        $where[] = '`' . escape($field) . "`='" . escape($data[$field]) . "'";
+                        $errors[] = $field . ' ' . $in_use;
                     }
-                    $where[] = '`' . $this->field_id . "`!='" . escape($this->id) . "'";
-
-                    $where_str = '';
-                    foreach ($where as $w) {
-		            	if (!$w) {
-		            		continue;
-		            	}
-            	
-                        $where_str .= "\t" . $w . ' AND' . "\n";
-                    }
-                    $where_str = "WHERE \n" . substr($where_str, 0, -5);
-
-                    $field = sql_query('SELECT * FROM `' . $this->table . "`
-                        $where_str
-                        LIMIT 1
-                    ", 1);
-
-                    if ($field) {
-                        $errors[] = $key . ' ' . $in_use;
-
-                        foreach ($fields as $field) {
-                            $errors[] = $field . ' ' . $in_use;
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -1084,53 +1010,38 @@ class cms
         }
         foreach ($field_arr as $name => $type) {
             if (
-                in_array($type, ['id', 'related', 'timestamp', 'separator', 'translated-from', 'polygon']) or
+                in_array($type, ['id', 'related', 'timestamp', 'separator', 'polygon']) or
                 $this->editable_fields and !in_array($name, $this->editable_fields)
             ) {
                 continue;
             }
 
             $field_name = underscored($name);
-
-            if ('language' == $type) {
-                $this->query .= "`$field_name`='" . escape($this->language) . "',\n";
-
-                if ('en' !== $this->language) {
-                    $this->query .= "`translated_from`='" . escape($this->id) . "',\n";
-                }
-                continue;
-            }
-
-            if ('en' == $this->language) {
-                $name = $field_name;
-            } else {
-                $name = $this->language . '_' . $field_name;
-            }
             
 			$class = $this->type_to_class($type);
 			if (class_exists($class)) {
 			    $component = new $class;
-			    $data[$name] = $component->format_value($data[$name]);
+			    $data[$field_name] = $component->format_value($data[$field_name]);
 			}
 
-            if ('position' == $type and !$this->id and !isset($data[$name])) {
+            if ('position' == $type and !$this->id and !isset($data[$field_name])) {
                 //find last position
                 $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $this->table . '`', 1);
                 $max_pos = $max_pos['max_pos'] + 1;
 
                 $this->query .= "`$field_name`='" . escape($max_pos) . "',\n";
                 continue;
-            } elseif ('position' == $type and !isset($data[$name])) {
+            } elseif ('position' == $type and !isset($data[$field_name])) {
                 continue;
             }
 
             if ('password' == $type) {
                 //leave passwords blank to keep
-                if ('' == $data[$name]) {
+                if ('' == $data[$field_name]) {
                     continue;
                 }
                 if ($auth->hash_password) {
-                    $data[$name] = $auth->create_hash($data[$name]);
+                    $data[$field_name] = $auth->create_hash($data[$field_name]);
                 }
             }
 
@@ -1139,19 +1050,18 @@ class cms
                 continue;
             }
 
-            if ('date' == $type or 'dob' == $type) {
-            } elseif ('file' == $type) {
-                if ('UPLOAD_ERR_OK' == $_FILES[$name]['error']) {
-                    $size = filesize($_FILES[$name]['tmp_name']);
+            if ('file' == $type) {
+                if ('UPLOAD_ERR_OK' == $_FILES[$field_name]['error']) {
+                    $size = filesize($_FILES[$field_name]['tmp_name']);
 
                     sql_query("INSERT INTO files SET
                         date=NOW(),
-                        name='" . escape($_FILES[$name]['name']) . "',
+                        name='" . escape($_FILES[$field_name]['name']) . "',
                         size='" . escape($size) . "',
-                        type='" . escape($_FILES[$name]['type']) . "'
+                        type='" . escape($_FILES[$field_name]['type']) . "'
                     ");
 
-                    $data[$name] = sql_insert_id();
+                    $data[$field_name] = sql_insert_id();
 
                     //check folder exists
                     if (!file_exists($vars['files']['dir'])) {
@@ -1159,58 +1069,58 @@ class cms
                     }
 
                     if ($vars['files']['dir']) {
-                        rename($_FILES[$name]['tmp_name'], $vars['files']['dir'] . $data[$name]);
+                        rename($_FILES[$field_name]['tmp_name'], $vars['files']['dir'] . $data[$field_name]);
                     } else {
                         sql_query("UPDATE files SET
-                            data='" . escape(file_get_contents($_FILES[$name]['tmp_name'])) . "'
+                            data='" . escape(file_get_contents($_FILES[$field_name]['tmp_name'])) . "'
                             WHERE
-                                id='" . escape($data[$name]) . "'
+                                id='" . escape($data[$field_name]) . "'
                         ");
                     }
 
                     //thumb
-                    if ($_POST[$name . '_thumb']) {
+                    if ($_POST[$field_name . '_thumb']) {
                         // Grab the MIME type and the data with a regex for convenience
-                        if (preg_match('/data:([^;]*);base64,(.*)/', $_POST[$name . '_thumb'], $matches)) {
+                        if (preg_match('/data:([^;]*);base64,(.*)/', $_POST[$field_name . '_thumb'], $matches)) {
                             // Decode the data
                             $thumb = $matches[2];
                             $thumb = str_replace(' ', '+', $thumb);
                             $thumb = base64_decode($thumb);
 
-                            $file_name = $vars['files']['dir'] . $data[$name] . '_thumb';
+                            $file_name = $vars['files']['dir'] . $data[$field_name] . '_thumb';
                             file_put_contents($file_name, $thumb);
                         } else {
                             die('no mime type');
                         }
                     }
-                } elseif (!$data[$name] and $row[$name]) {
+                } elseif (!$data[$field_name] and $row[$field_name]) {
                     sql_query("DELETE FROM files
                         WHERE
-                        id='" . escape($row[$name]) . "'
+                        id='" . escape($row[$field_name]) . "'
                     ");
 
                     if ($vars['files']['dir']) {
-                        unlink($vars['files']['dir'] . $row[$name]);
+                        unlink($vars['files']['dir'] . $row[$field_name]);
                     }
 
-                    $data[$name] = 0;
+                    $data[$field_name] = 0;
                 }
             } elseif ('files' == $type) {
-                $files = $data[$name];
+                $files = $data[$field_name];
 
-                if (is_array($_FILES[$name])) {
-                    foreach ($_FILES[$name]['error'] as $key => $error) {
+                if (is_array($_FILES[$field_name])) {
+                    foreach ($_FILES[$field_name]['error'] as $key => $error) {
                         if ('UPLOAD_ERR_OK' !== $error) {
                             continue;
                         }
 
-                        $content = file_get_contents($_FILES[$name]['tmp_name'][$key]);
+                        $content = file_get_contents($_FILES[$field_name]['tmp_name'][$key]);
 
                         sql_query("INSERT INTO files SET
                             date=NOW(),
-                            name='" . escape($_FILES[$name]['name'][$key]) . "',
+                            name='" . escape($_FILES[$field_name]['name'][$key]) . "',
                             size='" . escape(strlen($content)) . "',
-                            type='" . escape($_FILES[$name]['type'][$key]) . "'
+                            type='" . escape($_FILES[$field_name]['type'][$key]) . "'
                         ");
 
                         $files[] = sql_insert_id();
@@ -1220,15 +1130,15 @@ class cms
                             mkdir($vars['files']['dir']);
                         }
 
-                        file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
+                        file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$field_name], E_ERROR);
                     }
                 }
 
                 if ($this->id) {
                     //clean up old files
-                    $row = sql_query("SELECT `$name` FROM `" . $this->table . '`', 1);
+                    $row = sql_query("SELECT `$field_name` FROM `" . $this->table . '`', 1);
 
-                    $old_files = explode("\n", $row[$name]);
+                    $old_files = explode("\n", $row[$field_name]);
 
                     foreach ($old_files as $old_file) {
                         if (in_array($old_file, $files)) {
@@ -1245,30 +1155,30 @@ class cms
                 }
 
                 if (is_array($files)) {
-                    $data[$name] = implode("\n", $files);
+                    $data[$field_name] = implode("\n", $files);
                 }
-                $data[$name] = trim($data[$name]);
+                $data[$field_name] = trim($data[$field_name]);
             } elseif ('checkboxes' == $type) {
                 continue;
             } elseif ('ip' == $type) {
                 if (!$this->id) {
-                    $data[$name] = $_SERVER['REMOTE_ADDR'];
-                } elseif (!$data[$name]) {
+                    $data[$field_name] = $_SERVER['REMOTE_ADDR'];
+                } elseif (!$data[$field_name]) {
                     continue;
                 }
             } elseif ('coords' == $type) {
-                $this->query .= "`$field_name`=GeomFromText('POINT(" . escape($data[$name]) . ")'),\n";
+                $this->query .= "`$field_name`=GeomFromText('POINT(" . escape($data[$field_name]) . ")'),\n";
                 continue;
             }
 
-            if (is_array($data[$name])) {
-                $data[$name] = implode("\n", strip_tags($data[$name]));
+            if (is_array($data[$field_name])) {
+                $data[$field_name] = implode("\n", strip_tags($data[$field_name]));
             }
 
-            if ((!isset($data[$name]) or '' === $data[$name]) and in_array($field_name, $null_fields)) {
+            if ((!isset($data[$field_name]) or '' === $data[$field_name]) and in_array($field_name, $null_fields)) {
                 $this->query .= "`$field_name`=NULL,\n";
             } else {
-                $this->query .= "`$field_name`='" . escape($data[$name]) . "',\n";
+                $this->query .= "`$field_name`='" . escape($data[$field_name]) . "',\n";
             }
         }
     }
@@ -1276,7 +1186,7 @@ class cms
     // save data, called after set_section
     public function save($data = null)
     {
-        global $vars, $languages, $auth;
+        global $vars, $auth;
 
         // default to post data
         if (null === $data) {
@@ -1294,59 +1204,24 @@ class cms
             $data[$k] = $v;
         }
 
-        //remember language
-        if (!count($languages)) {
-            $languages = ['en'];
-        }
+        //build query
+        $this->query = '';
+        $this->build_query($vars['fields'][$this->section], $data);
+        $this->query = substr($this->query, 0, -2);
 
-        $current_language = $this->language;
-
-        foreach ($languages as $language) {
-            $this->language = $language;
-
-            //build query
-            $this->query = '';
-            $this->build_query($vars['fields'][$this->section], $data);
-            $this->query = substr($this->query, 0, -2);
-
-            if ($this->id) {
-                if ('en' === $language) {
-                    $language_exists = true;
-                    $where_str = $this->field_id . "='" . escape($this->id) . "'";
-                } else {
-                    $row = sql_query('SELECT * FROM `' . $this->table . "`
-                        WHERE
-                            `translated_from`='" . escape($this->id) . "' AND
-                            language='" . escape($language) . "'
-                    ", 1);
-
-                    if ($row) {
-                        $language_exists = true;
-                        $where_str = "`translated_from`='" . escape($this->id) . "' AND language='" . escape($language) . "'";
-                    } else {
-                        $language_exists = false;
-                    }
-                }
-            }
+        if ($this->id) {
+            $where_str = $this->field_id . "='" . escape($this->id) . "'";
 
             // remember old state
             if ($this->id) {
-                if ('en' === $language) {
-                    $row = sql_query('SELECT * FROM `' . $this->table . "`
-                        WHERE
-                            `id`='" . escape($this->id) . "'
-                    ", 1);
-                } else {
-                    $row = sql_query('SELECT * FROM `' . $this->table . "`
-                        WHERE
-                            `translated_from`='" . escape($this->id) . "' AND
-                            language='" . escape($language) . "'
-                    ", 1);
-                }
+                $row = sql_query('SELECT * FROM `' . $this->table . "`
+                    WHERE
+                        `id`='" . escape($this->id) . "'
+                ", 1);
             }
 
             // save data
-            if ($this->id and $language_exists) {
+            if ($this->id) {
                 sql_query('UPDATE `' . $this->table . '` SET
                     ' . $this->query . "
                     WHERE $where_str
@@ -1355,10 +1230,7 @@ class cms
                 sql_query('INSERT IGNORE INTO `' . $this->table . '` SET
                     ' . $this->query . '
                 ');
-
-                if ('en' == $language) {
-                    $this->id = sql_insert_id();
-                }
+                $this->id = sql_insert_id();
             }
             
             // log it
@@ -1369,18 +1241,10 @@ class cms
             if ($this->id) {
                 $task = 'edit';
             
-                if ('en' === $language) {
-                    $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
-                        WHERE
-                            `id`='" . escape($this->id) . "'
-                    ", 1);
-                } else {
-                    $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
-                        WHERE
-                            `translated_from`='" . escape($this->id) . "' AND
-                            language='" . escape($language) . "'
-                    ", 1);
-                }
+                $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
+                    WHERE
+                        `id`='" . escape($this->id) . "'
+                ", 1);
                 
                 foreach ($updated_row as $k => $v) {
                     if ($row[$k] != $v) {
@@ -1398,8 +1262,7 @@ class cms
                     continue;
                 }
 
-                $name = ('en' == $language) ? $k : $language . '_' . $k;
-                $name = underscored($name);
+                $name = underscored($k);
 
                 sql_query("DELETE FROM cms_multiple_select
                     WHERE
@@ -1420,9 +1283,6 @@ class cms
                 continue;
             }
         }
-
-        //restore language
-        $this->language = $current_language;
 
         $this->trigger_event('save', [$this->id, $data]);
         $this->saved = true;
@@ -1466,7 +1326,7 @@ class cms
     public function template($include, $local = false)
     {
     	// globals are needed for the page templates
-        global $vars, $auth, $shop_enabled, $languages, $live_site, $cms_buttons, $message;
+        global $vars, $auth, $shop_enabled, $live_site, $cms_buttons, $message;
 
         ob_start();
         if ($local) {

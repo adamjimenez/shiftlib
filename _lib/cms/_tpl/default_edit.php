@@ -34,12 +34,6 @@ unset($qs_arr['id']);
 $qs = http_build_query($qs_arr);
 $cancel_url .= '&' . $qs;
 
-if (count($languages)) {
-    $languages = array_merge(['en'], $languages);
-} else {
-    $languages = ['en'];
-}
-
 if (isset($_POST['save'])) {
     $errors = $this->validate();
 
@@ -116,27 +110,11 @@ if ($_GET['id']) {
 </tr>
 </table>
 
-<?php
-if (in_array('language', $vars['fields'][$this->section])) {
-    ?>
-<p>
-Language:
-<select id="language" name="language">
-	<?=html_options($languages); ?>
-</select>
-</p>
-<?php
-} else {
-        $languages = ['en'];
-    }
-
-foreach ($languages as $language) {
-    $this->language = $language; ?>
-	<div id="language_<?=$language; ?>" <?php if ('en' != $language) { ?>style="display:none;"<?php } ?> class="box">
+	<div class="box">
 
 		<?php
         foreach ($vars['fields'][$this->section] as $name => $type) {
-            if (in_array($type, ['id','ip','position','timestamp','language','translated-from','deleted'])) {
+            if (in_array($type, ['id','ip','position','timestamp','deleted'])) {
                 continue;
             }
             
@@ -185,9 +163,6 @@ foreach ($languages as $language) {
         } ?>
 
 	</div>
-<?php
-}
-?>
 
 <?php if (!$_GET['id'] and in_array('id', $vars['fields'][$this->section])) { ?>
 <p><label><input type="checkbox" name="add_another" value="1" <?php if ($_GET['add_another']) { ?>checked="checked"<?php } ?> /> add another?</label></p>
