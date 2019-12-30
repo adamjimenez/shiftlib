@@ -21,7 +21,7 @@ class integer extends component
         $pos = strrpos($value, '-');
 
         if ($func) {
-            $where = "T_$table." . $field_name . ' ' . escape($func) . " '" . escape($value) . "'";
+            $where = $table_prefix . $field_name . ' ' . escape($func) . " '" . escape($value) . "'";
         } elseif ($pos > 0) {
             $min = substr($value, 0, $pos);
             $max = substr($value, $pos + 1);
