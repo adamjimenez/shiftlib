@@ -195,7 +195,7 @@ class shop
         $this->update_total();
     }
 
-    public function remove($product)
+    public function remove(int $product)
     {
         global $auth;
 
@@ -284,7 +284,7 @@ class shop
         $this->vat = $this->subtotal * $this->vat_rate;
     }
 
-    public function add_to_basket($product, int $quantity = 1, bool $buy_now = false, $variation_id = null, $extras_arr = '')
+    public function add_to_basket(int $product, int $quantity = 1, bool $buy_now = false, int $variation_id = null, $extras_arr = '')
     {
         global $auth;
 
@@ -668,7 +668,7 @@ class shop
         return $this->complete_order($oid, $ref, 'paypal');
     }
 
-    public function send_confirmation($oid)
+    public function send_confirmation(int $oid)
     {
         global $debug, $admin_email;
 
@@ -813,7 +813,7 @@ class shop
         return false;
     }
 
-    public function failed_order($error, $oid)
+    public function failed_order(string $error, int $oid)
     {
         global $admin_email;
 
