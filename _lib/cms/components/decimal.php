@@ -9,4 +9,8 @@ class decimal extends integer
         $value = number_format($value, 2);
 		return $value;
 	}
+	
+	function format_value($value) {
+        return Base::format_value($value);
+    }
 }

@@ -36,4 +36,9 @@ class integer extends component
         
         return $where;
 	}
+	
+	// applies any cleanup before saving
+	function format_value($value) {
+		return (int)$value;
+	}
 }
