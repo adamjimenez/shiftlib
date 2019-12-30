@@ -26,4 +26,9 @@ abstract class component
 	function format_value($value) {
 		return strip_tags($value);
 	}
+	
+	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+        $value = str_replace('*', '%', $value);
+        return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
+	}
 }

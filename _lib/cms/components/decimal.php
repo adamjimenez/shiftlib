@@ -1,16 +1,12 @@
 <?php
 namespace cms;
 
-class decimal extends component
+class decimal extends integer
 {
-	public $field_type = 'number';
+	public $field_sql = "DECIMAL( 8,2 )";
 	
 	function value($value) {
         $value = number_format($value, 2);
 		return $value;
-	}
-	
-	function is_valid($value) {
-		return is_numeric($value);
 	}
 }

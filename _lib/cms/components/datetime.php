@@ -1,7 +1,7 @@
 <?php
 namespace cms;
 
-class datetime extends component
+class datetime extends date
 {
 	public $field_sql = "DATETIME";
 	
@@ -21,4 +21,8 @@ class datetime extends component
         }
 		return $value;
 	}
+	
+	function is_valid($value) {
+        return Base::is_valid($value);
+    }
 }

@@ -291,41 +291,28 @@ class cms
         $joins = '';
         foreach ($vars['fields'][$section] as $name => $type) {
             $field_name = underscored($name);
+        	$value = $conditions[$name] ?: $conditions[$field_name];
 
-            if (
-                (isset($conditions[$name])) or
-                (isset($conditions[$field_name]))
-            ) {
+            if (isset($value) && $value != '') {
                 $value = $conditions[$name] ?: $conditions[$field_name];
-                $operator = in_array($conditions['func'][$field_name], ['!=']) ? $conditions['func'][$field_name] : 'LIKE';
+                
+				$class = $this->type_to_class($type);
+				if (class_exists($class)) {
+				    $component = new $class;
+				    $where[] = $component->conditions_to_sql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
+				}
 
                 switch ($type) {
-                    case 'select':
-                    case 'combo':
-                    case 'radio':
-                        if (is_array($value)) {
-                            $or = '(';
-                            foreach ($conditions[$field_name] as $k => $v) {
-                                $or .= "T_$table." . $field_name . ' ' . $operator . " '" . escape($v) . "' OR ";
-                            }
-                            $or = substr($or, 0, -4);
-                            $or .= ')';
-
-                            $where[] = $or;
-                        } else {
-                            $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
-                        }
-                        break;
                     case 'checkboxes':
-                        if (1 == count($conditions[$field_name]) and !reset($conditions[$field_name])) {
-                            $conditions[$field_name] = [$conditions[$field_name]];
+                        if (1 == count($value) and !reset($value)) {
+                            $value = [$value];
                         }
 
                         $joins .= ' LEFT JOIN cms_multiple_select T_' . $field_name . ' ON T_' . $field_name . '.item=T_' . $table . '.' . $field_id;
 
                         $or = '(';
 
-                        foreach ($conditions[$field_name] as $k => $v) {
+                        foreach ($value as $k => $v) {
                             $v = is_array($v) ? $v['value'] : $v;
                             $or .= 'T_' . $field_name . ".value = '" . escape($v) . "' AND T_" . $field_name . ".field = '" . escape($name) . "' OR ";
                         }
@@ -334,40 +321,6 @@ class cms
 
                         $where[] = $or;
                         $where[] = 'T_' . $field_name . ".section='" . $section . "'";
-                        break;
-                    case 'date':
-                    case 'datetime':
-                    case 'timestamp':
-                    case 'month':
-                        if (!$conditions['func'][$field_name]) {
-                            $conditions['func'][$field_name] = '=';
-                        }
-
-                        if ('now' == $value) {
-                            $start = 'NOW()';
-                        } elseif ('month' == $conditions['func'][$field_name]) {
-                            $start = dateformat('mY', $value);
-                        } else {
-                            $start = "'" . escape(dateformat('Y-m-d', $value)) . "'";
-                        }
-
-                        if ('month' == $conditions['func'][$field_name]) {
-                            $where[] = 'date_format(T_' . $table . '.' . $field_name . ", '%m%Y') = '" . escape($value) . "'";
-                        } elseif ('year' == $conditions['func'][$field_name]) {
-                            $where[] = 'date_format(T_' . $table . '.' . $field_name . ", '%Y') = '" . escape($value) . "'";
-                        } elseif ($conditions[$field_name] and $conditions['end'][$field_name]) {
-                            $end = escape($conditions['end'][$field_name]);
-
-                            $where[] = '(T_' . $table . ".$field_name >= " . $start . ' AND T_' . $table . ".$field_name <= '" . $end . "')";
-                        } elseif ($conditions['func'][$field_name]) {
-                            $where[] = "T_$table." . $field_name . ' ' . escape($conditions['func'][$field_name]) . ' ' . $start;
-                        }
-                        break;
-                    case 'time':
-                        break;
-                    case 'dob':
-                        $where[] = '`' . $field_name . "`!='0000-00-00'";
-                        $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) " . $operator . ' ' . escape($value) . ' ';
                         break;
                     case 'postcode':
                         if (calc_grids($value) and is_numeric($conditions['func'][$field_name])) {
@@ -392,32 +345,6 @@ class cms
                                 $vars['labels'][$section][] = 'distance';
                             }
                         }
-                        break;
-                    case 'int':
-                    case 'decimal':
-                    case 'position':
-                        $pos = strrpos($value, '-');
-
-                        if ($conditions['func'][$field_name]) {
-                            $where[] = "T_$table." . $field_name . ' ' . escape($conditions['func'][$field_name]) . " '" . escape($value) . "'";
-                        } elseif ($pos > 0) {
-                            $min = substr($value, 0, $pos);
-                            $max = substr($value, $pos + 1);
-
-                            $where[] = "(
-                                T_$table." . $field_name . " >= '" . escape($min) . "' AND
-                                T_$table." . $field_name . " <= '" . escape($max) . "'
-                            )";
-                        } else {
-                            $where[] = "T_$table." . $field_name . " = '" . escape($value) . "'";
-                        }
-                        break;
-                    case 'file':
-                        $where[] = "T_$table." . $field_name . ' > 0';
-                        break;
-                    default:
-                        $value = str_replace('*', '%', $value);
-                        $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
                         break;
                 }
             }

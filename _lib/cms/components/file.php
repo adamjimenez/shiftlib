@@ -35,4 +35,8 @@ class file extends component
         }
         return $value;
 	}
+	
+	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+        return $table_prefix . $field_name . ' > 0';
+	}
 }

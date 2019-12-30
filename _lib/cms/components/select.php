@@ -122,7 +122,7 @@ class select extends component
 
         return $parents;
     }
-	
+    
 	function field($field_name, $value = '', $options = []) {
 		global $vars, $cms;
 		
@@ -167,5 +167,20 @@ class select extends component
         }
         
         return $value;
+	}
+	
+	function conditions_to_sql($field_name, $value, $func = [], $table_prefix='') {
+        if (is_array($value)) {
+            $or = '(';
+            foreach ($value as $k => $v) {
+                $or .= $table_prefix . $field_name . " LIKE '" . escape($v) . "' OR ";
+            }
+            $or = substr($or, 0, -4);
+            $or .= ')';
+
+            return $or;
+        } else {
+            return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
+        }
 	}
 }

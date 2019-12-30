@@ -20,4 +20,9 @@ class dob extends component
         $value = $value . ' ('.$age.')';
 		return $value;
 	}
+	
+	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+        return '`' . $field_name . "`!='0000-00-00' AND " .
+        "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';
+	}
 }
