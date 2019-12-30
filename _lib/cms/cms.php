@@ -1,6 +1,4 @@
 <?php
-use cms;
-
 class cms
 {
     /**
@@ -127,7 +125,6 @@ class cms
             $i++;
         }
 
-        header('Pragma: cache');
         header('Content-Type: text/comma-separated-values; charset=UTF-8');
         header('Content-Disposition: attachment; filename="' . $section . '.csv"');
         print($data);
@@ -449,13 +446,9 @@ class cms
                         LEFT JOIN $option_table T_" . underscored($key) . ' 
                         ON T_' . underscored($key) . ".$join_id = T_$table." . underscored($key) . '
                     ';
-
-                    foreach ($vars['fields'][$vars['options'][$key]] as $k => $v) {
-                        if ('separator' != $v) {
-                            $option = $k;
-                            break;
-                        }
-                    }
+                    
+                    reset($vars['fields'][$vars['options'][$key]]);
+                    $option = key($vars['fields'][$vars['options'][$key]]);                    
 
                     $cols .= ', T_' . underscored($key) . '.' . underscored($option) . " AS '" . underscored($key) . "_label'";
                 }
