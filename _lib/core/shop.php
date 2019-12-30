@@ -21,7 +21,12 @@ class shop
     public $headers;
     public $include_vat;
     public $item_count;
+
+    /**
+     * @var int|null
+     */
     public $oid;
+
     public $paypal_email;
     public $promo;
     public $redirect_on_add;

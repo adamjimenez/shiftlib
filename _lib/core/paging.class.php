@@ -327,18 +327,18 @@ class paging
     public function get_rel()
     {
         $array_paging = $this->getPagingArray();
-        
+
         $host = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REDIRECT_URL'];
-        
+
         $rel = '';
         if ($array_paging['previous_link']) {
             $rel .= '<link rel="prev" href="' . $host . $array_paging['previous_link'] . '">';
         }
-        
+
         if ($array_paging['next_link']) {
             $rel .= '<link rel="next" href="' . $host . $array_paging['next_link'] . '">';
         }
-        
+
         return $rel;
     }
     */
