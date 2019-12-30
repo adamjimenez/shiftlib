@@ -68,7 +68,6 @@ class cms
 	{
 	    switch ($type) {
 	        case 'id':
-	        case 'select-multiple':
 	        case 'checkboxes':
 	        case 'separator':
 	        break;
@@ -277,14 +276,13 @@ class cms
     {
         global $vars, $auth;
 
-        //debug($conditions);
-
         if ($this->language) {
             $language = $this->language;
         } else {
             $language = 'en';
         }
 
+		// check for id or page name
         if (is_numeric($conditions)) {
             if ('en' == $language) {
                 $id = $conditions;
@@ -336,18 +334,13 @@ class cms
                     (isset($conditions[$name])) or
                     (isset($conditions[$field_name]))
                 ) {
-                    $value = $conditions[$name] ? $conditions[$name] : $conditions[$field_name];
+                    $value = $conditions[$name] ?: $conditions[$field_name];
+                    $operator = in_array($conditions['func'][$field_name], ['!=']) ? $conditions['func'][$field_name] :  'LIKE';
 
                     switch ($type) {
                         case 'select':
                         case 'combo':
                         case 'radio':
-                            if ('!=' == $conditions['func'][$field_name]) {
-                                $operator = '!=';
-                            } else {
-                                $operator = '=';
-                            }
-                            
                             if (is_array($value)) {
                                 $or = '(';
                                 foreach ($conditions[$field_name] as $k => $v) {
@@ -361,7 +354,6 @@ class cms
                                 $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
                             }
                         break;
-                        case 'select-multiple':
                         case 'checkboxes':
                             if (1 == count($conditions[$field_name]) and !reset($conditions[$field_name])) {
                                 $conditions[$field_name] = [$conditions[$field_name]];
@@ -412,33 +404,8 @@ class cms
                         case 'time':
                         break;
                         case 'dob':
-                            if (is_numeric($value) or is_numeric($conditions['func'][$field_name])) {
-                                $where[] = '`' . $field_name . "`!='0000-00-00'";
-                            }
-                            if (is_numeric($value)) {
-                                $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d'))<= " . escape($conditions['func'][$field_name]) . ' ';
-                            }
-                            if (is_numeric($conditions['func'][$field_name])) {
-                                $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d'))>= " . escape($value) . ' ';
-                            }
-                        break;
-                        case 'coords':
-                            if (format_postcode($value) and is_numeric($conditions['func'][$field_name])) {
-                                $grids = calc_grids(format_postcode($value), true);
-                                
-                                // fixme: ST_Distance_Sphere not supported in mariadb yet!
-                                
-                                if ($grids) {
-                                    $cols .= ',
-									ST_Distance(POINT(' . $grids[0] . ', ' . $grids[1] . '), coords) AS distance';
-                                    
-                                    
-    
-                                    $where[] = 'ST_Distance(POINT(' . $grids[0] . ', ' . $grids[1] . '), coords) <= ' . escape($conditions['func'][$field_name]) . '';
-    
-                                    $vars['labels'][$section][] = 'distance';
-                                }
-                            }
+                            $where[] = '`' . $field_name . "`!='0000-00-00'";
+                            $where[] = "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) ".$operator." " . escape($value) . ' ';
                         break;
                         case 'postcode':
                             if (calc_grids($value) and is_numeric($conditions['func'][$field_name])) {
@@ -487,8 +454,6 @@ class cms
                             $where[] = "T_$table." . $field_name . ' > 0';
                         break;
                         default:
-                            $operator = in_array($conditions['func'][$field_name], ['!=']) ? $conditions['func'][$field_name] :  'LIKE';
-
                             $value = str_replace('*', '%', $value);
                             $where[] = "T_$table." . $field_name . ' ' . $operator . " '" . escape($value) . "'";
                         break;
@@ -602,8 +567,6 @@ class cms
             }
         }
         
-        //debug($where_str);
-
         return [
             'where_str' => $where_str,
             'having_str' => $having_str,
@@ -633,7 +596,7 @@ class cms
 
         $cols = '';
         foreach ($vars['fields'][$section] as $k => $v) {
-            if (!in_array($v, ['select-multiple', 'checkboxes', 'separator'])) {
+            if (!in_array($v, ['checkboxes', 'separator'])) {
                 if ('coords' == $v) {
                     $cols .= "\tAsText(T_$table." . underscored($k) . ') AS ' . underscored($k) . ',' . "\n";
                 } else {
@@ -714,7 +677,6 @@ class cms
 
         $limit = $sql['num_results'] ?: null;
 
-        //require_once('_lib/paging.class.php');
         $this->p = new paging($query, $limit, $order, $asc, $prefix);
 
         $content = $this->p->rows;
@@ -1076,7 +1038,6 @@ class cms
                     }
                 }
             break;
-            case 'select-multiple':
             case 'checkboxes':
                 $value = [];
 
@@ -1153,28 +1114,20 @@ class cms
                     }
                 }
 
-                if ('select-multiple' == $type) {
-                    ?>
-			<select name="<?=$field_name; ?>[]" multiple="multiple" <?php if ($readonly) { ?>disabled<?php } ?> size="10" style="width:100%">
-				<?=html_options($vars['options'][$name], $value); ?>
-			</select>
-		<?php
-                } else {
-                    ?>
+                ?>
 				<?php
 
-                $is_assoc = is_assoc_array($vars['options'][$name]);
+        		$is_assoc = is_assoc_array($vars['options'][$name]);
 
-                    print '<ul class="checkboxes">';
-                
-                    foreach ($vars['options'][$name] as  $k => $v) {
-                        $val = $is_assoc ? $k : $v; ?>
-    			    <li><label><input type="checkbox" name="<?=$field_name; ?>[]" value="<?=$val; ?>" <?php if ($readonly) { ?>readonly<?php } ?> <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?=$v; ?></label></li>
+                print '<ul class="checkboxes">';
+            
+                foreach ($vars['options'][$name] as  $k => $v) {
+                    $val = $is_assoc ? $k : $v; ?>
+			    <li><label><input type="checkbox" name="<?=$field_name; ?>[]" value="<?=$val; ?>" <?php if ($readonly) { ?>readonly<?php } ?> <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?=$v; ?></label></li>
 				<?php
-                    }
-                
-                    print '</ul>';
                 }
+            
+                print '</ul>';
 
             break;
             case 'parent':
@@ -1303,7 +1256,7 @@ class cms
 
         $id = $this->id;
 
-        if (in_array($type, ['select-multiple', 'checkboxes'])) {
+        if (in_array($type, ['checkboxes'])) {
             $array = [];
 
             if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
@@ -2015,16 +1968,7 @@ class cms
                                     mkdir($vars['files']['dir']);
                                 }
 
-                                if ($vars['files']['dir']) {
-                                    file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or
-                                        trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
-                                } else {
-                                    sql_query("UPDATE files SET
-										data='" . escape($content) . "'
-										WHERE
-										id='" . escape($data[$name]) . "'
-									");
-                                }
+                                file_put_contents($vars['files']['dir'] . sql_insert_id(), $content) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$name], E_ERROR);
                             }
                         }
                     }
@@ -2053,7 +1997,7 @@ class cms
                         $data[$name] = implode("\n", $files);
                     }
                     $data[$name] = trim($data[$name]);
-                } elseif ('select-multiple' == $v or 'checkboxes' == $v) {
+                } elseif ('checkboxes' == $v) {
                     continue;
                 } elseif ('postcode' == $v) {
                     $data[$name] = format_postcode($data[$name]);
@@ -2238,7 +2182,7 @@ class cms
                         continue;
                     }
 
-                    if ('select-multiple' == $v or 'checkboxes' == $v) {
+                    if ('checkboxes' == $v) {
                         if ('en' == $language) {
                             $name = $k;
                         } else {

@@ -181,7 +181,6 @@ $field_opts = [
     'rating',
     'avg-rating',
     'select',
-    'select-multiple',
     'radio',
     'combo',
     'password',
@@ -270,8 +269,8 @@ function loop_fields($field_arr) // should be anonymous function
                     sql_query($query);
                 }
 
-                //convert select to multiple select
-                if ('select' == $v and 'select-multiple' == $new_type) {
+                //convert select to checkboxes
+                if ('select' == $v and 'checkboxes' == $new_type) {
                     $rows = sql_query("SELECT * FROM `$table`");
 
                     foreach ($rows as $row) {
@@ -334,7 +333,7 @@ if ($_POST['save']) {
                 continue;
             }
 
-            if (in_array($field['value'], ['select', 'select-multiple', 'radio'])) {
+            if (in_array($field['value'], ['select', 'radio'])) {
                 $field_options[] = $field['name'];
             }
 
