@@ -1352,14 +1352,16 @@ function sql_num_rows($result): int
 function sql_query($query, $single = false)
 {
     global $db_connection;
+    
+    if ($_GET['debug']) {
+    	debug($query);
+    }
 
     $result = mysqli_query($db_connection, $query);
 
     if (false === $result) {
         throw new Exception(mysqli_error($db_connection));
-    }
-
-    if (true === $result) {
+    } else if (true === $result) {
         return true;
     }
     

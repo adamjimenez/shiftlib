@@ -9,4 +9,8 @@ class integer extends component
         $value = number_format($value);
 		return $value;
 	}
+	
+	function is_valid($value) {
+		return is_numeric($value);
+	}
 }

@@ -8,4 +8,8 @@ class email extends component{
 		$value = '<a href="mailto:' . $value . '" target="_blank">' . $value . '</a>';
 		return $value;
 	}
+	
+	function is_valid($value) {
+		return is_email($value);
+	}
 }

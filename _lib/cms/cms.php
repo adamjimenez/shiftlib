@@ -324,6 +324,7 @@ class cms
             $where[] = "`translated_from`='0'";
         }
 
+        $joins = '';
         foreach ($vars['fields'][$section] as $name => $type) {
             $field_name = underscored($name);
 
@@ -333,7 +334,6 @@ class cms
             ) {
                 $value = $conditions[$name] ?: $conditions[$field_name];
                 $operator = in_array($conditions['func'][$field_name], ['!=']) ? $conditions['func'][$field_name] : 'LIKE';
-                $joins = '';
 
                 switch ($type) {
                     case 'select':
@@ -537,7 +537,11 @@ class cms
         }
 
         // create joins
-        if (in_array('select', $vars['fields'][$section]) or in_array('combo', $vars['fields'][$section]) or in_array('radio', $vars['fields'][$section])) {
+        if (
+        	in_array('select', $vars['fields'][$section]) or 
+        	in_array('combo', $vars['fields'][$section]) or 
+        	in_array('radio', $vars['fields'][$section])
+        ) {
             $selects = array_keys($vars['fields'][$section], 'select');
             $radios = array_keys($vars['fields'][$section], 'radio');
             $combos = array_keys($vars['fields'][$section], 'combo');
@@ -686,10 +690,6 @@ class cms
             $group_by_str
             $having_str
             ";
-
-        if ($_GET['debug'] and 1 == $auth->user['admin']) {
-            debug($query);
-        }
 
         if (true === $return_query) {
             return $query;
@@ -995,9 +995,6 @@ class cms
                 }
             }
 
-            // TODO: Adam, this isn't used
-            $raw_option = $vars['fields'][$vars['options'][$name]][$field];
-
             $cols = '`' . underscored($field) . '`';
 
             //sortable
@@ -1245,57 +1242,17 @@ class cms
 
                 //check items are valid
                 $is_valid = true;
+                
                 if ($data[$name]) {
-                    switch ($v) {
-                        case 'date':
-                            if (!preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $data[$name])) {
-                                $is_valid = false;
-                            }
-                            break;
-                        case 'url':
-                            if ('http://' == $data[$name]) {
-                                $data[$name] = '';
-                            }
-
-                            if ($data[$name] and !is_url($data[$name])) {
-                                $is_valid = false;
-                            }
-                            break;
-                        case 'email':
-                            if (!is_email($data[$name])) {
-                                $is_valid = false;
-                            }
-                            break;
-                        case 'tel':
-                            if (!is_tel($data[$name])) {
-                                $is_valid = false;
-                            }
-                            break;
-                        case 'int':
-                        case 'decimal':
-                            if (!is_numeric($data[$name])) {
-                                $is_valid = false;
-                            }
-                            break;
-                        case 'postcode':
-                            if (
-                                $data[$name] and
-                                !format_postcode($data[$name]) and
-                                (!$data['country'] or 'UK' == $data['country'])
-                            ) {
-                                $is_valid = false;
-                            } elseif (format_postcode($data[$name])) {
-                                $data[$name] = format_postcode($data[$name]);
-                            }
-                            break;
-                        case 'mobile':
-                            if (!format_mobile($data[$name])) {
-                                $is_valid = false;
-                            } elseif (format_mobile($data[$name])) {
-                                $data[$name] = format_mobile($data[$name]);
-                            }
-                            break;
-                    }
+					$class = $this->type_to_class($v);
+			        if (class_exists($class)) {
+			        	$component = new $class;
+			        	$is_valid = $component->is_valid($data[$name]);
+			        	
+			        	if ($is_valid) {
+			        		$data[$name] = $component->format_value($data[$name]);
+			        	}
+			        }
                 }
 
                 if (false === $is_valid) {

@@ -6,7 +6,7 @@ class radio extends component
 	function field($field_name, $value = '', $options = []) {
 		global $cms, $vars;
 		
-		$name = $field_name;
+		$name = spaced($field_name);
         $vars['options'][$name] = $cms->get_options($name, $where);
         
         $assoc = is_assoc_array($vars['options'][$name]);

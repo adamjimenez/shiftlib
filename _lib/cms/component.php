@@ -17,4 +17,12 @@ abstract class component
 	function value($value, $name = '') {
 		return $value;
 	}
+	
+	function is_valid($value) {
+		return true;
+	}
+	
+	function format_value($value) {
+		return $value;
+	}
 }
