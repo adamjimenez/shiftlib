@@ -1,7 +1,6 @@
 <?php
 namespace cms;
 
-class integer extends integer
+class position extends integer
 {
-	public $field_sql = "INT";
 }
