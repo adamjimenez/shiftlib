@@ -161,11 +161,12 @@ function str_to_bool($str): string
     return 'false';
 }
 
+// todo, auto-generate this list from the components dir
 $field_opts = [
     'text',
     'textarea',
     'hidden',
-    'int',
+    'integer',
     'decimal',
     'editor',
     'checkbox',
@@ -183,7 +184,7 @@ $field_opts = [
     'phpupload',
     'phpuploads',
     'rating',
-    'avg-rating',
+    'avg_rating',
     'select',
     'radio',
     'combo',
@@ -194,10 +195,10 @@ $field_opts = [
     'mobile',
     'url',
     'ip',
-    'page-name',
+    'page_name',
     'approve',
     'language',
-    'translated-from',
+    'translated_from',
     'parent',
     'position',
     'read',
@@ -444,7 +445,7 @@ $auth_config["required"]=array(
 
 //automated emails will be sent from this address
 $from_email="' . $_POST['from_email'] . '";
-$auth_config["from_email"]="' . $_POST['from_email'] . '";
+$auth_config["from_email"]  = $from_email;
 
 //specify pages where users are redirected
 $auth_config["login"]="' . $_POST['auth_config']['login'] . '";
@@ -532,8 +533,6 @@ $vars["required"]["' . $section . '"]=array(' . $required . ');
 
 $vars["labels"]["' . $section . '"]=array(' . $labels . ');
 
-$vars["label"]["' . $section . '"]=array(' . $label . ');
-
 $vars["subsections"]["' . $section . '"]=array(' . $subsections . ');
 
 ';
@@ -563,20 +562,20 @@ $shop_config["include_vat"]=' . str_to_bool($_POST['shop_config']['include_vat']
 
         if ('section' == $option['type']) {
             $config .= '
-$opts["' . $option['name'] . '"]="' . $option['section'] . '";
+$vars["options"]["' . $option['name'] . '"]="' . $option['section'] . '";
 ';
         } else {
             $option['list'] = strip_tags($option['list']);
 
             if (strstr($option['list'], '=')) {
                 $config .= '
-$opts["' . $option['name'] . '"]=array(
+$vars["options"]["' . $option['name'] . '"]=array(
 ' . str_to_assoc($option['list']) . '
 );
 ';
             } else {
                 $config .= '
-$opts["' . $option['name'] . '"]=array(
+$vars["options"]["' . $option['name'] . '"]=array(
 ' . str_to_csv($option['list']) . '
 );
 ';
@@ -587,15 +586,11 @@ $opts["' . $option['name'] . '"]=array(
     foreach ($field_options as $field_option) {
         if (!in_array($field_option, $_POST['options'])) {
             $config .= '
-$opts["' . $field_option . '"]="";
+$vars["options"]["' . $field_option . '"]="";
 ';
         }
     }
 
-    $config .= '
-
-$vars["options"]=$opts;
-?>';
     //die($config);
     file_put_contents($config_file, $config);
 
@@ -999,65 +994,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         		</table>
         	</div>
         </div>
-        <br>
-
-        <h2>Website code</h2>
-        <ul style="list-style:inside; margin-left:20px;">
-        <?php
-        foreach ($vars['fields'] as $section => $fields) {
-            ?>
-        	<li><a href="javascript:;" onclick="jQuery('#code_<?=underscored($section); ?>').slideToggle(); return false;"><?=$section; ?></a></li>
-
-        	<div id="code_<?=underscored($section); ?>" style="display:none;">
-        		<div style="padding:5px 10px; background:#fff;">
-        		    <pre>
-
-        <?php
-        $source = '
-        <?php
-        $content = $cms->get(\'' . $section . '\'';
-
-            if (in_array('id', $fields)) {
-                $source .= ',$_GET[\'id\'],1';
-            }
-
-            $source .= ');
-        ';
-
-            if (in_array('id', $fields)) {
-                $source .= '$items = $cms->get(\'' . $section . '\');' . "\n";
-            }
-            $source .= '
-        ?>
-        ';
-
-            if (in_array('id', $fields)) {
-                $source .= '<div>';
-                $source .= '
-        <?php foreach( $items as $v ){ ?>
-        	<a href="?id=<?=$v[\'id\'];?>"><?=$v[\'heading\'];?></a><br>
-        <?php } ?>
-        </div>
-        ';
-            }
-
-            $source .= '<div>
-        ';
-            foreach ($fields as $k => $v) {
-                $source .= "\t" . $k . ': <?=$content[\'' . $k . '\'];?><br>' . "\n";
-            }
-            $source .= '
-        </div>
-        ';
-
-            print htmlentities($source); ?>
-                    </pre>
-        		</div>
-        	</div>
-        <?php
-        }
-        ?>
-        </ul>
     </div>
 
     <div id="general">

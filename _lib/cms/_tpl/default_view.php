@@ -18,13 +18,13 @@ if ('0' === $content['read']) {
 
 $has_logs = table_exists('cms_logs');
 
-$has_priveleges = false;
+$has_privileges = false;
 if (
     1 == $auth->user['admin'] and
     underscored($this->section) == $auth->table and
-    (2 == $content['admin'] or 3 == $content['admin'])
+    1 < $this->content['admin']
 ) {
-    $has_priveleges = true;
+    $has_privileges = true;
 }
 
 if ($_POST['custom_button']) {
@@ -202,7 +202,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 				</li>
 				<?php
                 } ?>
-				<?php if ($has_priveleges) { ?>
+				<?php if ($has_privileges) { ?>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-priveleges-tab" data-toggle="pill" href="#pills-priveleges" role="tab" aria-controls="pills-priveleges" aria-selected="true">
 						Privileges
@@ -243,10 +243,11 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
 <?php
 foreach ($languages as $language) {
-                            if ('en' !== $language and in_array('language', $vars['fields'][$this->section])) {
-                                $this->language = $language;
-                                $content = $this->get($this->section, $_GET['id']);
-                            } ?>
+    if ('en' !== $language and in_array('language', $vars['fields'][$this->section])) {
+        $this->language = $language;
+        $content = $this->get($this->section, $_GET['id']);
+    } 
+?>
 	<div id="language_<?=$language; ?>" <?php if ('en' != $language) { ?>style="display:none;"<?php } ?> class="box">
 	<table border="0" cellspacing="0" cellpadding="5" width="100%">
 
@@ -278,9 +279,7 @@ foreach ($languages as $language) {
 <?php
 } ?>
 
-
-
-                </div>
+</div>
 
 <?php
     foreach ($vars['subsections'][$this->section] as $count => $subsection) {
@@ -339,81 +338,10 @@ foreach ($languages as $language) {
 <?php
     } ?>
 
-<?php if ($has_priveleges) { ?>
+<?php if ($has_privileges) { ?>
 	<div class="tab-pane fade" id="pills-priveleges" role="tabpanel" aria-labelledby="pills-priveleges-tab">
 	    <div class="box" style="clear:both;">
-		<?php
-        //privileges
-        if (
-            1 == $auth->user['admin'] and
-            underscored($_GET['option']) == $auth->table and
-            (2 == $content['admin'] or 3 == $content['admin'])
-         ) {
-            check_table('cms_privileges', $this->cms_privileges_fields);
-
-            $rows = sql_query("SELECT * FROM cms_privileges WHERE user='" . $this->id . "'");
-            foreach ($rows as $row) {
-                $privileges[$row['section']] = $row;
-            } ?>
-		<form method="post">
-		<table class="box" width="100%">
-		<tr>
-			<th>Section</th>
-			<th>
-				Access<br>
-				<a href="#" id="privileges_none">None</a>,
-				<a href="#" id="privileges_read">Read</a>,
-				<a href="#" id="privileges_write">Write</a>
-			</th>
-			<th>Filter</th>
-		</tr>
-		<?php
-            foreach ($vars['fields'] as $section => $fields) {
-                ?>
-		<tr>
-			<td><?=$section; ?></td>
-			<td>
-				<select name="privileges[<?=$section; ?>]" class="privileges">
-					<option value=""></option>
-					<?=html_options([1 => 'Read',2 => 'Write'], $privileges[$section]['access']); ?>
-				</select>
-			</td>
-			<td>
-				<input type="text" id="filters_<?=underscored($section); ?>" name="filters[<?=$section; ?>]" value="<?=$privileges[$section]['filter']; ?>" />
-				<button type="button" onclick="choose_filter('<?=$section; ?>');">Choose Filter</button>
-			</td>
-		</tr>
-		<?php
-            } ?>
-		<tr>
-			<td>Email Templates</td>
-			<td>
-				<select name="privileges[email_templates]" class="privileges">
-					<option value=""></option>
-					<?=html_options([1 => 'Read',2 => 'Write'], $privileges['uploads']['access']); ?>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td>Uploads</td>
-			<td>
-				<select name="privileges[uploads]" class="privileges">
-					<option value=""></option>
-					<?=html_options([1 => 'Read',2 => 'Write'], $privileges['uploads']['access']); ?>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2" align="right">
-				<button type="submit">Save</button>
-			</td>
-		</tr>
-		</table>
-		</form>
-		<br />
-		<?php
-        }
-        ?>
+			<? require('includes/privileges.php'); ?>
 		</div>
 	</div>
 <?php } ?>
@@ -421,53 +349,7 @@ foreach ($languages as $language) {
 <?php if ($has_logs) { ?>
 	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
 	    <div class="box" style="clear:both;">
-			<?php
-                $query = "SELECT *,L.date FROM cms_logs L
-					LEFT JOIN users U ON L.user=U.id
-					WHERE
-						section='" . escape($_GET['option']) . "' AND
-						item='" . escape($id) . "'
-					ORDER BY L.id DESC
-				";
-
-                $p = new paging($query, 20);
-
-                $logs = sql_query($p->query);
-
-                if (count($logs)) {
-                    ?>
-			<div style="overflow: scroll; background: #fff;">
-			<?php
-                foreach ($logs as $k => $v) {
-                    if ('users' == $_GET['option']) {
-                        $item_table = underscored($v['section']);
-
-                        if ($vars['fields'][$v['section']]) {
-                            $item = sql_query("SELECT * FROM `$item_table` WHERE id='" . escape($v['item']) . "'", 1);
-                            $label = key($vars['fields'][$v['section']]);
-                            $item_name = $item[$label];
-                        }
-                    }
-
-                    $name = $v['name'] ? $v['name'] . ' ' . $v['surname'] : $v['email']; ?>
-			<p>
-				<strong><a href="?option=<?=$v['section']; ?>&view=true&id=<?=$v['item']; ?>"><?=$item_name; ?></a> <?=ucfirst($v['task']); ?> by <a href="?option=users&view=true&id=<?=$v['user']; ?>"><?=$name; ?></a> on <?=$v['date']; ?></strong><br>
-				<?=nl2br($v['details']); ?>
-			</p>
-			<br>
-			<br>
-			<?php
-                } ?>
-			<p>
-				<?=$p->get_paging(); ?>
-			</p>
-			</div>
-
-			<br />
-			<br />
-			<?php
-                }
-            ?>
+			<? require('includes/logs.php'); ?>
 		</div>
 	</div>
 <?php } ?>
