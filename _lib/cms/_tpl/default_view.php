@@ -92,81 +92,60 @@ if ($_POST['delete'] and $this->id) {
     redirect('?option=' . $this->section);
 }
 
-if ($_POST['sms']) {
-    $users[] = $content;
+//label
+$label = $this->get_label();
 
-    require(dirname(__FILE__) . '/sms.php');
-} else {
-    //label
-    $label = $this->get_label();
+$title = ucfirst($this->section) . ' | ' . ($label ? $label : '&lt;blank&gt;');
 
-    $title = ucfirst($this->section) . ' | ' . ($label ? $label : '&lt;blank&gt;');
+// previous / next links
+if (isset($content['position'])) {
+    $conditions = $_GET;
+    unset($conditions['id']);
 
-    // previous / next links
-    if (isset($content['position'])) {
-        $conditions = $_GET;
-        unset($conditions['id']);
+    $qs = http_build_query($conditions);
 
-        $qs = http_build_query($conditions);
+    $conditions['position'] = $content['position'];
+    $conditions['func']['position'] = '<';
 
-        $conditions['position'] = $content['position'];
-        $conditions['func']['position'] = '<';
+    $prev = $this->get($this->section, $conditions, 1, null, false);
 
-        $prev = $this->get($this->section, $conditions, 1, null, false);
+    $conditions['func']['position'] = '>';
 
-        $conditions['func']['position'] = '>';
+    $next = $this->get($this->section, $conditions, 1);
 
-        $next = $this->get($this->section, $conditions, 1);
+    //var_dump($prev); exit;
 
-        //var_dump($prev); exit;
-
-        if ($prev) {
-            $prev_link = '?id=' . $prev['id'] . '&' . $qs;
-        }
-
-        if ($next) {
-            $next_link = '?id=' . $next['id'] . '&' . $qs;
-        }
+    if ($prev) {
+        $prev_link = '?id=' . $prev['id'] . '&' . $qs;
     }
 
-
-    $qs_arr = $_GET;
-    unset($qs_arr['option']);
-    unset($qs_arr['view']);
-    unset($qs_arr['id']);
-    $qs = http_build_query($qs_arr);
-
-    $section = '';
-    foreach ($vars['fields'][$this->section] as $name => $type) {
-        if ($_GET[underscored($name)] and 'id' != $name and 'select' == $type) {
-            $section = $name;
-            break;
-        }
+    if ($next) {
+        $next_link = '?id=' . $next['id'] . '&' . $qs;
     }
-
-    if ($section and in_array('id', $vars['fields'][$this->section])) {
-        $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section];
-        $back_label = ucfirst($vars['options'][$section]);
-    } else {
-        $back_link = '?option=' . $this->section . '&' . http_build_query($_GET['s']);
-        $back_label = ucfirst($this->section);
-    } ?>
-
-
-<?php /*
-<?php
-if( in_array('language',$vars['fields'][$this->section]) ){
-?>
-<p>
-Language:
-<select id="language" name="language">
-    <?=html_options($languages);?>
-</select>
-</p>
-<?php
 }
-?>
-*/ ?>
+
+
+$qs_arr = $_GET;
+unset($qs_arr['option']);
+unset($qs_arr['view']);
+unset($qs_arr['id']);
+$qs = http_build_query($qs_arr);
+
+$section = '';
+foreach ($vars['fields'][$this->section] as $name => $type) {
+    if ($_GET[underscored($name)] and 'id' != $name and 'select' == $type) {
+        $section = $name;
+        break;
+    }
+}
+
+if ($section and in_array('id', $vars['fields'][$this->section])) {
+    $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section];
+    $back_label = ucfirst($vars['options'][$section]);
+} else {
+    $back_link = '?option=' . $this->section . '&' . http_build_query($_GET['s']);
+    $back_label = ucfirst($this->section);
+} ?>
 
 <!-- page title area start -->
 <div class="page-title-area">
@@ -402,7 +381,7 @@ foreach ($languages as $language) {
         } elseif ('phpupload' == $type) { ?>
             <input type="text" name="<?=$name;?>" class="upload" value="<?=$value;?>" readonly="true">
 		<?php
-        } elseif ('select' == $type or 'combo' == $type or 'radio' == $type or 'select-distance' == $type) {
+        } elseif (in_array($type, ['select', 'combo', 'radio'])) {
             if (!is_array($vars['options'][$name])) {
                 if ('0' == $value) {
                     $value = '';
@@ -682,24 +661,13 @@ foreach ($languages as $language) {
 	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
 	    <div class="box" style="clear:both;">
 			<?php
-                /*
-                if( $_GET['option']=='users' ){
-                    $query = "SELECT *,L.date FROM cms_logs L
-                        INNER JOIN users U ON L.user=U.id
-                        WHERE
-                            user='".escape($_GET['id'])."'
-                        ORDER BY L.date DESC
-                    ";
-                }else{
-                */
-                    $query = "SELECT *,L.date FROM cms_logs L
-						LEFT JOIN users U ON L.user=U.id
-						WHERE
-							section='" . escape($_GET['option']) . "' AND
-							item='" . escape($id) . "'
-						ORDER BY L.id DESC
-					";
-                //}
+                $query = "SELECT *,L.date FROM cms_logs L
+					LEFT JOIN users U ON L.user=U.id
+					WHERE
+						section='" . escape($_GET['option']) . "' AND
+						item='" . escape($id) . "'
+					ORDER BY L.id DESC
+				";
 
                 $p = new paging($query, 20);
 
@@ -752,12 +720,6 @@ foreach ($languages as $language) {
 </div>
 
 
-
-
-<?php
-}
-
-?>
 
 <script>
 function init()

@@ -1,11 +1,8 @@
 <?php
-use SendGrid\Mail\Mail;
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\PHPMailer;
-
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
+// create image resource from a file
 function imagecreatefromfile($path)
 {
     $info = getimagesize($path);
@@ -23,14 +20,14 @@ function imagecreatefromfile($path)
         break;
         default:
             return false;
-
-            $img = imagecreatefromstring(file_get_contents($path));
+            //$img = imagecreatefromstring(file_get_contents($path));
         break;
     }
     
     return $img;
 }
 
+// rotate uploaded image from meta data
 function imageorientationfix($path)
 {
     $exif = exif_read_data($path);
@@ -51,6 +48,7 @@ function imageorientationfix($path)
     return $img;
 }
 
+/*
 function imagefile($img, $path): bool
 {
     $ext = file_ext($path);
@@ -65,7 +63,9 @@ function imagefile($img, $path): bool
     
     return $result;
 }
+*/
 
+// create a thumbnail from an uploaded file
 function image($file, $w = null, $h = null, $attribs = true, $crop = false)
 {
     $file = trim($file);
@@ -239,7 +239,7 @@ function image($file, $w = null, $h = null, $attribs = true, $crop = false)
     }
 }
 
-//calculate age from dob
+// calculate age from dob
 function age($dob)
 {
     $dob = strtotime($dob);
@@ -254,6 +254,7 @@ function age($dob)
     return date('Y') - $y;
 }
 
+// google analytics
 function analytics($id)
 {
     ?>
@@ -271,6 +272,7 @@ function analytics($id)
 	<?php
 }
 
+// sort multidimensional array
 function array_orderby()
 {
     $args = func_get_args();
@@ -291,6 +293,7 @@ function array_orderby()
     return array_pop($args);
 }
 
+// return all the bank holidays from a a year
 function bank_holidays($yr): array
 {
     $bankHols = [];
@@ -419,6 +422,7 @@ function bank_holidays($yr): array
     return $bankHols;
 }
 
+/*
 function basename_safe($path)
 {
     if (false !== mb_strrpos($path, '/')) {
@@ -426,7 +430,9 @@ function basename_safe($path)
     }
     return $path;
 }
+*/
 
+// get coords from a postcode
 function calc_grids($pcodeA, $lat = false)
 {
     $pos = strpos($pcodeA, ' ');
@@ -450,6 +456,7 @@ function calc_grids($pcodeA, $lat = false)
     return false;
 }
 
+// get distance in miles between two postcods
 function calc_distance($postcode_a, $postcode_b)
 {
     if ($postcode_a == $postcode_b) {
@@ -462,31 +469,7 @@ function calc_distance($postcode_a, $postcode_b)
     return round(sqrt(pow($grid_a[0] - $grid_b[0], 2) + pow($grid_a[1] - $grid_b[1], 2)) * 0.000621371192);
 }
 
-function check_table($table, $fields)
-{
-    $select = sql_query("SHOW TABLES LIKE '$table'");
-    if (!$select) {
-        //build table query
-        $query = '';
-        foreach ($fields as $name => $type) {
-            $name = underscored(trim($name));
-
-            $db_field = form_to_db($type);
-
-            if ($db_field) {
-                $query .= '`' . $name . '` ' . $db_field . ' NOT NULL,';
-            }
-        }
-
-        sql_query("CREATE TABLE `$table` (
-			`id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-			$query
-			PRIMARY KEY ( `id` )
-			)
-		");
-    }
-}
-
+// add active class to the active tab
 function current_tab($tab, $class = ''): string
 {
     global $sections, $request;
@@ -495,7 +478,7 @@ function current_tab($tab, $class = ''): string
 
 	$str = '';
     if ($sections[$index] == $tab or $tab == $request) {
-        $str = ' class="current active ' . $class . '"';
+        $str = ' class="active ' . $class . '"';
     } elseif ($class) {
         $str = ' class="' . $class . '"';
     }
@@ -503,6 +486,7 @@ function current_tab($tab, $class = ''): string
     return $str;
 }
 
+// get difference between two dates in days
 function datediff($endDate, $beginDate): int
 {
     $date_parts1 = explode('-', $beginDate);
@@ -512,6 +496,7 @@ function datediff($endDate, $beginDate): int
     return $end_date - $start_date;
 }
 
+// like date() but uses make_timestamp instead of strtotime
 function dateformat($format, $date = null, $uk = true)
 {
     if ('0000-00-00' == $date) {
@@ -526,6 +511,7 @@ function dateformat($format, $date = null, $uk = true)
     return date($format, make_timestamp($date));
 }
 
+// show debug message to admin
 function debug($var, $die = false)
 {
     global $auth;
@@ -541,6 +527,16 @@ function debug($var, $die = false)
     }
 }
 
+// send an email
+/*
+	$opts = [
+		from_email
+		to_email
+		subject
+		content
+		attachments
+	]
+*/
 function send_mail($opts = []): bool
 {
     global $from_email;
@@ -552,7 +548,7 @@ function send_mail($opts = []): bool
     $is_html = ($opts['content'] !== strip_tags($opts['content']));
     
     if (getenv('SENDGRID_API_KEY')) {
-        $email = new Mail();
+        $email = new SendGrid\Mail\Mail();
         //$email->setFrom("test@example.com", "Example User");
         $email->setFrom($opts['from_email']);
         $email->setSubject($opts['subject']);
@@ -574,8 +570,10 @@ function send_mail($opts = []): bool
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
-    } elseif (class_exists('PHPMailer')) {
-        $mail = new PHPMailer();
+        
+        return $response;
+    } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+        $mail = new PHPMailer\PHPMailer\PHPMailer();
         $mail->SetFrom($opts['from_email']);
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
@@ -603,13 +601,14 @@ function send_mail($opts = []): bool
             $headers .= 'From: ' . $from_email . "\n";
         }
         
-        mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
+        return mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
     }
 }
 
+// send an email form the CMS - TODO move to cms class
 function email_template($email, $subject = null, $reps = null, $headers = null, $language = 'en')
 {
-    global $from_email, $email_templates, $cms, $lang;
+    global $from_email, $email_templates, $cms;
 
     if (!$language) {
         $language = $cms->language;
@@ -660,16 +659,19 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
     send_mail($opts);
 }
 
+// check if haystack starts with needle
 function starts_with($haystack, $needle): bool
 {
     return '' === $needle || 0 === strpos($haystack, $needle);
 }
 
+// checks if haystack ends with needle
 function ends_with($haystack, $needle): bool
 {
     return '' === $needle || substr($haystack, -strlen($needle)) === $needle;
 }
 
+// trigger error handler on shutdown
 function shutdown()
 {
     if ($error = error_get_last()) {
@@ -677,9 +679,10 @@ function shutdown()
     }
 }
 
+// output error and email them to admin
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 {
-    global $db_connection;
+    global $db_connection, $debug_ip, $auth, $admin_email;
 
     switch ($errno) {
         case E_USER_NOTICE:
@@ -694,8 +697,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
         case E_PARSE:
         case E_CORE_ERROR:
         case E_COMPILE_ERROR:
-            global $query, $db_config;
-
             if (mysqli_error($db_connection)) {
                 $ERRNO = mysqli_errno($db_connection);
                 $ERROR = mysqli_error($db_connection);
@@ -718,7 +719,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 
             $errorstring .= "<p>Error in line $errline of file '$errfile'.</p>\n";
             $errorstring .= "<p>Script: '{$_SERVER['PHP_SELF']}'.</p>\n";
-
             $errorstring .= '<p><a href="' . $url . '">' . $url . '</a></p>' . "\n";
 
             $var_dump = print_r($_GET, true);
@@ -749,8 +749,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 			</div>
 			';
 
-            global $debug_ip, $auth;
-
             if ($_SERVER['REMOTE_ADDR'] == $debug_ip or $auth->user['admin']) {
                 echo "<p>The following has been reported to the administrator:</p>\n";
                 echo "<b>$errorstring\n</b></font>";
@@ -762,8 +760,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 
             $body = $errorstring;
             $body .= '<pre>' . $var_dump . '</pre>';
-
-            global $admin_email;
 
             if ($admin_email) {
                 mail($admin_email, 'PHP Error ' . $_SERVER['HTTP_HOST'], $body, $headers);
@@ -777,23 +773,27 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
     }
 }
 
+// prevent sql injectoin
 function escape($string) // can return null
 {
     global $db_connection;
     return mysqli_real_escape_string($db_connection, $string);
 }
 
+// retun the file extension part of a file name
 function file_ext($file): string
 {
     return strtolower(end(explode('.', $file)));
 }
 
-function file_size($size): string
+// retun file size abbreviation e.g. 10K
+function file_size($size): int
 {
     for ($si = 0; $size >= 1024; $size /= 1024, $si++);
     return round($size) . substr(' KMGT', $si, 1);
 }
 
+// return number abbreviaion e.g. 10K
 function number_abbr($size, $dp = null): string
 {
     for ($si = 0; $size >= 1000; $size /= 1000, $si++);
@@ -805,6 +805,7 @@ function number_abbr($size, $dp = null): string
     return number_format($size, $dp) . substr(' KMBT', $si, 1);
 }
 
+// format mobile number
 function format_mobile($mobile)
 {
     $mobile = preg_replace('%[^0-9]%', '', $mobile);
@@ -823,6 +824,7 @@ function format_mobile($mobile)
     return $mobile;
 }
 
+// format postcode e.g. sg64lz -> SG6 4LZ
 function format_postcode($postcode)
 {
     $postcode = strtoupper($postcode);
@@ -840,6 +842,7 @@ function format_postcode($postcode)
     return false;
 }
 
+// generate a random postcode
 function generate_password($length = 8): string
 {
     $password = '';
@@ -857,6 +860,7 @@ function generate_password($length = 8): string
     return $password;
 }
 
+// get browser language
 function get_client_language($availableLanguages, $default = 'en')
 {
     if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
@@ -873,6 +877,7 @@ function get_client_language($availableLanguages, $default = 'en')
     return $default;
 }
 
+// get options from a table DEPRECATED
 function get_options($table, $field, $where = false): array
 {
     $qry = "SELECT id, $field FROM $table";
@@ -892,11 +897,7 @@ function get_options($table, $field, $where = false): array
     return $options;
 }
 
-function html($string): string
-{
-    return htmlentities($string, ENT_COMPAT, 'UTF-8');
-}
-
+// convert array to html options
 function html_options($opts, $selected = [], $force_assoc = false, $disabled = [])
 {
     $params = [
@@ -954,6 +955,7 @@ function html_options($opts, $selected = [], $force_assoc = false, $disabled = [
     return $_html_result;
 }
 
+// used by html_options
 function html_options_optoutput($key, $value, $selected, $disabled)
 {
     if (!is_array($value)) {
@@ -972,6 +974,7 @@ function html_options_optoutput($key, $value, $selected, $disabled)
     return $_html_result;
 }
 
+// used by html_options
 function html_options_optgroup($key, $values, $selected): string
 {
     $optgroup_html = '<optgroup label="' . htmlspecialchars($key) . '">' . "\n";
@@ -1127,65 +1130,17 @@ function load_js($libs)
     }
 
     if ($deps['bootstrap']) {
-        //$version = '3.1.1';
-        $version = '3.0.0'; ?>
-		<!-- Latest compiled and minified CSS -->
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
-
-		<!-- Optional theme -->
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap-theme.min.css">
-
-		<!-- Latest compiled and minified JavaScript -->
-		<script src="//netdna.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.min.js"></script>
-	<?php
-    }
-
-    if ($deps['bootstrap4']) {
-        //$version = '3.1.1';
-        $version = '4.3.1'; ?>
-	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css" crossorigin="anonymous">
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
-	<?php
-    }
-
-    if ($deps['syntaxhighlighter']) {
-        ?>
-	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shCore.css" rel="stylesheet" type="text/css" />
-	<link href="//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shThemeRDark.css" rel="stylesheet" type="text/css" />
-	<style>
-		.toolbar{
-			display: none;
-		}
-
-		pre,code{
-			white-space:pre-wrap;/*css-3*/
-			word-wrap:break-word;/*InternetExplorer5.5+*/
-		}
-
-		.syntaxhighlighter{
-			padding: 10px;
-		}
-	</style>
-	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js"></script>
-	<script src="//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shAutoloader.js"></script>
-	<script>
-	SyntaxHighlighter.autoloader(
-	  'php //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPHP.js',
-	  'js jscript javascript //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushJScript.js',
-	  'css //agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushCss.js'
-	);
-
-	$(function() {
-		SyntaxHighlighter.all();
-	});
-	</script>
+        $version = '4.4.1'; 
+    ?>
+	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js" async></script>
 	<?php
     }
 
     if ($deps['fontawesome']) {
         ?>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
-<?php
+	<?php
     }
 }
 
@@ -1197,7 +1152,7 @@ function make_timestamp($string)
     } elseif ('0000-00-00' === $string) {
         return false;
     } elseif (preg_match('/^\d{14}$/', $string)) {
-        // it is timestamp format of YYYYMMDDHHMMSS?
+        // it is timestamp format of YYYYMMDDHHMMSS
         $time = mktime(
             substr($string, 8, 2),
             substr($string, 10, 2),
@@ -1213,8 +1168,6 @@ function make_timestamp($string)
         // strtotime should handle it
         $time = strtotime($string);
         if (-1 == $time || false === $time) {
-            // strtotime() was not able to parse $string, use "now":
-            //$time = time();
             return false;
         }
     }
@@ -1635,13 +1588,6 @@ function wget($url)
     curl_close($ch);
     
     return $data;
-}
-
-//deprecated, use video_info instead
-function youtube_id_from_url($url)
-{
-    $info = video_info($url);
-    return $info['id'];
 }
 
 function video_info($url): array

@@ -1,4 +1,6 @@
 <?php
+// deprecated
+
 global $db_config, $auth_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $sms_config, $live_site;
 
 function array_to_csv($array): string

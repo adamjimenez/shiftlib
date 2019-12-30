@@ -53,7 +53,6 @@ $vars["fields"]["users"]=array(
 	"id"=>"id",
 );
 
-
 // sections in menu
 $vars["sections"]=array(
 	"users",
@@ -68,7 +67,6 @@ $opts["admin"]=array(
 ?>';
 
     file_put_contents('_inc/config.php', $content);
-
     redirect('/admin');
 }
 ?>

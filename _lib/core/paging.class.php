@@ -91,14 +91,14 @@ class paging
         }
     }
 
-    public function getNumberOfPage()
+    public function getNumberOfPages()
     {
         return $this->int_num_result ? ($this->total / $this->int_num_result) : 1;
     }
 
     public function getCurrentPage()
     {
-        $int_cur_page = ($this->page * $this->getNumberOfPage()) / $this->total;
+        $int_cur_page = ($this->page * $this->getNumberOfPages()) / $this->total;
         return number_format($int_cur_page, 0);
     }
 
@@ -148,7 +148,7 @@ class paging
 
     public function getPagingRowArray()
     {
-        if ($this->getNumberOfPage() > 0) {
+        if ($this->getNumberOfPages() > 0) {
             $start = $this->getCurrentPage() - floor($this->num_pages / 2);
 
             if ($start < 0) {
@@ -157,8 +157,8 @@ class paging
 
             $end = $start + $this->num_pages;
 
-            if ($end > $this->getNumberOfPage()) {
-                $end = $this->getNumberOfPage();
+            if ($end > $this->getNumberOfPages()) {
+                $end = $this->getNumberOfPages();
             }
         } else {
             $start = 0;
@@ -323,6 +323,7 @@ class paging
         return $html;
     }
     
+    /*
     public function get_rel()
     {
         $array_paging = $this->getPagingArray();
@@ -340,4 +341,5 @@ class paging
         
         return $rel;
     }
+    */
 }

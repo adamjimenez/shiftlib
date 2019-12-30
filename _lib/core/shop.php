@@ -40,7 +40,7 @@ class shop
 
     public function __construct()
     {
-        global $shop_config, $auth, $from_email;
+        global $shop_config, $auth, $from_email, $cms;
 
         $this->vat_rate = 0.2;
 
@@ -61,7 +61,7 @@ class shop
             'extras' => 'textarea',
             'quantity' => 'int',
         ];
-        check_table('basket', $basket_fields);
+        $cms->check_table('basket', $basket_fields);
 
         $orders_fields = [
             'date' => 'datetime',
@@ -84,7 +84,7 @@ class shop
             'dispatched_date' => 'datetime',
             'refund_date' => 'datetime',
         ];
-        check_table('orders', $orders_fields);
+        $cms->check_table('orders', $orders_fields);
 
         $order_items_fields = [
             'order' => 'int',
@@ -95,7 +95,7 @@ class shop
             'cost' => 'float',
             'quantity' => 'int',
         ];
-        check_table('order_items', $order_items_fields);
+        $cms->check_table('order_items', $order_items_fields);
 
         if ($_SESSION['guest']) {
             $this->guest = $_SESSION['guest'];

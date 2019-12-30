@@ -24,7 +24,7 @@ if ($db_config['user'] or $db_connection) {
         }
     }
 
-    $auth = new auth();
+    $auth = new auth($auth_config);
     $auth->init();
 } elseif (false !== $db_config) {
     //prompt to configure connection

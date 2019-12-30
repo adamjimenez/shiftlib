@@ -47,7 +47,10 @@ function send_msg($id, $msg)
     flush();
 }
 
-$auth->check_admin();
+// check permissions
+if (!$auth->user['admin'] and !$auth->user['privileges'][$_GET['section']]) {
+	die('permission denied');
+}
 
 $response = [];
 

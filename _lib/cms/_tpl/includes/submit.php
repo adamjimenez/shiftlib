@@ -7,4 +7,3 @@ if (false !== $label) {
 <button class="btn btn-default" type="button" data-custom="<?=$k; ?>" <?=$disabled; ?>><?=$label; ?></button>
 <?php
 }
-?>
