@@ -544,15 +544,15 @@ function initForms()
 
 	//tinymce4
     var tinymce_url = '//cloud.tinymce.com/dev/'; // changed to dev from stable for bugfix in 4.7
-	if( jQuery('textarea.tinymce').length ){
+	if( jQuery("[data-type='tinymce']").length ){
         jQuery.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
-            $('textarea.tinymce').tinymce({
+            $("[data-type='tinymce']").tinymce({
                 script_url: tinymce_url+'tinymce.min.js',
                 plugins: [
                     "importcss advlist autolink lists link image charmap print preview anchor",
                     "searchreplace visualblocks code fullscreen",
                     "insertdatetime media table contextmenu paste textcolor colorpicker hr",
-                    "autoresize"
+                    //"autoresize"
                 ],
                 toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
