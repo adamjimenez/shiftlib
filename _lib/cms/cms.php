@@ -221,7 +221,7 @@ class cms
             $ids = [$ids];
         }
 
-        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+        $field_id = $this->get_id_field($section);
         
         $soft_delete = in_array('deleted', spaced($vars['fields'][$section]));
 
@@ -315,7 +315,7 @@ class cms
         }
 
         $table = underscored($section);
-        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+        $field_id = $this->get_id_field($section);
 
         if (is_numeric($id)) {
             $conditions = ['id' => $id];
@@ -602,7 +602,7 @@ class cms
                         die('missing options array value for: ' . $key);
                     }
 
-                    $join_id = array_search('id', $vars['fields'][$vars['options'][$key]]);
+                    $join_id = $this->get_id_field($key);
 
                     $joins .= "
 						LEFT JOIN $option_table T_" . underscored($key) . ' ON T_' . underscored($key) . ".$join_id=T_$table." . underscored($key) . '
@@ -647,17 +647,6 @@ class cms
             $prefix = $table;
         }
 
-        //sortable
-        $sortable = in_array('position', $vars['fields'][$section]);
-
-        //parent
-        if (
-                in_array('parent', $vars['fields'][$section]) or
-                true == $vars['settings'][$section]['has_children']
-            ) {
-            $parent_field = array_search('parent', $vars['fields'][$section]);
-        }
-
         if (!count($vars['labels'][$section])) {
             reset($vars['fields'][$section]);
             $vars['labels'][$section][] = key($vars['fields'][$section]);
@@ -674,11 +663,11 @@ class cms
             }
         }
 
-        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+        $field_id = $this->get_id_field($section);
         $cols .= "\tT_$table.$field_id";
 
         if (!$order) {
-            if ($sortable) {
+            if (in_array('position', $vars['fields'][$section])) {
                 $order = 'T_' . $table . '.position';
             } elseif (false !== ($field_date = array_search('date', $vars['fields'][$section])) and in_array($field_date, $vars['labels'][$section])) {
                 $order = 'T_' . $table . '.' . underscored($field_date);
@@ -770,7 +759,7 @@ class cms
             if ('checkboxes' == $type) {
                 foreach ($content as $k => $v) {
                     if (!is_array($vars['options'][$field]) and $vars['options'][$field]) {
-                        $join_id = array_search('id', $vars['fields'][$vars['options'][$field]]);
+                        $join_id = $this->get_id_field($field);
 
                         reset($vars['fields'][$vars['options'][$field]]);
                         $key = key($vars['fields'][$vars['options'][$field]]);
@@ -851,59 +840,20 @@ class cms
             unset($this->editable_fields[array_search('admin', $this->editable_fields)]);
         }
 
-        $this->field_id = array_search('id', $vars['fields'][$this->section]);
+        $this->field_id = $this->get_id_field($this->section);
 
-        if (!$this->field_id) {
+        if (!in_array('id', $vars['fields'][$this->section])) {
             $this->field_id = 'id';
-            $id = 1;
+            $row = sql_query('SELECT * FROM `' . $this->table . '` ORDER BY ' . $this->field_id . ' LIMIT 1', 1);
+            $id = $row[$this->field_id];
         }
 
         if ($id) {
             $this->id = $id;
-
-            $fields = '';
-            foreach ($vars['fields'][$section] as $k => $v) {
-                if (in_array($v, ['separator', 'checkboxes'])) {
-                    continue;
-                }
-
-                if ('coords' == $v) {
-                    $fields .= 'AsText(' . underscored($k) . ') AS ' . underscored($k) . ',' . "\n";
-                    continue;
-                }
-
-                $fields .= '`' . underscored($k) . '`,' . "\n";
-            }
-            $fields = substr($fields, 0, -2);
-
-            $row = sql_query("SELECT $fields FROM `" . $this->table . '`
-				WHERE
-					' . $this->field_id . "='" . escape($this->id) . "'
-			", 1);
-
             $this->content = $this->get($section, ['id' => $this->id], 1);
 
             if (!$this->content) {
                 $this->id = null;
-            }
-
-            if (in_array('language', $vars['fields'][$this->section])) {
-                foreach ($languages as $language) {
-                    if ('en' !== $language) {
-                        $this->content[$language] = sql_query('SELECT * FROM `' . $this->table . "`
-							WHERE
-								`translated_from`='" . escape($this->id) . "' AND
-								`language`='" . escape($language) . "'
-						", true);
-                    }
-                }
-            }
-        } elseif (!in_array('id', $vars['fields'][$this->section])) {
-            $row = sql_query('SELECT * FROM `' . $this->table . '` ORDER BY ' . $this->field_id . ' LIMIT 1', 1);
-
-            if ($row) {
-                $this->content = $row;
-                $this->id = $this->content[$this->field_id];
             }
 
             if (in_array('language', $vars['fields'][$this->section])) {
@@ -947,7 +897,7 @@ class cms
                     if (0 == $value) {
                         $value = '';
                     } else {
-                        $join_id = array_search('id', $vars['fields'][$vars['options'][$field]]);
+                        $join_id = $this->get_id_field($field);
 
                         $row = sql_query('SELECT `' . underscored(key($vars['fields'][$vars['options'][$field]])) . '` FROM `' . escape(underscored($vars['options'][$field])) . "` WHERE $join_id='" . escape($value) . "'");
                         $value = '<a href="?option=' . escape($vars['options'][$field]) . '&view=true&id=' . $value . '">' . reset($row[0]) . '</a>';
@@ -962,6 +912,12 @@ class cms
         }
 
         return truncate($value);
+    }
+    
+    // get name of the id field
+    private function get_id_field($section) {
+    	global $vars;
+    	return in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
     }
 
 	// get parent fields child rows
@@ -1154,7 +1110,7 @@ class cms
 
                 if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
                     if ($this->id) {
-                        $join_id = array_search('id', $vars['fields'][$vars['options'][$name]]);
+                        $join_id = $this->get_id_field($name);
 
                         $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
 							INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 ON T1.value=T2.$join_id
@@ -1379,7 +1335,7 @@ class cms
             $array = [];
 
             if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
-                $join_id = array_search('id', $vars['fields'][$vars['options'][$name]]);
+                $join_id = $this->get_id_field($name);
 
                 //make sure we get the label from the first array item
                 reset($vars['fields'][$vars['options'][$name]]);
@@ -1575,13 +1531,7 @@ class cms
             $cols = '`' . underscored($field) . '`';
 
             //sortable
-            $sortable = in_array('position', $vars['fields'][$vars['options'][$name]]);
-
-            if ($sortable) {
-                $order = 'position';
-            } else {
-                $order = $field;
-            }
+            $order = in_array('position', $vars['fields'][$vars['options'][$name]]) ? 'position' : $field;
 
             if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
                 $where_str = '';
@@ -1662,20 +1612,16 @@ class cms
     public function admin()
     {
         global $auth, $vars;
-
-        if (!$auth) {
-            die('database settings not configured');
-        }
         
-        $option = $_GET['option'] ?: 'index';
-
-        $section = $option;
+        $option = $_GET['option'];
+        $section = $option ?: 'index';
         $pos = strpos($section, '/');
         if ($pos) {
-            $section = substr($option, 0, $pos);
+            $section = substr($section, 0, $pos);
         }
         
-        if ('login' != $_GET['option'] and !$auth->user['admin']) {
+        // redirect if logged out
+        if ('login' != $option and !$auth->user['admin']) {
 			// check table exists
 	        if (!table_exists($auth->table)) {
 	            $cms->check_table($auth->table, $vars['fields'][$this->table]);
@@ -1696,6 +1642,7 @@ class cms
 	        redirect('/admin?option=login');
         }
 
+		// check permissions
         if ($auth->user['admin'] > 1 and table_exists('cms_privileges')) {
             $rows = sql_query("SELECT * FROM cms_privileges
             	WHERE
@@ -2169,8 +2116,8 @@ class cms
                         $doc->appendChild($container->firstChild);
                     }
                     
+                    // remove script tags
                     $script = $doc->getElementsByTagName('script');
-                    
                     foreach ($script as $item) {
                         $item->parentNode->removeChild($item);
                     }
