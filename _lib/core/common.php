@@ -1,5 +1,4 @@
 <?php
-use SendGrid\Mail\Mail;
 
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
@@ -550,7 +549,7 @@ function send_mail($opts = []): bool
     $is_html = ($opts['content'] !== strip_tags($opts['content']));
     
     if (getenv('SENDGRID_API_KEY')) {
-        $email = new Mail();
+        $email = new \SendGrid\Mail\Mail();
         //$email->setFrom("test@example.com", "Example User");
         $email->setFrom($opts['from_email']);
         $email->setSubject($opts['subject']);
