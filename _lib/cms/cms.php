@@ -3,7 +3,7 @@ class cms
 {
     public function cms()
     {
-        global $cms_buttons, $auth, $vars;
+        global $cms_buttons, $vars;
         
         $this->opts['rating'] = [
             1 => 'Very Poor',
@@ -605,8 +605,6 @@ class cms
 						LEFT JOIN $option_table T_" . underscored($key) . ' ON T_' . underscored($key) . ".$join_id=T_$table." . underscored($key) . '
 					';
 
-                    //$option=key($vars['fields'][$vars['options'][$key]]);
-
                     foreach ($vars['fields'][$vars['options'][$key]] as $k => $v) {
                         if ('separator' != $v) {
                             $option = $k;
@@ -959,11 +957,10 @@ class cms
                     }
                 }
 
-
             break;
         }
 
-        return truncate(strip_tags($value));
+        return truncate($value);
     }
 
 	// get parent fields child rows
@@ -1006,7 +1003,7 @@ class cms
 	// get field widget
     public function get_field($name, $attribs = '', $placeholder = '', $separator = null, $where = false)
     {
-        global $vars, $id, $strs, $cms_config;
+        global $vars, $id, $strs;
 
         if ($vars['fields'][$this->section][spaced($name)]) {
             $name = spaced($name);
@@ -1101,7 +1098,7 @@ class cms
             break;
             case 'editor':
         ?>
-			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ?: 'rows="25" style="width:100%; height: 400px;"';?> class="<?=$cms_config['editor'] ? $cms_config['editor'] : 'tinymce';?>"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
+			<textarea id="<?=$field_name;?>" name="<?=$field_name;?>" <?php if ($readonly) { ?>disabled<?php } ?> <?=$attribs ?: 'rows="25" style="width:100%; height: 400px;"';?> class="tinymce"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
 		<?php
             break;
             case 'file':
@@ -1758,7 +1755,7 @@ class cms
         foreach ($vars['fields'][$this->section] as $name => $type) {
             $msg .= ucfirst(spaced($name)) . ': ' . $this->get_value($name) . "\n";
         }
-        $msg .= "\n" . 'http://' . $_SERVER['HTTP_HOST'] . '/admin?option=' . rawurlencode($this->section) . '&edit=true&id=' . $this->id;
+        $msg .= "\n" . 'https://' . $_SERVER['HTTP_HOST'] . '/admin?option=' . rawurlencode($this->section) . '&edit=true&id=' . $this->id;
 
         $msg = nl2br($msg);
 
@@ -2413,7 +2410,7 @@ class cms
 
     public function template($include, $local = false)
     {
-        global $vars, $auth, $shop_enabled, $languages, $live_site, $cms_buttons, $message, $admin_config;
+        global $vars, $auth, $shop_enabled, $languages, $live_site, $cms_buttons, $message;
 
         ob_start();
         if ($local) {
@@ -2447,14 +2444,6 @@ class cms
     public function default_section($option)
     {
         global $vars, $sid;
-
-        $vars['fields']['sms templates'] = [
-            'subject' => 'text',
-            'message' => 'textarea',
-            'id' => 'id',
-        ];
-
-        $vars['labels']['sms templates'] = ['subject','message'];
 
         $this->section = $option;
 

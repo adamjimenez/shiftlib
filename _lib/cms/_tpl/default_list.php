@@ -78,20 +78,7 @@ if ('delete' == $_POST['action']) {
     $this->delete_items($this->section, $_POST['id']);
 }
 
-if ('email' == $_POST['action']) {
-    if ($_POST['select_all_pages']) {
-        $users = $this->get($this->section, $_GET);
-    } else {
-        $_POST['id'];
-
-        $users = [];
-        foreach ($_POST['id'] as $v) {
-            $users[] = $this->get($this->section, $v);
-        }
-    }
-
-    require(dirname(__FILE__) . '/shiftmail.php');
-} elseif ($_POST['custom_button']) {
+if ($_POST['custom_button']) {
     if ('list' == $cms_buttons[$_POST['custom_button']]['page']) {
         if ($_POST['select_all_pages'] or !$_POST['id']) {
             $items = $this->get($this->section, $_GET);
@@ -107,12 +94,6 @@ if ('email' == $_POST['action']) {
     if ($cms_buttons[$_POST['custom_button']]['handler']) {
         $cms_buttons[$_POST['custom_button']]['handler']($items);
     }
-} elseif ($_POST['sms']) {
-    $users = $this->get($this->section, $_GET);
-    require(dirname(__FILE__) . '/sms.php');
-} elseif ($_POST['shiftmail']) {
-    $users = $this->get($this->section, $_GET);
-    require(dirname(__FILE__) . '/shiftmail.php');
 } else {
     if ($_POST['select_all_pages'] and $_POST['section'] and 'delete' == $_POST['action']) {
         $this->delete_all_pages($this->section, $_GET);
@@ -352,9 +333,8 @@ if ('email' == $_POST['action']) {
                     
                     $field = key($vars['fields'][$vars['options'][$name]]);
                     $table = underscored($vars['options'][$name]);
-                    $db_field_name = $this->db_field_name($vars['options'][$name], $field);
-                    $cols = '`' . underscored($db_field_name) . '` AS `' . underscored($field) . '`' . "\n";
-                    $rows = sql_query("SELECT $cols, id FROM $table ORDER BY `" . underscored($db_field_name) . '`');
+                    $cols = '`' . underscored($field) . '` AS `' . underscored($field) . '`' . "\n";
+                    $rows = sql_query("SELECT $cols, id FROM $table ORDER BY `" . underscored($field) . '`');
                     
                     $options = [];
                     foreach ($rows as $v) {
@@ -633,12 +613,6 @@ if ('email' == $_POST['action']) {
 			<input type="hidden" name="export" value="1" />
 				<button class="btn btn-default" type="submit">Export</button>
 			</form>
-			<?php if ($vars['settings'][$this->section]['shiftmail']) { ?>
-			<form method="post" style="display:inline">
-			<input type="hidden" name="shiftmail" value="1">
-				<button class="btn btn-default" type="submit">Email</button>
-			</form>
-			<?php } ?>
 			<?php
             foreach ($cms_buttons as $k => $button) {
                 if ($this->section == $button['section'] and 'list-all' == $button['page']) {
