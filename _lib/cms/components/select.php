@@ -152,13 +152,13 @@ class select extends component
 	}
 	
 	function value($value, $name) {
-		global $vars;
+		global $vars, $cms;
 		
         if (!is_array($vars['options'][$name])) {
             if ('0' == $value) {
                 $value = '';
             } else {
-                $value = '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $value . '">' . $this->content[underscored($name) . '_label'] . '</a>';
+                $value = '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $value . '">' . $cms->content[underscored($name) . '_label'] . '</a>';
             }
         } else {
             if (is_assoc_array($vars['options'][$name])) {
