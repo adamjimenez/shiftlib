@@ -13,11 +13,11 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
             		<input type="hidden" name="action" class="action">
             	
 	                <table id="dataTable-<?=underscored($this->section);?>" class="text-center">
-	                    <thead class="text-capitalize">
+	                    <thead>
 	                        <tr>
-	        					<th><i class="fas fa-arrows-alt-v"></i></th>
-	        					<th>&nbsp;</th>
-	        					<th>&nbsp;</th>
+	        					<th><i class="fas fa-arrows-alt-v"></i><span class="hideText">Reorder</span></th>
+	        					<th><span class="hideText">Checkboxes</span></th>
+	        					<th><span class="hideText">Actions</span></th>
 								<?php
                                 foreach ($vars['labels'][$this->section] as $k) {
                                     if ('id' == $k) {
@@ -46,7 +46,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 	                    </thead>
 	                </table>
 	                
-					<div class="row">
+					<div class="row buttons">
 						<div class="col-sm-12">
 	                		<a href="?option=<?=$this->section;?>&edit=1&<?=$qs;?>" class="btn btn-primary mb-3">Add</a>
 	                		<button type="button" class="btn btn-danger mb-3" data-value="delete" data-confirm="true">Delete</button>
@@ -80,9 +80,23 @@ $asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? 'desc
 $order = 3;
 ?>
 
+<style>
+	.hideText {
+		font-size: 0;
+	}
+</style>
+
 <script>
 $(document).ready(function() {
     var table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
+    	dom: 'Bfrtip',
+	    buttons: [
+	        'copy',
+            {
+                extend: 'colvis',
+                columns: ':not(.noVis)'
+            }
+	    ],
 		ajax: '/_lib/api/?<?=http_build_query($params);?>',
 		<?php if ($sortable) { ?>
 		"rowReorder": {
@@ -130,7 +144,8 @@ $(document).ready(function() {
 		"autoWidth": false,
 		"responsive": true
     } );
- 
+    
+	// reordering
     table.on( 'row-reorder', function ( e, diff, edit ) {
     	var table = $(this).DataTable();
 		var items = [];
