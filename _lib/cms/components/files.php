@@ -23,7 +23,7 @@ class files extends file
                     <img src="/_lib/cms/file.php?f=<?=$val;?>" style="max-width: 100px; max-height: 100px;"><br>
                     <?=$file['name'];?>
                 </a>
-                <a href="javascript:;" class="link" onClick="delItem(this)">Delete</a>
+                <a href="javascript:;" class="link" onClick="delItem(this)">delete</a>
             <?php } ?>
             </li>
             <?php
@@ -67,5 +67,56 @@ class files extends file
         $value .= '</ul>';
         
         return $value;
+	}
+	
+	function format_value($files, $field_name) {
+	    global $vars, $cms;
+	    
+	    if (!is_array($files)) {
+	        $files = [];
+	    }
+
+        if (is_array($_FILES[$field_name])) {
+            foreach ($_FILES[$field_name]['error'] as $key => $error) {
+                if (UPLOAD_ERR_OK !== $error) {
+                    continue;
+                }
+
+                sql_query("INSERT INTO files SET
+                    date=NOW(),
+                    name='" . escape($_FILES[$field_name]['name'][$key]) . "',
+                    size='" . escape(filesize($_FILES[$field_name]['tmp_name'][$key])) . "',
+                    type='" . escape($_FILES[$field_name]['type'][$key]) . "'
+                ");
+                $value = sql_insert_id();
+
+                $files[] = $value;
+
+                // move file
+                $file_path = $vars['files']['dir'] . $value;
+                rename($_FILES[$field_name]['tmp_name'][$key], $file_path) 
+                    or trigger_error("Can't save " . $file_path, E_ERROR);
+            }
+        }
+
+        if ($cms->id) {
+            $old_files = explode("\n", $cms->content[$field_name]);
+            
+            //clean up old files
+            foreach ($old_files as $old_file) {
+                $file_id = (int)$old_file['id'];
+                
+                if (!in_array($file_id, $files)) {
+                    sql_query("DELETE FROM files
+                        WHERE
+                            id='" . $file_id . "'
+                    ");
+
+                    $this->delete($vars['files']['dir'] . $file_id);
+                }
+            }
+        }
+
+        return trim(implode("\n", $files));
 	}
 }

@@ -76,9 +76,6 @@ class cms
             case 'deleted':
                 return 'TINYINT';
                 break;
-            case 'position':
-                return 'INT';
-                break;
             default:
                 return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
                 break;
@@ -277,7 +274,6 @@ class cms
                     break;
                 case 'postcode':
                     // todo: move to component and replace with ST_Distance_Sphere when supported (https://jira.mariadb.org/browse/MDEV-13467)
-                    
                     if (calc_grids($value) && is_numeric($conditions['func'][$field_name])) {
                         $grids = calc_grids($value);
 
@@ -513,7 +509,7 @@ class cms
             return $content[0]['count'];
         }
 
-        //spaced versions of field names for compatibility
+        // Deprecated: spaced versions of field names for compatibility
         foreach ($content as $k => $v) {
             foreach ($v as $k2 => $v2) {
                 $content[$k][spaced($k2)] = $v2;
@@ -587,16 +583,11 @@ class cms
 
         $this->section = $section;
         $this->table = underscored($section);
-
-        $this->editable_fields = [];
-        if (is_array($editable_fields)) {
-            foreach ($editable_fields as $k => $v) {
-                $this->editable_fields[$k] = spaced($v);
-            }
-        } else {
-            foreach ($vars['fields'][$this->section] as $k => $v) {
-                $this->editable_fields[] = $k;
-            }
+        $this->editable_fields = is_array($editable_fields) ? $editable_fields : array_keys($vars['fields'][$this->section]);
+        
+        // deprecated: backcompat in case field names are passed
+        foreach ($this->editable_fields as $k => $v) {
+            $this->editable_fields[$k] = spaced($v);
         }
 
         // don't allow staff to edit admin perms
@@ -852,28 +843,30 @@ class cms
         }
 
         foreach ($vars['fields'][$this->section] as $name => $type) {
+            $component = $this->get_component($type);
+            $field_name = underscored($name);
+            
             // skip readonly and blank passwords
             if (
-                !in_array($name, $this->editable_fields) ||
-                ('' == $data[$name] && 'password' === $type && $this->id)
+                !in_array($field_name, $this->editable_fields) ||
+                ($component->preserve_value and '' == $data[$field_name] && $this->id)
             ) {
                 continue;
             }
             
             // check fields
-            $component = $this->get_component($type);
             if (
-                ($data[$name] != '' && $component && !$component->is_valid($data[$name])) || 
-                (in_array($name, $vars['required'][$this->section]) && '' == $data[$name])
+                ($data[$field_name] != '' && $component && !$component->is_valid($data[$field_name])) || 
+                (in_array($name, $vars['required'][$this->section]) && '' == $data[$field_name])
             ) {
-                $errors[] = $name;
+                $errors[] = $field_name;
                 continue;
             }
 
             //check keys
             $in_use = is_object($strs) ? $strs->inUse : 'in use';
             foreach ($keys as $key => $fields) {
-                if (!in_array($name, $fields)) {
+                if (!in_array($field_name, $fields)) {
                     continue;
                 }
 
@@ -925,142 +918,16 @@ class cms
             }
 
             $field_name = underscored($name);
+            $component = $this->get_component($type);
             
-            // todo: move to components
-            // used by phpuploads and files
-            if (is_array($data[$field_name])) {
-                $data[$field_name] = implode("\n", strip_tags($data[$field_name]));
-            }
+            // apply field formatting
+            $data[$field_name] = $component->format_value($data[$field_name], $field_name);
             
-            if ($component = $this->get_component($type)) {
-                $data[$field_name] = $component->format_value($data[$field_name]);
-                
-                if (false === $data[$field_name]) {
-                    continue;
-                }
-            }
-
-            // todo: move to components
-            if ('position' == $type && !$this->id && !isset($data[$field_name])) {
-                //find last position
-                $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $this->table . '`', 1);
-                $max_pos = $max_pos['max_pos'] + 1;
-
-                $this->query .= "`$field_name`='" . escape($max_pos) . "',\n";
-                continue;
-            } elseif ('position' == $type && !isset($data[$field_name])) {
-                continue;
-            } elseif ('password' == $type) {
-                //leave passwords blank to keep
-                if ('' == $data[$field_name]) {
-                    continue;
-                }
-                if ($auth->hash_password) {
-                    $data[$field_name] = $auth->create_hash($data[$field_name]);
-                }
-            } elseif ('file' == $type) {
-                if ('UPLOAD_ERR_OK' == $_FILES[$field_name]['error']) {
-                    $size = filesize($_FILES[$field_name]['tmp_name']);
-
-                    sql_query("INSERT INTO files SET
-                        date=NOW(),
-                        name='" . escape($_FILES[$field_name]['name']) . "',
-                        size='" . escape($size) . "',
-                        type='" . escape($_FILES[$field_name]['type']) . "'
-                    ");
-
-                    $data[$field_name] = sql_insert_id();
-
-                    //check folder exists
-                    if (!file_exists($vars['files']['dir'])) {
-                        mkdir($vars['files']['dir']);
-                    }
-                    
-                    // move file
-                    rename($_FILES[$field_name]['tmp_name'], $vars['files']['dir'] . $data[$field_name]);
-
-                    // thumbnail
-                    if ($_POST[$field_name . '_thumb']) {
-                        // Grab the MIME type and the data with a regex for convenience
-                        if (preg_match('/data:([^;]*);base64,(.*)/', $_POST[$field_name . '_thumb'], $matches)) {
-                            // Decode the data
-                            $thumb = $matches[2];
-                            $thumb = str_replace(' ', '+', $thumb);
-                            $thumb = base64_decode($thumb);
-
-                            $file_name = $vars['files']['dir'] . $data[$field_name] . '_thumb';
-                            file_put_contents($file_name, $thumb);
-                        } else {
-                            die('no mime type');
-                        }
-                    }
-                } elseif (!$data[$field_name] && $row[$field_name]) {
-                    sql_query("DELETE FROM files
-                        WHERE
-                            id='" . escape($row[$field_name]) . "'
-                    ");
-
-                    if ($vars['files']['dir']) {
-                        unlink($vars['files']['dir'] . $row[$field_name]);
-                    }
-
-                    $data[$field_name] = 0;
-                }
-            } elseif ('files' == $type) {
-                $files = $data[$field_name];
-
-                if (is_array($_FILES[$field_name])) {
-                    foreach ($_FILES[$field_name]['error'] as $key => $error) {
-                        if ('UPLOAD_ERR_OK' !== $error) {
-                            continue;
-                        }
-
-                        $size = filesize($_FILES[$field_name]['tmp_name'][$key]);
-
-                        sql_query("INSERT INTO files SET
-                            date=NOW(),
-                            name='" . escape($_FILES[$field_name]['name'][$key]) . "',
-                            size='" . escape(strlen($size)) . "',
-                            type='" . escape($_FILES[$field_name]['type'][$key]) . "'
-                        ");
-
-                        $files[] = sql_insert_id();
-
-                        //check folder exists
-                        if (!file_exists($vars['files']['dir'])) {
-                            mkdir($vars['files']['dir']);
-                        }
-
-                        rename($_FILES[$field_name]['tmp_name'][$key], $vars['files']['dir'] . sql_insert_id()) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$field_name], E_ERROR);
-                    }
-                }
-
-                if ($this->id) {
-                    //clean up old files
-                    $row = sql_query("SELECT `$field_name` FROM `" . $this->table . '`', 1);
-
-                    $old_files = explode("\n", $row[$field_name]);
-
-                    foreach ($old_files as $old_file) {
-                        if (in_array($old_file, $files)) {
-                            sql_query("DELETE FROM files
-                                WHERE
-                                id='" . escape($old_file['id']) . "'
-                            ");
-
-                            if ($vars['files']['dir']) {
-                                unlink($vars['files']['dir'] . $old_file['id']);
-                            }
-                        }
-                    }
-                }
-
-                if (is_array($files)) {
-                    $data[$field_name] = implode("\n", $files);
-                }
-                $data[$field_name] = trim($data[$field_name]);
-            } elseif ('coords' == $type) {
-                $this->query .= "`$field_name`=GeomFromText('POINT(" . escape($data[$field_name]) . ")'),\n";
+            // skip if preserving or not for saving this way
+            if (
+                false === $data[$field_name] or
+                ($component->preserve_value and '' == $data[$field_name] && $this->id)
+            ) {
                 continue;
             }
 
@@ -1073,6 +940,9 @@ class cms
             $this->query .= "`$field_name`=";
             if (empty($data[$field_name]) && in_array($field_name, $null_fields)) {
                 $this->query .= "NULL";
+            } elseif ('coords' == $type) {
+                // todo: move to components
+                $this->query .= "GeomFromText('POINT(" . escape($data[$field_name]) . ")')";
             } else {
                 $this->query .= "'" . escape($data[$field_name]) . "'";
             }

@@ -9,6 +9,9 @@ abstract class component
 	// sql code for field creation
 	public $field_sql = "VARCHAR( 140 ) NOT NULL DEFAULT ''";
 	
+	// bool: keep value when empty
+	public $preserve_value = false;
+	
 	// returns the editable field
 	function field($field_name, $value = '', $options = []) {
 		?>
@@ -26,7 +29,7 @@ abstract class component
 		return true;
 	}
 	
-	// applies any cleanup before saving
+	// applies any cleanup before saving value is mixed
 	function format_value($value) {
 		return strip_tags($value);
 	}
