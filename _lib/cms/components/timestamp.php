@@ -9,4 +9,8 @@ class timestamp extends date
 	function is_valid($value) {
         return Base::is_valid($value);
     }
+	
+	function format_value($value) {
+		return false;
+	}
 }

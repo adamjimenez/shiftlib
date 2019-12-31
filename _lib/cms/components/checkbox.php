@@ -1,7 +1,7 @@
 <?php
 namespace cms;
 
-class checkbox extends component
+class checkbox extends integer
 {
 	public $field_sql = "TINYINT";
 	
@@ -14,5 +14,9 @@ class checkbox extends component
 	function value($value, $name) {
 		$value = $value ? 'Yes' : 'No';
         return $value;
+	}
+	
+	function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '') {
+        return component::conditions_to_sql($field_name, $value, $func, $table_prefix);
 	}
 }

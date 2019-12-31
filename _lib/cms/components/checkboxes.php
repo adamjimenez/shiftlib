@@ -140,6 +140,10 @@ class checkboxes extends select
         return $value;
 	}
 	
+	function format_value($value) {
+		return false;
+	}
+	
 	// generates sql code for use in where statement
 	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
         return null;

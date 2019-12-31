@@ -23,6 +23,6 @@ class datetime extends date
 	}
 	
 	function is_valid($value) {
-        return Base::is_valid($value);
+        return component::is_valid($value);
     }
 }

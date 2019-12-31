@@ -63,11 +63,11 @@ class cms
      */
     public function form_to_db(string $type)
     {
-    	
+        
         if ($component = $this->get_component($type)) {
-		    return $component->field_sql;
-		}
-    	
+            return $component->field_sql;
+        }
+        
         switch ($type) {
             case 'id':
             case 'separator':
@@ -245,19 +245,19 @@ class cms
         $joins = '';
         foreach ($vars['fields'][$section] as $name => $type) {
             $field_name = underscored($name);
-        	$value = $conditions[$field_name];
+            $value = $conditions[$field_name];
 
             if (!isset($value) || $value == '') {
-            	continue;
+                continue;
             }
             
-        	if ($component = $this->get_component($type)) {
-			    $where[] = $component->conditions_to_sql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
-			}
+            if ($component = $this->get_component($type)) {
+                $where[] = $component->conditions_to_sql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
+            }
 
             switch ($type) {
                 case 'checkboxes':
-                	// todo: move to component
+                    // todo: move to component
                     if (!is_array($value)) {
                         $value = [$value];
                     }
@@ -268,16 +268,16 @@ class cms
                     foreach ($value as $k => $v) {
                         $v = is_array($v) ? $v['value'] : $v;
                         $or[] = 'T_' . $field_name . ".value = '" . escape($v) . "' AND 
-                        	T_" . $field_name . ".field = '" . escape($name) . "' AND
-                        	T_" . $field_name . ".section='" . $section . "'";
+                            T_" . $field_name . ".field = '" . escape($name) . "' AND
+                            T_" . $field_name . ".section='" . $section . "'";
                     }
                     
-        			$or_str = implode(' OR ', $or);
+                    $or_str = implode(' OR ', $or);
                     $where[] = '(' . $or_str . ')';
                     break;
                 case 'postcode':
-                	// todo: move to component and replace with ST_Distance_Sphere when supported (https://jira.mariadb.org/browse/MDEV-13467)
-                	
+                    // todo: move to component and replace with ST_Distance_Sphere when supported (https://jira.mariadb.org/browse/MDEV-13467)
+                    
                     if (calc_grids($value) && is_numeric($conditions['func'][$field_name])) {
                         $grids = calc_grids($value);
 
@@ -337,7 +337,7 @@ class cms
 
                 // add 'or' array to 'where' array
                 if (count($or)) {
-        			$or_str = implode(' OR ', $or);
+                    $or_str = implode(' OR ', $or);
                     $where[] = '(' . $or_str . ')';
                 }
             }
@@ -364,9 +364,9 @@ class cms
 
         // create joins
         if (
-        	in_array('select', $vars['fields'][$section]) || 
-        	in_array('combo', $vars['fields'][$section]) || 
-        	in_array('radio', $vars['fields'][$section])
+            in_array('select', $vars['fields'][$section]) || 
+            in_array('combo', $vars['fields'][$section]) || 
+            in_array('radio', $vars['fields'][$section])
         ) {
             $selects = array_keys($vars['fields'][$section], 'select');
             $radios = array_keys($vars['fields'][$section], 'radio');
@@ -465,9 +465,9 @@ class cms
                 $label = $vars['labels'][$section][0];
                 $type = $vars['fields'][$this->section][$label];
 
-				// order options by value instead of key
+                // order options by value instead of key
                 if (in_array($type, ['select', 'combo', 'radio']) && !is_array($vars['opts'][$label])) {
-                	$key = $this->get_option_label($label);
+                    $key = $this->get_option_label($label);
                     $order = 'T_' . underscored($label) . '.' . underscored($key);
                 } elseif ($vars['labels'][$section][0]) {
                     $order = "T_$table." . underscored($vars['labels'][$section][0]);
@@ -655,10 +655,10 @@ class cms
     }
     
     private function get_component($type) {
-    	$class = $this->type_to_class($type);
-    	if (class_exists($class)) {
-        	return new $class;
-    	}
+        $class = $this->type_to_class($type);
+        if (class_exists($class)) {
+            return new $class;
+        }
     }
 
     // get name of the id field
@@ -669,14 +669,14 @@ class cms
     }
     
     public function get_option_label($field) {
-    	global $vars;
-    	reset($vars['fields'][$vars['options'][$field]]);
-		return key($vars['fields'][$vars['options'][$field]]);
+        global $vars;
+        reset($vars['fields'][$vars['options'][$field]]);
+        return key($vars['fields'][$vars['options'][$field]]);
     }
     
     private function type_to_class($class) {
-		$class = str_replace('parent', 'select_parent', $class);
-		$class = str_replace('int', 'integer', $class);
+        $class = str_replace('parent', 'select_parent', $class);
+        $class = str_replace('int', 'integer', $class);
         $class = 'cms\\'.str_replace('-', '_', $class);
         return $class;
     }
@@ -690,13 +690,13 @@ class cms
             $name = spaced($name);
         }
 
-		$type = $vars['fields'][$this->section][$name];
+        $type = $vars['fields'][$this->section][$name];
         $field_name = underscored($name);
         $value = $this->content[$field_name];
 
         if ($component = $this->get_component($type)) {
-        	$readonly = !in_array($name, $this->editable_fields);
-        	$component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
+            $readonly = !in_array($name, $this->editable_fields);
+            $component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
         }
     }
 
@@ -710,8 +710,8 @@ class cms
         $value = $this->content[$field_name];
 
         if ($component = $this->get_component($type)) {
-        	$readonly = !in_array($name, $this->editable_fields);
-        	$value = $component->value($value, $name);
+            $readonly = !in_array($name, $this->editable_fields);
+            $value = $component->value($value, $name);
         }
 
         return $value;
@@ -743,7 +743,7 @@ class cms
                 sql_query('INSERT INTO ' . $auth->table . " SET email='admin', password='" . $default_pass . "', admin='1'");
             }
 
-			$_SESSION['request'] = $_SERVER['REQUEST_URI'];
+            $_SESSION['request'] = $_SERVER['REQUEST_URI'];
             redirect('/admin?option=login');
         }
 
@@ -842,9 +842,8 @@ class cms
             $errors = [];
         }
 
-        // validate unique keys
+        // get table keys
         $table_keys = sql_query('SHOW keys FROM `' . $this->table . '`');
-
         $keys = [];
         foreach ($table_keys as $v) {
             if (0 == $v['Non_unique']) {
@@ -852,35 +851,22 @@ class cms
             }
         }
 
-        foreach ($vars['fields'][$this->section] as $k => $v) {
-            if ($this->editable_fields && !in_array($k, $this->editable_fields)) {
+        foreach ($vars['fields'][$this->section] as $name => $type) {
+            // skip readonly and blank passwords
+            if (
+                !in_array($name, $this->editable_fields) ||
+                ('' == $data[$name] && 'password' === $type && $this->id)
+            ) {
                 continue;
             }
-
-            $field_name = underscored($k);
-            $name = $field_name;
-
-            //check items are valid
-            $is_valid = true;
             
-            if ($data[$name]) {
-        		if ($component = $this->get_component($v)) {
-		        	$is_valid = $component->is_valid($data[$name]);
-		        }
-            }
-
-            if (false === $is_valid) {
-                $errors[] = $name;
-            }
-
-            // check required fields
+            // check fields
+            $component = $this->get_component($type);
             if (
-                in_array($k, $vars['required'][$this->section]) &&
-                ('' === $data[$name] || !isset($data[$name]))
+                ($data[$name] != '' && $component && !$component->is_valid($data[$name])) || 
+                (in_array($name, $vars['required'][$this->section]) && '' == $data[$name])
             ) {
-                if (!$_FILES[$name] && ('password' !== $v && !$this->id)) {
-                	$errors[] = $name;
-                }
+                $errors[] = $name;
                 continue;
             }
 
@@ -895,26 +881,20 @@ class cms
                 foreach ($fields as $field) {
                     $where[] = '`' . escape($field) . "`='" . escape($data[$field]) . "'";
                 }
-                $where[] = '`' . $this->field_id . "`!='" . escape($this->id) . "'";
-
-                $where_str = '';
-                foreach ($where as $w) {
-	            	if (!$w) {
-	            		continue;
-	            	}
-        	
-                    $where_str .= "\t" . $w . ' AND' . "\n";
+                
+                // exclude current item
+                if ($this->id) {
+                    $where[] = '`' . $this->field_id . "`!='" . escape($this->id) . "'";
                 }
-                $where_str = "WHERE \n" . substr($where_str, 0, -5);
 
-                $field = sql_query('SELECT * FROM `' . $this->table . "`
+                $where_str = "WHERE \n" . implode(" AND \n", array_filter($where));
+
+                $row = sql_query('SELECT * FROM `' . $this->table . "`
                     $where_str
                     LIMIT 1
                 ", 1);
 
-                if ($field) {
-                    $errors[] = $key . ' ' . $in_use;
-
+                if ($row) {
                     foreach ($fields as $field) {
                         $errors[] = $field . ' ' . $in_use;
                     }
@@ -923,11 +903,7 @@ class cms
             }
         }
 
-        if (count($errors)) {
-            $errors = array_values(array_unique($errors));
-        }
-
-        return $errors;
+        return array_values(array_unique($errors));
     }
 
     // build update query from array
@@ -935,7 +911,7 @@ class cms
     {
         global $vars, $auth;
 
-		// find null fields
+        // find null fields
         $column_data = sql_query('SHOW COLUMNS FROM `' . $this->table . '`');
         $null_fields = [];
         foreach ($column_data as $v) {
@@ -944,19 +920,27 @@ class cms
             }
         }
         foreach ($field_arr as $name => $type) {
-            if (
-                in_array($type, ['id', 'related', 'timestamp', 'separator', 'polygon']) or
-                $this->editable_fields && !in_array($name, $this->editable_fields)
-            ) {
+            if (false === in_array($name, $this->editable_fields)) {
                 continue;
             }
 
             $field_name = underscored($name);
-			
-        	if ($component = $this->get_component($type)) {
-			    $data[$field_name] = $component->format_value($data[$field_name]);
-			}
+            
+            // todo: move to components
+            // used by phpuploads and files
+            if (is_array($data[$field_name])) {
+                $data[$field_name] = implode("\n", strip_tags($data[$field_name]));
+            }
+            
+            if ($component = $this->get_component($type)) {
+                $data[$field_name] = $component->format_value($data[$field_name]);
+                
+                if (false === $data[$field_name]) {
+                    continue;
+                }
+            }
 
+            // todo: move to components
             if ('position' == $type && !$this->id && !isset($data[$field_name])) {
                 //find last position
                 $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $this->table . '`', 1);
@@ -966,9 +950,7 @@ class cms
                 continue;
             } elseif ('position' == $type && !isset($data[$field_name])) {
                 continue;
-            }
-
-            if ('password' == $type) {
+            } elseif ('password' == $type) {
                 //leave passwords blank to keep
                 if ('' == $data[$field_name]) {
                     continue;
@@ -976,14 +958,7 @@ class cms
                 if ($auth->hash_password) {
                     $data[$field_name] = $auth->create_hash($data[$field_name]);
                 }
-            }
-
-            // only admin can set admin permission
-            if (1 !== (int)$auth->user['admin'] && 'admin' == $field_name) {
-                continue;
-            }
-
-            if ('file' == $type) {
+            } elseif ('file' == $type) {
                 if ('UPLOAD_ERR_OK' == $_FILES[$field_name]['error']) {
                     $size = filesize($_FILES[$field_name]['tmp_name']);
 
@@ -1000,8 +975,8 @@ class cms
                     if (!file_exists($vars['files']['dir'])) {
                         mkdir($vars['files']['dir']);
                     }
-					
-					// move file
+                    
+                    // move file
                     rename($_FILES[$field_name]['tmp_name'], $vars['files']['dir'] . $data[$field_name]);
 
                     // thumbnail
@@ -1022,7 +997,7 @@ class cms
                 } elseif (!$data[$field_name] && $row[$field_name]) {
                     sql_query("DELETE FROM files
                         WHERE
-                        id='" . escape($row[$field_name]) . "'
+                            id='" . escape($row[$field_name]) . "'
                     ");
 
                     if ($vars['files']['dir']) {
@@ -1056,7 +1031,7 @@ class cms
                             mkdir($vars['files']['dir']);
                         }
 
-                    	rename($_FILES[$field_name]['tmp_name'][$key], $vars['files']['dir'] . sql_insert_id()) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$field_name], E_ERROR);
+                        rename($_FILES[$field_name]['tmp_name'][$key], $vars['files']['dir'] . sql_insert_id()) or trigger_error("Can't save " . $vars['files']['dir'] . $data[$field_name], E_ERROR);
                     }
                 }
 
@@ -1084,28 +1059,24 @@ class cms
                     $data[$field_name] = implode("\n", $files);
                 }
                 $data[$field_name] = trim($data[$field_name]);
-            } elseif ('checkboxes' == $type) {
-                continue;
-            } elseif ('ip' == $type) {
-                if (!$this->id) {
-                    $data[$field_name] = $_SERVER['REMOTE_ADDR'];
-                } elseif (!$data[$field_name]) {
-                    continue;
-                }
             } elseif ('coords' == $type) {
                 $this->query .= "`$field_name`=GeomFromText('POINT(" . escape($data[$field_name]) . ")'),\n";
                 continue;
             }
 
-            if (is_array($data[$field_name])) {
-                $data[$field_name] = implode("\n", strip_tags($data[$field_name]));
+            // only admin can set admin permission
+            if (1 !== (int)$auth->user['admin'] && 'admin' == $field_name) {
+                continue;
             }
 
-            if ((!isset($data[$field_name]) || '' === $data[$field_name]) && in_array($field_name, $null_fields)) {
-                $this->query .= "`$field_name`=NULL,\n";
+            // handle null fields
+            $this->query .= "`$field_name`=";
+            if (empty($data[$field_name]) && in_array($field_name, $null_fields)) {
+                $this->query .= "NULL";
             } else {
-                $this->query .= "`$field_name`='" . escape($data[$field_name]) . "',\n";
+                $this->query .= "'" . escape($data[$field_name]) . "'";
             }
+            $this->query .= ",\n";
         }
     }
 
@@ -1139,7 +1110,7 @@ class cms
         if ($this->id) {
             $where_str = $this->field_id . "='" . escape($this->id) . "'";
 
-    		// remember old state
+            // remember old state
             $row = sql_query('SELECT * FROM `' . $this->table . "`
                 WHERE
                     `id`='" . escape($this->id) . "'
@@ -1148,10 +1119,10 @@ class cms
             sql_query('UPDATE `' . $this->table . '` SET
                 ' . $this->query . "
                 WHERE 
-                	$where_str
+                    $where_str
             ");
 
-        	// find changes
+            // find changes
             $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
                 WHERE
                     `id`='" . escape($this->id) . "'
@@ -1170,7 +1141,7 @@ class cms
             ');
             $this->id = sql_insert_id();
             
-        	$task = 'add';
+            $task = 'add';
         }
         
         // log it
@@ -1178,8 +1149,8 @@ class cms
             $this->save_log($this->section, $this->id, $task, $details);
         }
 
-		// update option values
-		// todo: don't delete and re-insert the same values
+        // update option values
+        // todo: don't delete and re-insert the same values
         foreach ($vars['fields'][$this->section] as $k => $v) {
             if ('checkboxes' !== $v || ($this->editable_fields && !in_array($k, $this->editable_fields))) {
                 continue;
@@ -1247,7 +1218,7 @@ class cms
 
     public function template($include, $local = false)
     {
-    	// globals are needed for the page templates
+        // globals are needed for the page templates
         global $vars, $auth, $shop_enabled, $live_site, $cms_buttons, $message;
 
         ob_start();
@@ -1264,7 +1235,7 @@ class cms
             $title = strip_tags($matches[1]);
         }
 
-		// user privileges
+        // user privileges
         $this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
 
         require(dirname(__FILE__) . '/_tpl/template.php');
