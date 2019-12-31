@@ -339,11 +339,7 @@ class cms
 
                 // add 'or' array to 'where' array
                 if (count($or)) {
-                    $or_str = '';
-                    foreach ($or as $w) {
-                        $or_str .= $w . ' OR ';
-                    }
-                    $or_str = substr($or_str, 0, -3);
+        			$or_str = implode(' OR ', $or);
                     $where[] = '(' . $or_str . ')';
                 }
             }
@@ -359,23 +355,13 @@ class cms
         // create where string
         $where_str = '';
         if (count($where)) {
-            foreach ($where as $w) {
-            	if ($w) {
-	                $where_str .= "\t" . $w . ' AND' . "\n";
-            	}
-            }
-            $where_str = "WHERE \n" . substr($where_str, 0, -5);
+            $where_str = "WHERE \n" . implode(' AND ', array_filter($where));
         }
 
         // create having string
         $having_str = '';
         if (count($having)) {
-            foreach ($having as $w) {
-            	if ($w) {
-                	$having_str .= "\t" . $w . ' AND' . "\n";
-            	}
-            }
-            $having_str = "HAVING \n" . substr($having_str, 0, -5);
+            $having_str = "HAVING \n" . implode(' AND ', array_filter($having));
         }
 
         // create joins
@@ -520,7 +506,6 @@ class cms
         }
 
         $limit = $sql['num_results'] ?: null;
-
         $this->p = new paging($query, $limit, $order, $asc, $prefix);
 
         $content = $this->p->rows;
@@ -574,13 +559,7 @@ class cms
                 foreach ($rows as $row) {
                     $items[] = $row[$key];
                 }
-
-                $items = array_unique($items);
-                $label = '';
-                foreach ($items as $item) {
-                    $label .= $item . ', ';
-                }
-                $label = substr($label, 0, -2);
+                $label = implode(', ', array_unique($items));
 
                 $content[$k][underscored($field)] = $rows;
                 $content[$k][underscored($field) . '_label'] = $label;
@@ -699,7 +678,7 @@ class cms
     // get field widget
     public function get_field(string $name, $attribs = '', $placeholder = '', $separator = null, $where = false)
     {
-        global $vars, $id;
+        global $vars;
 
         if ($vars['fields'][$this->section][spaced($name)]) {
             $name = spaced($name);
@@ -718,7 +697,7 @@ class cms
     }
 
     // get formatted value
-    public function get_value(string $name, bool $return = true)
+    public function get_value(string $name)
     {
         global $vars;
 
@@ -733,11 +712,7 @@ class cms
         	$value = $component->value($value, $name);
         }
 
-        if ($return) {
-            return $value;
-        }
-        
-        print $value;
+        return $value;
     }
 
     // loads the current view
@@ -790,14 +765,10 @@ class cms
 
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');
-        } elseif (in_array($option, ['configure', 'choose_filter', 'shop_order', 'shop_orders'])) {
+        } elseif (in_array($option, ['index', 'login', 'configure', 'choose_filter', 'shop_order', 'shop_orders'])) {
             $this->template($option . '.php', true);
-        } elseif ('login' == $option) {
-            $this->login();
         } elseif ('index' != $option) {
             $this->default_section($option);
-        } else {
-            $this->main();
         }
     }
 
@@ -1298,16 +1269,6 @@ class cms
 
         require(dirname(__FILE__) . '/_tpl/template.php');
         exit;
-    }
-
-    public function login()
-    {
-        $this->template('login.php', true);
-    }
-
-    public function main()
-    {
-        $this->template('index.php', true);
     }
 
     public function default_section($option)
