@@ -772,7 +772,11 @@ class cms
     // send admin notification
     public function notify(string $subject = null, $to = null)
     {
-        global $vars;
+        global $vars, $from_email;
+        
+		if(!is_string($to)){
+		    $to = $from_email;
+		}
 
         if (!$subject || is_numeric($subject)) {
             $subject = 'New submission to: ' . $this->section;
