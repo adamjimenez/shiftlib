@@ -589,18 +589,18 @@ class cms
         foreach ($this->editable_fields as $k => $v) {
             $this->editable_fields[$k] = spaced($v);
         }
+        $this->editable_fields = array_unique($this->editable_fields);
 
-        // don't allow staff to edit admin perms
+        // only admin can edit admin perms
         if (1 != $auth->user['admin'] && in_array('admin', $this->editable_fields)) {
             unset($this->editable_fields[array_search('admin', $this->editable_fields)]);
         }
 
         $this->field_id = $this->get_id_field($this->section);
 
+        // default id to 1 if no id field
         if (!in_array('id', $vars['fields'][$this->section])) {
-            $this->field_id = 'id';
-            $row = sql_query('SELECT * FROM `' . $this->table . '` ORDER BY ' . $this->field_id . ' LIMIT 1', 1);
-            $id = $row[$this->field_id];
+            $id = 1;
         }
 
         if ($id) {
@@ -902,7 +902,7 @@ class cms
     // build update query from array
     public function build_query($field_arr, $data)
     {
-        global $vars, $auth;
+        global $vars;
 
         // find null fields
         $column_data = sql_query('SHOW COLUMNS FROM `' . $this->table . '`');
@@ -928,11 +928,6 @@ class cms
                 false === $data[$field_name] or
                 ($component->preserve_value and '' == $data[$field_name] && $this->id)
             ) {
-                continue;
-            }
-
-            // only admin can set admin permission
-            if (1 !== (int)$auth->user['admin'] && 'admin' == $field_name) {
                 continue;
             }
 
@@ -1020,7 +1015,7 @@ class cms
         }
 
         // update option values
-        // todo: don't delete and re-insert the same values
+        // todo: move to component and don't delete and re-insert the same values
         foreach ($vars['fields'][$this->section] as $k => $v) {
             if ('checkboxes' !== $v || ($this->editable_fields && !in_array($k, $this->editable_fields))) {
                 continue;
