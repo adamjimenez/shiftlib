@@ -187,10 +187,14 @@ class cms
                 $this->set_section($section, $id, ['deleted']);
                 $this->save(['deleted' => 1]);
             } else {
-                sql_query('DELETE FROM `' . escape(underscored($section)) . '`
-                    WHERE ' . $field_id . "='$id'
-                        LIMIT 1
-                ");
+                if (!in_array('id', $vars['fields'][$section])) {
+                    sql_query('TRUNCATE TABLE `' . escape(underscored($section)) . '`');
+                } else {
+                    sql_query('DELETE FROM `' . escape(underscored($section)) . '`
+                        WHERE ' . $field_id . "='$id'
+                            LIMIT 1
+                    ");
+                }
 
                 //multiple select items
                 sql_query("DELETE FROM cms_multiple_select
@@ -262,7 +266,7 @@ class cms
                     $joins .= ' LEFT JOIN cms_multiple_select T_' . $field_name . ' ON T_' . $field_name . '.item=T_' . $table . '.' . $field_id;
 
                     $or = [];
-                    foreach ($value as $k => $v) {
+                    foreach ($value as $v) {
                         $v = is_array($v) ? $v['value'] : $v;
                         $or[] = 'T_' . $field_name . ".value = '" . escape($v) . "' AND 
                             T_" . $field_name . ".field = '" . escape($name) . "' AND
@@ -599,7 +603,7 @@ class cms
         $this->field_id = $this->get_id_field($this->section);
 
         // default id to 1 if no id field
-        if (!in_array('id', $vars['fields'][$this->section])) {
+        if (!$id and !in_array('id', $vars['fields'][$this->section])) {
             $id = 1;
         }
 
