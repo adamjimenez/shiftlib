@@ -4,6 +4,7 @@ namespace cms;
 class checkboxes extends select
 {
 	public $field_sql = null;
+	public $id_required = true;
 	
 	function field($field_name, $value = '', $options = []) {
 		global $vars, $cms;
@@ -140,7 +141,37 @@ class checkboxes extends select
         return $value;
 	}
 	
-	function format_value($value) {
+	function format_value($value, $field_name) {
+	    global $cms;
+
+        if ($cms->id) {
+            // create NOT IN string
+            $value_str = '';
+            if (count($value)) {
+                foreach($value as $v) {
+                    $value_str .= "'".escape($v)."',";
+                }
+                $value_str = substr($value_str, 0, -1);
+                $value_str = 'AND item NOT IN (' . $value_str . ')';
+            }
+            
+            sql_query("DELETE FROM cms_multiple_select
+                WHERE
+                    section='" . escape($cms->section) . "' AND
+                    field='" . escape($field_name) . "'
+                    $value_str
+            ");
+    
+            foreach ($value as $v) {
+                sql_query("INSERT INTO cms_multiple_select SET
+                    section='" . escape($cms->section) . "',
+                    field='" . escape($field_name) . "',
+                    item='" . escape($cms->id) . "',
+                    value='" . escape($v) . "'
+                ");
+            }
+        }
+	    
 		return false;
 	}
 	

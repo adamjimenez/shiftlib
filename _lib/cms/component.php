@@ -12,6 +12,9 @@ abstract class component
 	// bool: keep value when empty
 	public $preserve_value = false;
 	
+	// bool: whether we need an id to save the value
+	public $id_required = false;
+	
 	// returns the editable field
 	function field($field_name, $value = '', $options = []) {
 		?>

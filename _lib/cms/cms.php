@@ -916,6 +916,7 @@ class cms
                 $null_fields[] = $v['Field'];
             }
         }
+        
         foreach ($field_arr as $name => $type) {
             if (false === in_array($name, $this->editable_fields)) {
                 continue;
@@ -1009,41 +1010,28 @@ class cms
                 ' . $this->query . '
             ');
             $this->id = sql_insert_id();
-            
+
+            // update fields that require an id
+            foreach ($vars['fields'][$this->section] as $name => $type) {
+                if (false === in_array($name, $this->editable_fields)) {
+                    continue;
+                }
+    
+                $field_name = underscored($name);
+                $component = $this->get_component($type);
+                
+                // apply field formatting
+                if ($component->id_required) {
+                    $data[$field_name] = $component->format_value($data[$field_name], $field_name);
+                }
+            }
+
             $task = 'add';
         }
         
         // log it
         if (table_exists('cms_logs')) {
             $this->save_log($this->section, $this->id, $task, $details);
-        }
-
-        // update option values
-        // todo: move to component and don't delete and re-insert the same values
-        foreach ($vars['fields'][$this->section] as $k => $v) {
-            if ('checkboxes' !== $v || ($this->editable_fields && !in_array($k, $this->editable_fields))) {
-                continue;
-            }
-
-            $name = underscored($k);
-
-            sql_query("DELETE FROM cms_multiple_select
-                WHERE
-                    section='" . escape($this->section) . "' AND
-                    field='" . escape($k) . "' AND
-                    item='" . escape($this->id) . "'
-            ");
-
-            foreach ($data[$name] as $v) {
-                sql_query("INSERT INTO cms_multiple_select SET
-                    section='" . escape($this->section) . "',
-                    field='" . escape($k) . "',
-                    item='" . escape($this->id) . "',
-                    value='" . escape($v) . "'
-                ");
-            }
-
-            continue;
         }
 
         $this->trigger_event('save', [$this->id, $data]);
