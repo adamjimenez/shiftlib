@@ -90,6 +90,8 @@ class auth
     public $cookie_prefix = 'site';
 
     /**
+     * DEPRECATED additional params to check when logging in
+     *
      * @var string
      */
     public $login_wherestr = '';
@@ -109,6 +111,34 @@ class auth
     public $user;
 
     public $log_last_login;
+
+    /**
+     * for use with single sign on
+     *
+     * @var string
+     */
+    public $facebook_id;
+
+    /**
+     * for use with single sign on
+     *
+     * @var string
+     */
+    public $facebook_secret;
+
+    /**
+     * for use with single sign on
+     *
+     * @var string
+     */
+    public $google_id;
+
+    /**
+     * for use with single sign on
+     *
+     * @var string
+     */
+    public $google_secret;
 
     /**
      * auth constructor.
@@ -201,6 +231,8 @@ class auth
         if ($_POST['login']) {
             $this->login();
         }
+        
+        $this->single_sign_on();
 
         //check if logged in
         if ($_SESSION[$this->cookie_prefix . '_user'] and time() < $_SESSION[$this->cookie_prefix . '_expires']) {
@@ -236,6 +268,75 @@ class auth
 
         if ($_GET['u']) {
             $_SESSION['request'] = $_GET['u'];
+        }
+    }
+    
+    public function single_sign_on() {
+      // single sign on, triggerd by $_GET['provider'] = google
+        if( isset($_GET["provider"]) ){
+            $config = array(
+        		"base_url" => 'https://'.$_SERVER['HTTP_HOST'].'/login?action=auth',
+        
+        		"providers" => array (
+        			"Facebook" => array (
+        				"enabled" => true,
+        				"keys"    => array ( "id" => $this->facebook_id, "secret" => $this->facebook_secret ),
+        				 "trustForwarded" => true,
+         				 "scope" => "email"
+        			),
+        			"Google" => array (
+        				"enabled" => true,
+        				"keys"    => array ( "id" => $this->google_id, "secret" => $this->google_secret ),
+        				"scope" => "profile email",
+        			),
+        		)
+        	);
+        
+        	try{
+        		// initialize Hybrid_Auth with a given file
+        		$hybridauth = new Hybrid_Auth( $config );
+        
+        		// try to authenticate with the selected provider
+        		$adapter = $hybridauth->authenticate( $_GET["provider"] );
+        
+        		// then grab the user profile
+        		$user_profile = $adapter->getUserProfile();
+        	} catch( Exception $e ){
+        		echo "Error: please try again!";
+        		echo "Original error message: " . $e->getMessage();
+        	}
+        
+        	$email = $user_profile->email or die('missing email');
+        	
+        	// find user
+        	$user = sql_query("SELECT * FROM " . $this->table . " WHERE
+        		email='".escape($email)."'
+        		LIMIT 1
+        	", 1);
+        
+            // create user if they don't exist
+        	if( !$user ){
+        		$user['password'] = generate_password();
+        
+        		sql_query("INSERT INTO " . $this->table . " SET
+        			name='".escape($user_profile->firstName)."',
+        			surname='".escape($user_profile->lastName)."',
+        			email='".escape($email)."',
+        			password='".escape($user['password'])."'
+        		");
+        	}
+        
+            // log in
+        	$this->set_login($user['email'], $user['password']);
+        }
+        
+        if($_GET['action']=='auth'){
+            try {
+                Hybrid_Endpoint::process();
+            }
+            catch ( Exception $e ) {
+                echo "Login error";
+            }
         }
     }
 
@@ -533,7 +634,7 @@ class auth
      * @throws Exception
      * @return bool
      */
-    public function do_login(string $email, string $password)
+    public function do_login(string $email, string $password, $remember = false)
     {
         $error = false;
         if ($email and $password) {
@@ -563,7 +664,6 @@ class auth
 					");
                 }
 
-                // TODO: Adam, this never runs
                 if ($remember) {
                     setcookie($this->cookie_prefix . '_email', $email, time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
                     setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $password), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
@@ -583,7 +683,7 @@ class auth
 
     public function login(): void
     {
-        $result = $this->do_login($_POST['email'], $_POST['password']);
+        $result = $this->do_login($_POST['email'], $_POST['password'], $_POST['remember']);
 
         if (true !== $result) {
             $this->errors[] = $result;
