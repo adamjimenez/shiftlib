@@ -1360,7 +1360,7 @@ function sql_query($query, $single = false)
     $result = mysqli_query($db_connection, $query);
 
     if (false === $result) {
-        throw new Exception(mysqli_error($db_connection));
+        throw new Exception($query);
     } else if (true === $result) {
         return true;
     }
