@@ -16,13 +16,9 @@ class integer extends component
 	}
 	
 	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
-		// todo strict func checking
-		
         $pos = strrpos($value, '-');
 
-        if ($func) {
-            $where = $table_prefix . $field_name . ' ' . escape($func) . " '" . escape($value) . "'";
-        } elseif ($pos > 0) {
+        if ($pos > 0) {
             $min = substr($value, 0, $pos);
             $max = substr($value, $pos + 1);
 
@@ -31,7 +27,11 @@ class integer extends component
                 $table_prefix.$field_name . " <= '" . escape($max) . "'
             )";
         } else {
-            $where = $table_prefix . $field_name . " = '" . escape($value) . "'";
+        	if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
+        		$func = '=';
+        	}
+        	
+            $where = $table_prefix . $field_name . " ".$func." '" . escape($value) . "'";
         }
         
         return $where;

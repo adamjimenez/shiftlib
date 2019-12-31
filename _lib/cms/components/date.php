@@ -22,9 +22,7 @@ class date extends component
 		return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
 	}
 	
-	function conditions_to_sql($field_name, $value, $func = '=', $table_prefix='') {
-		// todo strict func checking
-		
+	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
 		if ('now' == $value) {
 		    $start = 'NOW()';
 		} elseif ('month' == $func) {
@@ -41,7 +39,11 @@ class date extends component
 		    $end = escape($conditions['end'][$field_name]);
 		
 		    $where = '(' . $table_prefix . $field_name . " >= " . $start . ' AND ' . $table_prefix . $field_name . " <= '" . $end . "')";
-		} elseif ($func) {
+		} else {
+        	if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
+        		$func = '=';
+        	}
+			
 		    $where = $table_prefix . $field_name . ' ' . escape($func) . ' ' . $start;
 		}
 		
