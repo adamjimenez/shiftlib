@@ -496,7 +496,6 @@ $vars["sections"]=array(
     foreach ($_POST['sections'] as $section_id => $section) {
         $fields = '';
         $required = '';
-        $labels = '';
         $subsections = '';
         $label = '';
 
@@ -510,10 +509,6 @@ $vars["sections"]=array(
             if ($_POST['vars']['required'][$field_id]) {
                 $required .= '"' . $field['name'] . '",';
             }
-
-            if ($_POST['vars']['labels'][$field_id]) {
-                $labels .= '"' . $field['name'] . '",';
-            }
         }
 
         foreach ($_POST['vars']['subsections'][$section_id] as $subsection) {
@@ -526,8 +521,6 @@ $vars["fields"]["' . $section . '"]=array(
 );
 
 $vars["required"]["' . $section . '"]=array(' . $required . ');
-
-$vars["labels"]["' . $section . '"]=array(' . $labels . ');
 
 $vars["subsections"]["' . $section . '"]=array(' . $subsections . ');
 
@@ -729,9 +722,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<tr>
 				<th>&nbsp;</th>
 				<th>Name</th>
-				<th>Label</th>
 				<th>Type</th>
-				<th>Label</th>
 				<th>Required</th>
 				<th>&nbsp;</th>
 			</tr>
@@ -771,7 +762,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<?=html_options($field_opts);?>
 		</select>
 	</td>
-	<td><input type="checkbox" name="vars[labels][{$count}]" value="1"></td>
 	<td><input type="checkbox" name="vars[required][{$count}]" value="1"></td>
 	<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
 </tr>
@@ -843,9 +833,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         				<tr>
         					<th>&nbsp;</th>
         					<th>Name</th>
-        					<th>Label</th>
         					<th>Type</th>
-        					<th>Label</th>
         					<th>Required</th>
         					<th>&nbsp;</th>
         				</tr>
@@ -863,7 +851,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         							<?=html_options($field_opts, $field_type); ?>
         						</select>
         					</td>
-        					<td><input type="checkbox" name="vars[labels][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k, $vars['labels'][$section])) { ?> checked<?php } ?>></td>
         					<td><input type="checkbox" name="vars[required][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k, $vars['required'][$section])) { ?> checked<?php } ?>></td>
         					<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         				</tr>
@@ -884,7 +871,6 @@ var section_templates=<?=json_encode($section_templates);?>;
         									<?=html_options($field_opts, $v2); ?>
         								</select>
         							</td>
-        							<td><input type="checkbox" name="vars[labels][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k2, $vars['labels'][$section])) { ?> checked<?php } ?>></td>
         							<td><input type="checkbox" name="vars[required][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k2, $vars['required'][$section])) { ?> checked<?php } ?>></td>
         							<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
         						</tr>

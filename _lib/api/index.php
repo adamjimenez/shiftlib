@@ -472,58 +472,34 @@ switch ($_GET['cmd']) {
             break;
         }
         
-        $sql = $cms->conditions_to_sql($_GET['section'], $_GET);
+        $table = escape(underscored($_GET['section']));
         
-        $labels = [];
-        
-        foreach ($vars['labels'][$_GET['section']] as $v) {
-            if ('id`' !== $v) {
-                $labels[] = $v;
+        // get field names
+        $fields = [];
+        foreach ($vars['fields'][$_GET['section']] as $name=>$type) {
+            if ('id`' !== $name) {
+                $fields[] = $name;
             }
         }
         
-        if (!count($labels)) {
-            $labels = [key($vars['fields'][$_GET['section']])];
-        }
+        // add extra fields for checkbox and actions
+        array_unshift($fields, 'id');
+        array_unshift($fields, 'id');
         
-        array_unshift($labels, 'id');
-        array_unshift($labels, 'id');
-        
+        // sort order
         if (in_array('position', $vars['fields'][$_GET['section']])) {
             $order = 'position';
         } else {
-            $order = underscored($labels[($_GET['order'][0]['column'] - 1)]) ?: 'id';
+            $order = underscored($fields[($_GET['order'][0]['column'] - 1)]) ?: 'id';
         }
+        $dir = ('desc' == $_GET['order'][0]['dir']) ? 'DESC' : '';
     
         $sql = $cms->conditions_to_sql($_GET['section'], $_GET['fields']);
         
-        $labels = [];
-        
-        foreach ($vars['labels'][$_GET['section']] as $v) {
-            if ('id`' !== $v) {
-                $labels[] = $v;
-            }
-        }
-        
-        if (!count($labels)) {
-            $labels = [key($vars['fields'][$_GET['section']])];
-        }
-        
-        array_unshift($labels, 'id');
-        array_unshift($labels, 'id');
-        
-        if (in_array('position', $vars['fields'][$_GET['section']])) {
-            $order = 'position';
-        } else {
-            $order = underscored($labels[($_GET['order'][0]['column'] - 1)]) ?: 'id';
-        }
-    
-        $dir = ('desc' == $_GET['order'][0]['dir']) ? 'DESC' : '';
-        
-        $count = sql_query('SELECT count(*) AS `count` FROM ' . escape(underscored($_GET['section'])) . ' T_' . escape(underscored($_GET['section'])) . '
-		' . $sql['joins'] . '
-		' . $sql['where_str'] . '
-		', 1);
+        $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
+    		' . $sql['joins'] . '
+    		' . $sql['where_str']
+    	, 1);
         
         $response = [
             'draw' => $_GET['draw'],
@@ -532,38 +508,33 @@ switch ($_GET['cmd']) {
             'recordsFiltered' => $count['count'],
         ];
         
-        $start = $_GET['start'];
-        $length = $_GET['length'];
+        // get limit
         $limit = '';
+        $start = (int) $_GET['start'];
+        $length = (int) $_GET['length'];
         
         if (-1 != $length) {
-            $limit = 'LIMIT ' . (int) $start . ', ' . (int) $length;
+            $limit = 'LIMIT ' . $start . ', ' . $length;
         }
         
-        $table = escape(underscored($_GET['section']));
-        
+        // gather rows
         $rows = sql_query("SELECT T_$table.* " . $sql['cols'] . " FROM $table T_$table
-		" . $sql['joins'] . '
-		' . $sql['where_str'] . "
-	
-		ORDER BY
-		T_$table.$order $dir
-		$limit
+    		" . $sql['joins'] . '
+    		' . $sql['where_str'] . "
+    		ORDER BY
+    	    	T_$table.$order $dir
+    	    	$limit
 		");
         
-        //debug($sql);
-        
-        foreach ($rows as $v) {
-            $item = [];
+        // prepare rows
+        foreach ($rows as $row) {
+            // every item starts with position
+            $item = [$row['position']];
             
-            $item[] = $v['position'];
-            
-            foreach ($labels as $i => $k) {
-                if ($v[underscored($k) . '_label']) {
-                    $item[] = $v[underscored($k) . '_label'];
-                } else {
-                    $item[] = $v[underscored($k)];
-                }
+            // use labels when available
+            foreach ($fields as $name) {
+                $field_name = underscored($name);
+                $item[] = $row[$field_name . '_label'] ?: $row[$field_name];
             }
             
             $response['data'][] = $item;

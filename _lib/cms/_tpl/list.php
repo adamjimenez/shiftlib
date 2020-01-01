@@ -19,26 +19,12 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 	        					<th><span class="hideText">Checkboxes</span></th>
 	        					<th><span class="hideText">Actions</span></th>
 								<?php
-                                foreach ($vars['labels'][$this->section] as $k) {
-                                    if ('id' == $k) {
+                                foreach ($vars['fields'][$this->section] as $name=>$type) {
+                                    if ('id' == $type) {
                                         continue;
                                     }
-                                    
-                                    $order = underscored('T_' . underscored($this->section) . '.' . $k);
-                                    
-                                    if ('select' == $vars['fields'][$this->section][$k] or 'combo' == $vars['fields'][$this->section][$k] or 'radio' == $vars['fields'][$this->section][$k]) {
-                                        if (!is_array($vars['options'][$k])) {
-                                            $option = key($vars['fields'][$vars['options'][$k]]);
-                            
-                                            $order = 'T_' . underscored($k) . '.' . underscored($option);
-                                        }
-                                    }
-                                    
-                                    $label = $vars['label'][$this->section][$k];
-                                    if (!$label) {
-                                        $label = ucfirst(str_replace('_', ' ', $k));
-                                    } ?>
-									<th><?=ucfirst($label); ?></th>
+                                    ?>
+									<th><?=ucfirst(spaced($name)); ?></th>
 								<?php
                                 }
                                 ?>
@@ -73,10 +59,6 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 $params = [];
 $params['fields'] = $conditions;
 $params['section'] = $this->section;
-
-$first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
-$asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? 'desc' : 'asc';
-
 $order = 3;
 ?>
 

@@ -295,8 +295,6 @@ class cms
                             ) AS distance";
 
                             $having[] = 'distance <= ' . escape($conditions['func'][$field_name]) . '';
-
-                            $vars['labels'][$section][] = 'distance';
                         }
                     }
                     break;
@@ -403,7 +401,7 @@ class cms
     /**
      * retrieve cms rows
      *
-     * @param $sections
+     * @param $section
      * @param null $conditions
      * @param null $num_results
      * @param null $order
@@ -413,21 +411,15 @@ class cms
      * @throws Exception
      * @return array|bool|mixed|string
      */
-    public function get($sections, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false)
+    public function get($section, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false)
     {
         global $vars, $auth;
 
-        $section = $sections;
-        $table = underscored($sections);
+        $table = underscored($section);
 
         //set a default prefix to prevent pagination clashing
         if (!$prefix) {
             $prefix = $table;
-        }
-
-        // default labels to include first field
-        if (!count($vars['labels'][$section])) {
-            $vars['labels'][$section][] = $this->get_option_label($section);
         }
 
         // select columns
@@ -462,22 +454,23 @@ class cms
                 $order = 'T_' . $table . '.' . underscored($field_date);
                 $asc = false;
             } else {
-                $label = $vars['labels'][$section][0];
+                
+                $label = $vars['fields'][$section][0];
                 $type = $vars['fields'][$this->section][$label];
 
                 // order options by value instead of key
                 if (in_array($type, ['select', 'combo', 'radio']) && !is_array($vars['opts'][$label])) {
                     $key = $this->get_option_label($label);
                     $order = 'T_' . underscored($label) . '.' . underscored($key);
-                } elseif ($vars['labels'][$section][0]) {
-                    $order = "T_$table." . underscored($vars['labels'][$section][0]);
+                } elseif ($vars['fields'][$section][0]) {
+                    $order = "T_$table." . underscored($vars['fields'][$section][0]);
                 } else {
                     $order = "T_$table.id";
                 }
             }
         }
 
-        $sql = $this->conditions_to_sql($sections, $conditions, $num_results, $cols);
+        $sql = $this->conditions_to_sql($section, $conditions, $num_results, $cols);
 
         $where_str = $sql['where_str'];
         $group_by_str = '';

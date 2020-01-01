@@ -278,15 +278,10 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
             $table = underscored($this->section);
 
-            if (!count($vars['labels'][$this->section])) {
-                reset($vars['fields'][$this->section]);
-                $vars['labels'][$this->section][] = key($vars['fields'][$this->section]);
-            }
-
             if (in_array('position', $vars['fields'][$this->section])) {
                 $limit = null;
             } else {
-                $label = $vars['labels'][$this->section][0];
+                $label = $vars['fields'][$this->section][0];
                 $type = array_search($label, $vars['fields'][$this->section]);
                 $limit = 10;
             }
@@ -304,11 +299,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
             $qs = http_build_query($qs);
 
-            $first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
-            $asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? false : true;
-
-            $order = null;
-            $vars['content'] = $this->get($subsection, $conditions, $limit, $order, $asc, $table);
+            $vars['content'] = $this->get($subsection, $conditions, $limit, null, null, $table);
             $p = $this->p;
         } ?>
 

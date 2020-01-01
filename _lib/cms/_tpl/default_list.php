@@ -189,10 +189,6 @@ if ($_POST['custom_button']) {
 
     $limit = ($sortable) ? null : 25;
 
-    $first_field_type = $vars['fields'][$this->section][$vars['labels'][$this->section][0]];
-
-    $asc = ('date' == $first_field_type or 'timestamp' == $first_field_type) ? false : true;
-
     $conditions = $_GET;
     unset($conditions['option']);
     /*
