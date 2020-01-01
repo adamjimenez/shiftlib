@@ -30,13 +30,13 @@ class date extends component
 		} else {
 		    $start = "'" . escape(dateformat('Y-m-d', $value)) . "'";
 		}
-		
+
 		if ('month' == $func) {
 		    $where = 'date_format(' . $table_prefix . $field_name . ", '%m%Y') = '" . escape($value) . "'";
 		} elseif ('year' == $func) {
 		    $where  = 'date_format(' . $table_prefix . $field_name . ", '%Y') = '" . escape($value) . "'";
-		} elseif ($value and $conditions['end'][$field_name]) {
-		    $end = escape($conditions['end'][$field_name]);
+		} elseif ($value and $func['end']) {
+		    $end = escape($func['end']);
 		
 		    $where = '(' . $table_prefix . $field_name . " >= " . $start . ' AND ' . $table_prefix . $field_name . " <= '" . $end . "')";
 		} else {
