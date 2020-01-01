@@ -254,16 +254,15 @@ class cms
             $field_name = underscored($name);
             $value = $conditions[$field_name];
 
-            if (!isset($value) || $value == '') {
+            if (!isset($value) || $value === '') {
                 continue;
             }
             
             if ($component = $this->get_component($type)) {
                 // deprecated
-                if ($conditions['end'][$field_name]) {
-                    $conditions['func'][$field_name] = ['end'=>$conditions['end'][$field_name]];
+                if (is_array($conditions) && $conditions['end'][$field_name]) {
+                    $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
                 }
-                
                 $where[] = $component->conditions_to_sql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
             }
 
