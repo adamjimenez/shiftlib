@@ -237,6 +237,11 @@ class cms
         foreach ($auth->user['filters'][$this->section] as $k => $v) {
             $conditions[$k] = $v;
         }
+        
+        // add underscores to conditions (broken page name), should we enforce underscores?
+        foreach($conditions as $k => $v) {
+            $conditions[underscored($k)] = $v;
+        }
 
         // filter deleted
         if (in_array('deleted', $vars['fields'][$section]) && !isset($conditions['deleted']) && !$id) {
