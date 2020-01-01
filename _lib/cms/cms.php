@@ -231,6 +231,7 @@ class cms
 
         if (is_numeric($id)) {
             $conditions = ['id' => $id];
+            $num_results = 1;
         }
 
         // restrict results to staff perms
@@ -424,6 +425,11 @@ class cms
     public function get($section, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false)
     {
         global $vars, $auth;
+        
+        if (!is_array($vars['fields'][$section])) {
+            trigger_error('missing section: '. $section, E_ERROR);
+            return false;
+        }
 
         $table = underscored($section);
 
