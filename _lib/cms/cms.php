@@ -1105,7 +1105,9 @@ class cms
         }
 
         // user privileges
-        $this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
+        if (table_exists('cms_filters')) {
+            $this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
+        }
 
         require(dirname(__FILE__) . '/_tpl/template.php');
         exit;
