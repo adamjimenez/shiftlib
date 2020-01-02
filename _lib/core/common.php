@@ -1385,20 +1385,10 @@ function sql_query($query, $single = false)
     return $single ? $return_array[0] : $return_array;
 }
 
-function str_to_pagename($page_name, $strip_slashes = true): string
+function str_to_pagename($page_name): string
 {
     //remove odd chars
-    if ($strip_slashes) {
-        $page_name = preg_replace("/[^\sA-Za-z0-9\.\->()]/", '', $page_name);
-        
-        //replace > with -
-        $page_name = str_replace('>', '-', $page_name);
-    } else {
-        $page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
-        
-        //replace > with /
-        $page_name = str_replace('>', '/', $page_name);
-    }
+    $page_name = preg_replace("/[^\sA-Za-z0-9\.\-\/>()]/", '', $page_name);
 
     //replace > with /
     $page_name = str_replace('>', '/', $page_name);
