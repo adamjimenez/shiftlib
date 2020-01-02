@@ -12,4 +12,18 @@ class combo extends select
         <input type="text" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?=$options['attribs']; ?> value="<?=$cms->content[$field_name . '_label']; ?>" data-type="combo" data-field="<?=$field_name; ?>">
     <?php
 	}
+	
+	function search_field($name, $value) {
+		global $cms;
+		
+		$field_name = underscored($name);
+	?>
+	    <div>
+	    	<?=$name;?>
+	    </div>
+		<?=$cms->get_field($name, 'class="form-control"'); ?>
+		<br>
+		<br>
+	<?php
+	}
 }

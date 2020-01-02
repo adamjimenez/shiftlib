@@ -85,4 +85,14 @@ class file extends component
 	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
         return $table_prefix . $field_name . ' > 0';
 	}
+	
+	function search_field($name, $value) {
+		$field_name = underscored($name);
+	?>
+	    <div>
+	    	<input type="checkbox" name="<?=$field_name;?>" value="1" <?php if ($_GET[$field_name]) { ?>checked<?php } ?>>
+	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+	    </div>
+	<?php
+	}
 }

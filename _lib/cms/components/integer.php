@@ -41,4 +41,24 @@ class integer extends component
 	function format_value($value) {
 		return (int)$value;
 	}
+	
+	function search_field($name, $value) {
+		$field_name = underscored($name);
+	?>
+		<?=$name;?><br>
+
+		<div>
+			<div style="float:left">
+				<select name="func[<?=$field_name;?>]">
+				<option value=""></option>
+				<?=html_options(['=' => '=','!=' => '!=','>' => '>','<' => '<'], $_GET['func'][$field_name]);?>
+				</select>
+			</div>
+			<div style="float:left">
+				<input type="text" id="<?=$name;?>" name="<?=$field_name;?>" value="<?=$_GET[$field_name];?>" size="8" />
+			</div>
+			<br style="clear: both;">
+		</div>
+	<?php
+	}
 }

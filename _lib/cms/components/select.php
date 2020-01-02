@@ -183,4 +183,40 @@ class select extends component
             return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
         }
 	}
+	
+	function search_field($name, $value) {
+	    global $vars;
+	    
+		$field_name = underscored($name);
+        $options = $vars['options'][$name];
+        if (!is_array($vars['options'][$name])) {
+            reset($vars['fields'][$vars['options'][$name]]);
+
+            $conditions = [];
+            foreach ($auth->user['filters'][$vars['options'][$name]] as $k => $v) {
+                $conditions[$k] = $v;
+            }
+            
+            $field = key($vars['fields'][$vars['options'][$name]]);
+            $table = underscored($vars['options'][$name]);
+            $cols = '`' . underscored($field) . '` AS `' . underscored($field) . '`' . "\n";
+            $rows = sql_query("SELECT $cols, id FROM $table ORDER BY `" . underscored($field) . '`');
+            
+            $options = [];
+            foreach ($rows as $v) {
+                $options[$v['id']] = current($v);
+            }
+        }
+        ?>
+	    <div>
+	    	<?=$name;?>
+	    </div>
+		<select name="<?=$name;?>[]" multiple size="4">
+			<option value=""></option>
+			<?=html_options($options, $_GET[$field_name]);?>
+		</select>
+		<br>
+		<br>
+	<?php
+	}
 }

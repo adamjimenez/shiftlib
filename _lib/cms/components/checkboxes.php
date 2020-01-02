@@ -179,4 +179,30 @@ class checkboxes extends select
 	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
         return null;
 	}
+	
+	function search_field($name, $value) {
+	    global $vars;
+	    
+		$field_name = underscored($name);
+		
+        if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
+            $vars['options'][$name] = $this->get_options(underscored($vars['options'][$name]), underscored(key($vars['fields'][$vars['options'][$name]])));
+        }
+        ?>
+	    <div>
+	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$name;?></label>
+	    </div>
+        <div style="max-height: 200px; width: 200px; overflow: scroll">
+			<?php
+            $is_assoc = is_assoc_array($vars['options'][$name]);
+            foreach ($vars['options'][$name] as $k => $v) {
+                $val = $is_assoc ? $k : $v; 
+            ?>
+			<label><input type="checkbox" name="<?=$field_name; ?>[]" value="<?=$val; ?>" <?php if (in_array($val, $_GET[$field_name])) { ?>checked<?php } ?>> <?=$v; ?></label><br>
+			<?php
+            } 
+            ?>
+        </div>
+	<?php
+	}
 }

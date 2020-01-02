@@ -42,4 +42,12 @@ abstract class component
         $value = str_replace('*', '%', $value);
         return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
 	}
+	
+	function search_field($name, $value) {
+		$field_name = underscored($name);
+	?>
+	    <label for="<?=$field_name;?>" class="col-form-label"><?=ucfirst($name);?></label>
+		<input type="text" class="form-control" name="<?=$field_name;?>" value="<?=$value;?>">
+	<?php
+	}
 }

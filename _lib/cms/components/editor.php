@@ -34,4 +34,8 @@ class editor extends component
         $value = $doc->saveHTML();
 		return $value;
 	}
+	
+	function search_field($name, $value) {
+	    return false;
+	}
 }
