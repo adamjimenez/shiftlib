@@ -16,9 +16,9 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 	                <table id="dataTable-<?=underscored($this->section);?>" class="text-center">
 	                    <thead>
 	                        <tr>
-	        					<th><i class="fas fa-arrows-alt-v"></i><span class="hideText">Reorder</span></th>
-	        					<th><span class="hideText">Checkboxes</span></th>
-	        					<th><span class="hideText">Actions</span></th>
+	        					<th class="noVis"><i class="fas fa-arrows-alt-v"></i>&nbsp;</th>
+	        					<th class="noVis">&nbsp;</th>
+	        					<th class="noVis">&nbsp;</th>
 								<?php
                                 foreach ($vars['fields'][$this->section] as $name=>$type) {
                                     if ('id' == $type) {
