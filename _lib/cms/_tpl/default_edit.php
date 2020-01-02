@@ -88,6 +88,7 @@ if ($_GET['id']) {
 <div class="col-lg-12 mt-5">
     <div class="card">
         <div class="card-body">
+            <h1 class="header-title"><?=ucwords($this->section);?></h1>
 
 <form id="form" method="post" enctype="multipart/form-data" class="validate">
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
@@ -99,16 +100,10 @@ if ($_GET['id']) {
 	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
 </div>
 
-<table width="100%">
-<tr>
-	<td>
-    		<div class="top-row">
-			<button type="submit" class="btn btn-success">Save</button>
-			<button type="button" class="btn btn-default" onclick="window.location.href='<?=$cancel_url;?>';">Cancel</button>
-		</div>
-	</td>
-</tr>
-</table>
+<div class="top-row my-3">
+	<button type="button" class="btn btn-secondary" onclick="window.location.href='<?=$cancel_url;?>';"><i class="fas fa-arrow-left"></i></button>
+	<button type="submit" class="btn btn-primary">Save</button>
+</div>
 
 	<div class="box">
 

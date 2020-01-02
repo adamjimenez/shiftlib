@@ -141,45 +141,46 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
     $back_label = ucfirst($this->section);
 } ?>
 
-<!-- page title area start -->
-<div class="page-title-area">
-    <div class="row align-items-center">
-        <div class="col-sm-10">
-            <div class="breadcrumbs-area clearfix" style="margin: 20px 0;">
-                <h4 class="page-title pull-left">Admin</h4>
-                <ul class="breadcrumbs pull-left">
-                    <li><a href="/admin">Dashboard</a></li>
-                    <li><a href="<?=$back_link; ?>"><?=$back_label; ?></a></li>
-                    <li><?=$this->get_label(); ?></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col-sm-2 clearfix">
-            <ul class="breadcrumbs pull-right">
-		        <?php if ($prev_link) { ?>
-		        <li><a href="<?=$prev_link;?>">Prev</a></li>
-		        <?php } ?>
-		        <?php if ($next_link) { ?>
-		        <li><a href="<?=$next_link;?>">Next</a></li>
-		        <?php } ?>
-        	</ul>
-        </div>
-
-    </div>
-</div>
-<!-- page title area end -->
-
-
 <div class="main-content-inner">
+        
     <div class="row">
-
-
+        
 
 <!-- tab start -->
 <div class="col-lg-12 mt-5">
     <div class="card">
         <div class="card-body">
+            <h1 class="header-title"><?=ucwords($this->section);?></h1>
+            
+    <div class="top-row my-3">
+        <ul class="pull-left toolbar">
+            <li>
+                <a href="<?=$back_link; ?>" class="btn btn-secondary" title="Back to <?=$back_label; ?>"><i class="fas fa-arrow-left"></i></a>
+            </li>
+            <li>
+		        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
+            </li>
+			<?php
+            foreach ($cms_buttons as $k => $button) {
+                if ($this->section == $button['section'] and 'view' == $button['page']) {
+                    ?>
+                    <li>
+                    <?php
+                    require('includes/button.php');
+                    ?>
+                    </li>
+                    <?
+                }
+            } ?>
+            <li>
+		        <form method="post" style="display:inline;">
+			        <input type="hidden" name="delete" value="1">
+			        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
+		        </form>
+            </li>
+        </ul>
+    </div>
+            
             <ul class="nav nav-tabs" id="pills-tab" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#pills-summary" role="tab" aria-controls="pills-summary" aria-selected="true">
@@ -214,57 +215,36 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             <div class="tab-content mt-3" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
 
-                	<div>
-				        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
-
-						<?php
-                        foreach ($cms_buttons as $k => $button) {
-                            if ($this->section == $button['section'] and 'view' == $button['page']) {
-                                require('includes/button.php');
-                            }
-                        } ?>
-
-						&nbsp;
-
-				        <form method="post" style="display:inline;">
-					        <input type="hidden" name="delete" value="1">
-					        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
-				        </form>
-                	</div>
-
-
-
-
 <?php
     $content = $this->get($this->section, $_GET['id']);
 ?>
 	<div class="box">
-	<table border="0" cellspacing="0" cellpadding="5" width="100%">
-
-	<?php
-    foreach ($vars['fields'][$this->section] as $name => $type) {
-        $label = $vars['label'][$this->section][$name];
-
-        if (!$label) {
-            $label = ucfirst(str_replace('_', ' ', $name));
-        }
-        
-        $value = $this->get_value($name);
-        
-        if (!$value) {
-        	continue;
-        }
-        ?>
-
-		<tr>
-			<th align="left" valign="top" width="20%"><?=$label; ?></th>
-			<td>
-        		<?=$value;?>
-			</td>
-		</tr>
-	<?php
-    } ?>
-	</table>
+    	<table border="0" cellspacing="0" cellpadding="5" width="100%">
+    
+    	<?php
+        foreach ($vars['fields'][$this->section] as $name => $type) {
+            $label = $vars['label'][$this->section][$name];
+    
+            if (!$label) {
+                $label = ucfirst(str_replace('_', ' ', $name));
+            }
+            
+            $value = $this->get_value($name);
+            
+            if (!$value) {
+            	continue;
+            }
+            ?>
+    
+    		<tr>
+    			<th align="left" valign="top" width="20%"><?=$label; ?></th>
+    			<td>
+            		<?=$value;?>
+    			</td>
+    		</tr>
+    	<?php
+        } ?>
+    	</table>
 	</div>
 <?php
 ?>
@@ -394,3 +374,10 @@ $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
 });
 
 </script>
+
+
+<style>
+    .toolbar li {
+        display: inline-block;
+    }
+</style>
