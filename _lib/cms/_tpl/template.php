@@ -206,20 +206,10 @@
 				<?php
                 if ($_SESSION['message']) {
                     ?>
-					<div class="row">
-                        <!-- normal alert area start -->
-                        <div class="col-lg-12 mt-5 mb-5">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="alert-items">
-                                        <div class="alert alert-primary" role="alert">
-                                            <?=nl2br($_SESSION['message']); ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="alert-items m-3">
+                        <div class="alert alert-primary" role="alert">
+                            <?=nl2br($_SESSION['message']); ?>
                         </div>
-                        <!-- normal alert area end -->
                     </div>
 				<?php
                     unset($_SESSION['message']);
