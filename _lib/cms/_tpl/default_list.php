@@ -1,4 +1,73 @@
 <?php
+function export_all() {
+    global $auth, $db_connection, $cms;
+    
+    set_time_limit(300);
+    ob_end_clean();
+
+    $conditions = $_POST['export'] ? $_GET : null;
+    
+    // staff perms
+    foreach ($auth->user['filters'][$cms->section] as $k => $v) {
+        $conditions[$k] = $v;
+    }
+    
+    $sql = $cms->conditions_to_sql($cms->section, $conditions);
+    $table = underscored($cms->section);
+    $field_id = in_array('id', $vars['fields'][$cms->section]) ? array_search('id', $vars['fields'][$cms->section]) : 'id';
+
+    $query = "SELECT *
+	FROM `$table` T_$table
+		" . $sql['joins'] . '
+	' . $sql['where_str'] . '
+	GROUP BY
+		T_' . $table . '.' . $field_id . '
+	' . $sql['having_str'];
+    
+    $result = mysqli_query($db_connection, $query);
+    
+    if (false === $result) {
+        throw new Exception(mysqli_error(), E_ERROR);
+    }
+
+    header('Content-Type: text/comma-separated-values; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="' . $cms->section . '.csv"');
+
+    $i = 0;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data = '';
+
+        if (0 == $i) {
+            $j = 0;
+            foreach ($row as $k => $v) {
+                $data .= '"' . $k . '",';
+                $headings[$j] = $k;
+            }
+            $data = substr($data, 0, -1);
+            $data .= "\n";
+
+            $j++;
+        }
+        $j = 0;
+        foreach ($row as $k => $v) {
+            if (is_array($v)) {
+                $data .= '"' . str_replace('"', '""', serialize($v)) . '",';
+            } else {
+                $data .= '"' . str_replace('"', '""', $v) . '",';
+            }
+
+            $j++;
+        }
+        $data = substr($data, 0, -1);
+        $data .= "\n";
+        $i++;
+
+        print($data);
+    }
+
+    exit();
+}
+
 //check permissions
 if (1 != $auth->user['admin'] and !$auth->user['privileges'][$this->section]) {
     die('access denied');
@@ -70,12 +139,24 @@ foreach ($filters as $v) {
 }
 
 //bulk export
-if ('export' == $_POST['action']) {
-    $this->export_items($this->section, $_POST['id']);
-}
-
-if ('delete' == $_POST['action']) {
-    $this->delete_items($this->section, $_POST['id']);
+if ($_POST['select_all_pages']) {
+    switch($_POST['action']) {
+        case 'export':
+            export_all();
+        break;
+        case 'delete':
+           $this->delete_all_pages($this->section, $_GET);
+        break;
+    }
+} else {
+    switch($_POST['action']) {
+        case 'export':
+            $this->export_items($this->section, $_POST['id']);
+        break;
+        case 'delete':
+            $this->delete_items($this->section, $_POST['id']);
+        break;
+    }
 }
 
 if ($_POST['custom_button']) {
@@ -91,130 +172,11 @@ if ($_POST['custom_button']) {
             }
         }
     }
+    
     if ($cms_buttons[$_POST['custom_button']]['handler']) {
         $cms_buttons[$_POST['custom_button']]['handler']($items);
     }
 } else {
-    if ($_POST['select_all_pages'] and $_POST['section'] and 'delete' == $_POST['action']) {
-        $this->delete_all_pages($this->section, $_GET);
-    }
-
-    if ($_POST['export'] or $_GET['export_all']) {
-        set_time_limit(300);
-        ob_end_clean();
-
-        $conditions = $_POST['export'] ? $_GET : null;
-        
-        // staff perms
-        foreach ($auth->user['filters'][$this->section] as $k => $v) {
-            $conditions[$k] = $v;
-        }
-        
-        $sql = $this->conditions_to_sql($this->section, $conditions);
-        $table = underscored($this->section);
-        $field_id = in_array('id', $vars['fields'][$this->section]) ? array_search('id', $vars['fields'][$this->section]) : 'id';
-
-        $query = "SELECT *
-		FROM `$table` T_$table
-			" . $sql['joins'] . '
-		' . $sql['where_str'] . '
-		GROUP BY
-			T_' . $table . '.' . $field_id . '
-		' . $sql['having_str'];
-        
-        global $db_connection;
-        $result = mysqli_query($db_connection, $query);
-        
-        if (false === $result) {
-            throw new Exception(mysqli_error());
-        }
-
-        header('Pragma: cache');
-        header('Content-Type: text/comma-separated-values; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $this->section . '.csv"');
-
-        $i = 0;
-        while ($row = mysqli_fetch_assoc($result)) {
-            $data = '';
-
-            if (0 == $i) {
-                $j = 0;
-                foreach ($row as $k => $v) {
-                    $data .= '"' . $k . '",';
-                    $headings[$j] = $k;
-                }
-                $data = substr($data, 0, -1);
-                $data .= "\n";
-
-                $j++;
-            }
-            $j = 0;
-            foreach ($row as $k => $v) {
-                if (is_array($v)) {
-                    $data .= '"' . str_replace('"', '""', serialize($v)) . '",';
-                } else {
-                    $data .= '"' . str_replace('"', '""', $v) . '",';
-                }
-
-                $j++;
-            }
-            $data = substr($data, 0, -1);
-            $data .= "\n";
-            $i++;
-
-            print($data);
-        }
-
-        exit();
-    }
-
-    if ($_GET['xml']) {
-        header('Content-Type: text/xml');
-
-        $vars['content'] = $this->get($this->section, $_GET);
-
-        $xml = new SimpleXMLElement('<subscribers />');
-
-        foreach ($vars['content'] as $cust) {
-            $subscriber = $xml->addChild('subscriber');
-
-            foreach ($cust as $k => $v) {
-                $subscriber->addChild($k, htmlspecialchars($v));
-            }
-        }
-
-        echo $xml->asXML();
-        exit;
-    }
-
-    $limit = ($sortable) ? null : 25;
-
-    $conditions = $_GET;
-    unset($conditions['option']);
-    /*
-    foreach($_GET as $k=>$v) {
-        if (in_array($k, $vars['fields'][$this->section])) {
-            $conditions[$k] = $v;
-        }
-    }
-    */
-
-    if (in_array('parent', $vars['fields'][$this->section])) {
-        $parent_field = array_search('parent', $vars['fields'][$this->section]);
-    }
-
-    if ($parent_field and !count($conditions)) {
-        $conditions[underscored($parent_field)] = 0;
-    }
-
-    // staff perms
-    foreach ($auth->user['filters'][$this->section] as $k => $v) {
-        $conditions[$k] = $v;
-    }
-    //debug($conditions, 1);
-
-    $vars['content'] = $this->get($this->section, $conditions, $limit, null, $asc, 'list');
-    $p = $this->p;
 
     foreach ($vars['fields'][$this->section] as $field => $type) {
         if ('position' == $type) {
@@ -222,7 +184,8 @@ if ($_POST['custom_button']) {
         }
 
         $fields[] = $field;
-    } ?>
+    } 
+?>
 
 <div class="main-content-inner">
     <div class="row">
@@ -230,32 +193,27 @@ if ($_POST['custom_button']) {
 <!-- tab start -->
 <div class="col-lg-12 mt-5">
 
-
-	<div class="row">
-		<div class="col-sm-6">
-			<form method="get">
-				<input type="hidden" name="option" value="<?=$this->section; ?>" />
-		
-				<input class="search-field form-control" type="text" name="s" id="s" value="<?=$_GET['s']; ?>" tabindex="1" placeholder="Search">
-				
-				<br />
-			</form>
-		</div>
-		
-		<div class="col-sm-6">
-			
-			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#searchModal">Advanced search</button>
-			
-			<?php if (count($_GET) > 1) { ?>
-				<?php if ($filter_exists) { ?>
-				<button type="button" class="btn btn-default delete_filter">Delete filter</button>
-				<?php } else { ?>
-				<button type="button" class="btn btn-default save_filter">Save filter</button>
-				<?php } ?>
-			<?php } ?>
-			
-			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#importModal">Import</button>
-			<a class="btn btn-primary" href="?option=<?=$_GET['option']; ?>&export_all=1">Export all</a>
+	<div class="row m-3">
+		<div class="col-sm-12">
+		    <div class="d-flex">
+		        
+    			<form method="get" class="flex-grow-1" style="flex: 1;">
+    				<input type="hidden" name="option" value="<?=$this->section; ?>" />
+    		
+    				<input class="search-field form-control" type="text" name="s" id="s" value="<?=$_GET['s']; ?>" tabindex="1" placeholder="Search">
+    			</form>
+    			
+    			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#searchModal">Advanced search</button>
+    			
+    			<?php if (count($_GET) > 1) { ?>
+    				<?php if ($filter_exists) { ?>
+    				<button type="button" class="btn btn-default delete_filter" title="Delete filter"><i class="fas fa-trash"></i></button>
+    				<?php } else { ?>
+    				<button type="button" class="btn btn-default save_filter" title="Save filter"><i class="fas fa-save"></i></button>
+    				<?php } ?>
+    			<?php } ?>
+    			
+			</div>
 		</div>
 	</div>
 	
@@ -553,6 +511,8 @@ if ($_POST['custom_button']) {
 	    </div>
 </form>
 
+    <?php
+    /*
 	<table width="100%">
 	<tr>
 		<td>
@@ -592,6 +552,8 @@ if ($_POST['custom_button']) {
 		</td>
 	</tr>
 	</table>
+	*/
+	?>
 
 	<?php
     $conditions = $_GET;
@@ -600,24 +562,6 @@ if ($_POST['custom_button']) {
     $qs = http_build_query(['s' => $params]);
     require(dirname(__FILE__) . '/list.php'); ?>
 	
-	<br>
-	<br>
-	<div>
-		<fieldset style="padding:10px;">
-			<legend>With results</legend>
-			<form method="post" style="display:inline">
-			<input type="hidden" name="export" value="1" />
-				<button class="btn btn-default" type="submit">Export</button>
-			</form>
-			<?php
-            foreach ($cms_buttons as $k => $button) {
-                if ($this->section == $button['section'] and 'list-all' == $button['page']) {
-                    require('includes/button.php');
-                }
-            } ?>
-		</fieldset>
-	</div>
-
 </div>
 
 	</div>

@@ -215,7 +215,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
                 <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
 
                 	<div>
-				        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;">Edit</button>
+				        <button class="btn btn-default" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
 
 						<?php
                         foreach ($cms_buttons as $k => $button) {
@@ -228,7 +228,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
 				        <form method="post" style="display:inline;">
 					        <input type="hidden" name="delete" value="1">
-					        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');">Delete</button>
+					        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
 				        </form>
                 	</div>
 

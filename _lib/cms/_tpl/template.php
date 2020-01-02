@@ -266,10 +266,9 @@
     <script src="/_lib/cms/assets/js/scripts.js"></script>
 
     <script>
-	   // Handle form submission event
-	   $('body').on('click', '.buttons button', function(e){
-	   		if ($(this).data('confirm')) {
-				var result = confirm('Are you sure you want to delete?');
+        function button_handler (value, show_prompt, node) {
+	   		if (show_prompt) {
+				var result = confirm('Are you sure?');
 
 				if (!result) {
 					$('.action').val('');
@@ -277,23 +276,38 @@
 				}
 	   		}
 
-			$('.action').val($(this).data('value'));
-	    	var form = $(this).closest('form');
+			$('.action').val(value);
+	    	var form = $(node).closest('form');
 	    	var table = form.find('table').DataTable();
 	    	var rows_selected = table.column(1).checkboxes.selected();
 
 			// Iterate over all selected checkboxes
 			$.each(rows_selected, function(index, rowId){
-			// Create a hidden element
-			$(form).append(
-				$('<input>')
-					.attr('type', 'hidden')
-					.attr('name', 'id[]')
-					.val(rowId)
-				);
-			});
+    			// Create a hidden element
+    			$(form).append(
+    				$('<input>')
+    					.attr('type', 'hidden')
+    					.attr('name', 'id[]')
+    					.val(rowId)
+    				);
+    		});
+
+			// check if all selected
+			if ($(table.table().container()).find('.selectAllPages').data('selected')) {
+    			$(form).append(
+    				$('<input>')
+    					.attr('type', 'hidden')
+    					.attr('name', 'select_all_pages')
+    					.val(1)
+    				);
+            };
 
 			form.submit();
+        }
+    
+	   // Handle form submission event
+	   $('body').on('click', '.buttons button', function(e) {
+	       button_handler($(this).data('value'), $(this).data('confirm'), this);
 	   });
     </script>
 </body>
