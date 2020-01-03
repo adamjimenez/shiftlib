@@ -31,4 +31,8 @@ class rating extends component
                 
 		return $value;
 	}
+	
+	function search_field($name, $value) {
+	    return false;
+	}
 }

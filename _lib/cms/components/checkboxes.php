@@ -190,7 +190,7 @@ class checkboxes extends select
         }
         ?>
 	    <div>
-	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$name;?></label>
+	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=ucfirst($name);?></label>
 	    </div>
         <div style="max-height: 200px; width: 200px; overflow: scroll">
 			<?php

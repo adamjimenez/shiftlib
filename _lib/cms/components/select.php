@@ -124,18 +124,16 @@ class select extends component
     }
     
 	function field($field_name, $value = '', $options = []) {
-		global $vars, $cms;
+		global $vars, $cms, $auth;
 		
 		$name = $field_name;
 
         if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
             ?>
-        <div class="chained" data-name="<?=$field_name; ?>" data-section="<?=$vars['options'][$name]; ?>" data-value="<?=$value; ?>"></div>
-        <?php
+            <div class="chained" data-name="<?=$field_name; ?>" data-section="<?=$vars['options'][$name]; ?>" data-value="<?=$value; ?>"></div>
+            <?php
         } else {
             if (!is_array($vars['options'][$name])) {
-                global $auth;
-                
                 $conditions = [];
                 foreach ($auth->user['filters'][$cms->section] as $k => $v) {
                     $conditions[$k] = $v;
@@ -143,10 +141,10 @@ class select extends component
                 
                 $vars['options'][$name] = $this->get_options($name, $where);
             } ?>
-        <select name="<?=$field_name; ?>" <?php if ($option['readonly']) { ?>disabled<?php } ?> <?=$options['attribs']; ?>>
-        <option value=""><?=$placeholder ?: 'Choose'; ?></option>
-            <?=html_options($vars['options'][$name], $value); ?>
-        </select>
+            <select name="<?=$field_name; ?>" <?php if ($option['readonly']) { ?>disabled<?php } ?> <?=$options['attribs']; ?>>
+            <option value=""><?=$placeholder ?: 'Choose'; ?></option>
+                <?=html_options($vars['options'][$name], $value); ?>
+            </select>
         <?php
         }
 	}
@@ -209,7 +207,7 @@ class select extends component
         }
         ?>
 	    <div>
-	    	<?=$name;?>
+	    	<?=ucfirst($name);?>
 	    </div>
 		<select name="<?=$name;?>[]" multiple size="4">
 			<option value=""></option>

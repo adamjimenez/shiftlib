@@ -54,7 +54,7 @@ class date extends component
 		$field_name = underscored($name);
 	?>
 		<div>
-		    <label class="col-form-label"><?=$name;?></label>
+		    <label class="col-form-label"><?=ucfirst($name);?></label>
 		    
 		    <div>
 				<div style="float:left">

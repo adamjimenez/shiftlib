@@ -91,7 +91,7 @@ class file extends component
 	?>
 	    <div>
 	    	<input type="checkbox" name="<?=$field_name;?>" value="1" <?php if ($_GET[$field_name]) { ?>checked<?php } ?>>
-	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=ucfirst($name);?></label>
 	    </div>
 	<?php
 	}
