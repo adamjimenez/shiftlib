@@ -1,4 +1,23 @@
 <?php
+//save privileges
+if (
+    1 == $auth->user['admin'] and
+    underscored($this->section) == $auth->table and
+    (2 == $content['admin'] or 3 == $content['admin']) and
+    $_POST['privileges']
+) {
+    sql_query("DELETE FROM cms_privileges WHERE user='" . $this->id . "'");
+
+    foreach ($_POST['privileges'] as $k => $v) {
+        sql_query("INSERT INTO cms_privileges SET
+			user='" . escape($this->id) . "',
+			section='" . escape($k) . "',
+			access='" . escape($v) . "',
+			filter='" . escape($_POST['filters'][$k]) . "'
+		");
+    }
+}
+
 //privileges
 if (
     1 == $auth->user['admin'] and

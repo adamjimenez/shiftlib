@@ -7,10 +7,6 @@
 
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
-	<script type="text/javascript">
-		var section='<?=$vars['section'];?>';
-		var fields=(<?=json_encode($fields);?>);
-	</script>
 	<?php load_js(['jqueryui', 'cms', 'google', 'lightbox', 'fontawesome']); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
@@ -42,6 +38,11 @@
     <script src="/_lib/cms/assets/js/vendor/modernizr-2.8.3.min.js"></script>
 
     <link rel="stylesheet" href="/_lib/cms/css/cms.css">
+    
+    <script>
+        // used for imports
+		var fields = [];
+	</script>
 </head>
 
 <body>
@@ -229,6 +230,60 @@
         <!-- footer area end-->
     </div>
     <!-- page container area end -->
+    
+    <!-- import modal start -->
+    <form method="post" id="importForm" enctype="multipart/form-data" onSubmit="checkForm(); return false;">
+	    <div class="modal fade" id="importModal">
+	        <div class="modal-dialog">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <h5 class="modal-title">Import</h5>
+	                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+	                </div>
+	                <div class="modal-body">
+
+						<input type="hidden" id="importSection" name="section" value="" />
+						Upload a <strong>comma delimited csv</strong> file.<br>
+						<br>
+					
+						<div>
+							File: <span id="file_field"><input type="file" id="file" name="file"></span>
+						</div>
+					
+						<div id="csv_loaded" style="display:none; width:auto;">
+							<div id="csv_preview" style="margin:1em; border: 1px solid #000; overflow: scroll;"></div>
+					
+							<p>Match up the columns with the spreadsheet columns below.</p>
+					
+							<table width="310" class="box">
+							   <thead>
+        							<tr>
+        								<th>List column</th>
+        								<th>&nbsp;</th>
+        								<th>File column</th>
+        							</tr>
+        						</thead>
+        						<tbody>
+                                </tbody>
+							</table>
+							<br>
+							<p>
+								<label><input type="checkbox" name="update" value="1"> update existing?</label>
+							</p>
+					    	<p>
+								<label><input type="checkbox" name="validate" value="1"> validate?</label>
+							</p>
+						</div>
+
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="submit" class="btn btn-primary">Import</button>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+    </form>
+    <!-- import modal end -->
 
     <!-- bootstrap 4 js -->
     <script src="/_lib/cms/assets/js/popper.min.js"></script>
@@ -299,6 +354,9 @@
 	   $('body').on('click', '.buttons button', function(e) {
 	       button_handler($(this).data('value'), $(this).data('confirm'), this);
 	   });
+	   
+	   // file import
+	    $('#file').on('change', changeFile);
     </script>
 </body>
 

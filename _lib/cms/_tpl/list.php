@@ -64,6 +64,12 @@ $order = 3;
 	}
 </style>
 
+	
+<script>
+	// used for import
+	fields['<?=$this->section;?>'] = <?=json_encode(array_keys($vars['fields'][$this->section]));?>;
+</script>
+
 
 <script>
 $(document).ready(function() {
@@ -79,6 +85,7 @@ $(document).ready(function() {
 	}, {
 	    text: '<i class="fas fa-file-import"></i>',
 	    action: function ( e, dt, node, config ) {
+	    	$('#importSection').val('<?=$this->section;?>');
 			$('#importModal').modal('show');
 	    }
 	}, {

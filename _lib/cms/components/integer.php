@@ -16,6 +16,7 @@ class integer extends component
 	}
 	
 	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+		// check for range
         $pos = strrpos($value, '-');
 
         if ($pos > 0) {
@@ -26,6 +27,13 @@ class integer extends component
                 $table_prefix.$field_name . " >= '" . escape($min) . "' AND ".
                 $table_prefix.$field_name . " <= '" . escape($max) . "'
             )";
+        } else if (is_array($value))  {
+            foreach($value as $v) {
+                $value_str .= (int)($v).",";
+            }
+            $value_str = substr($value_str, 0, -1);
+        	
+        	$where = $table_prefix . $field_name . " IN (" . escape($value_str) . ")";
         } else {
         	if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
         		$func = '=';
@@ -45,7 +53,7 @@ class integer extends component
 	function search_field($name, $value) {
 		$field_name = underscored($name);
 	?>
-		<?=$name;?><br>
+		<label><?=ucfirst($name);?></label><br>
 
 		<div>
 			<div style="float:left">

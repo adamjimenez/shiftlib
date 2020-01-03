@@ -41,17 +41,17 @@ function toggle_import()
 function changeFile() 
 {
 	$('#csv_preview').innerHTML='';
-
-	for( var j in fields ){
-		if( typeof(fields[j])=='string' ){
-			remove_options(document.getElementById('field_'+fields[j]));
-		}
-	}
+	
+	$('#csv_loaded option:not(:first-child)').remove();
 
 	$('#csv_loaded').hide();
 
-	document.getElementById('file_field').innerHTML = document.getElementById('file_field').innerHTML;
+	document.getElementById('file_field').innerHTML = file_field_html;
 
+	if (!this.files) {
+		return;
+	}
+	
     var file = this.files[0];
     name = file.name;
     size = file.size;
@@ -91,6 +91,9 @@ var updater;
 var upload;
 
 var file_field_html;
+$(function() {
+	file_field_html = document.getElementById('file_field').innerHTML;	
+})
 
 function loadFile(file)
 {
@@ -132,32 +135,34 @@ function loadFile(file)
                         $("#csv_preview").html(html);
                     }
 				});
-
-				for( var j in fields ){
-					if( typeof(fields[j])=='string' ){
-						remove_options(document.getElementById('field_'+fields[j]));
-						add_options(result.options, document.getElementById('field_'+fields[j]),fields[j]);
-					}
-				}
+				
+				
+				var optionsHTML = '';
+				result.options.forEach(function(item, index) {
+					optionsHTML += '<option value="' + index +  '">' + item +  '</option>';
+				});
+				
+				fields[$('#importSection').val()].forEach(function(item) {
+					$('#importForm tbody').append('\
+						<tr>\
+							<td width="100">' + item + '</td>\
+							<td width="100">should receive</td>\
+							<td>\
+								<select name="fields[' + item + ']" style="width:100px; font-weight:bold;">\
+									<option value="">Select Column</option>\
+									' + optionsHTML + '\
+								</select>\
+							</td>\
+						</tr>\
+					');
+				})
+				
 				$('#csv_loaded').show();
 
-				document.getElementById('file_field').innerHTML='<strong>'+file+'</strong> <a href="#" onclick="changeFile();">change</a><input type="hidden" name="csv" value="'+file+'">';
+				document.getElementById('file_field').innerHTML = '<strong>'+file+'</strong> <a href="#" onclick="changeFile();">change</a><input type="hidden" name="csv" value="'+file+'">';
 			}
 		}
 	);
-}
-
-function set_language()
-{
-	var option = document.getElementById('language');
-
-	for( var j=0; j<option.options.length; j++ ){
-		if( document.getElementById('language_'+option.options[j].value).style.display!=='none' ){
-			document.getElementById('language_'+option.options[j].value).style.display='none';
-		}
-	}
-
-	document.getElementById('language_'+$('#language').val()).style.display='block';
 }
 
 //import csv
@@ -197,36 +202,3 @@ function checkForm()
 	return false;
 }
 
-function remove_options(select)
-{
-	jQuery('option:not(:first-child)', select).remove();
-	select.disabled=true;
-	return true;
-}
-
-function add_options(models,target_option, value)
-{
-	console.log(models)
-
-	var mod=target_option;
-	var selectedIndex=0;
-
-	if( !models ){
-		optval="";
-		opttext="Not Applicable";
-		mod.options[0]=new Option(opttext,optval, true,true);
-	}else{
-		for( i=0;i<models.length;i++ ){
-			mod.options[i+1]=new Option(models[i],i, true,true);
-
-			if( models[i].replace(/-/,'').toLowerCase()===value.replace(/-/,'').toLowerCase() ){
-				selectedIndex=i+1;
-			}
-		}
-
-		mod.options[0].value="";
-		mod.options[0].text="";
-		mod.disabled=false;
-	}
-	mod.options.selectedIndex=selectedIndex;
-}

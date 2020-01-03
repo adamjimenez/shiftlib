@@ -83,52 +83,98 @@ class cms
     }
 
     // export items to csv
-    public function export_items($section, $items)
+    public function export_items($section, $conditions, $select_all_pages)
     {
-        global $vars;
-
-        foreach ($items as $item) {
-            $vars['content'][] = $this->get($section, $item);
+        global $auth, $db_connection;
+        
+        set_time_limit(300);
+        ob_end_clean();
+        
+        if (!$select_all_pages) {
+            $ids = is_array($conditions) ? $conditions : [$conditions];
+            $conditions = array('id' => $ids);
         }
-
+        
+        // staff perms
+        foreach ($auth->user['filters'][$section] as $k => $v) {
+            $conditions[$k] = $v;
+        }
+        
+        $sql = $this->conditions_to_sql($section, $conditions);
+        
+        $table = underscored($section);
+        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+        
+        $query = "SELECT *
+            FROM `$table` T_$table
+            " . $sql['joins'] . '
+            ' . $sql['where_str'] . '
+            GROUP BY
+            T_' . $table . '.' . $field_id . '
+            ' . $sql['having_str'];
+        
+        $result = mysqli_query($db_connection, $query);
+        
+        if (false === $result) {
+            debug($query);
+            throw new Exception(mysqli_error(), E_ERROR);
+        }
+        
+        header('Content-Type: text/comma-separated-values; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $section . '.csv"');
+        
         $i = 0;
-        $data = '';
-        foreach ($vars['content'] as $row) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $data = '';
+            
+            // get headings
             if (0 == $i) {
                 $j = 0;
                 foreach ($row as $k => $v) {
-                    $data .= '"' . spaced($k) . '",';
+                    $data .= '"' . $k . '",';
                     $headings[$j] = $k;
                 }
                 $data = substr($data, 0, -1);
                 $data .= "\n";
                 $j++;
             }
+            
             $j = 0;
             foreach ($row as $k => $v) {
-                $data .= '"' . str_replace('"', '', $v) . '",';
+                if (is_array($v)) {
+                    $data .= '"' . str_replace('"', '""', serialize($v)) . '",';
+                } else {
+                    $data .= '"' . str_replace('"', '""', $v) . '",';
+                }
+            
                 $j++;
             }
             $data = substr($data, 0, -1);
             $data .= "\n";
             $i++;
+            
+            print($data);
         }
-
-        header('Content-Type: text/comma-separated-values; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $section . '.csv"');
-        print($data);
-        exit;
+        
+        exit();
     }
 
-    public function delete_items($section, $items) // used in admin system
+    public function delete_items($section, $conditions, $select_all_pages) // used in admin system
     {
         global $auth;
 
-        if (!is_array($items)) {
-            $items = [$items];
-        }
-
         if (1 == $auth->user['admin'] || 2 == $auth->user['privileges'][$section]) {
+            if ($select_all_pages) {
+                $rows = $this->get($section, $conditions);
+    
+                $items = [];
+                foreach ($rows as $v) {
+                    $items[] = $v['id'];
+                }
+            } else {
+                $items = is_array($conditions) ? $conditions : [$conditions];
+            }
+
             if (false !== $this->delete($section, $items)) {
                 $_SESSION['message'] = 'The items have been deleted';
                 return true;
@@ -136,28 +182,6 @@ class cms
         }
 
         $_SESSION['message'] = 'Permission denied';
-        return false;
-    }
-
-    public function delete_all_pages($section, $conditions) // used in admin system
-    {
-        global $auth;
-
-        if (1 == $auth->user['admin'] || 2 == $auth->user['privileges'][$section]) {
-            $rows = $this->get($section, $conditions);
-
-            $items = [];
-            foreach ($rows as $v) {
-                $items[] = $v['id'];
-            }
-
-            $this->delete($section, $items);
-
-            $_SESSION['message'] = 'The items have been deleted';
-            return true;
-        }
-        
-        $_SESSION['message'] = 'Permission denied, you have read-only access';
         return false;
     }
 
@@ -1124,6 +1148,17 @@ class cms
             $this->check_table($this->table, $vars['fields'][$this->section]);
         } else {
             $index = true;
+        }
+        
+        // actions
+        $conditions = $_POST['select_all_pages'] ? $_GET : $_POST['id'];
+        switch($_POST['action']) {
+            case 'export':
+                $this->export_items($_POST['section'], $conditions, $_POST['select_all_pages']);
+            break;
+            case 'delete':
+                $this->delete_items($_POST['section'], $conditions, $_POST['select_all_pages']);
+            break;
         }
 
         if ($index) {
