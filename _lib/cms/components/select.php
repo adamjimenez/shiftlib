@@ -126,7 +126,7 @@ class select extends component
 	function field($field_name, $value = '', $options = []) {
 		global $vars, $cms, $auth;
 		
-		$name = $field_name;
+		$name = spaced($field_name);
 
         if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
             ?>
