@@ -92,7 +92,9 @@ var upload;
 
 var file_field_html;
 $(function() {
-	file_field_html = document.getElementById('file_field').innerHTML;	
+	if (document.getElementById('file_field')) {
+		file_field_html = document.getElementById('file_field').innerHTML;
+	}
 })
 
 function loadFile(file)
