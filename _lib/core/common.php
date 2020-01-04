@@ -1110,7 +1110,7 @@ function load_js($libs)
     }
 
     if ($deps['jqueryui']) {
-        $jqueryui_version = '1.11.4'; ?>
+        $jqueryui_version = '1.12.1'; ?>
 		<link href="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version; ?>/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version; ?>/jquery-ui.min.js"></script>
 	<?php
