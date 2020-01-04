@@ -51,9 +51,9 @@ if ($_POST['select_all_pages']) {
     }
 }
 
+// delete this item
 if ($_POST['delete'] and $this->id) {
     $this->delete_items($this->section, $this->id);
-
     redirect('?option=' . $this->section);
 }
 
@@ -104,6 +104,7 @@ foreach ($vars['fields'][$this->section] as $name => $type) {
     }
 }
 
+// back links
 if ($section and in_array('id', $vars['fields'][$this->section])) {
     $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section];
     $back_label = ucfirst($vars['options'][$section]);
@@ -245,17 +246,17 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 </div>
 
 <?php
-    } ?>
-
-<?php if ($has_privileges) { ?>
+    }
+    
+    if ($has_privileges) { ?>
 	<div class="tab-pane fade" id="pills-priveleges" role="tabpanel" aria-labelledby="pills-priveleges-tab">
 	    <div class="box" style="clear:both;">
 			<? require('includes/privileges.php'); ?>
 		</div>
 	</div>
-<?php } ?>
+<?php }
 
-<?php if ($has_logs) { ?>
+    if ($has_logs) { ?>
 	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
 	    <div class="box" style="clear:both;">
 			<? require('includes/logs.php'); ?>
@@ -304,4 +305,5 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
     $(function() {
         $('.dt-buttons').hide();
     });
+    
 </script>
