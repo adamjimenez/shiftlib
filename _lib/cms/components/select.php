@@ -210,7 +210,6 @@ class select extends component
 	    	<?=ucfirst($name);?>
 	    </div>
 		<select name="<?=$name;?>[]" multiple size="4">
-			<option value=""></option>
 			<?=html_options($options, $_GET[$field_name]);?>
 		</select>
 		<br>
