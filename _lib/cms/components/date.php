@@ -35,7 +35,7 @@ class date extends component
 		    $where = 'date_format(' . $table_prefix . $field_name . ", '%m%Y') = '" . escape($value) . "'";
 		} elseif ('year' == $func) {
 		    $where  = 'date_format(' . $table_prefix . $field_name . ", '%Y') = '" . escape($value) . "'";
-		} elseif ($value and $func['end']) {
+		} elseif ($value and is_array($func) and $func['end']) {
 		    $end = escape($func['end']);
 		
 		    $where = '(' . $table_prefix . $field_name . " >= " . $start . ' AND ' . $table_prefix . $field_name . " <= '" . $end . "')";
