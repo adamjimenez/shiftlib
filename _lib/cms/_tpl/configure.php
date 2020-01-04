@@ -478,7 +478,6 @@ $upload_config=array();
 
 // configure the variables before use.
 $upload_config["upload_dir"]="' . $_POST['upload_config']['upload_dir'] . '";
-$upload_config["web_path"]="' . $_POST['upload_config']['web_path'] . '";
 $upload_config["resize_images"]=' . str_to_bool($_POST['upload_config']['resize_images']) . ';
 $upload_config["resize_dimensions"]=array(' . str_replace('x', ',', $_POST['upload_config']['resize_dimensions']) . ');
 
@@ -530,9 +529,6 @@ $vars["subsections"]["' . $section . '"]=array(' . $subsections . ');
     $config .= '
 
 $vars["files"]["dir"]="' . $_POST['vars']['files']['dir'] . '"; //folder to store files
-
-#cms
-$cms_config["editor"]="' . $_POST['cms_config']['editor'] . '";
 
 #SHOP
 $shop_enabled=' . str_to_bool($_POST['shop_enabled']) . ';
@@ -625,7 +621,7 @@ function initSortables(){
     jQuery( "#sections" ).sortable({
         handle: '.handle',
         opacity: 0.5,
-        items: ".draggable",
+        items: ".draggableSections",
         axis: 'y'
     });
 }
@@ -707,21 +703,29 @@ var section_templates=<?=json_encode($section_templates);?>;
 
 <!-- these hidden tables are used to populate new table rows -->
 <table id="tr_section" style="display:none;">
-<tr class="draggable" id="tr_{$count}" style="height:100%">
-	<td style="height:100%"><div class="handle" style="height:100%;">&nbsp;</div></td>
+<tr class="draggableSections" id="tr_{$count}" style="height:100%">
+    <td valign="top">
+		<a href="javascript:;" onclick="$('#div_{$count}').slideToggle(); $(this).find('i').toggleClass('fa-rotate-90'); return false;"><i class="fas fa-caret-right"></i></a>
+    </td>
+	<td style="height:100%" valign="top"><div class="handle" style="height:100%;">&nbsp;</div></td>
 	<td>
 		<h3>
 			<input type="text" name="sections[{$count}]" value="" />
-			<a href="javascript:;" onclick="jQuery('#div_{$count}').slideToggle(); return false;">toggle</a> &nbsp;&nbsp;
-			<a href="javascript:;" onclick="delTR(this)">delete</a></h3>
+			<a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></h3>
 		</h3>
 
 		<div id="div_{$count}" style="display:none;">
+			<label>
+				<input type="checkbox" name="vars[settings][{$count}][display]" value="1" checked="checked">  Show in navigation
+			</label>
+			<br>
+			
 			<table cellspacing="0">
 			<tbody id="fields_{$count}" class="fields">
 			<tr>
 				<th>&nbsp;</th>
 				<th>Name</th>
+				<th>Label</th>
 				<th>Type</th>
 				<th>Required</th>
 				<th>&nbsp;</th>
@@ -731,13 +735,6 @@ var section_templates=<?=json_encode($section_templates);?>;
 			</tr>
 			</tbody>
 			</table>
-			<br />
-
-			<h4>Settings</h4>
-			<label>
-				<input type="checkbox" name="vars[settings][{$count}][display]" value="1" checked="checked"> display
-			</label>
-			<br>
 			<br />
 
 			<h4>Subsections</h4>
@@ -762,8 +759,8 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<?=html_options($field_opts);?>
 		</select>
 	</td>
-	<td><input type="checkbox" name="vars[required][{$count}]" value="1"></td>
-	<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+	<td style="text-align: center;"><input type="checkbox" name="vars[required][{$count}]" value="1"></td>
+	<td><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
 </tr>
 </table>
 
@@ -775,7 +772,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<?=html_options($section_opts, $v);?>
 		</select>
 	</td>
-	<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+	<td><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
 </tr>
 </table>
 
@@ -792,7 +789,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 			<?=html_options($section_opts, $val);?>
 		</select>
 	</td>
-	<td valign="top"><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+	<td valign="top"><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
 </tr>
 </table>
 <!-- end of hidden tables -->
@@ -803,6 +800,7 @@ var section_templates=<?=json_encode($section_templates);?>;
 <div id="tabs">
     <ul class="nav">
         <li><a href="#sections">Sections</a></li>
+        <li><a href="#dropdowns">Dropdowns</a></li>
         <li><a href="#general">General</a></li>
         <li><a href="#template">Template</a></li>
         <li><a href="#login">Login</a></li>
@@ -816,23 +814,31 @@ var section_templates=<?=json_encode($section_templates);?>;
         <?php
         foreach ($vars['fields'] as $section => $fields) {
             $count['sections']++; ?>
-        	<tr class="draggable" id="tr_<?=$count['sections']; ?>">
-        		<td style="height:100%"><div class="handle" style="height:100%;">&nbsp;</div></td>
+        	<tr class="draggableSections" id="tr_<?=$count['sections']; ?>">
+        	    <td valign="top">
+            		<a href="javascript:;" onclick="$('#div_<?=$count['sections']; ?>').slideToggle(); $(this).find('i').toggleClass('fa-rotate-90'); return false;"><i class="fas fa-caret-right"></i></a> &nbsp;&nbsp;
+        	    </td>
+        		<td style="height:100%" valign="top"><div class="handle" style="height:100%;">&nbsp;</div></td>
         		<td>
         			<h3>
             			<input type="text" name="sections[<?=$count['sections']; ?>]" value="<?=$section; ?>" <?php if ('users' == $section) { ?> readonly <?php } ?> />
-            			<a href="javascript:;" onclick="jQuery('#div_<?=$count['sections']; ?>').slideToggle(); return false;">toggle</a> &nbsp;&nbsp;
             			<?php if ('users' != $section) { ?>
-            			    <a href="javascript:;" onclick="delTR(this)">delete</a>
+            			    <a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a>
             			<?php } ?>
         			</h3>
 
         			<div id="div_<?=$count['sections']; ?>" style="display:none;">
+        				<label>
+        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][display]" value="1" <?php if (in_array($section, $vars['sections'])) { ?> checked<?php } ?>> Show in navigation
+        				</label>
+        				<br>
+        				
         				<table cellspacing="0">
         				<tbody id="fields_<?=$count['sections']; ?>" class="fields">
         				<tr>
         					<th>&nbsp;</th>
         					<th>Name</th>
+				            <th>Label</th>
         					<th>Type</th>
         					<th>Required</th>
         					<th>&nbsp;</th>
@@ -851,8 +857,8 @@ var section_templates=<?=json_encode($section_templates);?>;
         							<?=html_options($field_opts, $field_type); ?>
         						</select>
         					</td>
-        					<td><input type="checkbox" name="vars[required][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k, $vars['required'][$section])) { ?> checked<?php } ?>></td>
-        					<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+        					<td style="text-align: center;"><input type="checkbox" name="vars[required][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k, $vars['required'][$section])) { ?> checked<?php } ?>></td>
+        					<td><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
         				</tr>
         				<?php
                             if (is_array($v)) {
@@ -872,7 +878,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         								</select>
         							</td>
         							<td><input type="checkbox" name="vars[required][<?=$count['fields']; ?>]" value="1" <?php if (in_array($k2, $vars['required'][$section])) { ?> checked<?php } ?>></td>
-        							<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+        							<td><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
         						</tr>
         						<?php
                                 }
@@ -883,14 +889,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         				</tr>
         				</tbody>
         				</table>
-        				<br />
-
-        				<h4>Settings</h4>
-        				<label>
-        					<input type="checkbox" name="vars[settings][<?=$count['sections']; ?>][display]" value="1" <?php if (in_array($section, $vars['sections'])) { ?> checked<?php } ?>> display
-        				</label>
         				<br>
-        				<br />
 
         				<h4>Subsections</h4>
         				<table cellspacing="0">
@@ -905,7 +904,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         							<?=html_options($section_opts, $v); ?>
         						</select>
         					</td>
-        					<td><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+        					<td><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
         				</tr>
         				<?php
                         } ?>
@@ -921,7 +920,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         }
         ?>
         <tr>
-        	<td colspan="2">
+        	<td colspan="5">
         		<select id="section_template">
         			<?=html_options(array_keys($section_templates));?>
         		</select>
@@ -930,10 +929,11 @@ var section_templates=<?=json_encode($section_templates);?>;
         </tbody>
         </table>
         </div>
-        <br>
 
-        <h2>Drop-down options</h2>
-
+    </div>
+    
+    
+    <div id="dropdowns">
         <div id="options_config">
         	<div style="padding:5px 10px;">
         		<table id="options" width="400" class="box">
@@ -964,7 +964,7 @@ var section_templates=<?=json_encode($section_templates);?>;
         					<?=html_options($section_opts, $val); ?>
         				</select>
         			</td>
-        			<td valign="top"><a href="javascript:;" onclick="delTR(this)">delete</a></td>
+        			<td valign="top"><a href="javascript:;" onclick="delTR(this)"><i class="fas fa-trash"></i></a></td>
         		</tr>
         		<?php
                 }
@@ -987,29 +987,20 @@ var section_templates=<?=json_encode($section_templates);?>;
         			<td><input type="text" name="from_email" value="<?=$from_email;?>"></td>
         		</tr>
         		<tr>
-        			<th>folder to store upload data</th>
+        			<th>Folder to store upload data</th>
         			<td><input type="text" name="vars[files][dir]" value="<?=$vars['files']['dir'];?>"></td>
         		</tr>
         		<tr>
-        			<th>shopping cart</th>
+        			<th>Shopping cart</th>
         			<td><input type="checkbox" name="shop_enabled" value="1" <?php if ($shop_enabled) { ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
-        			<th>paypal email</th>
+        			<th>Paypal email</th>
         			<td><input type="text" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>"></td>
         		</tr>
         		<tr>
-        			<th>vat</th>
+        			<th>VAT</th>
         			<td><input type="checkbox" name="shop_config[include_vat]" value="1" <?php if ($shop_config['include_vat']) { ?> checked<?php } ?>></td>
-        		</tr>
-            	<tr>
-        			<th>editor</th>
-        			<td>
-        				<select name="cms_config[editor]">
-        					<option value=""></option>
-        					<?=html_options(['xinha','tinymce'], $cms_config['editor']);?>
-        				</select>
-        			</td>
         		</tr>
         		</table>
         	</div>
@@ -1055,51 +1046,51 @@ var section_templates=<?=json_encode($section_templates);?>;
         			<td><input type="text" name="auth_config[table]" value="<?=$auth_config['table'];?>"></td>
         		</tr>
         		<tr>
-        			<th>login</th>
+        			<th>Login</th>
         			<td><input type="text" name="auth_config[login]" value="<?=$auth_config['login'];?>"></td>
         		</tr>
         		<tr>
-        			<th>register success</th>
+        			<th>Register success</th>
         			<td><input type="text" name="auth_config[register_success]" value="<?=$auth_config['register_success'];?>"></td>
         		</tr>
         		<tr>
-        			<th>forgot success</th>
+        			<th>Forgot success</th>
         			<td><input type="text" name="auth_config[forgot_success]" value="<?=$auth_config['forgot_success'];?>"></td>
         		</tr>
         		<tr>
-        			<th>hash passwords</th>
+        			<th>Hash passwords</th>
         			<td><input type="checkbox" name="auth_config[hash_password]" value="1" <?php if ($auth_config['hash_password']) { ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
-        			<th>email activation</th>
+        			<th>Email activation</th>
         			<td><input type="checkbox" name="auth_config[email_activation]" value="1" <?php if ($auth_config['email_activation']) { ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
-        			<th>secret phrase</th>
+        			<th>Secret phrase</th>
         			<td><input type="text" name="auth_config[secret_phrase]" value="<?=$auth_config['secret_phrase'];?>"></td>
         		</tr>
         		<tr>
-        			<th>cookie prefix</th>
+        			<th>Cookie prefix</th>
         			<td><input type="text" name="auth_config[cookie_prefix]" value="<?=$auth_config['cookie_prefix'];?>"></td>
         		</tr>
         		<tr>
-        			<th>cookie duration</th>
+        			<th>Cookie duration</th>
         			<td><input type="text" name="auth_config[cookie_duration]" value="<?=$auth_config['cookie_duration'];?>"></td>
         		</tr>
         		<tr>
-        			<th>registration notification</th>
+        			<th>Registration notification</th>
         			<td><input type="checkbox" name="auth_config[registration_notification]" value="1" <?php if ($auth_config['registration_notification']) { ?> checked<?php } ?>></td>
         		</tr>
         		<tr>
-        			<th>facebook appId</th>
+        			<th>Facebook appId</th>
         			<td><input type="text" name="auth_config[facebook_appId]" value="<?=$auth_config['facebook_appId'];?>"></td>
         		</tr>
         		<tr>
-        			<th>facebook secret</th>
+        			<th>Facebook secret</th>
         			<td><input type="text" name="auth_config[facebook_secret]" value="<?=$auth_config['facebook_secret'];?>"></td>
         		</tr>
         		<tr>
-        			<th>login wherestr</th>
+        			<th>Login wherestr</th>
         			<td><textarea name="auth_config[login_wherestr]"><?=$auth_config['login_wherestr'];?></textarea></td>
         		</tr>
         		</table>
@@ -1113,23 +1104,19 @@ var section_templates=<?=json_encode($section_templates);?>;
         		<div>
         			<table>
         			<tr>
-        				<th>upload dir</th>
+        				<th>Upload dir</th>
         				<td><input type="text" name="upload_config[upload_dir]" value="<?=$upload_config['upload_dir'];?>"></td>
         			</tr>
         			<tr>
-        				<th>web path</th>
-        				<td><input type="text" name="upload_config[web_path]" value="<?=$upload_config['web_path'];?>"></td>
-        			</tr>
-        			<tr>
-        				<th>resize images</th>
+        				<th>Resize images</th>
         				<td><input type="checkbox" name="upload_config[resize_images]" value="1" <?php if ($upload_config['resize_images']) { ?> checked<?php } ?>></td>
         			</tr>
         			<tr>
-        				<th>resize dimensions</th>
+        				<th>Resize dimensions</th>
         				<td><input type="text" name="upload_config[resize_dimensions]" value="<?=implode('x', $upload_config['resize_dimensions']);?>"></td>
         			</tr>
         			<tr>
-        				<th>allowed exts</th>
+        				<th>Allowed exts</th>
         				<td><textarea type="text" name="upload_config[allowed_exts]" class="autogrow"><?=implode("\n", $upload_config['allowed_exts']);?></textarea></td>
         			</tr>
         			</table>
@@ -1153,10 +1140,146 @@ var section_templates=<?=json_encode($section_templates);?>;
 var count=<?=json_encode($count);?>
 </script>
 
-<script src="/_lib/js/jquery.maxsubmit.js"></script>
-<script type="text/javascript">
+<script>
+    (function($) {
+    	/**
+    	 * Set a trigger on a form to pop up a warning if the fields to be submitted
+    	 * exceed a specified maximum.
+    	 * Usage: $('form#selector').maxSubmit({options});
+    	 */
+    	$.fn.maxSubmit = function(options) {
+    		// this.each() is the wrapper for each form.
+    		return this.each(function() {
+    
+    			var settings = $.extend({
+    				// The maximum number of parameters the form will be allowed to submit
+    				// before the user is issued a confirm (OK/Cancel) dialogue.
+    
+    				max_count: 1000,
+    
+    				// The message given to the user to confirm they want to submit anyway.
+    				// Can use {max_count} as a placeholder for the permitted maximum
+    				// and {form_count} for the counted form items.
+    
+    				max_exceeded_message:
+    					'This form has too many fields for the server to accept.\n'
+    					+ ' Data may be lost if you submit. Are you sure you want to go ahead?',
+    
+    				// The function that will display the confirm message.
+    				// Replace this with something fancy such as jquery.ui if you wish.
+    
+    				confirm_display: function(form_count) {
+    					if (typeof(form_count) === 'undefined') form_count = '';
+    					return confirm(
+    						settings
+    							.max_exceeded_message
+    							.replace("{max_count}", settings.max_count)
+    							.replace("{form_count}", form_count)
+    					);
+    				}
+    			}, options);
+    
+    			// Form elements will be passed in, so we need to trigger on
+    			// an attempt to submit that form.
+    
+    			// First check we do have a form.
+    			if ($(this).is("form")) {
+    				$(this).on('submit', function(e) {
+    					// We have a form, so count up the form items that will be
+    					// submitted to the server.
+    
+    					// For now, add one for the submit button.
+    					var form_count = $(this).maxSubmitCount() + 1;
+    
+    					if (form_count > settings.max_count) {
+    						// If the user cancels, then abort the form submit.
+    						if (!settings.confirm_display(form_count)) return false;
+    					}
+    
+    					// Allow the submit to go ahead.
+    					return true;
+    				});
+    			}
+    
+    			// Support chaining.
+    			return this;
+    		});
+    	};
+    
+    	/**
+    	 * Count the number of fields that will be posted in a form.
+    	 * If return_elements is true, then an array of elements will be returned
+    	 * instead of the count. This is handy for testing.
+    	 * TODO: elements without names will not be submitted.
+    	 * Another approach may be to get all input fields at once using $("form :input")
+    	 * then knock out the ones that we don't want. That would keep the same order as the
+    	 * items would be submitted.
+    	 */
+    	$.fn.maxSubmitCount = function(return_elements) {
+    		// Text fields and submit buttons will all post one parameter.
+    
+    		// Find the textareas.
+    		// These will count as one post parameter each.
+    		var fields = $('textarea:enabled[name]', this).toArray();
+    
+    		// Find the basic textual input fields (text, email, number, date and similar).
+    		// These will count as one post parameter each.
+    		// We deal with checkboxes, radio buttons sparately.
+    		// Checkboxes will post only if checked, so exclude any that are not checked.
+    		// There may be multiple form submit buttons, but only one will be posted with the
+    		// form, assuming the form has been submitted by the user with a button.
+    		// An image submit will post two fields - an x and y coordinate.
+    		fields = fields.concat(
+    			$('input:enabled[name]', this)
+    				// Data items that are handled later.
+    				.not("[type='checkbox']:not(:checked)")
+    				.not("[type='radio']")
+    				.not("[type='file']")
+    				.not("[type='reset']")
+    				// Submit form items.
+    				.not("[type='submit']")
+    				.not("[type='button']")
+    				.not("[type='image']")
+    				.toArray()
+    		);
+    
+    		// Single-select lists will always post one value.
+    		fields = fields.concat(
+    			$('select:enabled[name]', this)
+    				.not('[multiple]')
+    				.toArray()
+    		);
+    
+    		// Multi-select lists will post one parameter for each selected option.
+    		// The parent select is $(this).parent() with its name being $(this).parent().attr('name')
+    		$('select[multiple]:enabled[name] option:selected', this).each(function() {
+    			// We collect all the options that have been selected.
+    			fields = fields.concat(this);
+    		});
+    
+    		// Each radio button group will post one parameter.
+    		// We assume all checked radio buttons will be posted.
+    		fields = fields.concat(
+    			$('input:enabled:radio:checked', this)
+    				.toArray()
+    		);
+    
+    		// TODO: provide an option to return an array of objects containing the form field names,
+    		// types and values, in a form that can be compared to what is actually posted.
+    		if (typeof(return_elements) === 'undefined') return_elements = false;
+    
+    		if (return_elements === true) {
+    			// Return the full list of elements for analysis.
+    			return fields;
+    		} else {
+    			// Just return the number of elements matched.
+    			return fields.length;
+    		}
+    	};
+    }(jQuery));
+
     /* Plugin: Max Submit Protect */
-    jQuery(document).ready(function($) {
+    $(function($) {
         $('form[method*=post]').maxSubmit({
             max_count: <?=$max_input_vars;?>,
             confirm_display: function(){
