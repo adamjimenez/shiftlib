@@ -118,51 +118,47 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
         
 
 <!-- tab start -->
-<div class="col-lg-12 mt-5">
+<div class="col-lg-12 mt-1 p-0">
     <div class="card">
         <div class="card-body">
-            <h1 class="header-title"><?=ucwords($this->section);?></h1>
             
-    <div class="top-row my-3">
-        <ul class="pull-left toolbar">
-            <li>
-                <a href="<?=$back_link; ?>" class="btn btn-secondary" title="Back to <?=$back_label; ?>"><i class="fas fa-arrow-left"></i></a>
-            </li>
-            <li>
-		        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
-            </li>
-			<?php
-            foreach ($cms_buttons as $k => $button) {
-                if ($this->section == $button['section'] and 'view' == $button['page']) {
-                    ?>
-                    <li>
-                    <?php
-                    require('includes/button.php');
-                    ?>
-                    </li>
-                    <?
-                }
-            } ?>
-            <li>
-		        <form method="post" style="display:inline;">
-			        <input type="hidden" name="delete" value="1">
-			        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
-		        </form>
-            </li>
-        </ul>
-    </div>
+            <div class="top-row mb-3">
+                <div class="pull-left toolbar">
+                    <a href="<?=$back_link; ?>" class="btn btn-secondary" title="Back to <?=$back_label; ?>"><i class="fas fa-arrow-left"></i></a>
+                    
+                    <span data-section="<?=$this->section;?>">
+            	        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
+            			<?php
+                        foreach ($cms_buttons as $k => $button) {
+                            if ($this->section == $button['section'] and 'view' == $button['page']) {
+                                ?>
+                                <li>
+                                <?php
+                                require('includes/button.php');
+                                ?>
+                                </li>
+                                <?
+                            }
+                        } ?>
+            	        <form method="post" style="display:inline;">
+            		        <input type="hidden" name="delete" value="1">
+            		        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
+            	        </form>
+        	        </span>
+                </div>
+            </div>
             
             <ul class="nav nav-tabs" id="pills-tab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#pills-summary" role="tab" aria-controls="pills-summary" aria-selected="true">
-                    	Summary
+                    <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#pills-summary" role="tab" aria-controls="pills-summary" aria-selected="true" data-section="<?=$this->section;?>">
+                    	<?=ucwords($this->section);?>
                     </a>
                 </li>
 				<?php
                 foreach ($vars['subsections'][$this->section] as $count => $subsection) {
                     ?>
                 <li class="nav-item">
-                    <a class="nav-link" id="pills-<?=$count; ?>-tab" data-toggle="pill" href="#pills-<?=$count; ?>" role="tab" aria-controls="pills-tab_<?=$count; ?>" aria-selected="true">
+                    <a class="nav-link" id="pills-<?=$count; ?>-tab" data-toggle="pill" href="#pills-<?=$count; ?>" role="tab" aria-controls="pills-tab_<?=$count; ?>" aria-selected="true" data-section="<?=$subsection;?>">
 						<?=ucfirst($subsection); ?>
 					</a>
 				</li>
@@ -186,9 +182,6 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             <div class="tab-content mt-3" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
 
-<?php
-    $content = $this->get($this->section, $_GET['id']);
-?>
 	<div class="box">
     	<table border="0" cellspacing="0" cellpadding="5" width="100%">
     
@@ -227,19 +220,8 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
         if (count($vars['fields'][$subsection])) {
             $this->section = $subsection;
 
-            $table = underscored($this->section);
-
-            if (in_array('position', $vars['fields'][$this->section])) {
-                $limit = null;
-            } else {
-                $label = $vars['fields'][$this->section][0];
-                $type = array_search($label, $vars['fields'][$this->section]);
-                $limit = 10;
-            }
-
             $conditions = [];
             $qs = [];
-
             foreach ($vars['fields'][$this->section] as $k => $v) {
                 if (('select' == $v or 'combo' == $v or 'radio' == $v) and $vars['options'][$k] == $_GET['option']) {
                     $conditions[$k] = escape($this->id);
@@ -250,7 +232,6 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
             $qs = http_build_query($qs);
 
-            $vars['content'] = $this->get($subsection, $conditions, $limit, null, null, $table);
             $p = $this->p;
         } ?>
 
@@ -262,10 +243,6 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
         require('_tpl/admin/' . $subsection . '.php');
     } ?>
 </div>
-
-<script>
-	$('#tab_<?=$count; ?>').text('<?=ucfirst($subsection); ?> (<?=$p->total; ?>)');
-</script>
 
 <?php
     } ?>
@@ -295,60 +272,36 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 </div>
 
 <script>
-function init()
-{
-	init_tabs();
-}
-
-function choose_filter(field)
-{
-	window.open('/admin?option=choose_filter&section='+field,'Insert','width=700,height=450,screenX=100,screenY=100,left=100,top=100,status,dependent,alwaysRaised,resizable,scrollbars')
-}
-
-window.onload=init;
-</script>
-
-<script>
-$('#privileges_none').click(function(){
-	$('select.privileges').val('0');
-	return false;
-});
-
-$('#privileges_read').click(function(){
-	$('select.privileges').val('1');
-	return false;
-});
-
-$('#privileges_write').click(function(){
-	$('select.privileges').val('2');
-	return false;
-});
-
-// hash tabs
-$(function(){
-  var hash = window.location.hash;
-  hash && $('ul.nav a[href="' + hash + '"]').tab('show');
-
-  $('.nav-tabs a').click(function (e) {
-    $(this).tab('show');
-    var scrollmem = $('body').scrollTop() || $('html').scrollTop();
-    window.location.hash = this.hash;
-    $('html,body').scrollTop(scrollmem);
-  });
-});
-
-// resize datatables
-$('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
-    $($.fn.dataTable.tables(true)).DataTable()
-       .columns.adjust()
-       .responsive.recalc();
-});
-
-</script>
-
-
-<style>
-    .toolbar li {
-        display: inline-block;
+    
+    // hash tabs
+    $(function() {
+        var hash = window.location.hash;
+        hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+        
+        $('.nav-tabs a').click(function (e) {
+            $(this).tab('show');
+            var scrollmem = $('body').scrollTop() || $('html').scrollTop();
+            window.location.hash = this.hash;
+            $('html,body').scrollTop(scrollmem);
+        });
+    });
+    
+    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+        // resize datatables
+        $($.fn.dataTable.tables(true)).DataTable()
+           .columns.adjust()
+           .responsive.recalc();
+        
+        // refresh toolbar
+        set_toolbar($(this).data('section') );
+    });
+    
+    function set_toolbar(section) {
+        $('.toolbar [data-section]').hide();
+        $('.toolbar [data-section="' + section+ '"]').show()
     }
-</style>
+
+    $(function() {
+        $('.dt-buttons').hide();
+    });
+</script>

@@ -87,3 +87,25 @@ if (
 <?php
 }
 ?>
+
+<script>
+    function choose_filter(field)
+    {
+    	window.open('/admin?option=choose_filter&section='+field,'Insert','width=700,height=450,screenX=100,screenY=100,left=100,top=100,status,dependent,alwaysRaised,resizable,scrollbars')
+    }
+    
+    $('#privileges_none').click(function(){
+    	$('select.privileges').val('0');
+    	return false;
+    });
+    
+    $('#privileges_read').click(function(){
+    	$('select.privileges').val('1');
+    	return false;
+    });
+    
+    $('#privileges_write').click(function(){
+    	$('select.privileges').val('2');
+    	return false;
+    });
+</script>

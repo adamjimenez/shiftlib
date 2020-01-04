@@ -1,11 +1,5 @@
 var global = window; // fix bug with tinymce
 
-function debug(log_txt) {
-    if (window.console !== undefined) {
-        console.log(log_txt);
-    }
-}
-
 function timeSince(timeStamp) {
 	if (typeof timeStamp === "string") {
 		timeStamp = new Date(timeStamp.replace(/-/g, "/"));
@@ -130,7 +124,7 @@ function initForms()
 				    errorMethod = jQuery(this).attr('errorMethod');
 				}
 
-				debug(returned);
+				console.log(returned);
 
 				showProgress(false);
 
@@ -183,7 +177,7 @@ function initForms()
 							}else{
 								errors += error + '\n';
 
-								debug('field not found: '+field);
+								console.log('field not found: '+field);
 							}
 
 							if( parent && errorMethod=='inline' ){
@@ -218,11 +212,6 @@ function initForms()
 									break;
 								}
 							}
-						}
-
-						if( tab && set_tab ){
-							debug('switch tab: '+tab);
-							set_tab(tab);
 						}
 
 						//focus field
@@ -847,16 +836,6 @@ function initForms()
 	}
 }
 
-function numbersonly(e){
-	var unicode=e.charCode? e.charCode : e.keyCode;
-
-	if (unicode!==8 && unicode!==46 && unicode!==9){ //if the key isn't the backspace key or dot or tab (which we should allow)
-		if (unicode<48||unicode>57){ //if not a number
-			return false; //disable key press
-		}
-	}
-}
-
 function addItem(aList,aField) {
 	phpUploadCallback=function(images){
 		for( var i in images ){
@@ -931,32 +910,6 @@ function clearFile(field)
 function delRow(row) {
 	rows--;
 	row.parentNode.parentNode.parentNode.deleteRow(row.parentNode.parentNode.rowIndex);
-}
-
-function init_tabs()
-{
-	jQuery('.tab').each(function(index) {
-		if( index===0 ){
-			set_tab(this.target);
-		}
-
-		jQuery(this).on('mousedown', function(e){
-            set_tab(e.target.target) }
-        );
-	});
-}
-
-function set_tab(target)
-{
-    jQuery('.tab').each(function(index) {
-		if( target==this.target ){
-			jQuery('#'+this.target).show();
-			jQuery(this).addClass('current');
-		}else{
-			jQuery('#'+this.target).hide();
-			jQuery(this).removeClass('current');
-		}
-	});
 }
 
 jQuery(document).ready(function() {

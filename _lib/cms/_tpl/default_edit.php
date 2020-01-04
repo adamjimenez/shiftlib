@@ -85,10 +85,9 @@ if ($_GET['id']) {
 <div class="main-content-inner">
     <div class="row">
 <!-- tab start -->
-<div class="col-lg-12 mt-5">
+<div class="col-lg-12 mt-1 p-0">
     <div class="card">
         <div class="card-body">
-            <h1 class="header-title"><?=ucwords($this->section);?></h1>
 
 <form id="form" method="post" enctype="multipart/form-data" class="validate">
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
@@ -100,10 +99,12 @@ if ($_GET['id']) {
 	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
 </div>
 
-<div class="top-row my-3">
+<div class="toolbar top-row mt-1 mb-3">
 	<button type="button" class="btn btn-secondary" onclick="window.location.href='<?=$cancel_url;?>';"><i class="fas fa-arrow-left"></i></button>
-	<button type="submit" class="btn btn-primary">Save</button>
+	<button id="save" type="button" class="btn btn-primary">Save</button>
 </div>
+
+    <h1 class="header-title"><?=ucwords($this->section);?></h1>
 
 	<div class="box">
 
@@ -131,7 +132,7 @@ if ($_GET['id']) {
                     case 'checkbox':
                 ?>
 			    <div>
-			    	<?=$this->get_field($name, 'class="' . $class . '" id="' . underscored($name) . '"');?>
+			    	<?=$this->get_field($name, 'class="' . $class . '"');?>
 			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
 			    </div>
 				<?php
@@ -142,13 +143,13 @@ if ($_GET['id']) {
 			    	<?=$label;?>
 			    </div>
 			    <br>
-			    <?=$this->get_field($name, 'class="' . $class . '" id="' . underscored($name) . '"');?>
+			    <?=$this->get_field($name, 'class="' . $class . '"');?>
 				<?php
                     break;
                     default:
                 ?>
 			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			   	<?=$this->get_field($name, 'class="form-control" id="' . underscored($name) . '"');?>
+			   	<?=$this->get_field($name, 'class="form-control"');?>
 				<?php
                     break;
                 } ?>
@@ -186,4 +187,26 @@ var components = <?=json_encode($this->components); ?>;
 <?php
 }
 ?>
+</script>
+
+<script>
+	var formChanged = false;
+		
+	$(function() {
+		$('#form').change(function(){
+		    console.log('yooo');
+			formChanged = true;
+		});
+			
+		window.addEventListener('beforeunload', (event) => {
+			if (formChanged) {
+				event.returnValue = `Continue without saving?`;
+			}
+		});
+		
+		$('#save').click(function() {
+			formChanged = false;
+			$(this).closest('form').submit();
+		});
+	});
 </script>

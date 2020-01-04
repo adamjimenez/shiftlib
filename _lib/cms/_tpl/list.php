@@ -2,41 +2,34 @@
 $sortable = in_array('position', $vars['fields'][$this->section]);
 ?>
 
-<!-- Primary table start -->
-<div class="col-12">
-    <div class="card">
-        <div class="card-body">
-            <h1 class="header-title"><?=ucwords($this->section);?></h1>
-            <div class="data-tables datatable-primary">
-            	<form method="post">
-            		<input type="hidden" name="section" value="<?=$this->section;?>">
-            		<input type="hidden" name="action" class="action">
-            		<input type="hidden" name="custom_button" class="custom_button">
-            	
-	                <table id="dataTable-<?=underscored($this->section);?>" class="text-center">
-	                    <thead>
-	                        <tr>
-	        					<th class="noVis"><i class="fas fa-arrows-alt-v"></i>&nbsp;</th>
-	        					<th class="noVis">&nbsp;</th>
-	        					<th class="noVis">&nbsp;</th>
-								<?php
-                                foreach ($vars['fields'][$this->section] as $name=>$type) {
-                                    if ('id' == $type) {
-                                        continue;
-                                    }
-                                    ?>
-									<th><?=ucfirst(spaced($name)); ?></th>
-								<?php
-                                }
-                                ?>
-	                        </tr>
-	                    </thead>
-	                </table>
-	                
-                </form>
-            </div>
-        </div>
-    </div>
+<!-- table start -->
+
+<div class="data-tables datatable-primary">
+	<form method="post">
+		<input type="hidden" name="section" value="<?=$this->section;?>">
+		<input type="hidden" name="action" class="action">
+		<input type="hidden" name="custom_button" class="custom_button">
+	
+        <table id="dataTable-<?=underscored($this->section);?>" class="text-center">
+            <thead>
+                <tr>
+					<th class="noVis"><i class="fas fa-arrows-alt-v"></i>&nbsp;</th>
+					<th class="noVis">&nbsp;</th>
+					<th class="noVis">&nbsp;</th>
+					<?php
+                    foreach ($vars['fields'][$this->section] as $name=>$type) {
+                        if ('id' == $type) {
+                            continue;
+                        }
+                        ?>
+						<th><?=ucfirst(spaced($name)); ?></th>
+					<?php
+                    }
+                    ?>
+                </tr>
+            </thead>
+        </table>
+    </form>
 </div>
 
 <?php
@@ -72,7 +65,7 @@ $order = 3;
 
 
 <script>
-$(document).ready(function() {
+$(function() {
 	var buttons = [{
 	    text: '<i class="fas fa-plus"></i> Add',
 	    className: 'btn-primary',
@@ -81,7 +74,8 @@ $(document).ready(function() {
 	    }
 	}, {
 	    extend: 'colvis',
-	    columns: ':not(.noVis)'
+	    columns: ':not(.noVis)',
+	    text: '<i class="fas fa-columns"></i>'
 	}, {
 	    text: '<i class="fas fa-file-import"></i>',
 	    action: function ( e, dt, node, config ) {
@@ -169,6 +163,10 @@ $(document).ready(function() {
 		"responsive": true
     } );
     
+    // move to toolbar
+    table.buttons().container()
+    	.appendTo( $('.toolbar' ) ).attr('data-section', '<?=$this->section;?>');
+    
 	// reordering
     table.on( 'row-reorder', function ( e, diff, edit ) {
     	var table = $(this).DataTable();
@@ -225,4 +223,4 @@ $(document).ready(function() {
 } );
 </script>
 
-<!-- Primary table end -->
+<!-- table end -->

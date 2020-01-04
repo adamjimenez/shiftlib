@@ -4,14 +4,6 @@ if (1 != $auth->user['admin'] and !$auth->user['privileges'][$this->section]) {
     die('access denied');
 }
 
-$field_id = in_array('id', $vars['fields'][$this->section]) ? array_search('id', $vars['fields'][$this->section]) : 'id';
-
-//sortable
-$sortable = in_array('position', $vars['fields'][$this->section]);
-
-// check table exists
-$this->check_table('cms_filters', $this->cms_filters);
-
 // search filters
 if ($_POST['delete_filter']) {
     $qs = http_build_query($_GET);
@@ -21,9 +13,7 @@ if ($_POST['delete_filter']) {
 		section = '" . escape($this->section) . "' AND
 		`filter` = '" . escape($qs) . "'
 	");
-}
-
-if ($_POST['save_filter']) {
+} elseif ($_POST['save_filter']) {
     $qs = http_build_query($_GET);
     
     sql_query("INSERT INTO cms_filters SET
@@ -78,33 +68,26 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
     <div class="row">
 
 <!-- tab start -->
-<div class="col-lg-12 mt-5">
+<div class="col-lg-12 p-0">
 
-	<div class="row m-3">
-		<div class="col-sm-12">
-		    <div class="d-flex">
-		        
-    			<form method="get" class="flex-grow-1" style="flex: 1;">
-    				<input type="hidden" name="option" value="<?=$this->section; ?>" />
-    		
-    				<input class="search-field form-control" type="text" name="s" id="s" value="<?=$_GET['s']; ?>" tabindex="1" placeholder="Search">
-    			</form>
-    			
-    			<button type="button" class="btn btn-default" data-toggle="modal" data-target="#searchModal">Advanced search</button>
-    			
-    			<?php if (count($_GET) > 1) { ?>
-    				<?php if ($filter_exists) { ?>
-    				<button type="button" class="btn btn-default delete_filter" title="Delete filter"><i class="fas fa-trash"></i></button>
-    				<?php } else { ?>
-    				<button type="button" class="btn btn-default save_filter" title="Save filter"><i class="fas fa-save"></i></button>
-    				<?php } ?>
-    			<?php } ?>
-    			
-			</div>
-		</div>
+    <div class="d-flex my-1">
+		<form method="get" class="flex-grow-1" style="flex: 1;">
+			<input type="hidden" name="option" value="<?=$this->section; ?>" />
+	
+			<input class="search-field form-control" type="text" name="s" id="s" value="<?=$_GET['s']; ?>" tabindex="1" placeholder="Search">
+		</form>
+		
+		<button type="button" class="btn btn-default" data-toggle="modal" data-target="#searchModal">Advanced search</button>
+		
+		<?php if (count($_GET) > 1) { ?>
+			<?php if ($filter_exists) { ?>
+			<button type="button" class="btn btn-default delete_filter" title="Delete filter"><i class="fas fa-trash"></i></button>
+			<?php } else { ?>
+			<button type="button" class="btn btn-default save_filter" title="Save filter"><i class="fas fa-save"></i></button>
+			<?php } ?>
+		<?php } ?>
 	</div>
 	
-
     <!-- Modal -->
     <div class="modal fade" id="searchModal">
         <div class="modal-dialog">
@@ -147,7 +130,6 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
         </div>
     </div>
 		
-
     <?php
     /*
 	<table width="100%">
@@ -191,14 +173,24 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
 	</table>
 	*/
 	?>
-
-	<?php
-    $conditions = $_GET;
-    unset($conditions['option']);
+<div class="col-12 p-0">
+    <div class="card">
+        <div class="card-body">
+            <div class="toolbar top-row mt-1 mb-3"></div>
+            
+                <h1 class="header-title"><?=ucwords($this->section);?></h1>
+                
+            	<?php
+                $conditions = $_GET;
+                unset($conditions['option']);
+                
+                $qs = http_build_query(['s' => $params]);
+                require(dirname(__FILE__) . '/list.php'); 
+                ?>
     
-    $qs = http_build_query(['s' => $params]);
-    require(dirname(__FILE__) . '/list.php'); ?>
-	
+            </div>
+        </div>
+    </div>
 </div>
 
 	</div>
@@ -206,28 +198,29 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
 </div>
 
 <script>
-jQuery(document).ready(function() {
-	$('.save_filter').click(function() {
-		var filter = prompt('Save filter', 'New filter');
-		
-		if (filter != null) {
-			$('<form method="post"><input type="hidden" name="save_filter" value="'+filter+'"></form>').appendTo('body').submit();
-		}
-	});
-	
-	$('.delete_filter').click(function() {
-		if (window.confirm("Delete this filter?")) { 
-			$('<form method="post"><input type="hidden" name="delete_filter" value="1"></form>').appendTo('body').submit();
-		}
-	});
-});
-
-//omit empty fields on search
-$("#search_form").submit(function() {
-    $(this).find(":input").filter(function() {
-	    return !$(this).val();
-	}).prop("disabled", true);
-    return true; // ensure form still submits
-});
+    jQuery(document).ready(function() {
+    	$('.save_filter').click(function() {
+    		var filter = prompt('Save filter', 'New filter');
+    		
+    		if (filter != null) {
+    			$('<form method="post"><input type="hidden" name="save_filter" value="'+filter+'"></form>').appendTo('body').submit();
+    		}
+    	});
+    	
+    	$('.delete_filter').click(function() {
+    		if (window.confirm("Delete this filter?")) { 
+    			$('<form method="post"><input type="hidden" name="delete_filter" value="1"></form>').appendTo('body').submit();
+    		}
+    	});
+    });
+    
+    jQuery(document).ready(function() {
+        //omit empty fields on search
+        $("#search_form").submit(function() {
+            $(this).find(":input").filter(function() {
+        	    return !$(this).val();
+        	}).prop("disabled", true);
+            return true; // ensure form still submits
+        });
+    });
 </script>
-

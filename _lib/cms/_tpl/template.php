@@ -32,7 +32,7 @@
     <!-- others css -->
     <link rel="stylesheet" href="/_lib/cms/assets/css/typography.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/default-css.css">
-    <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css?v=1">
     <link rel="stylesheet" href="/_lib/cms/assets/css/responsive.css">
     <!-- modernizr css -->
     <script src="/_lib/cms/assets/js/vendor/modernizr-2.8.3.min.js"></script>
@@ -64,18 +64,11 @@
         <div class="sidebar-menu">
             <div class="sidebar-header">
                 <div class="logo">
-					<?php if (file_exists('images/logo.gif')) { ?>
-					<a href="/admin">
-						<img src="/images/logo.gif" alt="Admin home">
-					</a>
 					<?php
-                    } else {
-                        $website = explode('.', ucfirst(str_replace('www.', '', $_SERVER['HTTP_HOST']))); ?>
+                    $website = explode('.', ucfirst(str_replace('www.', '', $_SERVER['HTTP_HOST']))); ?>
 					<a href="/admin">
 						<?=$website[0]; ?>
 					</a>
-					<?php
-                    } ?>
                 </div>
             </div>
             <div class="main-menu">
@@ -177,23 +170,20 @@
             <div class="header-area">
                 <div class="row align-items-center">
                     <!-- nav and search button -->
-                    <div class="col-md-6 col-sm-6 clearfix">
+                    <div class="col-3 clearfix">
                         <div class="nav-btn pull-left">
-                            <span></span>
-                            <span></span>
-                            <span></span>
+                            <i class="fas fa-bars"></i>
                         </div>
                     </div>
                     <!-- profile info & task notification -->
-                    <div class="col-md-6 col-sm-6 clearfix">
+                    <div class="col-9 clearfix">
                         <ul class="notification-area pull-right">
+							<li><a href="/" title="Website"><i class="fas fa-home"></i></a></li>
 
                          	<?php if ($auth->user['admin']) { ?>
-								<li>Hello, <?=$auth->user['name'] ? $auth->user['name'] . ' ' . $auth->user['surname'] : $auth->user['email'];?></li>
-								<li><a href="/">Website</a></li>
-								<li><a href="/logout">Log out</a></li>
+								<li><a href="/logout" title="Sign out"><i class="fas fa-sign-out-alt"></i></a></li>
 							<?php } else { ?>
-								<li><a href="/admin?option=login">Log in</a></li>
+								<li><a href="/admin?option=login" title="Sign in"><i class="fas fa-sign-in-alt"></i></a></li>
 							<?php } ?>
 
                         </ul>
@@ -247,7 +237,7 @@
 						<br>
 					
 						<div>
-							File: <span id="file_field"><input type="file" id="file" name="file"></span>
+							File: <span id="file_field"><input type="file" class="import_file" name="file"></span>
 						</div>
 					
 						<div id="csv_loaded" style="display:none; width:auto;">
@@ -356,7 +346,7 @@
 	   });
 	   
 	   // file import
-	    $('#file').on('change', changeFile);
+	    $('.import_file').on('change', changeFile);
     </script>
 </body>
 
