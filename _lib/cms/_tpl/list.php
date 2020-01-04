@@ -147,7 +147,7 @@ $(function() {
 		 }, {
 			"targets": 2,
 			"render": function ( data, type, row, meta ) {
-				return '<div style="white-space: nowrap;"><a href="?option=<?=$params['section'];?>&view=true&id='+data+'&<?=$qs;?>" title="ID: '+data+'"><i class="fas fa-search"></i></a> &nbsp; <a href="?option=<?=$params['section'];?>&edit=true&id='+data+'"><i class="fas fa-pencil-alt"></i></a></div>';
+				return '<div style="white-space: nowrap;"><a href="?option=<?=$params['section'];?>&view=true&id='+data+'&<?=$qs;?>" title="ID: '+data+'" onclick="event.stopPropagation();"><i class="fas fa-search"></i></a> &nbsp; <a href="?option=<?=$params['section'];?>&edit=true&id='+data+'" onclick="event.stopPropagation();"><i class="fas fa-pencil-alt"></i></a></div>';
 			},
 			"width": 50,
 			"orderable": false
@@ -197,8 +197,10 @@ $(function() {
     // select all pages
 	table.on( 'select', function ( e, dt, type, indexes ) {
 		var selectAllEl = $('.dt-checkboxes-select-all input').get(0);
+		var info = dt.table().page.info();
+		var selectAllPagesEl = $(dt.table().container()).find('.selectAllPages');
 		
-	    if(!$(dt.table().container()).find('.selectAllPages').length && selectAllEl.checked && !selectAllEl.indeterminate) {
+	    if(info.pages > 1 && !selectAllPagesEl.length && selectAllEl.checked && !selectAllEl.indeterminate) {
 	    	$(dt.table().node()).before('<div class="selectAllPages"><span>Select all pages</span></div>');
 	    }
 	} );
