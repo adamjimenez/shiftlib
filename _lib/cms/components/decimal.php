@@ -11,6 +11,6 @@ class decimal extends integer
 	}
 	
 	function format_value($value) {
-        return Base::format_value($value);
+        return component::format_value($value);
     }
 }
