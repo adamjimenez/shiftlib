@@ -755,7 +755,7 @@ class cms
         if ('login' != $option && !$auth->user['admin']) {
             // check table exists
             if (!table_exists($auth->table)) {
-                $cms->check_table($auth->table, $vars['fields'][$this->table]);
+                $this->check_table($auth->table, $vars['fields'][$auth->table]);
                 sql_query('ALTER TABLE `' . $auth->table . '` ADD UNIQUE `email` ( `email` )');
             }
 
