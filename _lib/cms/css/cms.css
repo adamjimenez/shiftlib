@@ -1,10 +1,6 @@
 .handle {
-    display: inline-block;
-	cursor:move;
-	width:20px;
-	height:20px;
-	border:1px solid #000000;
-	background:#ccc;
+	cursor: move;
+	display: inline-block;
 }
 
 .logo a {
