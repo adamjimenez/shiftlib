@@ -197,6 +197,7 @@ class auth
         $this->required = $vars['required'][$this->table];
 
         //check for cookies
+        /*
         $email = '';
         $password = '';
 
@@ -211,7 +212,7 @@ class auth
             $password = $_GET['auth_pw'];
         }
 
-        if ($email and $password) {
+        if ($email and $password and table_exists($this->table)) {
             $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
 				email='" . escape($email) . "'
 			", 1);
@@ -224,6 +225,7 @@ class auth
                 }
             }
         }
+        */
     }
 
     public function init()
@@ -237,7 +239,7 @@ class auth
         //check if logged in
         if ($_SESSION[$this->cookie_prefix . '_user'] and time() < $_SESSION[$this->cookie_prefix . '_expires']) {
             $this->user = $_SESSION[$this->cookie_prefix . '_user'];
-        } elseif ($_SESSION[$this->cookie_prefix . '_email'] and $_SESSION[$this->cookie_prefix . '_password']) {
+        } elseif ($_SESSION[$this->cookie_prefix . '_email'] and $_SESSION[$this->cookie_prefix . '_password'] and table_exists($this->table)) {
             $this->load();
         }
 
