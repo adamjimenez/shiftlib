@@ -1,6 +1,8 @@
 <?php
 class cms
 {
+    public $version = 'v2.0';
+    
     public function __construct()
     {
         global $cms_buttons, $vars;
@@ -39,7 +41,14 @@ class cms
         if (!$select) {
             //build table query
             $query = '';
+            $indexes = [];
+            
             foreach ($fields as $name => $type) {
+                if ($name === 'indexes') {
+                    $indexes = $type;
+                    continue;
+                }
+                
                 $name = underscored(trim($name));
                 $db_field = $this->form_to_db($type);
 
@@ -54,6 +63,10 @@ class cms
                    PRIMARY KEY ( `id` )
                 )
             ");
+            
+            foreach($indexes as $index) {
+                sql_query("ALTER TABLE `$table` ADD ".strtoupper($index['type'])." `".$index['name']."` ( ".implode(',', $index['fields'])." )");
+            }
         }
     }
 
@@ -794,7 +807,7 @@ class cms
 
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');
-        } elseif (in_array($option, ['index', 'login', 'configure', 'choose_filter', 'shop_order', 'shop_orders'])) {
+        } elseif (in_array($option, ['index', 'login', 'configure', 'upgrade', 'choose_filter', 'shop_order', 'shop_orders'])) {
             $this->template($option . '.php', true);
         } elseif ('index' != $option) {
             $this->default_section($option);
