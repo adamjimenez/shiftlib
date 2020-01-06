@@ -80,7 +80,7 @@ function file_ext( filename ){
 
         $('iframe#uploadFrame').attr('src', url);
 
-        $('iframe#uploadFrame').load(function(){
+        $('iframe#uploadFrame').on('load', function(){
             //set callback in iframe
             document.getElementById('uploadFrame').contentWindow.callback = function(files){
                 console.log(files)
