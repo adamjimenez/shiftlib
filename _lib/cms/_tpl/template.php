@@ -127,31 +127,10 @@
                             } ?>
 
 							<?php
+							// deprecated
                             if ($shop_enabled and (1 == $auth->user['admin'] or $auth->user['privileges']['orders'])) { ?>
 							<li <?php if ('shop_orders' == $_GET['option']) { ?>id="current"<?php } ?>>
 								<a href="?option=shop_orders"><span>Orders</span></a>
-							</li>
-							<?php } ?>
-							<?php if ((1 == $auth->user['admin'] or $auth->user['privileges']['email_templates'])) { ?>
-							<li <?php if ('email_templates' == $_GET['option']) { ?>id="current"<?php } ?>>
-								<a href="?option=email templates"><span>Email Templates</span></a>
-							</li>
-							<?php } ?>
-							<?php if (1 == $auth->user['admin'] and $sms_config['provider']) { ?>
-							<li <?php if ('sms templates' == $_GET['option']) { ?>id="current"<?php } ?>>
-								<a href="?option=sms templates"><span>SMS Templates</span></a>
-							</li>
-							<?php } ?>
-
-							<?php if (1 == $auth->user['admin'] or $auth->user['privileges']['uploads']) { ?>
-							<li>
-								<a href="#" class="upload"><span>Uploads</span></a>
-							</li>
-							<?php } ?>
-
-							<?php if (1 == $auth->user['admin']) { ?>
-							<li <?php if ('configure' == $_GET['option']) { ?>id="current"<?php } ?>>
-								<a href="/admin?option=configure"><span>Configure</span></a>
 							</li>
 							<?php } ?>
                         </ul>
@@ -179,6 +158,23 @@
                     <div class="col-9 clearfix">
                         <ul class="notification-area pull-right">
 							<li><a href="/" title="Website"><i class="fas fa-home"></i></a></li>
+							
+
+							<?php if (1 == $auth->user['admin'] or $auth->user['privileges']['uploads']) { ?>
+							<li>
+								<a href="#" class="upload">
+								    <i class="fas fa-file-upload"></i>
+								</a>
+							</li>
+							<?php } ?>
+
+							<?php if (1 == $auth->user['admin']) { ?>
+							<li>
+								<a href="/admin?option=configure">
+								    <i class="fas fa-cog"></i>
+								</a>
+							</li>
+							<?php } ?>
 
                          	<?php if ($auth->user['admin']) { ?>
 								<li><a href="/logout" title="Sign out"><i class="fas fa-sign-out-alt"></i></a></li>
