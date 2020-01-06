@@ -3,6 +3,9 @@ class cms
 {
     public $version = 'v2.0';
     
+    // hide these field types from the list view
+    public $hidden_columns = ['id', 'password', 'editor', 'textarea'];
+    
     public function __construct()
     {
         global $cms_buttons, $vars;

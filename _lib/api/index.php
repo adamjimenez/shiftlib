@@ -477,9 +477,11 @@ switch ($_GET['cmd']) {
         // get field names
         $fields = [];
         foreach ($vars['fields'][$_GET['section']] as $name=>$type) {
-            if ('id`' !== $name) {
-                $fields[] = $name;
+		    if (in_array($type, $cms->hidden_columns)) {
+		        continue;
             }
+            
+            $fields[] = $name;
         }
         
         // add extra fields for checkbox and actions
@@ -532,6 +534,10 @@ switch ($_GET['cmd']) {
             
             // use labels when available
             foreach ($fields as $name) {
+                if (in_array($name, ['password'])) {
+                    continue;
+                }
+                
                 $field_name = underscored($name);
                 $item[] = $row[$field_name . '_label'] ?: $row[$field_name];
             }

@@ -17,9 +17,9 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 					<th class="noVis">&nbsp;</th>
 					<?php
                     foreach ($vars['fields'][$this->section] as $name=>$type) {
-                        if ('id' == $type) {
-                            continue;
-                        }
+		                if (in_array($type, $this->hidden_columns)) {
+		                    continue;
+		                }
                         ?>
 						<th><?=ucfirst(spaced($name)); ?></th>
 					<?php
