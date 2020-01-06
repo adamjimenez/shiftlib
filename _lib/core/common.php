@@ -1233,6 +1233,14 @@ function options($options, $selected = '')
     echo $output;
 }
 
+/* used to flush output to the browser */
+function output($str) {
+    echo trim($str);
+    echo str_pad('',4096)."\n";   
+    ob_flush();
+    flush();
+}
+
 function parse_links($text)
 {
     $pattern = '#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))#';
@@ -1583,12 +1591,15 @@ function wget($url)
     // set url
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     $data = curl_exec($ch);
     curl_close($ch);
     
-    return $data;
+    $json = json_decode($data, true);
+    
+    return $json ?: $data;
 }
 
 function video_info($url): array
