@@ -392,7 +392,6 @@ class auth
                 $this->load();
             }
             
-            
 			$result = [
 			    'code' => 3,
 			    'message' => 'Thanks for verifying your email address'
@@ -438,16 +437,6 @@ class auth
                 }
     			
                 $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request . '?user=' . $id . '&code=' . $code;
-    			
-    			$result = [
-    			    'code' => 2,
-    			    'message' => 'Activation required, please check your email'
-    			];
-            } else {
-    			$result = [
-    			    'code' => 1,
-    			    'message' => 'Registration success'
-    			];
             }
     
             $reps['domain'] = $_SERVER['HTTP_HOST'];
@@ -458,6 +447,23 @@ class auth
             $data['password'] = $this->create_hash($data['password']);
     
             $this->set_login($_POST['email'], $data['password']);
+        }
+        
+        // check status
+        if ($this->user) {
+            $this->load();
+        
+            if ($this->email_activation and !$this->user['email_verified']) {
+    			$result = [
+    			    'code' => 2,
+    			    'message' => 'Activation required, please check your email'
+    			];
+            } else {
+    			$result = [
+    			    'code' => 1,
+    			    'message' => 'Registration success'
+    			];
+            }
         }
 
         return $result;
@@ -654,9 +660,9 @@ class auth
     // force user to log in
     public function check_login(): void
     {
-        if ($this->email_activation and $this->user and !$this->user['active']) {
+        if ($this->email_activation and $this->user and !$this->user['email_verified']) {
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
-            redirect('/activate');
+            redirect('/register');
         }
 
         if (!$this->user) {
