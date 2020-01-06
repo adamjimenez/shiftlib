@@ -1,44 +1,39 @@
 <?php
-#GENERAL SETTINGS
+# GENERAL SETTINGS
 $db_config['host'] = 'localhost';
 $db_config['user'] = '';
 $db_config['pass'] = '';
 $db_config['name'] = '';
 
-#TPL
+# TPL
 $tpl_config['catchers'] = [];
 
-#USER LOGIN
+# USER LOGIN
 $auth_config = [];
 
-//table where your users are stored
+// table where your users are stored
 $auth_config['table'] = 'users';
 
-//required fields when registering and updating
+// required fields when registering and updating
 $auth_config['required'] = [
 
 ];
 
-//automated emails will be sent from this address
+// automated emails will be sent from this address
 $from_email = '';
 $auth_config['from_email'] = '';
 
-//specify pages where users are redirected
-$auth_config['login'] = 'login';
-$auth_config['register_success'] = 'thanks';
-$auth_config['forgot_success'] = 'index';
-
-//automatically generate a password
+// automatically generate a password
 $auth_config['generate_password'] = true;
 $auth_config['hash_password'] = true;
 
-//use a secret term to encrypt cookies
+// use a secret term to encrypt cookies
 $auth_config['secret_phrase'] = 'asdagre3';
 
-//for use with session and cookie vars
+// for use with session and cookie vars
 $auth_config['cookie_prefix'] = 'site';
 
-#UPLOADS
+# UPLOADS
 $upload_config = [];
 
 // configure the variables before use.
@@ -64,12 +59,6 @@ $upload_config['allowed_exts'] = [
 ];
 
 #ADMIN AREA
-$languages = [];
-
-$vars['change_prefs'] = false;
-
-$vars['email_templates'] = false;
-
 // sections in menu
 $vars['sections'] = [
     'users',
@@ -81,19 +70,12 @@ $vars['fields']['users'] = [
     'surname' => 'text',
     'email' => 'email',
     'password' => 'password',
-    'address' => 'textarea',
-    'city' => 'text',
-    'postcode' => 'text',
-    'tel' => 'text',
-    'code' => 'text',
-    'code expire' => 'datetime',
+    'email_verified' => 'checkbox',
     'admin' => 'select',
     'id' => 'id',
 ];
 
 $vars['required']['users'] = [];
-
-$vars['labels']['users'] = ['name','surname','email',];
 
 $vars['subsections']['users'] = [];
 
@@ -104,10 +86,9 @@ $shop_enabled = false;
 $shop_config['paypal_email'] = '';
 
 #OPTIONS
-$opts['admin'] = [
+$vars['options']['admin'] = [
     '1' => 'admin',
     '2' => 'staff',
     '3' => 'guest',
 ];
 
-$vars['options'] = $opts;
