@@ -14,17 +14,11 @@ $auth_config = [];
 // table where your users are stored
 $auth_config['table'] = 'users';
 
-// required fields when registering and updating
-$auth_config['required'] = [
-
-];
-
 // automated emails will be sent from this address
 $from_email = '';
 $auth_config['from_email'] = '';
 
 // automatically generate a password
-$auth_config['generate_password'] = true;
 $auth_config['hash_password'] = true;
 
 // use a secret term to encrypt cookies
