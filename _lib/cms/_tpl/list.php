@@ -15,7 +15,6 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
                 <tr>
 					<th class="noVis"><i class="fas fa-arrows-alt-v"></i>&nbsp;</th>
 					<th class="noVis">&nbsp;</th>
-					<th class="noVis">&nbsp;</th>
 					<?php
                     foreach ($vars['fields'][$this->section] as $name=>$type) {
                         if ('id' == $type) {
@@ -144,16 +143,10 @@ $(function() {
 		    },
 			"width": 20,
 			"orderable": false
-		 }, {
-			"targets": 2,
-			"render": function ( data, type, row, meta ) {
-				return '<div style="white-space: nowrap;"><a href="?option=<?=$params['section'];?>&view=true&id='+data+'&<?=$qs;?>" title="ID: '+data+'" onclick="event.stopPropagation();"><i class="fas fa-search"></i></a> &nbsp; <a href="?option=<?=$params['section'];?>&edit=true&id='+data+'" onclick="event.stopPropagation();"><i class="fas fa-pencil-alt"></i></a></div>';
-			},
-			"width": 50,
-			"orderable": false
-		}],
+		 }],
 		'select': {
-		 'style': 'multi'
+			"style": "multi",
+            "selector": "td:first-child"
 		},
 		
 		"order": [[<?=$order;?>, '<?=$asc;?>']],
@@ -222,6 +215,16 @@ $(function() {
     		$(this).remove();
     	}
     })
+    
+    $(table.table().container()).on('click', '.dt-checkboxes-cell', function (e) {
+        e.stopPropagation();
+    });
+    
+    $(table.table().container()).on('click', 'tr', function (e) {
+        var data = table.row( this ).data();
+        location.href = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
+        e.stopPropagation();
+    });
 } );
 </script>
 

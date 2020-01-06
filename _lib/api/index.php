@@ -484,7 +484,6 @@ switch ($_GET['cmd']) {
         
         // add extra fields for checkbox and actions
         array_unshift($fields, 'id');
-        array_unshift($fields, 'id');
         
         // sort order
         if (in_array('position', $vars['fields'][$_GET['section']])) {
