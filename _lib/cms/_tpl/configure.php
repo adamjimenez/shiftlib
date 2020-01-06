@@ -7,32 +7,51 @@ global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $f
 
 // internal tables
 $default_tables = [
-    'file_fields' => [
+    'files' => [
         'date' => 'date',
         'name' => 'text',
         'size' => 'text',
         'type' => 'text',
+        'id' => 'id',
     ],
     
-    'cms_privileges_fields' => [
+    'cms privileges' => [
         'user' => 'text',
         'section' => 'text',
         'access' => 'integer',
         'filter' => 'text',
+        'id' => 'id',
+        'indexes' => [[
+            'name' => 'user',
+            'type' => 'index',
+            'fields' => ['user'],
+        ]]
     ],
     
-    'cms_filters' => [
+    'cms filters' => [
         'user' => 'text',
         'section' => 'text',
         'name' => 'text',
         'filter' => 'textarea',
+        'id' => 'id',
+        'indexes' => [[
+            'name' => 'user',
+            'type' => 'index',
+            'fields' => ['user'],
+        ]]
     ],
     
-    'cms_multiple_select_fields' => [
+    'cms multiple select' => [
         'section' => 'text',
         'field' => 'text',
         'item' => 'integer',
         'value' => 'text',
+        'id' => 'id',
+        'indexes' => [[
+            'name' => 'section_field_item',
+            'type' => 'index',
+            'fields' => ['section', 'field', 'item'],
+        ]]
     ],
     
     'cms logs' => [
@@ -43,6 +62,35 @@ $default_tables = [
         'details' => 'text',
         'date' => 'timestamp',
         'id' => 'id',
+        'indexes' => [[
+            'name' => 'section_item',
+            'type' => 'index',
+            'fields' => ['section', 'item'],
+        ]]
+    ],
+    
+    'cms activation' => [
+        'user' => 'combo',
+        'code' => 'text',
+        'expiration' => 'timestamp',
+        'id' => 'id',
+        'indexes' => [[
+            'name' => 'user',
+            'type' => 'unique',
+            'fields' => ['user'],
+        ]]
+    ],
+    
+    'cms login attempts' => [
+        'email' => 'email',
+        'ip' => 'ip',
+        'date' => 'timestamp',
+        'id' => 'id',
+        'indexes' => [[
+            'name' => 'ip_date',
+            'type' => 'index',
+            'fields' => ['ip', 'date'],
+        ]]
     ]
 ];
 
@@ -256,7 +304,7 @@ if ($_POST['save']) {
 
     // check internal tables
     foreach ($default_tables as $name => $fields) {
-        $this->check_table($name, $fields);
+        $this->check_table(underscored($name), $fields);
     }
 
     $count['sections'] = 0;
@@ -365,17 +413,10 @@ if ($_POST['save']) {
 
     $config = '<?php
 # GENERAL SETTINGS
-$db_config["host"] = "' . $db_config['host'] . '";
-$db_config["user"] = "' . $db_config['user'] . '";
-$db_config["pass"] = "' . $db_config['pass'] . '";
-$db_config["name"] = "' . $db_config['name'] . '";
-
-$db_config["dev_host"] = "' . $db_config['dev_host'] . '";
-$db_config["dev_user"] = "' . $db_config['dev_user'] . '";
-$db_config["dev_pass"] = "' . $db_config['dev_pass'] . '";
-$db_config["dev_name"] = "' . $db_config['dev_name'] . '";
-
-$live_site=' . str_to_bool($_POST['live_site']) . ';
+$db_config["host"] = "' . $db_config['host'] . '" ?: $_SERVER["db_host"];
+$db_config["user"] = "' . $db_config['user'] . '" ?: $_SERVER["db_user"];
+$db_config["pass"] = "' . $db_config['pass'] . '" ?: $_SERVER["db_pass"];
+$db_config["name"] = "' . $db_config['name'] . '" ?: $_SERVER["db_name"];
 
 #TPL
 
@@ -388,7 +429,7 @@ $tpl_config["redirects"] = [' . str_to_assoc($_POST['tpl_config']['redirects']) 
 // enforce ssl
 $tpl_config["ssl"] = ' . str_to_bool($_POST['tpl_config']['ssl']) . ';
 
-#USER LOGIN
+# USER LOGIN
 $auth_config = [];
 
 // table where your users are stored
@@ -403,13 +444,9 @@ $auth_config["required"] = [
 $from_email = "' . $_POST['from_email'] . '";
 $auth_config["from_email"] = $from_email;
 
-// specify pages where users are redirected
-$auth_config["login"] = "' . $_POST['auth_config']['login'] . '";
-$auth_config["register_success"] = "' . $_POST['auth_config']['register_success'] . '";
-$auth_config["forgot_success"] = "' . $_POST['auth_config']['forgot_success'] . '";
-
 // hash passwords
 $auth_config["hash_password"] = ' . str_to_bool($_POST['auth_config']['hash_password']) . ';
+$auth_config["hash_salt"] = "' . $_POST['auth_config']['hash_salt'] . '";
 
 // email activation
 $auth_config["email_activation"] = ' . str_to_bool($_POST['auth_config']['email_activation']) . ';
@@ -423,15 +460,17 @@ $auth_config["cookie_prefix"] = "' . $_POST['auth_config']['cookie_prefix'] . '"
 // how long a cookie lasts with remember me
 $auth_config["cookie_duration"] = "' . $_POST['auth_config']['cookie_duration'] . '";
 
-// send registration notifications
-$auth_config["registration_notification"] = ' . str_to_bool($_POST['auth_config']['registration_notification']) . ';
+// Single Sign-on credentials
+$auth_config["facebook_appId"] = "' . $_POST['auth_config']['facebook_appId'] . '" ?: $_SERVER["facebook_appId"];
+$auth_config["facebook_secret"] = "' . $_POST['auth_config']['facebook_secret'] . '" ?: $_SERVER["facebook_secret"];
 
-$auth_config["facebook_appId"] = "' . $_POST['auth_config']['facebook_appId'] . '";
-$auth_config["facebook_secret"] = "' . $_POST['auth_config']['facebook_secret'] . '";
+$auth_config["google_appId"] = "' . $_POST['auth_config']['google_appId'] . '" ?: $_SERVER["google_appId"];
+$auth_config["google_secret"] = "' . $_POST['auth_config']['google_secret'] . '" ?: $_SERVER["google_secret"];
 
-$auth_config["login_wherestr"] = "' . $_POST['auth_config']['login_wherestr'] . '";
+// deprecated
+$auth_config["login_wherestr"] = "' . $auth_config["login_wherestr"] . '";
 
-#UPLOADS
+# UPLOADS
 $upload_config = [];
 
 // configure the variables before use.
@@ -487,8 +526,8 @@ $vars["subsections"]["' . $section . '"] = [' . $subsections . '];
     }
 
     $config .= '
-
-$vars["files"]["dir"] = "' . $_POST['vars']['files']['dir'] . '"; //folder to store files
+//folder to store files
+$vars["files"]["dir"] = "' . $_POST['vars']['files']['dir'] . '";
 
 # SHOP
 $shop_enabled = ' . str_to_bool($_POST['shop_enabled']) . ';
@@ -543,6 +582,23 @@ $vars["options"]["' . $field_option . '"] = "";
     $_SESSION['message'] = 'Configuration Saved';
 
     redirect('/admin?option=configure');
+}
+
+// version check
+$release_url = 'https://api.github.com/repos/adamjimenez/shiftlib/releases/latest';
+$release = wget($release_url);
+
+// zipball_url
+if ($release['tag_name'] != $this->version) {
+?>
+<div class="alert alert-primary mt-3" role="alert">
+    New version available: <?=$release['tag_name'];?>
+    <p>
+        <?=$release['body'];?>
+    </p>
+    <a href="?option=upgrade">Upgrade now</a>
+</div>
+<?
 }
 
 $count['sections'] = 0;
@@ -662,32 +718,22 @@ $count['options'] = 0;
     		<br>
     		<br>
     		
-    		<label>Login</label><br>
-            <input type="text" name="auth_config[login]" value="<?=$auth_config['login'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Register success</label><br>
-            <input type="text" name="auth_config[register_success]" value="<?=$auth_config['register_success'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Forgot success</label><br>
-            <input type="text" name="auth_config[forgot_success]" value="<?=$auth_config['forgot_success'];?>">
-    		<br>
-    		<br>
-    		
     		<label>Hash passwords</label><br>
             <input type="checkbox" name="auth_config[hash_password]" value="1" <?php if ($auth_config['hash_password']) { ?> checked<?php } ?>>
     		<br>
     		<br>
     		
-    		<label>Email activation</label><br>
+    		<label>Hash salt</label><br>
+            <input type="text" name="auth_config[hash_salt]" value="<?=$auth_config['hash_salt'];?>">
+    		<br>
+    		<br>
+    		
+    		<label>Require email activation</label><br>
             <input type="checkbox" name="auth_config[email_activation]" value="1" <?php if ($auth_config['email_activation']) { ?> checked<?php } ?>>
     		<br>
     		<br>
     		
-    		<label>Secret phrase</label><br>
+    		<label>Cookie salt</label><br>
             <input type="text" name="auth_config[secret_phrase]" value="<?=$auth_config['secret_phrase'];?>">
     		<br>
     		<br>
@@ -702,11 +748,6 @@ $count['options'] = 0;
     		<br>
     		<br>
     		
-    		<label>Registration notification</label><br>
-            <input type="checkbox" name="auth_config[registration_notification]" value="1" <?php if ($auth_config['registration_notification']) { ?> checked<?php } ?>>
-    		<br>
-    		<br>
-    		
     		<label>Facebook appId</label><br>
             <input type="text" name="auth_config[facebook_appId]" value="<?=$auth_config['facebook_appId'];?>">
     		<br>
@@ -717,11 +758,16 @@ $count['options'] = 0;
     		<br>
     		<br>
     		
-    		<label>Login wherestr</label><br>
-            <textarea name="auth_config[login_wherestr]"><?=$auth_config['login_wherestr'];?></textarea>
+    		<label>Google appId</label><br>
+            <input type="text" name="auth_config[google_appId]" value="<?=$auth_config['google_appId'];?>">
     		<br>
     		<br>
-            		
+    		
+    		<label>Google secret</label><br>
+            <input type="text" name="auth_config[google_secret]" value="<?=$auth_config['google_secret'];?>">
+    		<br>
+    		<br>
+    		
         </div>
     
         <div id="upload">
@@ -1032,6 +1078,8 @@ $count['options'] = 0;
             .split('{$section_id}').join($(this).data('section_id'));
             
     	var row = $(html).appendTo($(this).parent().find('.container'));
+    	
+        row.find('select').val('text');
     	row.find('input').first().focus();
     });
 
