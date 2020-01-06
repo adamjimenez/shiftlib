@@ -219,10 +219,10 @@ $(function() {
 				//$('#uploads ul').html('');
 				var thumb;
 				data.files.forEach(function(item) {
-					thumb = item.leaf ? item.thumb : 'images/folder_thumb.png';
+					thumb = item.leaf ? '<img class="lazy" data-original="' + item.thumb + '">' : '<i class="fas fa-folder"></i>';
 					$('<li>\
 						<a href="javascript:void(0);" data-name="' + item.name + '" data-leaf="' + item.leaf + '">\
-							<img class="lazy" data-original="' + thumb + '">\
+							' + thumb + '\
 							<span>' + item.name + '</span>\
 						</a>\
 					</li>'
