@@ -1,5 +1,9 @@
 <?php
-if ($auth->user['admin']) {
+// redirect to home if logged in
+$result = $auth->login();
+
+// handle login
+if ($result['code']===1) {
 	if ($_SESSION['request']) {
 		redirect($_SESSION['request']);
 	} else {
