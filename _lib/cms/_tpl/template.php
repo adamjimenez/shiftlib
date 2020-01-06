@@ -214,7 +214,7 @@
         <!-- footer area start-->
         <footer>
             <div class="footer-area">
-                <p>© Copyright <?=date('Y');?>. All right reserved. ShiftCreate Ltd.</p>
+                <p>Version <?=$this->version;?></p>
             </div>
         </footer>
         <!-- footer area end-->
