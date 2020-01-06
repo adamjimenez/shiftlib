@@ -143,6 +143,8 @@ class checkboxes extends select
 	
 	function format_value($value, $field_name) {
 	    global $cms;
+	    
+	    $name = spaced($field_name);
 
         if ($cms->id) {
             // create NOT IN string
@@ -158,14 +160,14 @@ class checkboxes extends select
             sql_query("DELETE FROM cms_multiple_select
                 WHERE
                     section='" . escape($cms->section) . "' AND
-                    field='" . escape($field_name) . "'
+                    field='" . escape($name) . "'
                     $value_str
             ");
     
             foreach ($value as $v) {
                 sql_query("INSERT INTO cms_multiple_select SET
                     section='" . escape($cms->section) . "',
-                    field='" . escape($field_name) . "',
+                    field='" . escape($name) . "',
                     item='" . escape($cms->id) . "',
                     value='" . escape($v) . "'
                 ");
