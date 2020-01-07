@@ -125,14 +125,6 @@
 							<?php
                                 }
                             } ?>
-
-							<?php
-							// deprecated
-                            if ($shop_enabled and (1 == $auth->user['admin'] or $auth->user['privileges']['orders'])) { ?>
-							<li <?php if ('shop_orders' == $_GET['option']) { ?>id="current"<?php } ?>>
-								<a href="?option=shop_orders"><span>Orders</span></a>
-							</li>
-							<?php } ?>
                         </ul>
                     </nav>
                 </div>
