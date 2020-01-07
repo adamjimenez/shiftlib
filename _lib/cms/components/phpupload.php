@@ -11,7 +11,7 @@ class phpupload extends component
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         if ($value) {
             $value = '

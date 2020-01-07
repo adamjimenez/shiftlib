@@ -101,7 +101,7 @@ class checkboxes extends select
         print '</ul>';
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         global $vars, $cms;
 

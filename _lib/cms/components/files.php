@@ -38,7 +38,7 @@ class files extends file
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         if ($value) {
             $files = explode("\n", $value);

@@ -13,7 +13,7 @@ class phpuploads extends phpupload
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         if ($value) {
             $files = explode("\n", trim($value));

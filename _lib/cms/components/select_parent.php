@@ -32,7 +32,7 @@ class select_parent extends component
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         global $vars, $cms;
 

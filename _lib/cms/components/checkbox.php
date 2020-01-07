@@ -13,7 +13,7 @@ class checkbox extends integer
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         $value = $value ? 'Yes' : 'No';
         return $value;

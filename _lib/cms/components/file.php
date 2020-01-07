@@ -27,7 +27,7 @@ class file extends component
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);

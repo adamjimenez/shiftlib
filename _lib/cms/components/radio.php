@@ -19,7 +19,7 @@ class radio extends select
         }
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         global $vars;
 

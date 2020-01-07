@@ -153,7 +153,7 @@ class select extends component
         return $parents;
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         global $vars, $cms;
 
