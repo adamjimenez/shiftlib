@@ -26,3 +26,14 @@
 .ui-autocomplete {
 	z-index: 9999 !important;
 }
+
+/* hide scrollbar*/
+.menu-inner::-webkit-scrollbar { 
+	width: 0 !important 
+}
+
+/* list buttons on the same line */
+div.dt-buttons {
+	width: auto;
+	margin-bottom: 0;
+}

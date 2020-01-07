@@ -35,6 +35,7 @@
     /*================================
     slimscroll activation
     ==================================*/
+    /*
     $('.menu-inner').slimScroll({
         height: 'auto'
     });
@@ -50,6 +51,7 @@
     $('.settings-list').slimScroll({
         height: 'calc(100vh - 158px)'
     });
+    */
 
     /*================================
     stickey Header
