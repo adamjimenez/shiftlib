@@ -160,7 +160,8 @@ class checkboxes extends select
             sql_query("DELETE FROM cms_multiple_select
                 WHERE
                     section='" . escape($cms->section) . "' AND
-                    field='" . escape($name) . "'
+                    field='" . escape($name) . "' AND
+                    item='" . escape($cms->id) . "'
                     $value_str
             ");
     
