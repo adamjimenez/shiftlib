@@ -491,9 +491,9 @@ switch ($_GET['cmd']) {
         if (in_array('position', $vars['fields'][$_GET['section']])) {
             $order = 'position';
         } else {
-            $order = underscored($fields[($_GET['order'][0]['column'] - 1)]) ?: 'id';
+            $order = underscored($fields[($_POST['order'][0]['column'] - 1)]) ?: 'id';
         }
-        $dir = ('desc' == $_GET['order'][0]['dir']) ? 'DESC' : '';
+        $dir = ('desc' == $_POST['order'][0]['dir']) ? 'DESC' : '';
     
         $sql = $cms->conditions_to_sql($_GET['section'], $_GET['fields']);
         
@@ -503,7 +503,7 @@ switch ($_GET['cmd']) {
     	, 1);
         
         $response = [
-            'draw' => $_GET['draw'],
+            'draw' => $_POST['draw'],
             'data' => [],
             'recordsTotal' => $count['count'],
             'recordsFiltered' => $count['count'],
@@ -511,8 +511,8 @@ switch ($_GET['cmd']) {
         
         // get limit
         $limit = '';
-        $start = (int) $_GET['start'];
-        $length = (int) $_GET['length'];
+        $start = (int) $_POST['start'];
+        $length = (int) $_POST['length'];
         
         if (-1 != $length) {
             $limit = 'LIMIT ' . $start . ', ' . $length;

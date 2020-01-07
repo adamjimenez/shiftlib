@@ -95,6 +95,7 @@ $(function() {
 	}];
 	
 	<?php
+	/*
 	foreach ($cms_buttons as $k => $button) {
 	    if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
 	    ?>
@@ -109,12 +110,16 @@ $(function() {
 	    <?php
 	    }
 	}
+	*/
 	?>
 	
     var table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
     	dom: 'Bfrtip',
 	    buttons: buttons,
-		ajax: '/_lib/api/?<?=http_build_query($params);?>',
+	    ajax: {
+	        url: '/_lib/api/?<?=http_build_query($params);?>',
+	        type: 'POST'
+	    },
 		<?php if ($sortable) { ?>
 		"rowReorder": {
             dataSrc: 0
@@ -158,7 +163,7 @@ $(function() {
     
     // move to toolbar
     table.buttons().container()
-    	.appendTo( $('.toolbar' ) ).attr('data-section', '<?=$this->section;?>');
+    	.appendTo( $('.toolbar .holder' ) ).attr('data-section', '<?=$this->section;?>');
     
 	// reordering
     table.on( 'row-reorder', function ( e, diff, edit ) {

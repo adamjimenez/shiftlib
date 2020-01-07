@@ -125,21 +125,34 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             
             <div class="top-row mb-3">
                 <div class="pull-left toolbar">
+                    
                     <a href="<?=$back_link; ?>" class="btn btn-secondary" title="Back to <?=$back_label; ?>"><i class="fas fa-arrow-left"></i></a>
+                    
+                    <span class="holder"></span>
                     
                     <span data-section="<?=$this->section;?>">
             	        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
-            			<?php
-                        foreach ($cms_buttons as $k => $button) {
-                            if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'view' == $button['page']) {
-                                require('includes/button.php');
-                            }
-                        } ?>
+                        
             	        <form method="post" style="display:inline;">
             		        <input type="hidden" name="delete" value="1">
             		        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
             	        </form>
         	        </span>
+                        
+                    <div class="dropdown" style="display: inline-block;">
+                        <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?=underscored($button['section']);?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                           <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']);?>">
+                			<?php
+                            foreach ($cms_buttons as $k => $button) {
+                                if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'view' == $button['page']) {
+                                    require('includes/button.php');
+                                }
+                            } ?>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
             

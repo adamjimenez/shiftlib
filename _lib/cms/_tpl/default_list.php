@@ -174,10 +174,29 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
 	</table>
 	*/
 	?>
-<div class="col-12 p-0">
-    <div class="card">
-        <div class="card-body">
-            <div class="toolbar top-row mt-1 mb-3"></div>
+	
+    <div class="col-12 p-0">
+        <div class="card">
+            <div class="card-body">
+                
+                <div class="toolbar top-row mt-1 mb-3">
+                    <span class="holder"></span>
+                    
+                    <div class="dropdown" style="display: inline-block;">
+                        <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?=underscored($button['section']);?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                           <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']);?>">
+                			<?php
+                            foreach ($cms_buttons as $k => $button) {
+                                if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
+                                    require('includes/button.php');
+                                }
+                            } ?>
+                        </div>
+                    </div>
+                    
+                </div>
             
                 <h1 class="header-title"><?=ucwords($this->section);?></h1>
                 

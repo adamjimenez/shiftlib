@@ -286,7 +286,7 @@
 	<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
 
     <script src="/_lib/cms/assets/js/plugins.js"></script>
-    <script src="/_lib/cms/assets/js/scripts.js"></script>
+    <script src="/_lib/cms/assets/js/scripts.js?v=1"></script>
 
     <script>
         function button_handler (value, show_prompt, dt) {
@@ -341,6 +341,15 @@
 	        var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
             $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
 	    })
+	    
+	    // hide empty list dropdown menu
+	    $(function() {
+	        $('.dropdown-menu').each(function() {
+	            if (!$(this).children().length) {
+	                $(this).prev().hide();
+	            }
+	        });
+	    });
     </script>
 </body>
 
