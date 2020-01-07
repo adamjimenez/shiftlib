@@ -166,7 +166,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
                 foreach ($vars['subsections'][$this->section] as $count => $subsection) {
                     ?>
                 <li class="nav-item">
-                    <a class="nav-link" id="pills-<?=$count; ?>-tab" data-toggle="pill" href="#pills-<?=$count; ?>" role="tab" aria-controls="pills-tab_<?=$count; ?>" aria-selected="true" data-section="<?=$subsection;?>">
+                    <a class="nav-link" id="pills-<?=$count; ?>-tab" data-toggle="pill" href="#pills-<?=$count; ?>" role="tab" aria-controls="pills-tab_<?=$count; ?>" aria-selected="true" data-section="<?=$subsection; ?>">
 						<?=ucfirst($subsection); ?>
 					</a>
 				</li>
@@ -204,14 +204,13 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             $value = $this->get_value($name);
             
             if (!$value) {
-            	continue;
-            }
-            ?>
+                continue;
+            } ?>
     
     		<tr>
     			<th align="left" valign="top" width="20%"><?=$label; ?></th>
     			<td>
-            		<?=$value;?>
+            		<?=$value; ?>
     			</td>
     		</tr>
     	<?php
@@ -258,7 +257,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
     if ($has_privileges) { ?>
 	<div class="tab-pane fade" id="pills-priveleges" role="tabpanel" aria-labelledby="pills-priveleges-tab">
 	    <div class="box" style="clear:both;">
-			<? require('includes/privileges.php'); ?>
+			<?php require('includes/privileges.php'); ?>
 		</div>
 	</div>
 <?php }
@@ -266,7 +265,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
     if ($has_logs) { ?>
 	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
 	    <div class="box" style="clear:both;">
-			<? require('includes/logs.php'); ?>
+			<?php require('includes/logs.php'); ?>
 		</div>
 	</div>
 <?php } ?>

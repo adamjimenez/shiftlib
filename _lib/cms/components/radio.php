@@ -1,25 +1,28 @@
 <?php
+
 namespace cms;
 
 class radio extends select
 {
-	function field($field_name, $value = '', $options = []) {
-		global $cms, $vars;
-		
-		$name = spaced($field_name);
+    public function field($field_name, $value = '', $options = [])
+    {
+        global $cms, $vars;
+
+        $name = spaced($field_name);
         $vars['options'][$name] = $this->get_options($name, $where);
-        
+
         $assoc = is_assoc_array($vars['options'][$name]);
         foreach ($vars['options'][$name] as $k => $v) {
             $val = $assoc ? $k : $v; ?>
-        <label <?=$attribs; ?>><input type="radio" name="<?=$field_name; ?>" value="<?=$val; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if (isset($value) and $val == $value) { ?>checked="checked"<?php } ?> <?=$options['attribs']; ?>> <?=$v; ?> &nbsp;</label><?=$options['separator']; ?>
-        <?php
+        <label <?= $attribs; ?>><input type="radio" name="<?= $field_name; ?>" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if (isset($value) and $val == $value) { ?>checked="checked"<?php } ?> <?= $options['attribs']; ?>> <?= $v; ?> &nbsp;</label><?= $options['separator']; ?>
+            <?php
         }
-	}
-	
-	function value($value, $name) {
-		global $vars;
-		
+    }
+
+    public function value($value, $name)
+    {
+        global $vars;
+
         if (!is_array($vars['options'][$name])) {
             if ('0' == $value) {
                 $value = '';
@@ -31,7 +34,7 @@ class radio extends select
                 $value = $vars['options'][$name][$value];
             }
         }
-        
+
         return $value;
-	}
+    }
 }

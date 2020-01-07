@@ -476,9 +476,9 @@ switch ($_GET['cmd']) {
         
         // get field names
         $fields = [];
-        foreach ($vars['fields'][$_GET['section']] as $name=>$type) {
-		    if (in_array($type, $cms->hidden_columns)) {
-		        continue;
+        foreach ($vars['fields'][$_GET['section']] as $name => $type) {
+            if (in_array($type, $cms->hidden_columns)) {
+                continue;
             }
             
             $fields[] = $name;
@@ -499,8 +499,7 @@ switch ($_GET['cmd']) {
         
         $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
     		' . $sql['joins'] . '
-    		' . $sql['where_str']
-    	, 1);
+    		' . $sql['where_str'], 1);
         
         $response = [
             'draw' => $_POST['draw'],

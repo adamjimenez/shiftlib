@@ -62,7 +62,7 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
     }
 
     $fields[] = $field;
-} 
+}
 ?>
 
 <div class="main-content-inner">
@@ -114,10 +114,9 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
                     
                     foreach ($vars['fields'][$this->section] as $name => $type) {
                         $field_name = underscored($name);
-                        $component = $this->get_component($type);
-                        ?>
+                        $component = $this->get_component($type); ?>
                         <div>
-                            <?=$component->search_field($name, $_GET[$field_name]);?>
+                            <?=$component->search_field($name, $_GET[$field_name]); ?>
                         </div>
                         <?php
                     } ?>
@@ -133,47 +132,47 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
 		
     <?php
     /*
-	<table width="100%">
-	<tr>
-		<td>
-	
-			<?php if ($parent_field) { ?>
-			<h3>
-				<a href="?option=<?=$this->section;?>">Root</a>
-				<?php
+    <table width="100%">
+    <tr>
+        <td>
+
+            <?php if ($parent_field) { ?>
+            <h3>
+                <a href="?option=<?=$this->section;?>">Root</a>
+                <?php
                 if ($_GET[$parent_field]) {
                     $parent_id = $_GET[$parent_field];
-    
+
                     reset($vars['fields'][$this->section]);
                     $label = key($vars['fields'][$this->section]);
-    
+
                     $parents = [];
                     while ('0' !== $parent[$parent_field]) {
                         if (!$parent) {
                             break;
                         }
-    
+
                         $parent_id = $parent[$parent_field];
-    
+
                         $parents[$parent['id']] = $parent[$label];
                     }
-    
+
                     $parents = array_reverse($parents, true);
-    
+
                     foreach ($parents as $k => $v) {
                         ?>
-					&raquo; <a href="?option=<?=$this->section; ?>&parent=<?=$k; ?>"><?=$v; ?></a>
-				<?php
+                    &raquo; <a href="?option=<?=$this->section; ?>&parent=<?=$k; ?>"><?=$v; ?></a>
+                <?php
                     }
                 }
                 ?>
-			</h3>
-			<?php } ?>
-		</td>
-	</tr>
-	</table>
-	*/
-	?>
+            </h3>
+            <?php } ?>
+        </td>
+    </tr>
+    </table>
+    */
+    ?>
 	
     <div class="col-12 p-0">
         <div class="card">
@@ -205,7 +204,7 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
                 unset($conditions['option']);
                 
                 $qs = http_build_query(['s' => $conditions]);
-                require(dirname(__FILE__) . '/list.php'); 
+                require(dirname(__FILE__) . '/list.php');
                 ?>
     
             </div>

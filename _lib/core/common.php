@@ -1130,19 +1130,17 @@ function load_js($libs)
     }
 
     if ($deps['bootstrap']) {
-        $version = '4.4.1'; 
-    ?>
+        $version = '4.4.1'; ?>
 	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js" async></script>
 	<?php
     }
 
     if ($deps['bootstrap3']) {
-    	$version = '3.3.7';
-    ?>
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap.min.css">
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/css/bootstrap-theme.min.css">
-        <script src="//netdna.bootstrapcdn.com/bootstrap/<?=$version;?>/js/bootstrap.min.js"></script>
+        $version = '3.3.7'; ?>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap-theme.min.css">
+        <script src="//netdna.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.min.js"></script>
     <?php
     }
 
@@ -1234,9 +1232,10 @@ function options($options, $selected = '')
 }
 
 /* used to flush output to the browser */
-function output($str) {
+function output($str)
+{
     echo trim($str);
-    echo str_pad('',4096)."\n";   
+    echo str_pad('', 4096) . "\n";
     ob_flush();
     flush();
 }
@@ -1372,14 +1371,14 @@ function sql_query($query, $single = false)
     global $db_connection;
     
     if ($_GET['debug']) {
-    	debug($query);
+        debug($query);
     }
 
     $result = mysqli_query($db_connection, $query);
 
     if (false === $result) {
         throw new Exception($query);
-    } else if (true === $result) {
+    } elseif (true === $result) {
         return true;
     }
     

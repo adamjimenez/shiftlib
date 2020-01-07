@@ -26,8 +26,8 @@ spl_autoload_register(function ($class) {
             return;
         break;
         default:
-        	$class = str_replace('cms\\', '', $class);
-            include_once(dirname(__FILE__) . '/cms/components/'.basename($class).'.php');
+            $class = str_replace('cms\\', '', $class);
+            include_once(dirname(__FILE__) . '/cms/components/' . basename($class) . '.php');
             return;
         break;
     }

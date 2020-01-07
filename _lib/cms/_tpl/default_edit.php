@@ -115,7 +115,7 @@ if ($_GET['id']) {
             }
             
             if ('hidden' == $type) {
-            	print $this->get_field($name);
+                print $this->get_field($name);
                 continue;
             }
 
@@ -123,8 +123,7 @@ if ($_GET['id']) {
 
             if (!$label) {
                 $label = ucfirst(spaced($name));
-            }
-            ?>
+            } ?>
 			
 			<div class="form-group">
 				<?php
@@ -182,10 +181,10 @@ if ($_GET['id']) {
 <script>
 <?php
 if ($this->components) {
-    ?>
+            ?>
 var components = <?=json_encode($this->components); ?>;
 <?php
-}
+        }
 ?>
 </script>
 
