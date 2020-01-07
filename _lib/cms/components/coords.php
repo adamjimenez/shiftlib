@@ -12,7 +12,7 @@ class coords extends component
 	}
 	
 	function value($value) {
-        $value = '<input type="text" class="map" name="' . $field_name . '" value="' . htmlspecialchars(substr($value, 6, -1)) . '" size="50" ' . $attribs . '>';
+        $value = '<input type="text" name="' . $field_name . '" value="' . htmlspecialchars(substr($value, 6, -1)) . '" size="50" ' . $attribs . '>';
 		return $value;
 	}
 }
