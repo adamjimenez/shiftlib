@@ -10,8 +10,8 @@ class ip extends component
 
         if (!$cms->id) {
             return $_SERVER['REMOTE_ADDR'];
-        } elseif (!$data[$field_name]) {
-            return false;
         }
+
+        return false;
     }
 }
