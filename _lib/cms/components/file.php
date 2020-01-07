@@ -78,11 +78,13 @@ class file extends component
         return $value;
     }
 
-    public function delete($file)
+    public function delete($file): bool
     {
-        if (file_exists($file)) {
+        if (true === file_exists($file)) {
             return unlink($file);
         }
+
+        return false;
     }
 
     public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
