@@ -95,8 +95,8 @@ if ($_GET['id']) {
 
 <!-- fake fields are a workaround for chrome autofill -->
 <div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
-	<input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername"></input>
-	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
+	<input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername" onchange="event.stopPropagation();"></input>
+	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword" onchange="event.stopPropagation();"></input>
 </div>
 
 <div class="toolbar top-row mt-1 mb-3">
