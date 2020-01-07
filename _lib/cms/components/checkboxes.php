@@ -1,16 +1,18 @@
 <?php
+
 namespace cms;
 
 class checkboxes extends select
 {
-	public $field_sql = null;
-	public $id_required = true;
-	
-	function field($field_name, $value = '', $options = []) {
-		global $vars, $cms;
-		
-		$name = spaced($field_name);
-		
+    public $field_sql = null;
+    public $id_required = true;
+
+    public function field($field_name, $value = '', $options = [])
+    {
+        global $vars, $cms;
+
+        $name = spaced($field_name);
+
         $value = [];
 
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
@@ -89,19 +91,19 @@ class checkboxes extends select
         $is_assoc = is_assoc_array($vars['options'][$name]);
 
         print '<ul class="checkboxes">';
-    
-        foreach ($vars['options'][$name] as  $k => $v) {
-            $val = $is_assoc ? $k : $v; 
-        ?>
-        <li><label><input type="checkbox" name="<?=$field_name; ?>[]" value="<?=$val; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?> <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?=$v; ?></label></li>
-        <?php
+
+        foreach ($vars['options'][$name] as $k => $v) {
+            $val = $is_assoc ? $k : $v; ?>
+            <li><label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?> <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?= $v; ?></label></li>
+            <?php
         }
-    
+
         print '</ul>';
-	}
-	
-	function value($value, $name) {
-		global $vars, $cms;
+    }
+
+    public function value($value, $name)
+    {
+        global $vars, $cms;
 
         $array = [];
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
@@ -139,24 +141,25 @@ class checkboxes extends select
 
         $value = implode('<br>' . "\n", $array);
         return $value;
-	}
-	
-	function format_value($value, $field_name) {
-	    global $cms;
-	    
-	    $name = spaced($field_name);
+    }
+
+    public function format_value($value, $field_name)
+    {
+        global $cms;
+
+        $name = spaced($field_name);
 
         if ($cms->id) {
             // create NOT IN string
             $value_str = '';
             if (count($value)) {
-                foreach($value as $v) {
-                    $value_str .= "'".escape($v)."',";
+                foreach ($value as $v) {
+                    $value_str .= "'" . escape($v) . "',";
                 }
                 $value_str = substr($value_str, 0, -1);
                 $value_str = 'AND item NOT IN (' . $value_str . ')';
             }
-            
+
             sql_query("DELETE FROM cms_multiple_select
                 WHERE
                     section='" . escape($cms->section) . "' AND
@@ -164,7 +167,7 @@ class checkboxes extends select
                     item='" . escape($cms->id) . "'
                     $value_str
             ");
-    
+
             foreach ($value as $v) {
                 sql_query("INSERT INTO cms_multiple_select SET
                     section='" . escape($cms->section) . "',
@@ -174,38 +177,37 @@ class checkboxes extends select
                 ");
             }
         }
-	    
-		return false;
-	}
-	
-	// generates sql code for use in where statement
-	function conditions_to_sql($field_name, $value, $func = '', $table_prefix='') {
+
+        return false;
+    }
+
+    // generates sql code for use in where statement
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    {
         return null;
-	}
-	
-	function search_field($name, $value) {
-	    global $vars;
-	    
-		$field_name = underscored($name);
-		
+    }
+
+    public function search_field($name, $value)
+    {
+        global $vars;
+
+        $field_name = underscored($name);
+
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
             $vars['options'][$name] = $this->get_options(underscored($vars['options'][$name]), underscored(key($vars['fields'][$vars['options'][$name]])));
-        }
-        ?>
-	    <div>
-	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=ucfirst($name);?></label>
-	    </div>
-        <div style="max-height: 200px; width: 200px; overflow: scroll">
-			<?php
-            $is_assoc = is_assoc_array($vars['options'][$name]);
-            foreach ($vars['options'][$name] as $k => $v) {
-                $val = $is_assoc ? $k : $v; 
-            ?>
-			<label><input type="checkbox" name="<?=$field_name; ?>[]" value="<?=$val; ?>" <?php if (in_array($val, $_GET[$field_name])) { ?>checked<?php } ?>> <?=$v; ?></label><br>
-			<?php
-            } 
-            ?>
+        } ?>
+        <div>
+            <label for="<?= underscored($name); ?>" class="col-form-label"><?= ucfirst($name); ?></label>
         </div>
-	<?php
-	}
+        <div style="max-height: 200px; width: 200px; overflow: scroll">
+            <?php
+            $is_assoc = is_assoc_array($vars['options'][$name]);
+        foreach ($vars['options'][$name] as $k => $v) {
+            $val = $is_assoc ? $k : $v; ?>
+                <label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if (in_array($val, $_GET[$field_name])) { ?>checked<?php } ?>> <?= $v; ?></label><br>
+                <?php
+        } ?>
+        </div>
+        <?php
+    }
 }
