@@ -520,6 +520,15 @@ class auth
         			LIMIT 1
         		");
         		
+        		if ($this->email_activation) {
+                    sql_query("UPDATE users SET
+        			    email_verified = 1
+            			WHERE
+            				id='" . escape($user['id']) . "'
+            			LIMIT 1
+            		");  
+        		}
+        		
     			$result = [
     			    'code' => 3,
     			    'message' => 'New password has been set, <a href="/login">log in</a>'
@@ -558,7 +567,7 @@ class auth
                     exit;
                 }
             } else {
-                $this->show_error('email is not in use');
+                $this->show_error(['email is not in use']);
             }
     
             $reps = $user;
