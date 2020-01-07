@@ -12,7 +12,9 @@ class date extends component
 	}
 	
 	function value($value) {
-        if ('0000-00-00' != $value and '' != $value) {
+		if (starts_with($value, '0000-00-00')) {
+			$value = '';
+		} else if ('' != $value) {
             $value = dateformat('d/m/Y', $value);
         }
 		return $value;

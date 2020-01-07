@@ -24,7 +24,7 @@ abstract class component
 	
 	// returns the display value
 	function value($value, $name = '') {
-		return $value;
+		return trim($value);
 	}
 	
 	// checks the value is valid
@@ -34,7 +34,7 @@ abstract class component
 	
 	// applies any cleanup before saving value is mixed
 	function format_value($value) {
-		return strip_tags($value);
+		return trim(strip_tags($value));
 	}
 	
 	// generates sql code for use in where statement

@@ -12,6 +12,10 @@ class datetime extends date
 	}
 	
 	function value($value) {
+		if (starts_with($value, '0000-00-00')) {
+			$value = '';
+		}
+		
 		return $value;
 	}
 	
