@@ -6,14 +6,14 @@ class date extends component
 {
     public $field_sql = 'DATE';
 
-    public function field($field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', $options = [])
     {
         ?>
         <input type="text" data-type="date" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?> autocomplete="off">
         <?php
     }
 
-    public function value($value)
+    public function value($value, $name = '')
     {
         if (starts_with($value, '0000-00-00')) {
             $value = '';
@@ -23,7 +23,7 @@ class date extends component
         return $value;
     }
 
-    public function is_valid($value)
+    public function is_valid($value): bool
     {
         return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
     }

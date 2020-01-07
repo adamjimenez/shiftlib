@@ -6,7 +6,7 @@ class select_parent extends component
 {
     public $field_sql = 'INT';
 
-    public function field($field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', $options = [])
     {
         global $vars, $cms;
 

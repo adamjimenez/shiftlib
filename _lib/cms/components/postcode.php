@@ -4,7 +4,7 @@ namespace cms;
 
 class postcode extends component
 {
-    public function is_valid($value)
+    public function is_valid($value): bool
     {
         return false !== format_postcode($value);
     }

@@ -6,7 +6,7 @@ class checkbox extends integer
 {
     public $field_sql = 'TINYINT';
 
-    public function field($field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', $options = [])
     {
         ?>
         <input type="checkbox" name="<?= $field_name; ?>" value="1" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if ($value) { ?>checked<?php } ?> <?= $options['attribs']; ?>>

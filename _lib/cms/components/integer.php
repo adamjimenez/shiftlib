@@ -7,13 +7,13 @@ class integer extends component
     public $field_type = 'number';
     public $field_sql = 'INT';
 
-    public function value($value)
+    public function value($value, $name = '')
     {
         $value = number_format($value);
         return $value;
     }
 
-    public function is_valid($value)
+    public function is_valid($value): bool
     {
         return is_numeric($value);
     }

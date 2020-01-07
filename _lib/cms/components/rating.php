@@ -15,7 +15,7 @@ class rating extends component
         5 => 'Excellent',
     ];
 
-    public function field($field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', $options = [])
     {
         ?>
         <select name="<?= $field_name; ?>" class="rating" data-section="<?= $this->section; ?>" data-item="<?= $this->content['id']; ?>" <?php if ('avg-rating' == $type) { ?>data-avg='data-avg'<?php } ?> <?= $attribs; ?>>
@@ -25,7 +25,7 @@ class rating extends component
         <?php
     }
 
-    public function value($value)
+    public function value($value, $name = '')
     {
         $value = '<select name="' . $field_name . '" class="rating" disabled="disabled">
             <option value="">Choose</option>

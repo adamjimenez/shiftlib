@@ -7,7 +7,7 @@ class password extends component
     public $field_type = 'password';
     public $preserve_value = true;
 
-    public function value($value)
+    public function value($value, $name = '')
     {
         return '';
     }

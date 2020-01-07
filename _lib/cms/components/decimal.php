@@ -6,7 +6,7 @@ class decimal extends integer
 {
     public $field_sql = 'DECIMAL( 8,2 )';
 
-    public function value($value)
+    public function value($value, $name = '')
     {
         if ($value <= 0) {
             $value = '';

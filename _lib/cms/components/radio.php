@@ -4,7 +4,7 @@ namespace cms;
 
 class radio extends select
 {
-    public function field($field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', $options = [])
     {
         global $cms, $vars;
 

@@ -6,7 +6,7 @@ class hidden extends component
 {
     public $field_type = 'hidden';
 
-    public function value($value)
+    public function value($value, $name = '')
     {
         if ('0000-00-00 00:00:00' != $value) {
             $date = explode(' ', $value);

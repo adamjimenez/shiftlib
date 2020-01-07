@@ -13,7 +13,7 @@ class timestamp extends date
      * @param mixed $value
      * @return bool
      */
-    public function is_valid($value)
+    public function is_valid($value): bool
     {
         return ((string) (int) $value === $value) && ($value <= PHP_INT_MAX) && ($value >= ~PHP_INT_MAX);
     }

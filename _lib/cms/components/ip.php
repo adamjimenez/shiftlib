@@ -4,7 +4,7 @@ namespace cms;
 
 class ip extends component
 {
-    public function value($value)
+    public function value($value, $name = '')
     {
         global $cms;
 

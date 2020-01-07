@@ -23,6 +23,6 @@
   "scripts": {
     "php-cs-fixer": "vendor/bin/php-cs-fixer fix",
     "rector": "vendor/bin/rector process _lib/",
-    "php-stan": "vendor/bin/phpstan analyse --level=max -c phpstan.neon _lib/core/"
+    "php-stan": "vendor/bin/phpstan analyse --level=0 -c phpstan.neon _lib/cms/"
   }
 }
