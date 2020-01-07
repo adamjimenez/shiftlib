@@ -719,7 +719,9 @@ class cms
     
     private function type_to_class($class) {
         $class = str_replace('parent', 'select_parent', $class);
-        $class = str_replace('int', 'integer', $class);
+        if ($class == 'int') {
+            $class = 'integer';
+        }
         $class = 'cms\\'.str_replace('-', '_', $class);
         return $class;
     }
