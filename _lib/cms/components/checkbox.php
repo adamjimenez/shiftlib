@@ -24,7 +24,7 @@ class checkbox extends integer
 		$field_name = underscored($name);
 	?>
 	    <div>
-	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$name;?></label><br>
+	    	<label for="<?=underscored($name);?>" class="col-form-label"><?=ucfirst($name);?></label><br>
 			<select name="<?=$field_name;?>">
 				<option value=""></option>
 				<?=html_options([1 => 'Yes', 0 => 'No'], $_GET[$field_name]);?>
