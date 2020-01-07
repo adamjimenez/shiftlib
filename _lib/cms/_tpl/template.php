@@ -289,7 +289,7 @@
     <script src="/_lib/cms/assets/js/scripts.js"></script>
 
     <script>
-        function button_handler (value, show_prompt, node) {
+        function button_handler (value, show_prompt, dt) {
 	   		if (show_prompt) {
 				var result = confirm('Are you sure?');
 
@@ -300,7 +300,7 @@
 	   		}
 
 			$('.action').val(value);
-	    	var form = $(node).closest('form');
+	    	var form = $(dt.table().container()).closest('form');
 	    	var table = form.find('table').DataTable();
 	    	var rows_selected = table.column(1).checkboxes.selected();
 
