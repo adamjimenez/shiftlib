@@ -1485,7 +1485,7 @@ function thumb($file, $max_width = 200, $max_height = 200, $default = null, $sav
     }
 }
 
-function time_elapsed($ptime): string
+function time_elapsed($ptime): ?string
 {
     $etime = time() - make_timestamp($ptime);
 
