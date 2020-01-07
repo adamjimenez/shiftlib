@@ -146,7 +146,7 @@ $(function() {
 		 }],
 		'select': {
 			"style": "multi",
-            "selector": "td:first-child"
+            "selector": "td.dt-checkboxes-cell"
 		},
 		
 		"order": [[<?=$order;?>, '<?=$asc;?>']],
