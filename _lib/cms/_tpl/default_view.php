@@ -131,7 +131,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             	        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
             			<?php
                         foreach ($cms_buttons as $k => $button) {
-                            if ($this->section == $button['section'] and 'view' == $button['page']) {
+                            if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'view' == $button['page']) {
                                 require('includes/button.php');
                             }
                         } ?>

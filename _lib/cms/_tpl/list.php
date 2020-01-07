@@ -84,19 +84,19 @@ $(function() {
 	}, {
 	    text: '<i class="fas fa-file-export"></i>',
 	    action: function ( e, dt, node, config ) {
-	    	button_handler('export', false, node);
+	    	button_handler('export', false, dt);
 	    }
 	}, {
 	    text: '<i class="fas fa-trash"></i>',
 	    className: 'btn-danger',
 	    action: function ( e, dt, node, config ) {
-	    	button_handler('delete', true, node);
+	    	button_handler('delete', true, dt);
 	    }
 	}];
 	
 	<?php
 	foreach ($cms_buttons as $k => $button) {
-	    if ($this->section == $button['section'] and 'list' == $button['page']) {
+	    if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
 	    ?>
 	        buttons.push({
 	    		text: '<?=is_string($button['label']) ? $button['label'] : $button['label']();?>',
