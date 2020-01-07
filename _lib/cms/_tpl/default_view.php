@@ -132,13 +132,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             			<?php
                         foreach ($cms_buttons as $k => $button) {
                             if ($this->section == $button['section'] and 'view' == $button['page']) {
-                                ?>
-                                <li>
-                                <?php
                                 require('includes/button.php');
-                                ?>
-                                </li>
-                                <?
                             }
                         } ?>
             	        <form method="post" style="display:inline;">
