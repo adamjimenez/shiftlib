@@ -810,7 +810,7 @@ class cms
 
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');
-        } elseif (in_array($option, ['index', 'login', 'configure', 'upgrade', 'choose_filter', 'shop_order', 'shop_orders'])) {
+        } elseif (in_array($option, ['index', 'login', 'configure', 'upgrade', 'choose_filter'])) {
             $this->template($option . '.php', true);
         } elseif ('index' != $option) {
             $this->default_section($option);
