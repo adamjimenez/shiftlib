@@ -554,20 +554,20 @@ $shop_config["include_vat"] = ' . str_to_bool($_POST['shop_config']['include_vat
 
         if ($option['section']) {
             $config .= '
-$vars["options"]["' . $option['name'] . '"] = "' . $option['section'] . '";
+$vars["options"]["' . spaced($option['name']) . '"] = "' . $option['section'] . '";
 ';
         } else {
             $option['list'] = strip_tags($option['list']);
 
             if (strstr($option['list'], '=')) {
                 $config .= '
-$vars["options"]["' . $option['name'] . '"] = [
+$vars["options"]["' . spaced($option['name']) . '"] = [
 ' . str_to_assoc($option['list']) . '
 ];
 ';
             } else {
                 $config .= '
-$vars["options"]["' . $option['name'] . '"] = [
+$vars["options"]["' . spaced($option['name']) . '"] = [
 ' . str_to_csv($option['list']) . '
 ];
 ';
@@ -696,6 +696,7 @@ $count['options'] = 0;
             		<label>Catchers</label><br>
             		<textarea name="tpl_config[catchers]" class="autogrow" style="width: 100%;" placeholder="e.g. pages, one per line"><?=implode("\n", $tpl_config['catchers']);?></textarea>
             		<br>
+            		<br>
             		
             		<label>Redirects</label><br>
     				<?php
@@ -709,7 +710,7 @@ $count['options'] = 0;
             		<br>
             		<br>
             		
-        			<label>Site-wide SSL</label><br>
+        			<label>Enforce SSL</label><br>
     	        	<input type="checkbox" name="tpl_config[ssl]" value="1" <?php if ($tpl_config['ssl']) { ?> checked<?php } ?>>
             	</div>
             </div>
@@ -846,18 +847,21 @@ $count['options'] = 0;
 			<div class="handle"><i class="fas fa-square"></i></div>
         </div>
         <div class="col-sm-3">
-			<input class="name" type="text" name="vars[fields][{$section_id}][{$count}][name]" placeholder="Field name" value="">
+			<input class="name" type="text" name="vars[fields][{$section_id}][{$count}][name]" placeholder="Field name" value="" required>
         </div>
         <div class="col-sm-3">
 			<input class="label" type="text" name="vars[fields][{$section_id}][{$count}][label]" placeholder="Field label" value="">
         </div>
-        <div class="col-sm-3">
-    		<select class="field" name="vars[fields][{$section_id}][{$count}][value]">
+        <div class="col-sm-2">
+    		<select class="field" name="vars[fields][{$section_id}][{$count}][value]" required>
     			<?=html_options($field_opts);?>
     		</select>
         </div>
-        <div class="col-sm-1">
-            <input class="required" type="checkbox" name="vars[required][{$count}]" value="1">
+        <div class="col-sm-2">
+            <label>
+                <input class="required" type="checkbox" name="vars[required][{$count}]" value="1">
+                required
+            </label>
         </div>
         <div class="col-sm-1">
             <span class="del_row"><i class="fas fa-trash"></i></span>
@@ -970,6 +974,10 @@ $count['options'] = 0;
     		        fieldRow.find('.required').prop('checked', true);
     		    }
     		    
+    		    if (type === 'int') {
+    		        type = 'integer';
+    		    }
+    		    
     		    fieldRow.find('select').val(type.replace('-', '_'));
     		});
     		
@@ -1064,6 +1072,11 @@ $count['options'] = 0;
     })
     
     $('body').on('click', '.del_row', function () {
+		var result = confirm('Are you sure?');
+		if (!result) {
+			return false;
+		}
+        
         $(this).closest('.row').remove();
     });
 
