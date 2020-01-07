@@ -51,6 +51,10 @@ $default_tables = [
             'name' => 'section_field_item',
             'type' => 'index',
             'fields' => ['section', 'field', 'item'],
+        ], [
+            'name' => 'section_field_item_value',
+            'type' => 'index',
+            'fields' => ['section', 'field', 'item', 'value'],
         ]]
     ],
     
@@ -149,6 +153,11 @@ $section_templates = [
         'tel' => 'tel',
         'enquiry' => 'textarea',
         'date' => 'timestamp',
+        'id' => 'id',
+    ],
+    'email templates' => [
+        'subject' => 'text',
+        'body' => 'editor',
         'id' => 'id',
     ]
 ];
@@ -474,7 +483,7 @@ $auth_config["login_wherestr"] = "' . $auth_config["login_wherestr"] . '";
 $upload_config = [];
 
 // configure the variables before use.
-$upload_config["upload_dir"] = "' . $_POST['upload_config']['upload_dir'] . '";
+$upload_config["upload_dir"] = "' . $upload_config['upload_dir'] . '";
 $upload_config["resize_images"] = ' . str_to_bool($_POST['upload_config']['resize_images']) . ';
 $upload_config["resize_dimensions"] = [' . str_replace('x', ',', $_POST['upload_config']['resize_dimensions']) . '];
 
@@ -500,7 +509,7 @@ $vars["sections"] = [
                 $label .= '"' . $field['name'] . '" => "' . $_POST['vars']['fields'][$section_id][$field_id]['label'] . '", ';
             }
 
-            $fields .= "\t" . '"' . $field['name'] . '"=>"' . $field['value'] . '",' . "\n";
+            $fields .= "\t" . '"' . trim(spaced(strtolower($field['name']))) . '"=>"' . $field['value'] . '",' . "\n";
 
             if ($_POST['vars']['required'][$field_id]) {
                 $required .= '"' . $field['name'] . '",';
@@ -526,8 +535,8 @@ $vars["subsections"]["' . $section . '"] = [' . $subsections . '];
     }
 
     $config .= '
-//folder to store files
-$vars["files"]["dir"] = "' . $_POST['vars']['files']['dir'] . '";
+// folder to store files
+$vars["files"]["dir"] = "' . $vars['files']['dir'] . '";
 
 # SHOP
 $shop_enabled = ' . str_to_bool($_POST['shop_enabled']) . ';
@@ -636,7 +645,7 @@ $count['options'] = 0;
         </ul>
     
         <div id="sections">
-            <div class="container"></div>
+            <div class="container m-0"></div>
             
             <p class="mt-3">
         		<select id="section_template">
@@ -649,7 +658,7 @@ $count['options'] = 0;
         
         <div id="dropdowns">
             
-            <div class="container"></div>
+            <div class="container m-0"></div>
             <span class="addDropdown">Add option</span>
             
         </div>
@@ -658,22 +667,17 @@ $count['options'] = 0;
             <div id="general_config">
             	<div style="padding:5px 10px;">
             		<label>From email</label><br>
-                    <input type="text" name="from_email" value="<?=$from_email;?>">
+                    <input type="email" name="from_email" value="<?=$from_email;?>">
             		<br>
             		<br>
-            		
-            		<label>Folder to store upload data</label><br>
-                    <input type="text" name="vars[files][dir]" value="<?=$vars['files']['dir'];?>">
-            		<br>
-            		<br>
-            		
+
             		<label>Shopping cart</label><br>
                     <input type="checkbox" name="shop_enabled" value="1" <?php if ($shop_enabled) { ?> checked<?php } ?>>
             		<br>
             		<br>
             		
             		<label>Paypal email</label><br>
-                    <input type="text" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>">
+                    <input type="email" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>">
             		<br>
             		<br>
             		
@@ -690,8 +694,7 @@ $count['options'] = 0;
             <div id="tpl_config">
             	<div style="padding:5px 10px;">
             		<label>Catchers</label><br>
-            		<textarea name="tpl_config[catchers]" class="autogrow" style="width: 100%;"><?=implode("\n", $tpl_config['catchers']);?></textarea>
-            		<br>
+            		<textarea name="tpl_config[catchers]" class="autogrow" style="width: 100%;" placeholder="e.g. pages, one per line"><?=implode("\n", $tpl_config['catchers']);?></textarea>
             		<br>
             		
             		<label>Redirects</label><br>
@@ -702,7 +705,7 @@ $count['options'] = 0;
                     }
                     $redirects = trim($redirects);
                     ?>
-    				<textarea name="tpl_config[redirects]" class="autogrow" style="width: 100%;"><?=$redirects;?></textarea>
+    				<textarea name="tpl_config[redirects]" class="autogrow" style="width: 100%;" placeholder="e.g. oldpage=newpage, one per line"><?=$redirects;?></textarea>
             		<br>
             		<br>
             		
@@ -771,11 +774,6 @@ $count['options'] = 0;
         </div>
     
         <div id="upload">
-            <label>Upload dir</label><br>
-            <input type="text" name="upload_config[upload_dir]" value="<?=$upload_config['upload_dir'];?>">
-    		<br>
-    		<br>
-            		
             <label>Resize images</label><br>
             <input type="checkbox" name="upload_config[resize_images]" value="1" <?php if ($upload_config['resize_images']) { ?> checked<?php } ?>>
     		<br>
@@ -787,7 +785,7 @@ $count['options'] = 0;
     		<br>
             		
             <label>Allowed exts</label><br>
-            <textarea type="text" name="upload_config[allowed_exts]" class="autogrow"><?=implode("\n", $upload_config['allowed_exts']);?></textarea>
+            <textarea type="text" name="upload_config[allowed_exts]" class="autogrow" placeholder="e.g. jpg, one per line"><?=implode("\n", $upload_config['allowed_exts']);?></textarea>
     		<br>
     		<br>
     
@@ -814,7 +812,7 @@ $count['options'] = 0;
         </div>
         <div class="col-sm-11">
     		<p>
-    			<input class="name" type="text" name="sections[{$count}]" value="">
+    			<input class="name" type="text" name="sections[{$count}]" value="" placeholder="Section name">
     			<span class="del_row"><i class="fas fa-trash"></i></span>
     		</p>
     
@@ -848,10 +846,10 @@ $count['options'] = 0;
 			<div class="handle"><i class="fas fa-square"></i></div>
         </div>
         <div class="col-sm-3">
-			<input class="name" type="text" name="vars[fields][{$section_id}][{$count}][name]" value="">
+			<input class="name" type="text" name="vars[fields][{$section_id}][{$count}][name]" placeholder="Field name" value="">
         </div>
         <div class="col-sm-3">
-			<input class="label" type="text" name="vars[fields][{$section_id}][{$count}][label]" value="">
+			<input class="label" type="text" name="vars[fields][{$section_id}][{$count}][label]" placeholder="Field label" value="">
         </div>
         <div class="col-sm-3">
     		<select class="field" name="vars[fields][{$section_id}][{$count}][value]">
@@ -900,8 +898,6 @@ $count['options'] = 0;
         </div>
         <div class="col-sm-1">
 			<span class="toggle_list_type"> <i class="fas fa-list"></i></span>
-        </div>
-        <div class="col-sm-1">
             <span class="del_row"><i class="fas fa-trash"></i></span>
         </div>
     </div>
