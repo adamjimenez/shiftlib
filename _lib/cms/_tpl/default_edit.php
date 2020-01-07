@@ -132,7 +132,7 @@ if ($_GET['id']) {
                     case 'checkbox':
                 ?>
 			    <div>
-			    	<?=$this->get_field($name, 'class="' . $class . '"');?>
+			    	<?=$this->get_field($name, 'id="' . underscored($name) . '" class="' . $class . '"');?>
 			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
 			    </div>
 				<?php
