@@ -7,6 +7,11 @@
 
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
+	
+    <!-- bootstrap 4 js before jquery ui -->
+    <script src="/_lib/cms/assets/js/popper.min.js"></script>
+    <script src="/_lib/cms/assets/js/bootstrap.min.js"></script>
+	
 	<?php load_js(['jqueryui', 'cms', 'google', 'lightbox', 'fontawesome']); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
@@ -262,10 +267,6 @@
 	    </div>
     </form>
     <!-- import modal end -->
-
-    <!-- bootstrap 4 js -->
-    <script src="/_lib/cms/assets/js/popper.min.js"></script>
-    <script src="/_lib/cms/assets/js/bootstrap.min.js"></script>
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
