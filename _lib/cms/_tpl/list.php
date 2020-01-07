@@ -99,7 +99,7 @@ $(function() {
 	    if ($this->section == $button['section'] and 'list' == $button['page']) {
 	    ?>
 	        buttons.push({
-	    		text: '<?=$button['label'];?>',
+	    		text: '<?=is_string($button['label']) ? $button['label'] : $button['label']();?>',
 	            action: function ( e, dt, node, config ) {
 	            	var form = $(node).closest('form');
 	            	form.find('.custom_button').val(<?=$k;?>);
