@@ -16,11 +16,10 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 					<th class="noVis"><i class="fas fa-arrows-alt-v"></i>&nbsp;</th>
 					<th class="noVis">&nbsp;</th>
 					<?php
-                    foreach ($vars['fields'][$this->section] as $name=>$type) {
-		                if (in_array($type, $this->hidden_columns)) {
-		                    continue;
-		                }
-                        ?>
+                    foreach ($vars['fields'][$this->section] as $name => $type) {
+                        if (in_array($type, $this->hidden_columns)) {
+                            continue;
+                        } ?>
 						<th><?=ucfirst(spaced($name)); ?></th>
 					<?php
                     }
@@ -69,7 +68,7 @@ $(function() {
 	    text: '<i class="fas fa-plus"></i> Add',
 	    className: 'btn-primary',
 	    action: function ( e, dt, node, config ) {
-	        location.href = '?option=<?=$this->section;?>&edit=1<?=$qs ? '&'.$qs : '';?>';
+	        location.href = '?option=<?=$this->section;?>&edit=1<?=$qs ? '&' . $qs : '';?>';
 	    }
 	}, {
 	    extend: 'colvis',
@@ -95,23 +94,23 @@ $(function() {
 	}];
 	
 	<?php
-	/*
-	foreach ($cms_buttons as $k => $button) {
-	    if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
-	    ?>
-	        buttons.push({
-	    		text: '<?=is_string($button['label']) ? $button['label'] : $button['label']();?>',
-	            action: function ( e, dt, node, config ) {
-	            	var form = $(node).closest('form');
-	            	form.find('.custom_button').val(<?=$k;?>);
-	            	form.submit();
-	            }
-	        });
-	    <?php
-	    }
-	}
-	*/
-	?>
+    /*
+    foreach ($cms_buttons as $k => $button) {
+        if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
+        ?>
+            buttons.push({
+                text: '<?=is_string($button['label']) ? $button['label'] : $button['label']();?>',
+                action: function ( e, dt, node, config ) {
+                    var form = $(node).closest('form');
+                    form.find('.custom_button').val(<?=$k;?>);
+                    form.submit();
+                }
+            });
+        <?php
+        }
+    }
+    */
+    ?>
 	
     var table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
     	dom: 'Bfrtip',

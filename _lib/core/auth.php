@@ -136,7 +136,7 @@ class auth
         $this->cookie_domain = $_SERVER['HTTP_HOST'];
 
         foreach ($config as $k => $v) {
-            if ($v !== '') {
+            if ('' !== $v) {
                 $this->$k = $v;
             }
         }
@@ -210,71 +210,71 @@ class auth
         }
     }
     
-    public function single_sign_on() {
-      // single sign on, triggerd by $_GET['provider'] = google
-        if( isset($_GET["provider"]) ){
-            $config = array(
-        		"base_url" => 'https://'.$_SERVER['HTTP_HOST'].'/login?action=auth',
+    public function single_sign_on()
+    {
+        // single sign on, triggerd by $_GET['provider'] = google
+        if (isset($_GET['provider'])) {
+            $config = [
+                'base_url' => 'https://' . $_SERVER['HTTP_HOST'] . '/login?action=auth',
         
-        		"providers" => array (
-        			"Facebook" => array (
-        				"enabled" => true,
-        				"keys"    => array ( "id" => $this->facebook_id, "secret" => $this->facebook_secret ),
-        				 "trustForwarded" => true,
-         				 "scope" => "email"
-        			),
-        			"Google" => array (
-        				"enabled" => true,
-        				"keys"    => array ( "id" => $this->google_id, "secret" => $this->google_secret ),
-        				"scope" => "profile email",
-        			),
-        		)
-        	);
+                'providers' => [
+                    'Facebook' => [
+                        'enabled' => true,
+                        'keys' => [ 'id' => $this->facebook_id, 'secret' => $this->facebook_secret ],
+                         'trustForwarded' => true,
+                          'scope' => 'email',
+                    ],
+                    'Google' => [
+                        'enabled' => true,
+                        'keys' => [ 'id' => $this->google_id, 'secret' => $this->google_secret ],
+                        'scope' => 'profile email',
+                    ],
+                ],
+            ];
         
-        	try{
-        		// initialize Hybrid_Auth with a given file
-        		$hybridauth = new Hybrid_Auth( $config );
+            try {
+                // initialize Hybrid_Auth with a given file
+                $hybridauth = new Hybrid_Auth($config);
         
-        		// try to authenticate with the selected provider
-        		$adapter = $hybridauth->authenticate( $_GET["provider"] );
+                // try to authenticate with the selected provider
+                $adapter = $hybridauth->authenticate($_GET['provider']);
         
-        		// then grab the user profile
-        		$user_profile = $adapter->getUserProfile();
-        	} catch( Exception $e ){
-        		echo "Error: please try again!";
-        		echo "Original error message: " . $e->getMessage();
-        	}
+                // then grab the user profile
+                $user_profile = $adapter->getUserProfile();
+            } catch (Exception $e) {
+                echo 'Error: please try again!';
+                echo 'Original error message: ' . $e->getMessage();
+            }
         
-        	$email = $user_profile->email or die('missing email');
-        	
-        	// find user
-        	$user = sql_query("SELECT * FROM " . $this->table . " WHERE
-        		email='".escape($email)."'
+            $email = $user_profile->email or die('missing email');
+            
+            // find user
+            $user = sql_query('SELECT * FROM ' . $this->table . " WHERE
+        		email='" . escape($email) . "'
         		LIMIT 1
         	", 1);
         
             // create user if they don't exist
-        	if( !$user ){
-        		$user['password'] = generate_password();
+            if (!$user) {
+                $user['password'] = generate_password();
         
-        		sql_query("INSERT INTO " . $this->table . " SET
-        			name='".escape($user_profile->firstName)."',
-        			surname='".escape($user_profile->lastName)."',
-        			email='".escape($email)."',
-        			password='".escape($user['password'])."'
+                sql_query('INSERT INTO ' . $this->table . " SET
+        			name='" . escape($user_profile->firstName) . "',
+        			surname='" . escape($user_profile->lastName) . "',
+        			email='" . escape($email) . "',
+        			password='" . escape($user['password']) . "'
         		");
-        	}
+            }
         
             // log in
-        	$this->set_login($user['email'], $user['password']);
+            $this->set_login($user['email'], $user['password']);
         }
         
-        if($_GET['action']=='auth'){
+        if ('auth' == $_GET['action']) {
             try {
                 Hybrid_Endpoint::process();
-            }
-            catch ( Exception $e ) {
-                echo "Login error";
+            } catch (Exception $e) {
+                echo 'Login error';
             }
         }
     }
@@ -366,8 +366,8 @@ class auth
     {
         global $cms;
         
-		$result = [];
-		$data = $_POST;
+        $result = [];
+        $data = $_POST;
 
         //activation
         if ($_GET['code']) {
@@ -388,16 +388,15 @@ class auth
         				id='" . escape($user['user']) . "'
         			LIMIT 1
         		");
-        		
+                
                 $this->load();
             }
             
-			$result = [
-			    'code' => 3,
-			    'message' => 'Thanks for verifying your email address'
-			];
-        } else if ($data['register']){
-        
+            $result = [
+                'code' => 3,
+                'message' => 'Thanks for verifying your email address',
+            ];
+        } elseif ($data['register']) {
             $cms->set_section($this->table, $fields);
     
             unset($data['admin']);
@@ -435,7 +434,7 @@ class auth
         			    	expiration = DATE_ADD(CURDATE(), INTERVAL 1 HOUR)
         			");
                 }
-    			
+                
                 $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request . '?user=' . $id . '&code=' . $code;
             }
     
@@ -454,15 +453,15 @@ class auth
             $this->load();
         
             if ($this->email_activation and !$this->user['email_verified']) {
-    			$result = [
-    			    'code' => 2,
-    			    'message' => 'Activation required, please check your email'
-    			];
+                $result = [
+                    'code' => 2,
+                    'message' => 'Activation required, please check your email',
+                ];
             } else {
-    			$result = [
-    			    'code' => 1,
-    			    'message' => 'Registration success'
-    			];
+                $result = [
+                    'code' => 1,
+                    'message' => 'Registration success',
+                ];
             }
         }
 
@@ -477,9 +476,9 @@ class auth
     {
         global $cms, $request;
         
-		$result = [];
-		$data = $_POST;
-		
+        $result = [];
+        $data = $_POST;
+        
         if ($_GET['code']) {
             //check code
             $user = sql_query("SELECT user FROM cms_activation
@@ -519,32 +518,32 @@ class auth
         				id='" . escape($user['id']) . "'
         			LIMIT 1
         		");
-        		
-        		if ($this->email_activation) {
+                
+                if ($this->email_activation) {
                     sql_query("UPDATE users SET
         			    email_verified = 1
             			WHERE
             				id='" . escape($user['id']) . "'
             			LIMIT 1
-            		");  
-        		}
-        		
-    			$result = [
-    			    'code' => 3,
-    			    'message' => 'New password has been set, <a href="/login">log in</a>'
-    			];
-            } else if ($user) {
-    			$result = [
-    			    'code' => 2,
-    			    'message' => 'Enter your new password'
-    			];
+            		");
+                }
+                
+                $result = [
+                    'code' => 3,
+                    'message' => 'New password has been set, <a href="/login">log in</a>',
+                ];
+            } elseif ($user) {
+                $result = [
+                    'code' => 2,
+                    'message' => 'Enter your new password',
+                ];
             } else {
-    			$result = [
-    			    'code' => 4,
-    			    'message' => 'Code is invalid or expired'
-    			];
+                $result = [
+                    'code' => 4,
+                    'message' => 'Code is invalid or expired',
+                ];
             }
-		} else if ($data['forgot_password']) {
+        } elseif ($data['forgot_password']) {
             // default to post value
             if (true === empty($email)) {
                 $email = $data['email'];
@@ -591,14 +590,14 @@ class auth
             email_template($email, 'Password Reminder', $reps);
     
             if ($this->forgot_success) {
-    			$result = [
-    			    'code' => 1,
-    			    'message' => 'Password recovery email sent'
-    			];
+                $result = [
+                    'code' => 1,
+                    'message' => 'Password recovery email sent',
+                ];
             }
-		}
-		
-		return $result;
+        }
+        
+        return $result;
     }
 
     public function login()
@@ -611,8 +610,7 @@ class auth
         if ($this->user) {
             $result['code'] = 1;
             $result['message'] = 'User logged in';
-        } else if ($data['login']) {
-            
+        } elseif ($data['login']) {
             $errors = [];
             if ($data['email'] and $data['password']) {
                 $this->check_login_attempts();
@@ -657,7 +655,7 @@ class auth
     
             if (count($errors)) {
                 $this->show_error($errors);
-            } else if ($data['validate']) {
+            } elseif ($data['validate']) {
                 print 1;
                 exit;
             }
