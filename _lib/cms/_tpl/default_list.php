@@ -24,6 +24,7 @@ if ($_POST['delete_filter']) {
 	");
 }
 
+// search filters
 $filters = sql_query("SELECT * FROM cms_filters WHERE 
 	user = '" . escape($auth->user['id']) . "' AND
 	section = '" . escape($this->section) . "'
@@ -31,7 +32,6 @@ $filters = sql_query("SELECT * FROM cms_filters WHERE
 
 $filter_exists = false;
 $params = $_GET;
-unset($params['option']);
 
 $qs = http_build_query($params);
 foreach ($filters as $v) {
@@ -40,6 +40,7 @@ foreach ($filters as $v) {
     }
 }
 
+// custom button handler
 if ($_POST['custom_button']) {
     if ('list' == $cms_buttons[$_POST['custom_button']]['page'] and $cms_buttons[$_POST['custom_button']]['handler']) {
         $items = [];
@@ -184,7 +185,7 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
                 $conditions = $_GET;
                 unset($conditions['option']);
                 
-                $qs = http_build_query(['s' => $params]);
+                $qs = http_build_query(['s' => $conditions]);
                 require(dirname(__FILE__) . '/list.php'); 
                 ?>
     
