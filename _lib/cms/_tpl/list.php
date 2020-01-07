@@ -35,7 +35,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
 $params = [];
 $params['fields'] = $conditions;
 $params['section'] = $this->section;
-$order = 3;
+$order = 2;
 ?>
 
 <style>
