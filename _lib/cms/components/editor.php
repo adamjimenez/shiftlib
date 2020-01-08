@@ -1,18 +1,23 @@
 <?php
+
 namespace cms;
+
+use DOMDocument;
 
 class editor extends component
 {
-	public $field_sql = "TEXT";
-	
-	function field($field_name, $value = '', $options = []) {
-		?>
-		<textarea name="<?=$field_name;?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?=$options['attribs'] ?: 'rows="25" style="width:100%; height: 400px;"';?> data-type="tinymce"><?=htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8');?></textarea>
-		<?
-	}
-	
-	function format_value($value) {
-        $doc = new \DOMDocument();
+    public $field_sql = "TEXT";
+
+    function field($field_name, $value = '', $options = [])
+    {
+        ?>
+        <textarea name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs'] ?: 'rows="25" style="width:100%; height: 400px;"'; ?> data-type="tinymce"><?= htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8'); ?></textarea>
+        <?
+    }
+
+    function format_value($value)
+    {
+        $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');
 
         $container = $doc->getElementsByTagName('div')->item(0);
@@ -32,10 +37,11 @@ class editor extends component
         }
 
         $value = $doc->saveHTML();
-		return $value;
-	}
-	
-	function search_field($name, $value) {
-	    return false;
-	}
+        return $value;
+    }
+
+    function search_field($name, $value)
+    {
+        return false;
+    }
 }

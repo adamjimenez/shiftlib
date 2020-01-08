@@ -3,12 +3,12 @@
 $result = $auth->login();
 
 // handle login
-if ($result['code']===1) {
-	if ($_SESSION['request']) {
-		redirect($_SESSION['request']);
-	} else {
-    	redirect('/admin');
-	}
+if (1 === $result['code']) {
+    if ($_SESSION['request']) {
+        redirect($_SESSION['request']);
+    } else {
+        redirect('/admin');
+    }
 }
 ?>
 <!doctype html>

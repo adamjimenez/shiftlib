@@ -47,7 +47,7 @@ class cms
             $indexes = [];
             
             foreach ($fields as $name => $type) {
-                if ($name === 'indexes') {
+                if ('indexes' === $name) {
                     $indexes = $type;
                     continue;
                 }
@@ -67,8 +67,8 @@ class cms
                 )
             ");
             
-            foreach($indexes as $index) {
-                sql_query("ALTER TABLE `$table` ADD ".strtoupper($index['type'])." `".$index['name']."` ( ".implode(',', $index['fields'])." )");
+            foreach ($indexes as $index) {
+                sql_query("ALTER TABLE `$table` ADD " . strtoupper($index['type']) . ' `' . $index['name'] . '` ( ' . implode(',', $index['fields']) . ' )');
             }
         }
     }
@@ -79,7 +79,6 @@ class cms
      */
     public function form_to_db(string $type)
     {
-        
         if ($component = $this->get_component($type)) {
             return $component->field_sql;
         }
@@ -108,7 +107,7 @@ class cms
         
         if (!$select_all_pages) {
             $ids = is_array($conditions) ? $conditions : [$conditions];
-            $conditions = array('id' => $ids);
+            $conditions = ['id' => $ids];
         }
         
         // staff perms
@@ -265,7 +264,7 @@ class cms
             $field_page_name = array_search('page-name', $vars['fields'][$section]);
             $conditions = [$field_page_name => $conditions];
             $num_results = 1;
-        } else if (!in_array('id', $vars['fields'][$section])) {
+        } elseif (!in_array('id', $vars['fields'][$section])) {
             $id = 1;
         }
 
@@ -280,7 +279,7 @@ class cms
         }
         
         // add underscores to conditions (broken page name), should we enforce underscores?
-        foreach($conditions as $k => $v) {
+        foreach ($conditions as $k => $v) {
             $conditions[underscored($k)] = $v;
         }
 
@@ -294,7 +293,7 @@ class cms
             $field_name = underscored($name);
             $value = $conditions[$field_name];
 
-            if (!isset($value) || $value === '') {
+            if (!isset($value) || '' === $value) {
                 continue;
             }
             
@@ -412,8 +411,8 @@ class cms
 
         // create joins
         if (
-            in_array('select', $vars['fields'][$section]) || 
-            in_array('combo', $vars['fields'][$section]) || 
+            in_array('select', $vars['fields'][$section]) ||
+            in_array('combo', $vars['fields'][$section]) ||
             in_array('radio', $vars['fields'][$section])
         ) {
             $selects = array_keys($vars['fields'][$section], 'select');
@@ -466,7 +465,7 @@ class cms
         global $vars, $auth;
         
         if (!is_array($vars['fields'][$section])) {
-            trigger_error('missing section: '. $section, E_ERROR);
+            trigger_error('missing section: ' . $section, E_ERROR);
             return false;
         }
 
@@ -486,10 +485,10 @@ class cms
             
             $col = "T_$table." . underscored($name);
             if ('coords' == $type) {
-                $col = "AsText(" . $col . ')';
+                $col = 'AsText(' . $col . ')';
             }
             
-            $cols .= "\t". $col . ' AS `' . underscored($name) . '`,' . "\n";
+            $cols .= "\t" . $col . ' AS `' . underscored($name) . '`,' . "\n";
         }
 
         // select id column
@@ -509,7 +508,6 @@ class cms
                 $order = 'T_' . $table . '.' . underscored($field_date);
                 $asc = false;
             } else {
-                
                 $label = $vars['fields'][$section][0];
                 $type = $vars['fields'][$this->section][$label];
 
@@ -579,7 +577,8 @@ class cms
                     $join_id = $this->get_id_field($name);
                     $key = $this->get_option_label($name);
 
-                    $rows = sql_query('SELECT `' . underscored($key) . '`,T1.value FROM cms_multiple_select T1
+                    $rows = sql_query(
+                        'SELECT `' . underscored($key) . '`,T1.value FROM cms_multiple_select T1
                         INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 
                         ON T1.value = T2.$join_id
                         WHERE
@@ -697,7 +696,8 @@ class cms
         return truncate($value);
     }
     
-    private function get_component($type) {
+    private function get_component($type)
+    {
         $class = $this->type_to_class($type);
         if (class_exists($class)) {
             return new $class;
@@ -711,18 +711,20 @@ class cms
         return in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
     }
     
-    public function get_option_label($field) {
+    public function get_option_label($field)
+    {
         global $vars;
         reset($vars['fields'][$vars['options'][$field]]);
         return key($vars['fields'][$vars['options'][$field]]);
     }
     
-    private function type_to_class($class) {
+    private function type_to_class($class)
+    {
         $class = str_replace('parent', 'select_parent', $class);
-        if ($class == 'int') {
+        if ('int' == $class) {
             $class = 'integer';
         }
-        $class = 'cms\\'.str_replace('-', '_', $class);
+        $class = 'cms\\' . str_replace('-', '_', $class);
         return $class;
     }
 
@@ -824,9 +826,9 @@ class cms
     {
         global $vars, $from_email;
         
-		if(!is_string($to)){
-		    $to = $from_email;
-		}
+        if (!is_string($to)) {
+            $to = $from_email;
+        }
 
         if (!$subject || is_numeric($subject)) {
             $subject = 'New submission to: ' . $this->section;
@@ -914,7 +916,7 @@ class cms
             
             // check fields
             if (
-                ($data[$field_name] != '' && $component && !$component->is_valid($data[$field_name])) || 
+                ('' != $data[$field_name] && $component && !$component->is_valid($data[$field_name])) ||
                 (in_array($name, $vars['required'][$this->section]) && '' == $data[$field_name])
             ) {
                 $errors[] = $field_name;
@@ -993,7 +995,7 @@ class cms
             // handle null fields
             $this->query .= "`$field_name`=";
             if (empty($data[$field_name]) && in_array($field_name, $null_fields)) {
-                $this->query .= "NULL";
+                $this->query .= 'NULL';
             } elseif ('coords' == $type) {
                 // todo: move to components
                 $this->query .= "GeomFromText('POINT(" . escape($data[$field_name]) . ")')";
@@ -1170,7 +1172,7 @@ class cms
         
         // actions
         $conditions = $_POST['select_all_pages'] ? $_GET : $_POST['id'];
-        switch($_POST['action']) {
+        switch ($_POST['action']) {
             case 'export':
                 $this->export_items($_POST['section'], $conditions, $_POST['select_all_pages']);
             break;
