@@ -174,7 +174,7 @@ class cms
         exit();
     }
 
-    public function delete_items($section, $conditions, $select_all_pages) // used in admin system
+    public function delete_items($section, $conditions, $select_all_pages = false) // used in admin system
     {
         global $auth;
 
