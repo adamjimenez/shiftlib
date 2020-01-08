@@ -629,6 +629,9 @@ $count['options'] = 0;
     #dropdowns textarea {
         display: none;
     }
+    .toggle_section {
+        cursor: pointer;
+    }
 </style>
 
 <form method="post" id="form">
@@ -841,7 +844,7 @@ $count['options'] = 0;
    <div class="row mb-3 draggableSections">
         <div class="col-sm-1">
             <div class="handle" style="height:100%;"><i class="fas fa-square"></i></div>
-            <span class="toggle_section"><i class="fas fa-caret-right"></i></span>
+            <span class="toggle_section px-1"><i class="fas fa-chevron-right"></i></span>
         </div>
         <div class="col-sm-11">
             <p>
