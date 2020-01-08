@@ -234,33 +234,12 @@ function initForms()
 	});
 
 	//textarea
-	jQuery('textarea.autogrow').bind('keyup', function() {
-		this.style.overflow = "hidden";
-		this.style.fontSize = 12 + "px";
-		//var textarea = _gel("stickyText12");
-		var cols = this.cols;
-		var str = this.value;
-		str = str.replace(/\r\n?/, "\n");
-		var lines = 2;
-		var chars = 0;
-		for (i = 0; i < str.length; i++) {
-			var c = str.charAt(i);
-			chars++;
-			if (c == "\n" || chars == cols) {
-				lines ++;
-				chars = 0;
-			}
-		}
-
-		if( this.rows>lines ){
-			lines=this.rows;
-		}
-
-		this.style.height = lines*14 + "px";
-	});
-
-	jQuery('textarea.autogrow').trigger('keyup');
-
+    if( jQuery('textarea.autosize').length ){
+		jQuery.getScript("https://cdn.jsdelivr.net/npm/jquery-autosize@1.18.18/jquery.autosize.min.js").done(function(){
+			$('textarea.autosize').autosize();
+		});
+	}
+	
 	//combobox
 	if( jQuery('select.combobox').length ){
 		jQuery("head").append("<link>");

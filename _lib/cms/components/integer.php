@@ -62,13 +62,13 @@ class integer extends component
 
         <div>
             <div style="float:left">
-                <select name="func[<?= $field_name; ?>]">
+                <select name="func[<?= $field_name; ?>]" class="form-control">
                     <option value=""></option>
                     <?= html_options(['=' => '=', '!=' => '!=', '>' => '>', '<' => '<'], $_GET['func'][$field_name]); ?>
                 </select>
             </div>
             <div style="float:left">
-                <input type="number" id="<?= $name; ?>" name="<?= $field_name; ?>" value="<?= $_GET[$field_name]; ?>" size="8"/>
+                <input type="number" id="<?= $name; ?>" name="<?= $field_name; ?>" value="<?= $_GET[$field_name]; ?>" size="8" class="form-control">
             </div>
             <br style="clear: both;">
         </div>

@@ -144,7 +144,7 @@ $section_templates = [
         'comment' => 'textarea',
         'blog' => 'select',
         'date' => 'timestamp',
-        'ip' => 'text',
+        'ip' => 'ip',
         'id' => 'id',
     ],
     'enquiries' => [
@@ -292,11 +292,11 @@ function loop_fields($field_arr)
 
                     foreach ($rows as $row) {
                         sql_query("INSERT INTO cms_multiple_select SET
-							section='" . $section . "',
-							field='" . $new_name . "',
-							item='" . escape($row['id']) . "',
-							value='" . escape($row[$new_name]) . "'
-						");
+                            section='" . $section . "',
+                            field='" . $new_name . "',
+                            item='" . escape($row['id']) . "',
+                            value='" . escape($row[$new_name]) . "'
+                        ");
                     }
                 }
             }
@@ -413,10 +413,10 @@ if ($_POST['save']) {
         foreach ($users as $user) {
             $password = $auth->create_hash($user['password']);
             sql_query("UPDATE users SET
-    			password = '" . escape($password) . "'
-    			WHERE
-    				id = '" . $user['id'] . "'
-    		");
+                password = '" . escape($password) . "'
+                WHERE
+                    id = '" . $user['id'] . "'
+            ");
         }
     }
 
@@ -446,7 +446,7 @@ $auth_config["table"] = "' . $_POST['auth_config']['table'] . '";
 
 // required fields when registering and updating
 $auth_config["required"] = [
-	' . array_to_csv($_POST['auth_config']['required']) . '
+    ' . array_to_csv($_POST['auth_config']['required']) . '
 ];
 
 // automated emails will be sent from this address
@@ -598,7 +598,7 @@ $release_url = 'https://api.github.com/repos/adamjimenez/shiftlib/releases/lates
 $release = wget($release_url);
 
 // zipball_url
-if ($release['tag_name'] != $this->version) {
+if ($release['tag_name'] != $this::VERSION) {
 ?>
 <div class="alert alert-primary mt-3" role="alert">
     New version available: <?=$release['tag_name'];?>
@@ -629,212 +629,247 @@ $count['options'] = 0;
     #dropdowns textarea {
         display: none;
     }
+    .toggle_section {
+        cursor: pointer;
+    }
 </style>
 
 <form method="post" id="form">
     <input type="hidden" name="save" value="1">
     
-    <div id="tabs">
-        <ul class="nav">
-            <li><a href="#sections">Sections</a></li>
-            <li><a href="#dropdowns">Dropdowns</a></li>
-            <li><a href="#general">General</a></li>
-            <li><a href="#template">Template</a></li>
-            <li><a href="#login">Login</a></li>
-            <li><a href="#upload">Upload</a></li>
-        </ul>
+    <div class="main-content-inner">
+        <div class="row">
     
-        <div id="sections">
-            <div class="container m-0"></div>
+            <div class="col-lg-12 mt-1 p-0">
+                <div class="card">
+                    <div class="card-body">
+                
+                        <ul class="nav nav-tabs mt-3" id="pills-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#sections" role="tab" aria-controls="pills-sections" aria-selected="true">
+                                    Sections
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-dropdowns-tab" data-toggle="pill" href="#dropdowns" role="tab" aria-controls="pills-dropdowns" aria-selected="true">
+                                    Dropdowns
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="pills-general" aria-selected="true">
+                                    General
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-template-tab" data-toggle="pill" href="#template" role="tab" aria-controls="pills-template" aria-selected="true">
+                                    Template
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-login-tab" data-toggle="pill" href="#login" role="tab" aria-controls="pills-login" aria-selected="true">
+                                    Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-upload-tab" data-toggle="pill" href="#upload" role="tab" aria-controls="pills-upload" aria-selected="true">
+                                    Upload
+                                </a>
+                            </li>
+                        </ul>
             
-            <p class="mt-3">
-        		<select id="section_template">
-        			<?=html_options(array_keys($section_templates));?>
-        		</select>
-        		<button class="addSection" type="button">Add section</button>
-            </p>
-    
-        </div>
-        
-        <div id="dropdowns">
-            
-            <div class="container m-0"></div>
-            <span class="addDropdown">Add option</span>
-            
-        </div>
-    
-        <div id="general">
-            <div id="general_config">
-            	<div style="padding:5px 10px;">
-            		<label>From email</label><br>
-                    <input type="email" name="from_email" value="<?=$from_email;?>">
-            		<br>
-            		<br>
+                        <div class="tab-content py-3">
+                            <div class="tab-pane fade show active" id="sections" role="tabpanel" aria-labelledby="pills-sections-tab">
+                        
+                                <div class="container m-0"></div>
+                                
+                                <p class="mt-3">
+                                    <select id="section_template">
+                                        <?=html_options(array_keys($section_templates));?>
+                                    </select>
+                                    <button class="btn btn-secondary addSection" type="button">Add section</button>
+                                </p>
+                                
+                            </div>
+                
+                            <div class="tab-pane fade" id="dropdowns" role="tabpanel" aria-labelledby="pills-dropdowns-tab">
+                                
+                                <div class="container m-0"></div>
+                                <span class="addDropdown">Add option</span>
+                            
+                            </div>
+                
+                            <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="pills-general-tab">
+                                
+                                <label>From email</label><br>
+                                <input type="email" name="from_email" value="<?=$from_email;?>">
+                                <br>
+                                <br>
+                
+                                <label>Shopping cart</label><br>
+                                <input type="checkbox" name="shop_enabled" value="1" <?php if ($shop_enabled) { ?> checked<?php } ?>>
+                                <br>
+                                <br>
+                                
+                                <label>Paypal email</label><br>
+                                <input type="email" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>VAT</label><br>
+                                <input type="checkbox" name="shop_config[include_vat]" value="1" <?php if ($shop_config['include_vat']) { ?> checked<?php } ?>>
+                                <br>
+                                <br>
+                                    
+                            </div>
+                    
+                            <div class="tab-pane fade" id="template" role="tabpanel" aria-labelledby="pills-template-tab">
+                                
+                                <div style="padding:5px 10px;">
+                                    <label>Catchers</label><br>
+                                    <textarea name="tpl_config[catchers]" class="autosize" style="width: 100%;" placeholder="e.g. pages, one per line"><?=implode("\n", $tpl_config['catchers']);?></textarea>
+                                    <br>
+                                    <br>
+                                    
+                                    <label>Redirects</label><br>
+                                    <?php
+                                    $redirects = '';
+                                    foreach ($tpl_config['redirects'] as $k => $v) {
+                                        $redirects .= $k . '=' . $v . "\n";
+                                    }
+                                    $redirects = trim($redirects);
+                                    ?>
+                                    <textarea name="tpl_config[redirects]" class="autosize" style="width: 100%;" placeholder="e.g. oldpage=newpage, one per line"><?=$redirects;?></textarea>
+                                    <br>
+                                    <br>
+                                    
+                                    <label>Enforce SSL</label><br>
+                                    <input type="checkbox" name="tpl_config[ssl]" value="1" <?php if ($tpl_config['ssl']) { ?> checked<?php } ?>>
+                                </div>
+                                
+                            </div>
+                    
+                            <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="pills-login-tab">
+                                
+                                <label>Table</label><br>
+                                <input type="text" name="auth_config[table]" value="<?=$auth_config['table'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Hash passwords</label><br>
+                                <input type="checkbox" name="auth_config[hash_password]" value="1" <?php if ($auth_config['hash_password']) { ?> checked<?php } ?>>
+                                <br>
+                                <br>
+                                
+                                <label>Hash salt</label><br>
+                                <input type="text" name="auth_config[hash_salt]" value="<?=$auth_config['hash_salt'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Require email activation</label><br>
+                                <input type="checkbox" name="auth_config[email_activation]" value="1" <?php if ($auth_config['email_activation']) { ?> checked<?php } ?>>
+                                <br>
+                                <br>
+                                
+                                <label>Cookie salt</label><br>
+                                <input type="text" name="auth_config[secret_phrase]" value="<?=$auth_config['secret_phrase'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Cookie prefix</label><br>
+                                <input type="text" name="auth_config[cookie_prefix]" value="<?=$auth_config['cookie_prefix'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Cookie duration</label><br>
+                                <input type="text" name="auth_config[cookie_duration]" value="<?=$auth_config['cookie_duration'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Facebook appId</label><br>
+                                <input type="text" name="auth_config[facebook_appId]" value="<?=$auth_config['facebook_appId'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Facebook secret</label><br>
+                                <input type="text" name="auth_config[facebook_secret]" value="<?=$auth_config['facebook_secret'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Google appId</label><br>
+                                <input type="text" name="auth_config[google_appId]" value="<?=$auth_config['google_appId'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Google secret</label><br>
+                                <input type="text" name="auth_config[google_secret]" value="<?=$auth_config['google_secret'];?>">
+                                <br>
+                                <br>
+                                
+                            </div>
+                        
+                            <div class="tab-pane fade" id="upload" role="tabpanel" aria-labelledby="pills-upload-tab">
+                                <label>Resize images</label><br>
+                                <input type="checkbox" name="upload_config[resize_images]" value="1" <?php if ($upload_config['resize_images']) { ?> checked<?php } ?>>
+                                <br>
+                                <br>
+                                        
+                                <label>Resize dimensions</label><br>
+                                <input type="text" name="upload_config[resize_dimensions]" value="<?=implode('x', $upload_config['resize_dimensions']);?>">
+                                <br>
+                                <br>
+                                        
+                                <label>Allowed exts</label><br>
+                                <textarea type="text" name="upload_config[allowed_exts]" class="autosize" placeholder="e.g. jpg, one per line"><?=implode("\n", $upload_config['allowed_exts']);?></textarea>
+                                <br>
+                                <br>
+                            </div>
+                        </div>
+                    
+                        <br>
+                        <p>
+                            <button class="btn btn-secondary" type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-            		<label>Shopping cart</label><br>
-                    <input type="checkbox" name="shop_enabled" value="1" <?php if ($shop_enabled) { ?> checked<?php } ?>>
-            		<br>
-            		<br>
-            		
-            		<label>Paypal email</label><br>
-                    <input type="email" name="shop_config[paypal_email]" value="<?=$shop_config['paypal_email'];?>">
-            		<br>
-            		<br>
-            		
-            		<label>VAT</label><br>
-                    <input type="checkbox" name="shop_config[include_vat]" value="1" <?php if ($shop_config['include_vat']) { ?> checked<?php } ?>>
-            		<br>
-            		<br>
-            		
-            	</div>
-            </div>
-        </div>
-    
-        <div id="template">
-            <div id="tpl_config">
-            	<div style="padding:5px 10px;">
-            		<label>Catchers</label><br>
-            		<textarea name="tpl_config[catchers]" class="autogrow" style="width: 100%;" placeholder="e.g. pages, one per line"><?=implode("\n", $tpl_config['catchers']);?></textarea>
-            		<br>
-            		<br>
-            		
-            		<label>Redirects</label><br>
-    				<?php
-                    $redirects = '';
-                    foreach ($tpl_config['redirects'] as $k => $v) {
-                        $redirects .= $k . '=' . $v . "\n";
-                    }
-                    $redirects = trim($redirects);
-                    ?>
-    				<textarea name="tpl_config[redirects]" class="autogrow" style="width: 100%;" placeholder="e.g. oldpage=newpage, one per line"><?=$redirects;?></textarea>
-            		<br>
-            		<br>
-            		
-        			<label>Enforce SSL</label><br>
-    	        	<input type="checkbox" name="tpl_config[ssl]" value="1" <?php if ($tpl_config['ssl']) { ?> checked<?php } ?>>
-            	</div>
-            </div>
-        </div>
-    
-        <div id="login">
-    		<label>Table</label><br>
-    		<input type="text" name="auth_config[table]" value="<?=$auth_config['table'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Hash passwords</label><br>
-            <input type="checkbox" name="auth_config[hash_password]" value="1" <?php if ($auth_config['hash_password']) { ?> checked<?php } ?>>
-    		<br>
-    		<br>
-    		
-    		<label>Hash salt</label><br>
-            <input type="text" name="auth_config[hash_salt]" value="<?=$auth_config['hash_salt'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Require email activation</label><br>
-            <input type="checkbox" name="auth_config[email_activation]" value="1" <?php if ($auth_config['email_activation']) { ?> checked<?php } ?>>
-    		<br>
-    		<br>
-    		
-    		<label>Cookie salt</label><br>
-            <input type="text" name="auth_config[secret_phrase]" value="<?=$auth_config['secret_phrase'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Cookie prefix</label><br>
-            <input type="text" name="auth_config[cookie_prefix]" value="<?=$auth_config['cookie_prefix'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Cookie duration</label><br>
-            <input type="text" name="auth_config[cookie_duration]" value="<?=$auth_config['cookie_duration'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Facebook appId</label><br>
-            <input type="text" name="auth_config[facebook_appId]" value="<?=$auth_config['facebook_appId'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Facebook secret</label><br>
-            <input type="text" name="auth_config[facebook_secret]" value="<?=$auth_config['facebook_secret'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Google appId</label><br>
-            <input type="text" name="auth_config[google_appId]" value="<?=$auth_config['google_appId'];?>">
-    		<br>
-    		<br>
-    		
-    		<label>Google secret</label><br>
-            <input type="text" name="auth_config[google_secret]" value="<?=$auth_config['google_secret'];?>">
-    		<br>
-    		<br>
-    		
-        </div>
-    
-        <div id="upload">
-            <label>Resize images</label><br>
-            <input type="checkbox" name="upload_config[resize_images]" value="1" <?php if ($upload_config['resize_images']) { ?> checked<?php } ?>>
-    		<br>
-    		<br>
-            		
-            <label>Resize dimensions</label><br>
-            <input type="text" name="upload_config[resize_dimensions]" value="<?=implode('x', $upload_config['resize_dimensions']);?>">
-    		<br>
-    		<br>
-            		
-            <label>Allowed exts</label><br>
-            <textarea type="text" name="upload_config[allowed_exts]" class="autogrow" placeholder="e.g. jpg, one per line"><?=implode("\n", $upload_config['allowed_exts']);?></textarea>
-    		<br>
-    		<br>
-    
         </div>
     </div>
-    
-    <br>
-        <p>
-    		<button type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
-    	</p>
-    </div>
-    <br>
-    
+
     <input type="hidden" name="last" value="1">
 </form>
-
 
 <template id="sectionTemplate">
     
    <div class="row mb-3 draggableSections">
         <div class="col-sm-1">
             <div class="handle" style="height:100%;"><i class="fas fa-square"></i></div>
-    		<span class="toggle_section"><i class="fas fa-caret-right"></i></span>
+            <span class="toggle_section px-1"><i class="fas fa-chevron-right"></i></span>
         </div>
         <div class="col-sm-11">
-    		<p>
-    			<input class="name" type="text" name="sections[{$count}]" value="" placeholder="Section name">
-    			<span class="del_row"><i class="fas fa-trash"></i></span>
-    		</p>
+            <p>
+                <input class="name" type="text" name="sections[{$count}]" value="" placeholder="Section name">
+                <span class="del_row"><i class="fas fa-trash"></i></span>
+            </p>
     
-    		<div class="settings" style="display:none;">
-    			<label>
-    				<input class="display" type="checkbox" name="vars[settings][{$count}][display]" value="1" checked="checked">  Show in navigation
-    			</label>
-    			<br>
-    			
-    			<div class="fields">
-    		    	<div class="container"></div>
-    			    <span class="addField" data-section_id="{$count}">Add field</span>
-    			</div>
-    			<br>
+            <div class="settings" style="display:none;">
+                <label>
+                    <input class="display" type="checkbox" name="vars[settings][{$count}][display]" value="1" checked="checked">  Show in navigation
+                </label>
+                <br>
+                
+                <div class="fields">
+                    <div class="container"></div>
+                    <span class="addField" data-section_id="{$count}">Add field</span>
+                </div>
+                <br>
     
-    			<h4>Subsections</h4>
-    			<div class="subsections">
-    		    	<div class="container"></div>
-    			    <span class="addSubsection" data-section_id="{$count}">Add subsection</span>
-    			</div>
-    		</div>
+                <h4>Subsections</h4>
+                <div class="subsections">
+                    <div class="container"></div>
+                    <span class="addSubsection" data-section_id="{$count}">Add subsection</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -844,18 +879,18 @@ $count['options'] = 0;
 
    <div class="row mb-3 draggable">
         <div class="col-sm-1">
-			<div class="handle"><i class="fas fa-square"></i></div>
+            <div class="handle"><i class="fas fa-square"></i></div>
         </div>
         <div class="col-sm-3">
-			<input class="name" type="text" name="vars[fields][{$section_id}][{$count}][name]" placeholder="Field name" value="" required>
+            <input class="name" type="text" name="vars[fields][{$section_id}][{$count}][name]" placeholder="Field name" value="" required>
         </div>
         <div class="col-sm-3">
-			<input class="label" type="text" name="vars[fields][{$section_id}][{$count}][label]" placeholder="Field label" value="">
+            <input class="label" type="text" name="vars[fields][{$section_id}][{$count}][label]" placeholder="Field label" value="">
         </div>
         <div class="col-sm-2">
-    		<select class="field" name="vars[fields][{$section_id}][{$count}][value]" required>
-    			<?=html_options($field_opts);?>
-    		</select>
+            <select class="field" name="vars[fields][{$section_id}][{$count}][value]" required>
+                <?=html_options($field_opts);?>
+            </select>
         </div>
         <div class="col-sm-2">
             <label>
@@ -874,12 +909,12 @@ $count['options'] = 0;
     
    <div class="row mb-3 draggable">
         <div class="col-sm-1">
-			<div class="handle"><i class="fas fa-square"></i></div>
+            <div class="handle"><i class="fas fa-square"></i></div>
         </div>
         <div class="col-sm-10">
-    		<select name="vars[subsections][{$section_id}][]">
-    			<?=html_options($section_opts, $v);?>
-    		</select>
+            <select name="vars[subsections][{$section_id}][]">
+                <?=html_options($section_opts, $v);?>
+            </select>
         </div>
         <div class="col-sm-1">
             <span class="del_row"><i class="fas fa-trash"></i></span>
@@ -892,16 +927,16 @@ $count['options'] = 0;
     
    <div class="row mb-3 list">
         <div class="col-sm-5">
-			<input class="name" type="text" name="options[{$count}][name]">
+            <input class="name" type="text" name="options[{$count}][name]">
         </div>
         <div class="col-sm-5">
-			<textarea cols="30" type="text" name="options[{$count}][list]" class="autogrow"></textarea>
-			<select name="options[{$count}][section]" disabled>
-			    <?=html_options($section_opts, $val);?>
-			</select>
+            <textarea cols="30" type="text" name="options[{$count}][list]" class="autosize"></textarea>
+            <select name="options[{$count}][section]" disabled>
+                <?=html_options($section_opts, $val);?>
+            </select>
         </div>
         <div class="col-sm-1">
-			<span class="toggle_list_type"> <i class="fas fa-list"></i></span>
+            <span class="toggle_list_type"> <i class="fas fa-list"></i></span>
             <span class="del_row"><i class="fas fa-trash"></i></span>
         </div>
     </div>
@@ -944,17 +979,17 @@ $count['options'] = 0;
             var html = $('#sectionTemplate').html()
                 .split('{$count}').join(count.sections);
                 
-    		var row = $(html).appendTo($('#sections>.container'));
-    		
-    		// display
-    		if (vars.sections.indexOf(key) == -1) {
-    		    row.find('.display').prop('checked', false);
-    		}
-    		
-    		row.find('.name').val(key);
-    		
-    		// fields
-    		Object.entries(value).forEach(item => {
+            var row = $(html).appendTo($('#sections>.container'));
+            
+            // display
+            if (vars.sections.indexOf(key) == -1) {
+                row.find('.display').prop('checked', false);
+            }
+            
+            row.find('.name').val(key);
+            
+            // fields
+            Object.entries(value).forEach(item => {
                 let name = item[0];
                 let type = item[1];
             
@@ -963,34 +998,34 @@ $count['options'] = 0;
                     .split('{$count}').join(count.fields)
                     .split('{$section_id}').join(count.sections);
                     
-    		    var fieldRow = $(html).appendTo(row.find('.fields>.container'));
-    		    fieldRow.find('.name').val(name);
-    		    
-    		    if (vars.label) {
-    		        fieldRow.find('.label').val(vars.label[name]);
-    		    }
-    		    
-    		    if (vars.required[key].indexOf(name) != -1 ) {
-    		        fieldRow.find('.required').prop('checked', true);
-    		    }
-    		    
-    		    if (type === 'int') {
-    		        type = 'integer';
-    		    }
-    		    
-    		    fieldRow.find('select').val(type.replace('-', '_'));
-    		});
-    		
-    		// subsections
-    		vars.subsections[key].forEach(function(item) {
+                var fieldRow = $(html).appendTo(row.find('.fields>.container'));
+                fieldRow.find('.name').val(name);
+                
+                if (vars.label) {
+                    fieldRow.find('.label').val(vars.label[name]);
+                }
+                
+                if (vars.required[key].indexOf(name) != -1 ) {
+                    fieldRow.find('.required').prop('checked', true);
+                }
+                
+                if (type === 'int') {
+                    type = 'integer';
+                }
+                
+                fieldRow.find('select').val(type.replace('-', '_'));
+            });
+            
+            // subsections
+            vars.subsections[key].forEach(function(item) {
                 count.subsections++;
                 var html = $('#subsectionTemplate').html()
                     .split('{$count}').join(count.subsections)
                     .split('{$section_id}').join(count.sections);
                     
-    		    var subsectionRow = $(html).appendTo(row.find('.subsections>.container'));
-    		    subsectionRow.find('select').val(item);
-    		});
+                var subsectionRow = $(html).appendTo(row.find('.subsections>.container'));
+                subsectionRow.find('select').val(item);
+            });
         });
         
         // populate dropdowns
@@ -1001,28 +1036,28 @@ $count['options'] = 0;
             count.options++;
             var html = $('#dropdownTemplate').html()
                 .split('{$count}').join(count.options);
-    		var row = $(html).appendTo($('#dropdowns .container'));
-    		
-    		if (typeof value == "string") {
-    		    row.removeClass('list').find('select').val(value).prop('disabled', false);
-    	    	row.find('textarea').prop('disabled', true);
-    		} else {
-    		    val = '';
-    		    if (Array.isArray(value)) {
-        		    val = '';
-        		    value.forEach(function(item) {
-        		        val += item + "\n";
-        		    })
-        		} else {
-        		    Object.entries(value).forEach(item => {
-        		        val += item[0] + '=' + item[1] + "\n";
-        		    });
-        		}
-        		
-    	    	row.find('textarea').val(val.trim());
-    		}
-    		
-    		row.find('.name').val(key);
+            var row = $(html).appendTo($('#dropdowns .container'));
+            
+            if (typeof value == "string") {
+                row.removeClass('list').find('select').val(value).prop('disabled', false);
+                row.find('textarea').prop('disabled', true);
+            } else {
+                val = '';
+                if (Array.isArray(value)) {
+                    val = '';
+                    value.forEach(function(item) {
+                        val += item + "\n";
+                    })
+                } else {
+                    Object.entries(value).forEach(item => {
+                        val += item[0] + '=' + item[1] + "\n";
+                    });
+                }
+                
+                row.find('textarea').val(val.trim());
+            }
+            
+            row.find('.name').val(key);
         });
     
         initSortables();
@@ -1033,12 +1068,12 @@ $count['options'] = 0;
         var html = $('#sectionTemplate').html()
             .split('{$count}').join(count.sections);
                 
-    	var row = $(html).appendTo($('#sections>.container'));
-    	var section_template = $('#section_template').val();
-    	row.find('input').val(section_template).first().focus().select();
-    	
-    	if (section_templates[section_template]) {
-    	    
+        var row = $(html).appendTo($('#sections>.container'));
+        var section_template = $('#section_template').val();
+        row.find('input').val(section_template).first().focus().select();
+        
+        if (section_templates[section_template]) {
+            
             Object.entries(section_templates[section_template]).forEach(entry => {
                 let name = entry[0];
                 let type = entry[1];
@@ -1047,13 +1082,13 @@ $count['options'] = 0;
                 var html = $('#fieldTemplate').html()
                     .split('{$count}').join(count.fields)
                     .split('{$section_id}').join(count.sections);
-    		    var fieldRow = $(html).appendTo(row.find('.fields>.container'));
-    		    fieldRow.find('.name').val(name);
-    		    fieldRow.find('select').val(type.replace('-', '_'));
+                var fieldRow = $(html).appendTo(row.find('.fields>.container'));
+                fieldRow.find('.name').val(name);
+                fieldRow.find('select').val(type.replace('-', '_'));
             });
             
-    	}
-    	
+        }
+        
         initSortables();
     });
     
@@ -1072,10 +1107,10 @@ $count['options'] = 0;
     })
     
     $('body').on('click', '.del_row', function () {
-		var result = confirm('Are you sure?');
-		if (!result) {
-			return false;
-		}
+        var result = confirm('Are you sure?');
+        if (!result) {
+            return false;
+        }
         
         $(this).closest('.row').remove();
     });
@@ -1086,10 +1121,10 @@ $count['options'] = 0;
             .split('{$count}').join(count.fields)
             .split('{$section_id}').join($(this).data('section_id'));
             
-    	var row = $(html).appendTo($(this).parent().find('.container'));
-    	
+        var row = $(html).appendTo($(this).parent().find('.container'));
+        
         row.find('select').val('text');
-    	row.find('input').first().focus();
+        row.find('input').first().focus();
     });
 
     $('body').on('click', '.addSubsection', function() {
@@ -1098,16 +1133,16 @@ $count['options'] = 0;
             .split('{$count}').join(count.subsections)
             .split('{$section_id}').join($(this).data('section_id'));
         
-    	var row = $(html).appendTo($(this).parent().find('.container'));
-    	row.find('select').first().focus();
+        var row = $(html).appendTo($(this).parent().find('.container'));
+        row.find('select').first().focus();
     });
 
     $('body').on('click', '.addDropdown', function() {
         count.options++;
         var html = $('#dropdownTemplate').html()
             .split('{$count}').join(count.options);
-    	var row = $(html).appendTo($('#dropdowns .container'));
-    	row.find('input').focus();
+        var row = $(html).appendTo($('#dropdowns .container'));
+        row.find('input').focus();
     });
     
     $('body').on('click', '.toggle_section', function() {
@@ -1130,50 +1165,55 @@ $count['options'] = 0;
             alert('Save aborted: This form has too many fields for the server to accept.');
         }
     })
+    
+    // resize textarea on tab change
+    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+        $('textarea.autosize').trigger('autosize.resize');
+    });
 </script>
 
 <script>
-	/**
-	 * Count the number of fields that will be posted in a form.
-	 */
-	function post_count(formEl) {
-		// These will count as one post parameter each.
-		var fields = $('textarea:enabled[name]', formEl).toArray();
+    /**
+     * Count the number of fields that will be posted in a form.
+     */
+    function post_count(formEl) {
+        // These will count as one post parameter each.
+        var fields = $('textarea:enabled[name]', formEl).toArray();
 
-		// Find the basic textual input fields (text, email, number, date and similar).
-		fields = fields.concat(
-			$('input:enabled[name]', formEl)
-				// Data items that are handled later.
-				.not("[type='checkbox']:not(:checked)")
-				.not("[type='radio']")
-				.not("[type='file']")
-				.not("[type='reset']")
-				// Submit form items.
-				.not("[type='submit']")
-				.not("[type='button']")
-				.not("[type='image']")
-				.toArray()
-		);
+        // Find the basic textual input fields (text, email, number, date and similar).
+        fields = fields.concat(
+            $('input:enabled[name]', formEl)
+                // Data items that are handled later.
+                .not("[type='checkbox']:not(:checked)")
+                .not("[type='radio']")
+                .not("[type='file']")
+                .not("[type='reset']")
+                // Submit form items.
+                .not("[type='submit']")
+                .not("[type='button']")
+                .not("[type='image']")
+                .toArray()
+        );
 
-		// Single-select lists will always post one value.
-		fields = fields.concat(
-			$('select:enabled[name]', formEl)
-				.not('[multiple]')
-				.toArray()
-		);
+        // Single-select lists will always post one value.
+        fields = fields.concat(
+            $('select:enabled[name]', formEl)
+                .not('[multiple]')
+                .toArray()
+        );
 
-		// Multi-select lists will post one parameter for each selected option.
-		$('select[multiple]:enabled[name] option:selected', formEl).each(function() {
-			// We collect all the options that have been selected.
-			fields = fields.concat(formEl);
-		});
+        // Multi-select lists will post one parameter for each selected option.
+        $('select[multiple]:enabled[name] option:selected', formEl).each(function() {
+            // We collect all the options that have been selected.
+            fields = fields.concat(formEl);
+        });
 
-		// Each radio button group will post one parameter.
-		fields = fields.concat(
-			$('input:enabled:radio:checked', formEl)
-				.toArray()
-		);
+        // Each radio button group will post one parameter.
+        fields = fields.concat(
+            $('input:enabled:radio:checked', formEl)
+                .toArray()
+        );
 
-		return fields.length;
-	};
+        return fields.length;
+    };
 </script>

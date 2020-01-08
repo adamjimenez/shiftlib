@@ -1,7 +1,7 @@
 <?php
 class cms
 {
-    public $version = 'v2.0';
+    const VERSION = 'v2.0';
     
     // hide these field types from the list view
     public $hidden_columns = ['id', 'password', 'editor', 'textarea', 'checkboxes'];
@@ -174,7 +174,7 @@ class cms
         exit();
     }
 
-    public function delete_items($section, $conditions, $select_all_pages) // used in admin system
+    public function delete_items($section, $conditions, $select_all_pages = false) // used in admin system
     {
         global $auth;
 

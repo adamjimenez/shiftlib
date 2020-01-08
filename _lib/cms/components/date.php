@@ -68,13 +68,13 @@ class date extends component
                     From&nbsp;
                 </div>
                 <div style="float:left">
-                    <input type="text" name="<?= $field_name; ?>" value="<?= $_GET[$field_name]; ?>" size="8" data-type="date" autocomplete="off">
+                    <input type="text" name="<?= $field_name; ?>" value="<?= $_GET[$field_name]; ?>" size="8" data-type="date" autocomplete="off" class="form-control">
                 </div>
                 <div style="float:left">
                     &nbsp;To&nbsp;
                 </div>
                 <div style="float:left">
-                    <input type="text" name="func[<?= $field_name; ?>][end]" value="<?= $_GET['func'][$field_name]['end']; ?>" size="8" data-type="date" autocomplete="off">
+                    <input type="text" name="func[<?= $field_name; ?>][end]" value="<?= $_GET['func'][$field_name]['end']; ?>" size="8" data-type="date" autocomplete="off" class="form-control">
                 </div>
                 <br style="clear: both;">
             </div>

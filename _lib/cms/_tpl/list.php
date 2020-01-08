@@ -224,10 +224,15 @@ $(function() {
         e.stopPropagation();
     });
     
-    $(table.table().container()).on('click', 'tr', function (e) {
+    $(table.table().container()).on('click', 'tr[role]', function (e) {
         var data = table.row( this ).data();
         location.href = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
         e.stopPropagation();
+    });
+    
+    
+    $(table.table().container()).on('click', 'tr.child', function (e) {
+    	$(this).prev().trigger('click');
     });
 } );
 </script>

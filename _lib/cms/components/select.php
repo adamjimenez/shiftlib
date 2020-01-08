@@ -214,7 +214,7 @@ class select extends component
         <div>
             <?= ucfirst($name); ?>
         </div>
-        <select name="<?= $name; ?>[]" multiple size="4">
+        <select name="<?= $name; ?>[]" multiple size="4" class="form-control">
             <?= html_options($options, $_GET[$field_name]); ?>
         </select>
         <br>
