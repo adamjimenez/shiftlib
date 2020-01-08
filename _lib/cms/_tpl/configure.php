@@ -683,7 +683,7 @@ $count['options'] = 0;
                                     <select id="section_template">
                                         <?=html_options(array_keys($section_templates));?>
                                     </select>
-                                    <button class="addSection" type="button">Add section</button>
+                                    <button class="btn btn-secondary addSection" type="button">Add section</button>
                                 </p>
                                 
                             </div>
@@ -824,7 +824,7 @@ $count['options'] = 0;
                     
                         <br>
                         <p>
-                            <button type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
+                            <button class="btn btn-secondary" type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
                         </p>
                     </div>
                 </div>
