@@ -212,6 +212,10 @@ class auth
     
     public function single_sign_on()
     {
+        if (!class_exists('Hybrid_Auth')) {
+            die('Hybrid Auth is not available');
+        }
+        
         // single sign on, triggerd by $_GET['provider'] = google
         if (isset($_GET['provider'])) {
             $config = [
