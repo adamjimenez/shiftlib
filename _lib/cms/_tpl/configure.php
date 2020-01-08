@@ -723,7 +723,7 @@ $count['options'] = 0;
                                 
                                 <div style="padding:5px 10px;">
                                     <label>Catchers</label><br>
-                                    <textarea name="tpl_config[catchers]" class="autogrow" style="width: 100%;" placeholder="e.g. pages, one per line"><?=implode("\n", $tpl_config['catchers']);?></textarea>
+                                    <textarea name="tpl_config[catchers]" class="autosize" style="width: 100%;" placeholder="e.g. pages, one per line"><?=implode("\n", $tpl_config['catchers']);?></textarea>
                                     <br>
                                     <br>
                                     
@@ -735,7 +735,7 @@ $count['options'] = 0;
                                     }
                                     $redirects = trim($redirects);
                                     ?>
-                                    <textarea name="tpl_config[redirects]" class="autogrow" style="width: 100%;" placeholder="e.g. oldpage=newpage, one per line"><?=$redirects;?></textarea>
+                                    <textarea name="tpl_config[redirects]" class="autosize" style="width: 100%;" placeholder="e.g. oldpage=newpage, one per line"><?=$redirects;?></textarea>
                                     <br>
                                     <br>
                                     
@@ -816,7 +816,7 @@ $count['options'] = 0;
                                 <br>
                                         
                                 <label>Allowed exts</label><br>
-                                <textarea type="text" name="upload_config[allowed_exts]" class="autogrow" placeholder="e.g. jpg, one per line"><?=implode("\n", $upload_config['allowed_exts']);?></textarea>
+                                <textarea type="text" name="upload_config[allowed_exts]" class="autosize" placeholder="e.g. jpg, one per line"><?=implode("\n", $upload_config['allowed_exts']);?></textarea>
                                 <br>
                                 <br>
                             </div>
@@ -927,7 +927,7 @@ $count['options'] = 0;
             <input class="name" type="text" name="options[{$count}][name]">
         </div>
         <div class="col-sm-5">
-            <textarea cols="30" type="text" name="options[{$count}][list]" class="autogrow"></textarea>
+            <textarea cols="30" type="text" name="options[{$count}][list]" class="autosize"></textarea>
             <select name="options[{$count}][section]" disabled>
                 <?=html_options($section_opts, $val);?>
             </select>
@@ -1162,6 +1162,11 @@ $count['options'] = 0;
             alert('Save aborted: This form has too many fields for the server to accept.');
         }
     })
+    
+    // resize textarea on tab change
+    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+        $('textarea.autosize').trigger('autosize.resize');
+    });
 </script>
 
 <script>
