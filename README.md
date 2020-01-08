@@ -14,6 +14,6 @@ default admin username:
 default admin password:
 `123`
 
-You can create new website sections from the configure area.
+Create new website sections by clicking the configure button in the top right.
 
-Your php templates go in `_tpl` folder.
+The website templates go in `_tpl` folder.
