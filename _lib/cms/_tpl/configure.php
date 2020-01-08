@@ -598,7 +598,7 @@ $release_url = 'https://api.github.com/repos/adamjimenez/shiftlib/releases/lates
 $release = wget($release_url);
 
 // zipball_url
-if ($release['tag_name'] != $this->version) {
+if ($release['tag_name'] != $this::VERSION) {
 ?>
 <div class="alert alert-primary mt-3" role="alert">
     New version available: <?=$release['tag_name'];?>

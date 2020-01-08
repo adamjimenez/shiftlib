@@ -202,7 +202,7 @@
         <!-- footer area start-->
         <footer>
             <div class="footer-area">
-                <p>Version <?=$this->version;?></p>
+                <p>Version <?=$this::VERSION;?></p>
             </div>
         </footer>
         <!-- footer area end-->
