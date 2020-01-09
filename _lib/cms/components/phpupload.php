@@ -4,7 +4,7 @@ namespace cms;
 
 class phpupload extends component
 {
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         ?>
         <input type="text" name="<?= $field_name; ?>" class="upload" value="<?= $value; ?>">

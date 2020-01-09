@@ -6,7 +6,7 @@ class textarea extends component
 {
     public $field_sql = "TEXT";
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         ?>
         <textarea name="<?= $field_name; ?>"

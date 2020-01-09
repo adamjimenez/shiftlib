@@ -6,7 +6,7 @@ class dob extends component
 {
     public $field_sql = 'DATE';
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         ?>
         <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?>>

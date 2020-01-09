@@ -9,7 +9,7 @@ class select extends component
 
     // get select options
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         global $vars, $cms, $auth;
 

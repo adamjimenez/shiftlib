@@ -6,7 +6,7 @@ class combo extends select
 {
     public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         global $cms; ?>
         <input type="hidden" name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?> value="<?= $value; ?>">

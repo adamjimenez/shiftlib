@@ -8,7 +8,7 @@ class editor extends component
 {
     public $field_sql = "TEXT";
 
-    function field($field_name, $value = '', $options = [])
+    public function field($field_name, $value = '', $options = [])
     {
         ?>
         <textarea name="<?= $field_name; ?>"
@@ -18,7 +18,7 @@ class editor extends component
         <?
     }
 
-    function format_value($value)
+    public function format_value($value)
     {
         $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');
@@ -43,7 +43,7 @@ class editor extends component
         return $value;
     }
 
-    function search_field($name, $value)
+    public function search_field($name, $value)
     {
         return false;
     }

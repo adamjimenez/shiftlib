@@ -6,7 +6,7 @@ class phpuploads extends phpupload
 {
     public $field_sql = 'TEXT';
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         ?>
         <textarea name="<?= $field_name; ?>" class="upload"><?= $value; ?></textarea>

@@ -6,7 +6,7 @@ class datetime extends date
 {
     public $field_sql = 'DATETIME';
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         ?>
         <input type="datetime-local" name="<?= $field_name; ?>" value="<?= $value; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: ''; ?>>

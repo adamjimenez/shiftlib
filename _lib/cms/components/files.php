@@ -6,7 +6,7 @@ class files extends file
 {
     public $field_sql = 'TEXT';
 
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         if ($value) {
             $value = explode("\n", $value);

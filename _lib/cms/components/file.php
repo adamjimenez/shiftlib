@@ -4,7 +4,7 @@ namespace cms;
 
 class file extends component
 {
-    public function field(string $field_name, $value = '', $options = [])
+    public function field(string $field_name, $value = '', array $options = [])
     {
         $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1); ?>
         <div>
