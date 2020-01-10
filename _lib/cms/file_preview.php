@@ -68,11 +68,6 @@ $img = imageorientationfix($vars['files']['dir'] . $row['id']);
 $img = thumb_img($img, [$max_width, $max_height], false);
 
 switch (file_ext($row['name'])) {
-    case 'jpg':
-    case 'jpeg':
-        header('Content-type: image/jpg');
-        imagejpeg($img, null, 85);
-    break;
     case 'png':
         header('Content-type: image/png');
         imagepng($img);
@@ -81,6 +76,8 @@ switch (file_ext($row['name'])) {
         header('Content-type: image/gif');
         imagegif($img);
     break;
+    case 'jpg':
+    case 'jpeg':
     default:
         header('Content-type: image/jpg');
         imagejpeg($img, null, 85);

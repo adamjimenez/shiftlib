@@ -6,8 +6,7 @@ class url extends component
 {
     public function value($value, $name = '')
     {
-        $value = '<a href="' . $value . '" target="_blank">' . $value . '</a>';
-        return $value;
+        return '<a href="' . $value . '" target="_blank">' . $value . '</a>';
     }
 
     public function is_valid($value): bool

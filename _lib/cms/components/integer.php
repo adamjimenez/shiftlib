@@ -32,6 +32,7 @@ class integer extends component
                 $table_prefix . $field_name . " <= '" . escape($max) . "'
             )";
         } elseif (is_array($value)) {
+            $value_str = '';
             foreach ($value as $v) {
                 $value_str .= (int) ($v) . ',';
             }
