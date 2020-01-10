@@ -28,7 +28,7 @@ class rating extends component
     public function value($value, $name)
     {
         $field_name = underscored($name);
-        
+
         $value = '<select name="' . $field_name . '" class="rating" disabled="disabled">
             <option value="">Choose</option>
             ' . html_options($this->rating_opts, $value, true) . '
