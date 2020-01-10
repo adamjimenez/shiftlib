@@ -619,7 +619,7 @@ class auth
             if ($data['email'] and $data['password']) {
                 $this->check_login_attempts();
     
-                $password = $this->create_hash($data['password']);
+                $data['password'] = $this->create_hash($data['password']);
     
                 $row = sql_query('SELECT * FROM ' . $this->table . "
     				WHERE

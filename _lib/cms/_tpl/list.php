@@ -128,6 +128,7 @@ $(function() {
         
 		"pageLength": 10,
 		"stateSave": true,
+		"stateDuration": 60 * 60 * 24 * 365,
 		
 		"serverSide": true,
         "searching": false,

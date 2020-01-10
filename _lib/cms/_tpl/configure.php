@@ -410,6 +410,7 @@ if ($_POST['save']) {
     if (!$auth_config['hash_password'] and $_POST['auth_config']['hash_password']) {
         $users = sql_query('SELECT * FROM users');
 
+        $auth->hash_password = true;
         foreach ($users as $user) {
             $password = $auth->create_hash($user['password']);
             sql_query("UPDATE users SET
@@ -1011,6 +1012,10 @@ $count['options'] = 0;
                 
                 if (type === 'int') {
                     type = 'integer';
+                }
+                
+                if (type === 'parent') {
+                    type = 'select_parent';
                 }
                 
                 fieldRow.find('select').val(type.replace('-', '_'));
