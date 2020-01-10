@@ -410,6 +410,7 @@ if ($_POST['save']) {
     if (!$auth_config['hash_password'] and $_POST['auth_config']['hash_password']) {
         $users = sql_query('SELECT * FROM users');
 
+        $auth->hash_password = true;
         foreach ($users as $user) {
             $password = $auth->create_hash($user['password']);
             sql_query("UPDATE users SET
