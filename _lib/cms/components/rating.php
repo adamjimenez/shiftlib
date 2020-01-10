@@ -18,9 +18,9 @@ class rating extends component
     public function field($field_name, $value = '', $options = [])
     {
         ?>
-        <select name="<?= $field_name; ?>" class="rating" data-section="<?= $this->section; ?>" data-item="<?= $this->content['id']; ?>" <?php if ('avg-rating' == $type) { ?>data-avg='data-avg'<?php } ?> <?= $options['attribs']; ?>>
+        <select name="<?= $field_name; ?>" class="rating" <?= $options['attribs']; ?>>
             <option value="">Choose</option>
-            <?= html_options($this->opts['rating'], $value, true); ?>
+            <?= html_options($this->rating_opts, $value, true); ?>
         </select>
         <?php
     }
