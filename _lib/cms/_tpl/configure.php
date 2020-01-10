@@ -1013,6 +1013,10 @@ $count['options'] = 0;
                     type = 'integer';
                 }
                 
+                if (type === 'parent') {
+                    type = 'select_parent';
+                }
+                
                 fieldRow.find('select').val(type.replace('-', '_'));
             });
             
