@@ -1,6 +1,45 @@
 <?php
 class blog
 {
+    public $blog_index;
+
+    public $table_blog;
+
+    public $table_categories;
+
+    /**
+     * @var mixed|int|string|bool
+     */
+    public $category_field;
+
+    /**
+     * @var mixed
+     */
+    public $conditions;
+
+    /**
+     * @var mixed
+     */
+    public $categories;
+
+    /**
+     * @var mixed
+     */
+    public $months;
+
+    public $tags;
+
+    /**
+     * @var bool|mixed
+     */
+    public $article;
+
+    public $content;
+
+    public $p;
+
+    public $commented;
+
     public function blog($options = null)
     {
         global $cms, $sections, $vars, $from_email, $opts, $request;
@@ -276,6 +315,9 @@ class blog
         $opts['approve'] = ['approve','delete','delete and block'];
     }
 
+    /**
+     * @return mixed[]
+     */
     public function subval_sort($a, $subkey, $asc = true)
     {
         foreach ($a as $k => $v) {
