@@ -2,10 +2,9 @@
 
 namespace cms\components;
 
-use cms\Component;
 use cms\ComponentInterface;
 
-class Dob extends Component implements ComponentInterface
+class Dob extends Date implements ComponentInterface
 {
     public $field_sql = 'DATE';
 
