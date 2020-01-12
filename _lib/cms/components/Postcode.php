@@ -12,7 +12,7 @@ class Postcode extends Component implements ComponentInterface
         return false !== format_postcode($value);
     }
 
-    public function format_value($value)
+    public function formatValue($value)
     {
         return format_postcode($value);
     }

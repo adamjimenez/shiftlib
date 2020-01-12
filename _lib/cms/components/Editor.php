@@ -23,7 +23,7 @@ class Editor extends Component implements ComponentInterface
         <?
     }
 
-    public function format_value($value, $field_name = '')
+    public function formatValue($value, $field_name = '')
     {
         $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');

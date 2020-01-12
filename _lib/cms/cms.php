@@ -992,7 +992,7 @@ class cms
             $component = $this->get_component($type);
 
             // apply field formatting
-            $data[$field_name] = $component->format_value($data[$field_name], $field_name);
+            $data[$field_name] = $component->formatValue($data[$field_name], $field_name);
 
             // skip if preserving or not for saving this way
             if (
@@ -1088,7 +1088,7 @@ class cms
 
                 // apply field formatting
                 if ($component->id_required) {
-                    $data[$field_name] = $component->format_value($data[$field_name], $field_name);
+                    $data[$field_name] = $component->formatValue($data[$field_name], $field_name);
                 }
             }
 

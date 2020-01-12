@@ -6,7 +6,7 @@ use cms\ComponentInterface;
 
 class Position extends Integer implements ComponentInterface
 {
-    public function format_value($value)
+    public function formatValue($value)
     {
         global $cms;
 

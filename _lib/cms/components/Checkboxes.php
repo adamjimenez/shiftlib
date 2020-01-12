@@ -149,7 +149,7 @@ class Checkboxes extends Select implements ComponentInterface
         return $value;
     }
 
-    public function format_value($value, $field_name = null)
+    public function formatValue($value, $field_name = null)
     {
         global $cms;
 

@@ -75,7 +75,7 @@ class Files extends File implements ComponentInterface
         return $value;
     }
 
-    public function format_value($files, $field_name = '')
+    public function formatValue($files, $field_name = '')
     {
         global $vars, $cms;
 

@@ -28,7 +28,7 @@ class Datetime extends Date implements ComponentInterface
         return $value;
     }
 
-    public function format_value($value)
+    public function formatValue($value)
     {
         if ($value) {
             $value .= ':00';

@@ -28,9 +28,9 @@ abstract class Component
     /**
      * SQL code for field creation
      *
-     * @var string
+     * @return string|null
      */
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
     }
@@ -79,7 +79,7 @@ abstract class Component
      * @param null $field_name
      * @return string
      */
-    public function format_value($value, $field_name = null)
+    public function formatValue($value, $field_name = null)
     {
         return trim(strip_tags($value));
     }

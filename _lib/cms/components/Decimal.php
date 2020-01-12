@@ -22,8 +22,8 @@ class Decimal extends Integer implements ComponentInterface
         return $value;
     }
 
-    public function format_value($value)
+    public function formatValue($value)
     {
-        return component::format_value($value);
+        return component::formatValue($value);
     }
 }

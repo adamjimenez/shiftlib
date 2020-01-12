@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class PageName extends Component implements ComponentInterface
 {
-    public function format_value($value)
+    public function formatValue($value)
     {
         return str_to_pagename($value);
     }

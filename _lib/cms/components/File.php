@@ -49,7 +49,7 @@ class File extends Component implements ComponentInterface
         return $value;
     }
 
-    public function format_value($value, $field_name = '')
+    public function formatValue($value, $field_name = '')
     {
         global $vars, $cms;
 
