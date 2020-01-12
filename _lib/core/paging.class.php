@@ -312,6 +312,7 @@ class paging
     }
 
     /**
+     * @param mixed $links
      * @return bool|string
      */
     public function get_results($links = false)
@@ -362,6 +363,8 @@ class paging
     }
 
     /**
+     * @param mixed $col
+     * @param null|mixed $label
      * @return string
      */
     public function col($col, $label = null)
@@ -396,6 +399,7 @@ class paging
     }
 
     /**
+     * @param mixed $options
      * @return string
      */
     public function items_per_page($options = [25,50,100,200,'All'])

@@ -1,12 +1,14 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class phpuploads extends phpupload
+use cms\ComponentInterface;
+
+class PhpUploads extends PhpUpload implements ComponentInterface
 {
     public $field_sql = 'TEXT';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <textarea name="<?= $field_name; ?>" class="upload"><?= $value; ?></textarea>

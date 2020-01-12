@@ -473,8 +473,8 @@ class auth
     }
 
     /**
-     * @return array
      * @throws Exception
+     * @return array
      */
     public function forgot_password()
     {

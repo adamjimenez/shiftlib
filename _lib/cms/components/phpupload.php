@@ -1,10 +1,13 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class phpupload extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class PhpUpload extends Component implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <input type="text" name="<?= $field_name; ?>" class="upload" value="<?= $value; ?>">

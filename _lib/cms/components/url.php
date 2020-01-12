@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class url extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Url extends Component implements ComponentInterface
 {
     public function value($value, $name = '')
     {

@@ -1,7 +1,10 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class text extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Text extends Component implements ComponentInterface
 {
 }

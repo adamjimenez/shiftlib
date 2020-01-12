@@ -1,7 +1,9 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class read extends checkbox
+use cms\ComponentInterface;
+
+class Read extends Checkbox implements ComponentInterface
 {
 }

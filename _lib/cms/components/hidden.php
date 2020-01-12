@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class hidden extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Hidden extends Component implements ComponentInterface
 {
     public $field_type = 'hidden';
 

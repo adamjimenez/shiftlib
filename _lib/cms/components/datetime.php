@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class datetime extends date
+use cms\Component;
+use cms\ComponentInterface;
+
+class Datetime extends Date implements ComponentInterface
 {
     public $field_sql = 'DATETIME';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <input type="datetime-local" name="<?= $field_name; ?>" value="<?= $value; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: ''; ?>>

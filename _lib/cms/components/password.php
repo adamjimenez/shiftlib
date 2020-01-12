@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class password extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Password extends Component implements ComponentInterface
 {
     public $field_type = 'password';
     public $preserve_value = true;

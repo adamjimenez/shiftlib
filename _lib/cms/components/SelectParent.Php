@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class select_parent extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class SelectParent extends Component implements ComponentInterface
 {
     public $field_sql = 'INT';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         global $vars, $cms;
 

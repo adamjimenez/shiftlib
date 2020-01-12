@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class dob extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Dob extends Component implements ComponentInterface
 {
     public $field_sql = 'DATE';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?>>
@@ -24,13 +27,13 @@ class dob extends component
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
         return '`' . $field_name . "`!='0000-00-00' AND " .
             "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         $field_name = underscored($name);
 

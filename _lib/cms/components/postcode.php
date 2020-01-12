@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class postcode extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Postcode extends Component implements ComponentInterface
 {
     public function is_valid($value): bool
     {
@@ -14,7 +17,7 @@ class postcode extends component
         return format_postcode($value);
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         global $vars;
 

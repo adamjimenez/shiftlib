@@ -1,12 +1,14 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class files extends file
+use cms\ComponentInterface;
+
+class Files extends File implements ComponentInterface
 {
     public $field_sql = 'TEXT';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         if ($value) {
             $value = explode("\n", $value);
@@ -70,7 +72,7 @@ class files extends file
         return $value;
     }
 
-    public function format_value($files, $field_name)
+    public function format_value($files, $field_name = '')
     {
         global $vars, $cms;
 

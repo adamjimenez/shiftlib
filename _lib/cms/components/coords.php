@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class coords extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Coords extends Component implements ComponentInterface
 {
     public $field_sql = "POINT";
 
-    function field($field_name, $value = '', $options = [])
+    function field($field_name, $value = '', $options = []): void
     {
         ?>
         <input type="text"

@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class email extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Email extends Component implements ComponentInterface
 {
     public $field_type = 'email';
 

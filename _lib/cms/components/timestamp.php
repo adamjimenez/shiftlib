@@ -1,8 +1,10 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class timestamp extends date
+use cms\ComponentInterface;
+
+class Timestamp extends Date implements ComponentInterface
 {
     public $field_type = 'hidden';
     public $field_sql = 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';

@@ -1,7 +1,9 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class deleted extends checkbox
+use cms\ComponentInterface;
+
+class Deleted extends Checkbox implements ComponentInterface
 {
 }

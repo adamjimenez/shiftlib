@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class textarea extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Textarea extends Component implements ComponentInterface
 {
     public $field_sql = "TEXT";
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <textarea name="<?= $field_name; ?>"

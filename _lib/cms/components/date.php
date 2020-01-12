@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class date extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Date extends Component implements ComponentInterface
 {
     public $field_sql = 'DATE';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <input type="text" data-type="date" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?> autocomplete="off">
@@ -28,7 +31,7 @@ class date extends component
         return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
         if ('now' == $value) {
             $start = 'NOW()';
@@ -57,7 +60,7 @@ class date extends component
         return $where;
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         $field_name = underscored($name); ?>
         <div>

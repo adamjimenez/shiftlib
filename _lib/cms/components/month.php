@@ -1,10 +1,13 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class month extends date
+use cms\Component;
+use cms\ComponentInterface;
+
+class Month extends Date implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <input type="text" class="month" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?>/>
@@ -29,6 +32,6 @@ class month extends date
 
     public function is_valid($value): bool
     {
-        return Base::is_valid($value);
+        return component::is_valid($value);
     }
 }

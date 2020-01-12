@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class mobile extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Mobile extends Component implements ComponentInterface
 {
     public function is_valid($value): bool
     {

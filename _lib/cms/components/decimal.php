@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class decimal extends integer
+use cms\Component;
+use cms\ComponentInterface;
+
+class Decimal extends Integer implements ComponentInterface
 {
     public $field_sql = 'DECIMAL( 8,2 )';
 

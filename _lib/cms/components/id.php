@@ -1,8 +1,10 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class id extends integer
+use cms\ComponentInterface;
+
+class Id extends Integer implements ComponentInterface
 {
     public $field_sql = null;
 

@@ -1,12 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class checkbox extends integer
+use cms\Component;
+use cms\ComponentInterface;
+
+class Checkbox extends Integer implements ComponentInterface
 {
     public $field_sql = 'TINYINT';
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
         <input type="checkbox" name="<?= $field_name; ?>" value="1" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if ($value) { ?>checked<?php } ?> <?= $options['attribs']; ?>>
@@ -19,12 +22,12 @@ class checkbox extends integer
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
         return component::conditions_to_sql($field_name, $value, $func, $table_prefix);
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         $field_name = underscored($name); ?>
         <div>

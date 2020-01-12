@@ -316,6 +316,9 @@ class blog
     }
 
     /**
+     * @param mixed $a
+     * @param mixed $subkey
+     * @param mixed $asc
      * @return mixed[]
      */
     public function subval_sort($a, $subkey, $asc = true)

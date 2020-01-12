@@ -1,15 +1,23 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class radio extends select
+use cms\ComponentInterface;
+
+/**
+ * TODO: This won't work, missing properties etc
+ *
+ * Class radio
+ * @package cms\components
+ */
+class Radio extends Select implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
-        global $cms, $vars;
+        global $vars;
 
         $name = spaced($field_name);
-        $vars['options'][$name] = $this->get_options($name, $where);
+        $vars['options'][$name] = $this->get_options($name, false);
 
         $assoc = is_assoc_array($vars['options'][$name]);
         foreach ($vars['options'][$name] as $k => $v) {
@@ -23,7 +31,7 @@ class radio extends select
     {
         global $vars;
 
-        if (!is_array($vars['options'][$name])) {
+        if (false === is_array($vars['options'][$name])) {
             if ('0' == $value) {
                 $value = '';
             } else {

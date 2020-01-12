@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class tel extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Tel extends Component implements ComponentInterface
 {
     public $field_type = 'tel';
 

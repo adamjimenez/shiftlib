@@ -1,14 +1,16 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
+use cms\Component;
+use cms\ComponentInterface;
 use DOMDocument;
 
-class editor extends component
+class Editor extends Component implements ComponentInterface
 {
     public $field_sql = "TEXT";
 
-    public function field($field_name, $value = '', $options = [])
+    public function field($field_name, $value = '', $options = []): void
     {
         ?>
         <textarea name="<?= $field_name; ?>"
@@ -18,7 +20,7 @@ class editor extends component
         <?
     }
 
-    public function format_value($value)
+    public function format_value($value, $field_name = '')
     {
         $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');
@@ -43,8 +45,8 @@ class editor extends component
         return $value;
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
-        return false;
+
     }
 }

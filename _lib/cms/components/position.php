@@ -1,8 +1,10 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class position extends integer
+use cms\ComponentInterface;
+
+class Position extends Integer implements ComponentInterface
 {
     public function format_value($value)
     {

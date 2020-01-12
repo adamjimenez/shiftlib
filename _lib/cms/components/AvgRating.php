@@ -1,12 +1,14 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class avg_rating extends rating
+use cms\ComponentInterface;
+
+class AvgRating extends Rating implements ComponentInterface
 {
     public $field_sql = 'TINYINT';
 
-    public function field($field_name, $value = '', $options = [])
+    public function field($field_name, $value = '', $options = []): void
     {
         global $cms; ?>
         <select name="<?= $field_name; ?>" class="rating" data-section="<?= $cms->section; ?>" data-item="<?= $cms->content['id']; ?>" <?php if ('avg-rating' == $type) { ?>data-avg='data-avg'<?php } ?> <?= $attribs; ?>>

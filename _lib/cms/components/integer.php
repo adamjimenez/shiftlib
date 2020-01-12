@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class integer extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Integer extends Component implements ComponentInterface
 {
     public $field_type = 'number';
     public $field_sql = 'INT';
@@ -18,7 +21,7 @@ class integer extends component
         return is_numeric($value);
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
         // check for range
         $pos = strrpos($value, '-');
@@ -56,7 +59,7 @@ class integer extends component
         return (int) $value;
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         $field_name = underscored($name); ?>
         <label><?= ucfirst($name); ?></label><br>

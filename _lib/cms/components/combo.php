@@ -1,12 +1,14 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class combo extends select
+use cms\ComponentInterface;
+
+class Combo extends Select implements ComponentInterface
 {
     public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         global $cms; ?>
         <input type="hidden" name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?> value="<?= $value; ?>">
@@ -14,7 +16,7 @@ class combo extends select
         <?php
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         global $cms;
 

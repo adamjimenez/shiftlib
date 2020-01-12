@@ -1,15 +1,17 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class select extends component
+use cms\Component;
+
+class Select extends Component
 {
     public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
 
 
     // get select options
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         global $vars, $cms, $auth;
 
@@ -26,7 +28,7 @@ class select extends component
                     $conditions[$k] = $v;
                 }
 
-                $vars['options'][$name] = $this->get_options($name, $where);
+                $vars['options'][$name] = $this->get_options($name, false);
             } ?>
             <select name="<?= $field_name; ?>" <?php if ($option['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>>
                 <option value=""><?= $placeholder ?: 'Choose'; ?></option>
@@ -172,7 +174,7 @@ class select extends component
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = [], $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
         if (is_array($value)) {
             $or = '(';
@@ -187,7 +189,7 @@ class select extends component
         return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         global $vars;
 

@@ -1,13 +1,15 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class checkboxes extends select
+use cms\ComponentInterface;
+
+class Checkboxes extends Select implements ComponentInterface
 {
     public $field_sql = null;
     public $id_required = true;
 
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         global $vars, $cms;
 
@@ -71,7 +73,7 @@ class checkboxes extends select
                 //make sure we get the first field
                 reset($vars['fields'][$vars['options'][$name]]);
 
-                $vars['options'][$name] = $this->get_options($name, $where);
+                $vars['options'][$name] = $this->get_options($name, false);
             }
         } else {
             if ($cms->id) {
@@ -143,7 +145,7 @@ class checkboxes extends select
         return $value;
     }
 
-    public function format_value($value, $field_name)
+    public function format_value($value, $field_name = null)
     {
         global $cms;
 
@@ -182,12 +184,11 @@ class checkboxes extends select
     }
 
     // generates sql code for use in where statement
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
-        return null;
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         global $vars;
 

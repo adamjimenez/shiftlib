@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class ip extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Ip extends Component implements ComponentInterface
 {
     public function value($value, $name = '')
     {

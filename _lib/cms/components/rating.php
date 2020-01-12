@@ -1,8 +1,11 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class rating extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class Rating extends Component implements ComponentInterface
 {
     public $field_sql = 'TINYINT';
 
@@ -15,7 +18,7 @@ class rating extends component
         5 => 'Excellent',
     ];
 
-    public function field($field_name, $value = '', $options = [])
+    public function field($field_name, $value = '', $options = []): void
     {
         ?>
         <select name="<?= $field_name; ?>" class="rating" <?= $options['attribs']; ?>>
@@ -25,7 +28,7 @@ class rating extends component
         <?php
     }
 
-    public function value($value, $name)
+    public function value($value, $name = '')
     {
         $field_name = underscored($name);
 
@@ -37,8 +40,7 @@ class rating extends component
         return $value;
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
-        return false;
     }
 }

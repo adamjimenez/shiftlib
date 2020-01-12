@@ -1,10 +1,13 @@
 <?php
 
-namespace cms;
+namespace cms\components;
 
-class file extends component
+use cms\Component;
+use cms\ComponentInterface;
+
+class File extends Component implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = [])
+    public function field(string $field_name, $value = '', array $options = []): void
     {
         $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1); ?>
         <div>
@@ -46,7 +49,7 @@ class file extends component
         return $value;
     }
 
-    public function format_value($value, $field_name)
+    public function format_value($value, $field_name = '')
     {
         global $vars, $cms;
 
@@ -87,12 +90,12 @@ class file extends component
         return false;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = '')
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
     {
         return $table_prefix . $field_name . ' > 0';
     }
 
-    public function search_field($name, $value)
+    public function search_field($name, $value): void
     {
         $field_name = underscored($name); ?>
         <div>
