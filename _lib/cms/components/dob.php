@@ -2,17 +2,8 @@
 
 namespace cms;
 
-class dob extends component
+class dob extends date
 {
-    public $field_sql = 'DATE';
-
-    public function field($field_name, $value = '', $options = [])
-    {
-        ?>
-        <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?>>
-        <?php
-    }
-
     public function value($value)
     {
         if ('0000-00-00' != $value and '' != $value) {
