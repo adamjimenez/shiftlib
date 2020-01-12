@@ -458,8 +458,8 @@ class cms
      * @param bool $asc
      * @param null $prefix
      * @param bool $return_query
-     * @return array|bool|mixed|string
      * @throws Exception
+     * @return array|bool|mixed|string
      */
     public function get($section, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false)
     {
@@ -1132,7 +1132,7 @@ class cms
                     in_array($this->section, $handler['section']) &&
                     $handler['event'] === $event
                 ) {
-                    return call_user_func_array($handler['handler'], (array)$args);
+                    return call_user_func_array($handler['handler'], (array) $args);
                 }
             }
         }

@@ -1105,7 +1105,9 @@ function load_js($libs)
 
     if ($deps['cms']) {
         ?>
-		<script src="/_lib/cms/js/cms.js<?php if ($_GET['ModPagespeed']=='off') { print '?v='.time(); }?>" async></script>
+		<script src="/_lib/cms/js/cms.js<?php if ('off' == $_GET['ModPagespeed']) {
+            print '?v=' . time();
+        } ?>" async></script>
 	<?php
     }
 
