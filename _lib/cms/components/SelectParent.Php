@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class SelectParent extends Component implements ComponentInterface
 {
-    public $field_sql = 'INT';
+    public function getFieldSql(): string
+    {
+        return "INT";
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {

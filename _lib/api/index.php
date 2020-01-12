@@ -495,7 +495,7 @@ switch ($_GET['cmd']) {
         }
         $dir = ('desc' == $_POST['order'][0]['dir']) ? 'DESC' : '';
     
-        $sql = $cms->conditions_to_sql($_GET['section'], $_GET['fields']);
+        $sql = $cms->conditionsToSql($_GET['section'], $_GET['fields']);
         
         $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
     		' . $sql['joins'] . '

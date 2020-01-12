@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Decimal extends Integer implements ComponentInterface
 {
-    public $field_sql = 'DECIMAL( 8,2 )';
+    public function getFieldSql(): string
+    {
+        return 'DECIMAL( 8,2 )';
+    }
 
     public function value($value, $name = '')
     {

@@ -116,7 +116,7 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
                         $field_name = underscored($name);
                         $component = $this->get_component($type); ?>
                         <div>
-                            <?=$component->search_field($name, $_GET[$field_name]); ?>
+                            <?=$component->searchField($name, $_GET[$field_name]); ?>
                         </div>
                         <?php
                     } ?>

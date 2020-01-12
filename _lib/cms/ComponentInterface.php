@@ -15,7 +15,7 @@ interface ComponentInterface
      * @param $value
      * @return bool
      */
-    public function is_valid($value): bool;
+    public function isValid($value): bool;
 
     /**
      * @param $field_name
@@ -24,11 +24,17 @@ interface ComponentInterface
      * @param string $table_prefix
      * @return string|null
      */
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string;
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string;
 
     /**
      * @param $name
      * @param $value
      */
-    public function search_field($name, $value): void;
+    public function searchField($name, $value): void;
+
+
+    /**
+     * @return string
+     */
+    public function getFieldSql(): ?string;
 }

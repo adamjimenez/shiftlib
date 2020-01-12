@@ -90,12 +90,12 @@ class File extends Component implements ComponentInterface
         return false;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         return $table_prefix . $field_name . ' > 0';
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         $field_name = underscored($name); ?>
         <div>

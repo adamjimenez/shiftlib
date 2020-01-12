@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Postcode extends Component implements ComponentInterface
 {
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
         return false !== format_postcode($value);
     }
@@ -17,7 +17,7 @@ class Postcode extends Component implements ComponentInterface
         return format_postcode($value);
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         global $vars;
 

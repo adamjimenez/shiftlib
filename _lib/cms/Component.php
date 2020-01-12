@@ -12,13 +12,6 @@ abstract class Component
     public $field_type = 'text';
 
     /**
-     * SQL code for field creation
-     *
-     * @var string
-     */
-    public $field_sql = "VARCHAR( 140 ) NOT NULL DEFAULT ''";
-
-    /**
      * Keep value when empty
      *
      * @var bool
@@ -31,6 +24,16 @@ abstract class Component
      * @var bool
      */
     public $id_required = false;
+
+    /**
+     * SQL code for field creation
+     *
+     * @var string
+     */
+    public function getFieldSql(): string
+    {
+        return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
+    }
 
     /**
      * Returns the editable field
@@ -64,7 +67,7 @@ abstract class Component
      * @param $value
      * @return bool
      */
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
         return true;
     }
@@ -88,7 +91,7 @@ abstract class Component
      * @param string $table_prefix
      * @return string|null
      */
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         $value = str_replace('*', '%', $value);
         return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
@@ -98,7 +101,7 @@ abstract class Component
      * @param mixed $name
      * @param mixed $value
      */
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         $field_name = underscored($name); ?>
         <label for="<?= $field_name; ?>" class="col-form-label"><?= ucfirst($name); ?></label>

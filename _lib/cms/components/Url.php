@@ -12,7 +12,7 @@ class Url extends Component implements ComponentInterface
         return '<a href="' . $value . '" target="_blank">' . $value . '</a>';
     }
 
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
         return is_url($value);
     }

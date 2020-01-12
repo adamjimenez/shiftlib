@@ -6,7 +6,10 @@ use cms\ComponentInterface;
 
 class Dob extends Date implements ComponentInterface
 {
-    public $field_sql = 'DATE';
+    public function getFieldSql(): string
+    {
+        return 'DATE';
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -26,13 +29,13 @@ class Dob extends Date implements ComponentInterface
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         return '`' . $field_name . "`!='0000-00-00' AND " .
             "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         $field_name = underscored($name);
 

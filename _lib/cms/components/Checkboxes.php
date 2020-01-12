@@ -6,8 +6,12 @@ use cms\ComponentInterface;
 
 class Checkboxes extends Select implements ComponentInterface
 {
-    public $field_sql = null;
     public $id_required = true;
+
+    public function getFieldSql(): ?string
+    {
+        return null;
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -184,12 +188,12 @@ class Checkboxes extends Select implements ComponentInterface
     }
 
     // generates sql code for use in where statement
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         return null;
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         global $vars;
 

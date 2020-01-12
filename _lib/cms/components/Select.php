@@ -6,10 +6,10 @@ use cms\Component;
 
 class Select extends Component
 {
-    public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
-
-
-    // get select options
+    public function getFieldSql(): string
+    {
+        return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -174,7 +174,7 @@ class Select extends Component
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         if (is_array($value)) {
             $or = '(';
@@ -189,7 +189,7 @@ class Select extends Component
         return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         global $vars;
 

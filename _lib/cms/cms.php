@@ -81,7 +81,7 @@ class cms
     public function form_to_db(string $type)
     {
         if ($component = $this->get_component($type)) {
-            return $component->field_sql;
+            return $component->getFieldSql();
         }
 
         switch ($type) {
@@ -116,7 +116,7 @@ class cms
             $conditions[$k] = $v;
         }
 
-        $sql = $this->conditions_to_sql($section, $conditions);
+        $sql = $this->conditionsToSql($section, $conditions);
 
         $table = underscored($section);
         $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
@@ -249,7 +249,7 @@ class cms
     }
 
     // create search params, used by get()
-    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
+    public function conditionsToSql($section, $conditions = [], $num_results = null, $cols = null)
     {
         global $vars, $auth;
 
@@ -303,7 +303,7 @@ class cms
                 if (is_array($conditions) && $conditions['end'][$field_name]) {
                     $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
                 }
-                $where[] = $component->conditions_to_sql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
+                $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
             }
 
             switch ($type) {
@@ -524,7 +524,7 @@ class cms
             }
         }
 
-        $sql = $this->conditions_to_sql($section, $conditions, $num_results, $cols);
+        $sql = $this->conditionsToSql($section, $conditions, $num_results, $cols);
 
         $where_str = $sql['where_str'];
         $group_by_str = '';
@@ -699,15 +699,16 @@ class cms
 
     private function get_component(string $type)
     {
-        if ('int' == $type) {
-            $type = 'integer';
-        } elseif ('parent' == $type) {
-            $type = 'select_parent';
+        switch ($type) {
+            case 'int':
+                $type = 'integer';
+                break;
+            case 'parent':
+                $type = 'select_parent';
+                break;
         }
 
         $class = 'cms\\components\\' . $this->camelize($type);
-        // $class = $this->type_to_class($type);
-
         if (true === class_exists($class)) {
             return new $class;
         }
@@ -925,7 +926,7 @@ class cms
 
             // check fields
             if (
-                ('' != $data[$field_name] && $component && !$component->is_valid($data[$field_name])) ||
+                ('' != $data[$field_name] && $component && !$component->isValid($data[$field_name])) ||
                 (in_array($name, $vars['required'][$this->section]) && '' == $data[$field_name])
             ) {
                 $errors[] = $field_name;

@@ -30,8 +30,8 @@ class Month extends Date implements ComponentInterface
         return $value;
     }
 
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
-        return component::is_valid($value);
+        return component::isValid($value);
     }
 }

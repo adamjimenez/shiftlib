@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Time extends Component implements ComponentInterface
 {
-    public $field_sql = 'TIME';
+    public function getFieldSql(): string
+    {
+        return 'TIME';
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {

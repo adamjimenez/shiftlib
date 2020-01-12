@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Mobile extends Component implements ComponentInterface
 {
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
         return false !== format_mobile($value);
     }

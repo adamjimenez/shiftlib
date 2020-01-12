@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Datetime extends Date implements ComponentInterface
 {
-    public $field_sql = 'DATETIME';
+    public function getFieldSql(): string
+    {
+        return 'DATETIME';
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -33,8 +36,8 @@ class Datetime extends Date implements ComponentInterface
         return $value;
     }
 
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
-        return component::is_valid($value);
+        return component::isValid($value);
     }
 }

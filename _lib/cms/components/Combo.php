@@ -6,7 +6,10 @@ use cms\ComponentInterface;
 
 class Combo extends Select implements ComponentInterface
 {
-    public $field_sql = "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+    public function getFieldSql(): string
+    {
+        return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -16,7 +19,7 @@ class Combo extends Select implements ComponentInterface
         <?php
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         global $cms;
 

@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Date extends Component implements ComponentInterface
 {
-    public $field_sql = 'DATE';
+    public function getFieldSql(): string
+    {
+        return 'DATE';
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -26,12 +29,12 @@ class Date extends Component implements ComponentInterface
         return $value;
     }
 
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
         return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         if ('now' == $value) {
             $start = 'NOW()';
@@ -60,7 +63,7 @@ class Date extends Component implements ComponentInterface
         return $where;
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         $field_name = underscored($name); ?>
         <div>

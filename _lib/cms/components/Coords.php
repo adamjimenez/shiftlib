@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Coords extends Component implements ComponentInterface
 {
-    public $field_sql = "POINT";
+    public function getFieldSql(): string
+    {
+        return "POINT";
+    }
 
     function field($field_name, $value = '', $options = []): void
     {

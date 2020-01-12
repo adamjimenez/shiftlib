@@ -8,7 +8,10 @@ use DOMDocument;
 
 class Editor extends Component implements ComponentInterface
 {
-    public $field_sql = "TEXT";
+    public function getFieldSql(): string
+    {
+        return 'TEXT';
+    }
 
     public function field($field_name, $value = '', $options = []): void
     {
@@ -45,7 +48,7 @@ class Editor extends Component implements ComponentInterface
         return $value;
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
 
     }

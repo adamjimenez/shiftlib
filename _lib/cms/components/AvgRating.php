@@ -6,7 +6,10 @@ use cms\ComponentInterface;
 
 class AvgRating extends Rating implements ComponentInterface
 {
-    public $field_sql = 'TINYINT';
+    public function getFieldSql(): ?string
+    {
+        return 'TINYINT';
+    }
 
     public function field($field_name, $value = '', $options = []): void
     {

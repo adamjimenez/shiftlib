@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Textarea extends Component implements ComponentInterface
 {
-    public $field_sql = "TEXT";
+    public function getFieldSql(): string
+    {
+        return "TEXT";
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {

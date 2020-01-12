@@ -8,7 +8,11 @@ use cms\ComponentInterface;
 class Integer extends Component implements ComponentInterface
 {
     public $field_type = 'number';
-    public $field_sql = 'INT';
+
+    public function getFieldSql(): string
+    {
+        return 'INT';
+    }
 
     public function value($value, $name = '')
     {
@@ -16,12 +20,12 @@ class Integer extends Component implements ComponentInterface
         return $value;
     }
 
-    public function is_valid($value): bool
+    public function isValid($value): bool
     {
         return is_numeric($value);
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         // check for range
         $pos = strrpos($value, '-');
@@ -59,7 +63,7 @@ class Integer extends Component implements ComponentInterface
         return (int) $value;
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         $field_name = underscored($name); ?>
         <label><?= ucfirst($name); ?></label><br>

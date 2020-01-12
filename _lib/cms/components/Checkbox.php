@@ -7,7 +7,10 @@ use cms\ComponentInterface;
 
 class Checkbox extends Integer implements ComponentInterface
 {
-    public $field_sql = 'TINYINT';
+    public function getFieldSql(): ?string
+    {
+        return 'TINYINT';
+    }
 
     public function field(string $field_name, $value = '', array $options = []): void
     {
@@ -24,12 +27,12 @@ class Checkbox extends Integer implements ComponentInterface
         return $value ? 'Yes' : 'No';
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
-        return component::conditions_to_sql($field_name, $value, $func, $table_prefix);
+        return component::conditionsToSql($field_name, $value, $func, $table_prefix);
     }
 
-    public function search_field($name, $value): void
+    public function searchField($name, $value): void
     {
         $field_name = underscored($name); ?>
         <div>

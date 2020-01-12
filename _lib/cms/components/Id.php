@@ -6,7 +6,10 @@ use cms\ComponentInterface;
 
 class Id extends Integer implements ComponentInterface
 {
-    public $field_sql = null;
+    public function getFieldSql(): string
+    {
+        return null;
+    }
 
     public function format_value($value)
     {
