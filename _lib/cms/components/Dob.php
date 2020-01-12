@@ -26,7 +26,7 @@ class Dob extends Date implements ComponentInterface
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         return '`' . $field_name . "`!='0000-00-00' AND " .
             "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';

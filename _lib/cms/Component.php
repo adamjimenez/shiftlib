@@ -46,31 +46,58 @@ abstract class Component
         <?php
     }
 
-    // returns the display value
+    /**
+     * Returns the display value
+     *
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, $name = '')
     {
         return trim($value);
     }
 
-    // checks the value is valid
+    /**
+     * Checks the value is valid
+     *
+     * @param $value
+     * @return bool
+     */
     public function is_valid($value): bool
     {
         return true;
     }
 
-    // applies any cleanup before saving value is mixed
+    /**
+     * Applies any cleanup before saving value is mixed
+     *
+     * @param $value
+     * @param null $field_name
+     * @return string
+     */
     public function format_value($value, $field_name = null)
     {
         return trim(strip_tags($value));
     }
 
-    // generates sql code for use in where statement
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    /**
+     * @param $field_name
+     * @param $value
+     * @param string $func
+     * @param string $table_prefix
+     * @return string|null
+     */
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         $value = str_replace('*', '%', $value);
         return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
     }
 
+    /**
+     * @param mixed $name
+     * @param mixed $value
+     */
     public function search_field($name, $value): void
     {
         $field_name = underscored($name); ?>

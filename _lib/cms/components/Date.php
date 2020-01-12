@@ -31,7 +31,7 @@ class Date extends Component implements ComponentInterface
         return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         if ('now' == $value) {
             $start = 'NOW()';

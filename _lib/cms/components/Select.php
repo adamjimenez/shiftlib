@@ -174,7 +174,7 @@ class Select extends Component
         return $value;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         if (is_array($value)) {
             $or = '(';

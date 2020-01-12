@@ -184,8 +184,9 @@ class Checkboxes extends Select implements ComponentInterface
     }
 
     // generates sql code for use in where statement
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
+        return null;
     }
 
     public function search_field($name, $value): void

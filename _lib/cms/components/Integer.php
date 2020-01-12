@@ -21,7 +21,7 @@ class Integer extends Component implements ComponentInterface
         return is_numeric($value);
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         // check for range
         $pos = strrpos($value, '-');

@@ -90,7 +90,7 @@ class File extends Component implements ComponentInterface
         return false;
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         return $table_prefix . $field_name . ' > 0';
     }

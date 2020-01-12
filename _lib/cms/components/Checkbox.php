@@ -24,7 +24,7 @@ class Checkbox extends Integer implements ComponentInterface
         return $value ? 'Yes' : 'No';
     }
 
-    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
+    public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): ?string
     {
         return component::conditions_to_sql($field_name, $value, $func, $table_prefix);
     }
