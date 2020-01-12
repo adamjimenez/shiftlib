@@ -14,12 +14,14 @@ class Checkbox extends Integer implements ComponentInterface
         ?>
         <input type="checkbox" name="<?= $field_name; ?>" value="1" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if ($value) { ?>checked<?php } ?> <?= $options['attribs']; ?>>
         <?php
+
+        // WIP, does this bext
+        // return '<input type="checkbox" name="' . $field_name . '" value="1" ' . ($options['readonly'] ? 'disabled' : '') . '  ' . ($value ? 'checked' : '') . ' ' . $options['attribs'] . '>';
     }
 
     public function value($value, $name = '')
     {
-        $value = $value ? 'Yes' : 'No';
-        return $value;
+        return $value ? 'Yes' : 'No';
     }
 
     public function conditions_to_sql($field_name, $value, $func = '', $table_prefix = ''): string
