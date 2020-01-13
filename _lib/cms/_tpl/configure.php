@@ -215,7 +215,7 @@ function str_to_bool($str): string
 }
 
 // generate field list from the components dir
-foreach (glob("_lib/cms/components/*.php") as $filename) {
+foreach (glob(dirname(__FILE__)."/../components/*.php") as $filename) {
     $field_opts[] = str_replace('.php', '', basename($filename));
 }
 
