@@ -260,6 +260,11 @@ class cms
         if (is_numeric($conditions)) {
             $id = $conditions;
             $num_results = 1;
+        } elseif (is_string($conditions) && in_array('page_name', $vars['fields'][$section])) {
+            $field_page_name = array_search('page_name', $vars['fields'][$section]);
+            $conditions = [$field_page_name => $conditions];
+            $num_results = 1;
+        // deprecated
         } elseif (is_string($conditions) && in_array('page-name', $vars['fields'][$section])) {
             $field_page_name = array_search('page-name', $vars['fields'][$section]);
             $conditions = [$field_page_name => $conditions];
