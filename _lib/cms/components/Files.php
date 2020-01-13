@@ -6,7 +6,7 @@ use cms\ComponentInterface;
 
 class Files extends File implements ComponentInterface
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'TEXT';
     }

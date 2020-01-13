@@ -9,7 +9,7 @@ class Integer extends Component implements ComponentInterface
 {
     public $field_type = 'number';
 
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'INT';
     }

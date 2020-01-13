@@ -6,7 +6,7 @@ use cms\Component;
 
 class Select extends Component
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }

@@ -8,7 +8,7 @@ class Timestamp extends Date implements ComponentInterface
 {
     public $field_type = 'hidden';
 
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
     }

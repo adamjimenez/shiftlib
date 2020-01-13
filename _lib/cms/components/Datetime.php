@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Datetime extends Date implements ComponentInterface
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'DATETIME';
     }

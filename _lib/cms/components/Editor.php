@@ -8,7 +8,7 @@ use DOMDocument;
 
 class Editor extends Component implements ComponentInterface
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'TEXT';
     }

@@ -6,7 +6,7 @@ use cms\ComponentInterface;
 
 class Dob extends Date implements ComponentInterface
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'DATE';
     }

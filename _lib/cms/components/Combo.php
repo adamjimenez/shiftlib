@@ -6,7 +6,7 @@ use cms\ComponentInterface;
 
 class Combo extends Select implements ComponentInterface
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }

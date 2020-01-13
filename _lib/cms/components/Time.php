@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Time extends Component implements ComponentInterface
 {
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'TIME';
     }

@@ -16,7 +16,7 @@ class Rating extends Component implements ComponentInterface
         5 => 'Excellent',
     ];
 
-    public function getFieldSql(): string
+    public function getFieldSql(): ?string
     {
         return 'TINYINT';
     }
