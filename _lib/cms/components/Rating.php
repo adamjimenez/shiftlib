@@ -31,7 +31,7 @@ class Rating extends Component implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         $field_name = underscored($name);
 

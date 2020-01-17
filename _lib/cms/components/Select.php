@@ -155,7 +155,7 @@ class Select extends Component
         return $parents;
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         global $vars, $cms;
 

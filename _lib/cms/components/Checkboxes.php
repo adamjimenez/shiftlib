@@ -107,7 +107,7 @@ class Checkboxes extends Select implements ComponentInterface
         print '</ul>';
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         global $vars, $cms;
 

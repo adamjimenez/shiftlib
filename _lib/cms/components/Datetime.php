@@ -19,7 +19,7 @@ class Datetime extends Date implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         if (starts_with($value, '0000-00-00')) {
             $value = '';

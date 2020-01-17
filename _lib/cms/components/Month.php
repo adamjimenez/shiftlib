@@ -14,7 +14,7 @@ class Month extends Date implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         if ('0000-00-00' != $value and '' != $value) {
             $value = dateformat('F Y', $value);

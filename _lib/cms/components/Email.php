@@ -9,7 +9,7 @@ class Email extends Component implements ComponentInterface
 {
     public $field_type = 'email';
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         $value = '<a href="mailto:' . $value . '" target="_blank">' . $value . '</a>';
         return $value;

@@ -1,37 +1,34 @@
 <?php
-if ($db_config['user'] or $db_connection) {
+if (true === isset($db_config['user']) || true === isset($db_connection)) {
     die('Error: database already configured');
 }
 
-//check config perms
-if (!is_writable('_inc/config.php')) {
+// Check config perms
+if (false === is_writable('_inc/config.php')) {
     die('Error: make sure _inc/config.php has 777 permissions and refresh');
 }
 
-if (isset($_POST['save'])) {
+if (true === isset($_POST['save'])) {
     $errors = validate($_POST, ['host', 'user', 'pass', 'name']);
 
-    if (!count($errors)) {
-        $connection = mysql_connect($_POST['host'], $_POST['user'], $_POST['pass']);
-
-        if ($connection) {
-            $result = mysql_select_db($_POST['name']);
-
-            if (!$result) {
-                $errors[] = 'name';
-            }
-        } else {
-            $errors[] = 'pass';
+    if (0 === count($errors)) {
+        $connection = mysqli_connect($_POST['host'], $_POST['user'], $_POST['pass'], $_POST['name']);
+        if (false === $connection) {
+            die(mysqli_connect_error());
+            $errors[] = 'unknown';
         }
     }
 
-    if (count($errors)) {
+    if (0 !== count($errors)) {
         print json_encode($errors);
         exit;
-    } elseif ($_POST['validate']) {
+    }
+
+    if (true === isset($_POST['validate']) && true === (bool) $_POST['validate']) {
         print 1;
         exit;
     }
+
     $content = '<?php
 #GENERAL SETTINGS
 $db_config["host"] = "' . addslashes($_POST['host']) . '";
@@ -71,10 +68,10 @@ $opts["admin"]=array(
 }
 ?>
 
-<?=load_js('cms');?>
+<?= load_js('cms'); ?>
 
 <style>
-    body{
+    body {
         font-family: Arial;
     }
 </style>
@@ -86,25 +83,25 @@ $opts["admin"]=array(
     <input type="hidden" name="save" value="1">
 
     <label>Host:<br>
-        <input type="text" name="host" placeholder="host" value="<?=$_POST['host']?:'localhost';?>" autofocus="autofocus">
+        <input type="text" name="host" placeholder="host" value="<?= $_POST['host'] ?: 'localhost'; ?>" autofocus="autofocus">
     </label>
     <br>
     <br>
 
     <label>Username:<br>
-        <input type="text" name="user" placeholder="username" value="<?=$_POST['user']?:'';?>">
+        <input type="text" name="user" placeholder="username" value="<?= $_POST['user'] ?: ''; ?>">
     </label>
     <br>
     <br>
 
     <label>Password:<br>
-        <input type="text" name="pass" placeholder="password" value="<?=$_POST['pass']?:'';?>">
+        <input type="text" name="pass" placeholder="password" value="<?= $_POST['pass'] ?: ''; ?>">
     </label>
     <br>
     <br>
 
     <label>Name:<br>
-        <input type="text" name="name" placeholder="name" value="<?=$_POST['name']?:'';?>">
+        <input type="text" name="name" placeholder="name" value="<?= $_POST['name'] ?: ''; ?>">
     </label>
     <br>
     <br>

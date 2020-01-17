@@ -30,7 +30,7 @@ class File extends Component implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);

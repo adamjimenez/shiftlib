@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Ip extends Component implements ComponentInterface
 {
-    public function value($value, $name = '')
+    public function formatValue($value, $field_name = null)
     {
         global $cms;
 

@@ -14,7 +14,7 @@ class PhpUpload extends Component implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         if ($value) {
             $value = '

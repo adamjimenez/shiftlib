@@ -18,7 +18,7 @@ class PhpUploads extends PhpUpload implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         if ($value) {
             $files = explode("\n", trim($value));

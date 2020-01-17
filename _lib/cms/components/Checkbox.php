@@ -22,7 +22,14 @@ class Checkbox extends Integer implements ComponentInterface
         // return '<input type="checkbox" name="' . $field_name . '" value="1" ' . ($options['readonly'] ? 'disabled' : '') . '  ' . ($value ? 'checked' : '') . ' ' . $options['attribs'] . '>';
     }
 
-    public function value($value, $name = '')
+    /**
+     * Output the
+     *
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, $name = ''): string
     {
         return $value ? 'Yes' : 'No';
     }

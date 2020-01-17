@@ -38,7 +38,7 @@ class SelectParent extends Component implements ComponentInterface
         <?php
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         global $vars, $cms;
 

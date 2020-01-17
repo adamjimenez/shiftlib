@@ -13,6 +13,13 @@ interface ComponentInterface
 
     /**
      * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, $name = ''): string;
+
+    /**
+     * @param $value
      * @return bool
      */
     public function isValid($value): bool;

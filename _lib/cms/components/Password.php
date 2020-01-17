@@ -10,7 +10,7 @@ class Password extends Component implements ComponentInterface
     public $field_type = 'password';
     public $preserve_value = true;
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         return '';
     }

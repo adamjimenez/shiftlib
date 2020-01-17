@@ -215,8 +215,9 @@ function str_to_bool($str): string
 }
 
 // generate field list from the components dir
+$field_opts = [];
 foreach (glob("_lib/cms/components/*.php") as $filename) {
-    $field_opts[] = str_replace('.php', '', basename($filename));
+    $field_opts[] = str_replace('.php', '', strtolower(basename($filename)));
 }
 
 // get section list for subsections and dropdowns

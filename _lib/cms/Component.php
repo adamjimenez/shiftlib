@@ -56,7 +56,7 @@ abstract class Component
      * @param string $name
      * @return string
      */
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         return trim($value);
     }

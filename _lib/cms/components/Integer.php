@@ -14,7 +14,7 @@ class Integer extends Component implements ComponentInterface
         return 'INT';
     }
 
-    public function value($value, $name = '')
+    public function value($value, $name = ''): string
     {
         $value = number_format($value);
         return $value;

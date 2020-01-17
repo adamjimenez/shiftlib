@@ -29,6 +29,4 @@ spl_autoload_register(function (string $class) {
         require_once(dirname(__FILE__) . '/cms/components/' . basename($class) . '.php');
         return;
     }
-
-    throw new \Exception('Unable to identify class: ' . $class);
 });
