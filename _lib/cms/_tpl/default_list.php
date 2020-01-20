@@ -45,16 +45,16 @@ if ($_POST['custom_button']) {
     if ('list' == $cms_buttons[$_POST['custom_button']]['page'] and $cms_buttons[$_POST['custom_button']]['handler']) {
         $items = [];
         if ($_POST['select_all_pages'] or !$_POST['id']) {
-            $items = $this->get($_POST['section'], $_GET);
+            $items = $this->get($_GET['option'], $_GET);
         } elseif ($_POST['id']) {
             foreach ($_POST['id'] as $v) {
                 $items[] = $this->get($_POST['section'], $v);
             }
         }
-        
+
         $cms_buttons[$_POST['custom_button']]['handler']($items);
     }
-}
+} else {
 
 foreach ($vars['fields'][$this->section] as $field => $type) {
     if ('position' == $type) {
@@ -243,3 +243,7 @@ foreach ($vars['fields'][$this->section] as $field => $type) {
         });
     });
 </script>
+
+<?php
+}
+?>
