@@ -550,6 +550,11 @@ function send_mail($opts = []): bool
     
     if (getenv('SENDGRID_API_KEY')) {
         $email = new \SendGrid\Mail\Mail();
+        
+        if ($opts['reply_to']) {
+            $email->setReplyTo($opts['from_email']);
+        }
+        
         //$email->setFrom("test@example.com", "Example User");
         $email->setFrom($opts['from_email']);
         $email->setSubject($opts['subject']);
@@ -575,6 +580,11 @@ function send_mail($opts = []): bool
         return $response;
     } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         $mail = new \PHPMailer\PHPMailer\PHPMailer();
+        
+        if ($opts['reply_to']) {
+            $mail->addReplyTo($opts['reply_to']);
+        }
+        
         $mail->SetFrom($opts['from_email']);
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
@@ -591,6 +601,7 @@ function send_mail($opts = []): bool
         
         return $mail->Send();
     }
+    
     $headers = '';
         
     if ($is_html) {
@@ -599,7 +610,11 @@ function send_mail($opts = []): bool
     }
         
     if ($opts['from_email']) {
-        $headers .= 'From: ' . $from_email . "\n";
+        $headers .= 'From: ' . $opts['from_email'] . "\n";
+    }
+        
+    if ($opts['reply_to']) {
+        $headers .= 'Reply-to: ' . $opts['reply_to'] . "\n";
     }
         
     return mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);

@@ -1,7 +1,7 @@
 <?php
 class cms
 {
-    const VERSION = 'v2.0';
+    const VERSION = 'v2.0.1';
     
     // hide these field types from the list view
     public $hidden_columns = ['id', 'password', 'editor', 'textarea', 'checkboxes'];
@@ -850,12 +850,19 @@ class cms
         $msg .= "\n" . 'https://' . $_SERVER['HTTP_HOST'] . '/admin?option=' . rawurlencode($this->section) . '&edit=true&id=' . $this->id;
 
         $msg = nl2br($msg);
-
-        send_mail([
+        
+        $opts = [
             'subject' => $subject,
             'content' => $msg,
             'to_email' => $to,
-        ]);
+        ];
+        
+        // reply to
+        if ($vars['fields'][$this->section]['email']) {
+            $opts['reply_to'] = $this->get_value('email');
+        }
+
+        send_mail($opts);
     }
 
     // handle ajax form submission
