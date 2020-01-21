@@ -23,14 +23,6 @@ class cms
                 $_SESSION['message'] = 'Preview sent';
             },
         ];
-
-        if (!$vars['fields']['email templates']) {
-            $vars['fields']['email templates'] = [
-                'subject' => 'text',
-                'body' => 'textarea',
-                'id' => 'id',
-            ];
-        }
     }
 
     /**
