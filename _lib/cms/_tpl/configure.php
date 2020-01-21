@@ -217,7 +217,8 @@ function str_to_bool($str): string
 // generate field list from the components dir
 $field_opts = [];
 foreach (glob(dirname(__FILE__)."/../components/*.php") as $filename) {
-    $field_opts[] = str_replace('.php', '', strtolower(basename($filename)));
+    $filename = str_replace('.php', '', basename($filename));
+    $field_opts[] = camelCaseToSnakeCase($filename);
 }
 
 // get section list for subsections and dropdowns
@@ -227,9 +228,11 @@ $section_opts = array_keys($vars['fields']);
 global $root_folder;
 $config_file = $root_folder . '/_inc/config.php';
 
-if (!file_exists($config_file)) {
+if (false === file_exists($config_file)) {
     die('Error: config file does not exist: ' . $config_file);
-} elseif (!is_writable($config_file)) {
+}
+
+if (!is_writable($config_file)) {
     die('Error: config file is not writable: ' . $config_file);
 }
 
