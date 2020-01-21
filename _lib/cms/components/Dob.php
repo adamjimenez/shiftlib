@@ -43,16 +43,17 @@ class Dob extends Date implements ComponentInterface
             $opts['age'][] = $i;
         } ?>
 
-        <?= $name; ?><br>
+        <?= ucfirst($name); ?><br>
         <select name="<?= $field_name; ?>">
             <option value="">Any</option>
             <?= html_options($opts['age'], $_GET[$field_name]); ?>
         </select>
-        To
+        to
         <select name="func[<?= $field_name; ?>]">
             <option value="">Any</option>
             <?= html_options($opts['age'], $_GET['func'][$field_name]); ?>
         </select>
+        <br>
         <br>
         <?php
     }

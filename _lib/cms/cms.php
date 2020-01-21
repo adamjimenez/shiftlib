@@ -2,8 +2,8 @@
 
 class cms
 {
-    const VERSION = 'v2.0';
-
+    const VERSION = 'v2.0.1';
+    
     // hide these field types from the list view
     public $hidden_columns = ['id', 'password', 'editor', 'textarea', 'checkboxes'];
 
@@ -24,14 +24,6 @@ class cms
                 $_SESSION['message'] = 'Preview sent';
             },
         ];
-
-        if (!$vars['fields']['email templates']) {
-            $vars['fields']['email templates'] = [
-                'subject' => 'text',
-                'body' => 'textarea',
-                'id' => 'id',
-            ];
-        }
     }
 
     /**
@@ -261,6 +253,11 @@ class cms
         if (is_numeric($conditions)) {
             $id = $conditions;
             $num_results = 1;
+        } elseif (is_string($conditions) && in_array('page_name', $vars['fields'][$section])) {
+            $field_page_name = array_search('page_name', $vars['fields'][$section]);
+            $conditions = [$field_page_name => $conditions];
+            $num_results = 1;
+        // deprecated
         } elseif (is_string($conditions) && in_array('page-name', $vars['fields'][$section])) {
             $field_page_name = array_search('page-name', $vars['fields'][$section]);
             $conditions = [$field_page_name => $conditions];
@@ -855,11 +852,18 @@ class cms
 
         $msg = nl2br($msg);
 
-        send_mail([
+        $opts = [
             'subject' => $subject,
             'content' => $msg,
             'to_email' => $to,
-        ]);
+        ];
+
+        // reply to
+        if ($vars['fields'][$this->section]['email']) {
+            $opts['reply_to'] = $this->get_value('email');
+        }
+
+        send_mail($opts);
     }
 
     // handle ajax form submission

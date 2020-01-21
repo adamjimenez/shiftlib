@@ -216,7 +216,7 @@ function str_to_bool($str): string
 
 // generate field list from the components dir
 $field_opts = [];
-foreach (glob("_lib/cms/components/*.php") as $filename) {
+foreach (glob(dirname(__FILE__)."/../components/*.php") as $filename) {
     $field_opts[] = str_replace('.php', '', strtolower(basename($filename)));
 }
 
@@ -1164,6 +1164,11 @@ $count['options'] = 0;
         }
     })
     
+    // don't allow dashes or underscores in field names
+    $('body').on('blur', '.name', function() {
+        $(this).val($(this).val().split("-").join(" ").split("_").join(" ").trim())
+    })
+
     // check field count doesn't exceed phps max allowed input setting
     $('form[method*=post]').on('submit', function(e) {
         if(post_count(this) > max_input_vars) {

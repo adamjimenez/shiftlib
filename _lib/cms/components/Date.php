@@ -45,7 +45,7 @@ class Date extends Component implements ComponentInterface
         }
 
         if ('month' == $func) {
-            $where = 'date_format(' . $table_prefix . $field_name . ", '%m%Y') = '" . escape($value) . "'";
+            $where = 'date_format(' . $table_prefix . $field_name . ", '%m%Y') = '" . escape(dateformat('mY', $value)) . "'";
         } elseif ('year' == $func) {
             $where = 'date_format(' . $table_prefix . $field_name . ", '%Y') = '" . escape($value) . "'";
         } elseif ($value and is_array($func) and $func['end']) {
