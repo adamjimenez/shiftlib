@@ -171,7 +171,7 @@ class Select extends Component
             }
         }
 
-        return $value;
+        return $value ?: '';
     }
 
     public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
