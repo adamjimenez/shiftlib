@@ -566,13 +566,11 @@ function send_mail($opts = []): bool
         $email = new \SendGrid\Mail\Mail();
         
         if ($opts['reply_to']) {
-            $email->setReplyTo($opts['from_email']);
+            $email->setReplyTo($opts['reply_to']);
         }
         
-        //$email->setFrom("test@example.com", "Example User");
         $email->setFrom($opts['from_email']);
         $email->setSubject($opts['subject']);
-        //$email->addTo("adam.jimenez@gmail.com", "Example User");
         $email->addTo($opts['to_email']);
         
         if ($is_html) {
@@ -596,13 +594,14 @@ function send_mail($opts = []): bool
         $mail = new \PHPMailer\PHPMailer\PHPMailer();
         
         if ($opts['reply_to']) {
-            $mail->addReplyTo($opts['reply_to']);
+            $mail->AddReplyTo($opts['reply_to']);
         }
         
         $mail->SetFrom($opts['from_email']);
+        $mail->AddAddress($opts['to_email']);
+        
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
-        $mail->AddAddress($opts['to_email']);
         $mail->isHTML($is_html);
         
         if ($opts['attachments']) {

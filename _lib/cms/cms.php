@@ -869,7 +869,7 @@ class cms
 
         // reply to
         if ($vars['fields'][$this->section]['email']) {
-            $opts['reply_to'] = $this->get_value('email');
+            $opts['reply_to'] = strip_tags($this->get_value('email'));
         }
 
         send_mail($opts);
