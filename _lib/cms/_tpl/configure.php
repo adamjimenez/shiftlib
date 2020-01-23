@@ -215,8 +215,10 @@ function str_to_bool($str): string
 }
 
 // generate field list from the components dir
+$field_opts = [];
 foreach (glob(dirname(__FILE__)."/../components/*.php") as $filename) {
-    $field_opts[] = str_replace('.php', '', basename($filename));
+    $filename = str_replace('.php', '', basename($filename));
+    $field_opts[] = camelCaseToSnakeCase($filename);
 }
 
 // get section list for subsections and dropdowns
@@ -226,9 +228,11 @@ $section_opts = array_keys($vars['fields']);
 global $root_folder;
 $config_file = $root_folder . '/_inc/config.php';
 
-if (!file_exists($config_file)) {
+if (false === file_exists($config_file)) {
     die('Error: config file does not exist: ' . $config_file);
-} elseif (!is_writable($config_file)) {
+}
+
+if (!is_writable($config_file)) {
     die('Error: config file is not writable: ' . $config_file);
 }
 
@@ -1010,12 +1014,19 @@ $count['options'] = 0;
                     fieldRow.find('.required').prop('checked', true);
                 }
                 
-                if (type === 'int') {
-                    type = 'integer';
-                }
-                
-                if (type === 'parent') {
-                    type = 'select_parent';
+                switch (type) {
+                    case 'int':
+                        type = 'integer';
+                    break;
+                    case 'parent':
+                        type = 'select_parent';
+                    break;
+                    case 'phpupload':
+                        type = 'upload';
+                    break;
+                    case 'phpuploads':
+                        type = 'uploads';
+                    break;
                 }
                 
                 fieldRow.find('select').val(type.replace('-', '_'));
@@ -1165,9 +1176,9 @@ $count['options'] = 0;
     
     // don't allow dashes or underscores in field names
     $('body').on('blur', '.name', function() {
-        $(this).val($(this).val().split("-").join(" ").split("_").join(" ").trim()) 
+        $(this).val($(this).val().split("-").join(" ").split("_").join(" ").trim())
     })
-    
+
     // check field count doesn't exceed phps max allowed input setting
     $('form[method*=post]').on('submit', function(e) {
         if(post_count(this) > max_input_vars) {

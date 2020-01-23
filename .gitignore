@@ -7,3 +7,4 @@ vendor/
 .php_cs.cache
 latest.zip
 shiftedit-proxy.php
+_inc/config.local.php

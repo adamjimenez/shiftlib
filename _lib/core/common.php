@@ -3,6 +3,20 @@
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
+/**
+ * @param string $string
+ * @return string
+ */
+function camelCaseToSnakeCase(string $string): string
+{
+    // Replace uppercase letters with underscore and lowercase
+    $func = create_function('$c', 'return "_" . strtolower($c[1]);');
+    $converted = preg_replace_callback('/([A-Z])/', $func, $string);
+
+    // Remove _ prefix and lowercase
+    return ltrim(strtolower($converted), '_');
+}
+
 // create image resource from a file
 function imagecreatefromfile($path)
 {
@@ -1120,7 +1134,9 @@ function load_js($libs)
 
     if ($deps['cms']) {
         ?>
-		<script src="/_lib/cms/js/cms.js<?php if ($_GET['ModPagespeed']=='off') { print '?v='.time(); }?>" async></script>
+		<script src="/_lib/cms/js/cms.js<?php if ('off' == $_GET['ModPagespeed']) {
+            print '?v=' . time();
+        } ?>" async></script>
 	<?php
     }
 

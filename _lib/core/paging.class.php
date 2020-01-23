@@ -12,6 +12,80 @@ $content=sql_query($p->query);
 
 class paging
 {
+    public $num_pages;
+
+    /**
+     * @var string|mixed
+     */
+    public $paging_separator;
+
+    /**
+     * @var string|mixed
+     */
+    public $paging_format;
+
+    /**
+     * @var bool|mixed
+     */
+    public $paging_hide_prev_next;
+
+    /**
+     * @var string|mixed
+     */
+    public $paging_previous_text;
+
+    /**
+     * @var string|mixed
+     */
+    public $paging_next_text;
+
+    /**
+     * @var string|mixed
+     */
+    public $prefix;
+
+    /**
+     * @var string|mixed
+     */
+    public $hash_secret;
+
+    /**
+     * @var string|mixed
+     */
+    public $str_ext_argv;
+
+    /**
+     * @var null|mixed|float|int|string
+     */
+    public $int_num_result;
+
+    /**
+     * @var int|mixed
+     */
+    public $page;
+
+    /**
+     * @var mixed|string
+     */
+    public $query;
+
+    /**
+     * @var mixed
+     */
+    public $order;
+
+    public $asc;
+
+    /**
+     * @var mixed
+     */
+    public $rows;
+
+    /**
+     * @var mixed|int
+     */
+    public $total;
+
     public function paging($query, $int_num_result = null, $order = null, $asc = true, $prefix = '', $num_pages = 10)
     {
         $this->num_pages = $num_pages;
@@ -91,11 +165,17 @@ class paging
         }
     }
 
+    /**
+     * @return float|int
+     */
     public function getNumberOfPages()
     {
         return $this->int_num_result ? ($this->total / $this->int_num_result) : 1;
     }
 
+    /**
+     * @return string
+     */
     public function getCurrentPage()
     {
         $int_cur_page = ($this->page * $this->getNumberOfPages()) / $this->total;
@@ -146,6 +226,9 @@ class paging
         return $array_paging;
     }
 
+    /**
+     * @return string[]
+     */
     public function getPagingRowArray()
     {
         if ($this->getNumberOfPages() > 0) {
@@ -177,7 +260,7 @@ class paging
                 if ($int_new_position > 0) {
                     $link .= $this->prefix . 'page=' . $int_new_position;
                 }
-                
+
                 $array_all_page[$j] = '<a href="?' . $link . '&' . $this->str_ext_argv . '">' . ($i + 1) . '</a>';
             }
             $j++;
@@ -185,6 +268,9 @@ class paging
         return $array_all_page;
     }
 
+    /**
+     * @return bool|string
+     */
     public function get_paging()
     {
         if (($this->total < $this->int_num_result) or !$this->int_num_result) {
@@ -225,6 +311,10 @@ class paging
         return sprintf($this->paging_format, $previous, $pages, $next);
     }
 
+    /**
+     * @param mixed $links
+     * @return bool|string
+     */
     public function get_results($links = false)
     {
         $array_paging = $this->getPagingArray();
@@ -262,6 +352,9 @@ class paging
         return $select;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function get_rows()
     {
         if (is_array($this->query)) {
@@ -269,6 +362,11 @@ class paging
         }
     }
 
+    /**
+     * @param mixed $col
+     * @param null|mixed $label
+     * @return string
+     */
     public function col($col, $label = null)
     {
         $qs = $_GET;
@@ -300,6 +398,10 @@ class paging
         return $html;
     }
 
+    /**
+     * @param mixed $options
+     * @return string
+     */
     public function items_per_page($options = [25,50,100,200,'All'])
     {
         $qs = $_GET;
@@ -322,24 +424,4 @@ class paging
 
         return $html;
     }
-    
-    /*
-    public function get_rel()
-    {
-        $array_paging = $this->getPagingArray();
-
-        $host = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REDIRECT_URL'];
-
-        $rel = '';
-        if ($array_paging['previous_link']) {
-            $rel .= '<link rel="prev" href="' . $host . $array_paging['previous_link'] . '">';
-        }
-
-        if ($array_paging['next_link']) {
-            $rel .= '<link rel="next" href="' . $host . $array_paging['next_link'] . '">';
-        }
-
-        return $rel;
-    }
-    */
 }

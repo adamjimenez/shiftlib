@@ -96,6 +96,8 @@ class auth
 
     public $log_last_login;
 
+    public $check_login_attempts;
+
     /**
      * for use with single sign on
      *
@@ -212,7 +214,7 @@ class auth
     
     public function single_sign_on()
     {
-        if (!class_exists('Hybrid_Auth')) {
+        if (false === class_exists('Hybrid_Auth')) {
             return;
         }
         
@@ -339,8 +341,6 @@ class auth
 
     public function check_login_attempts()
     {
-        global $cms;
-
         if (false === $this->check_login_attempts or !table_exists('cms_login_attempts')) {
             return false;
         }
@@ -473,12 +473,12 @@ class auth
     }
 
     /**
-     * @param string|null $email
      * @throws Exception
+     * @return array
      */
     public function forgot_password()
     {
-        global $cms, $request;
+        global $request;
         
         $result = [];
         $data = $_POST;
