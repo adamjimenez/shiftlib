@@ -4,7 +4,7 @@ namespace cms\components;
 
 use cms\ComponentInterface;
 
-class PhpUploads extends PhpUpload implements ComponentInterface
+class Uploads extends Upload implements ComponentInterface
 {
     public function getFieldSql(): ?string
     {

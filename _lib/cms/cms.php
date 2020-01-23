@@ -706,6 +706,12 @@ class cms
             case 'page-name':
                 $type = 'page_name';
                 break;
+            case 'phpupload':
+                $type = 'upload';
+                break;
+            case 'phpuploads':
+                $type = 'uploads';
+                break;
         }
 
         $class = 'cms\\components\\' . $this->camelize($type);

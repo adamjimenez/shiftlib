@@ -5,7 +5,7 @@ namespace cms\components;
 use cms\Component;
 use cms\ComponentInterface;
 
-class PhpUpload extends Component implements ComponentInterface
+class Upload extends Component implements ComponentInterface
 {
     public function field(string $field_name, $value = '', array $options = []): void
     {

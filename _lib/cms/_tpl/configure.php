@@ -1014,12 +1014,19 @@ $count['options'] = 0;
                     fieldRow.find('.required').prop('checked', true);
                 }
                 
-                if (type === 'int') {
-                    type = 'integer';
-                }
-                
-                if (type === 'parent') {
-                    type = 'select_parent';
+                switch (type) {
+                    case 'int':
+                        type = 'integer';
+                    break;
+                    case 'parent':
+                        type = 'select_parent';
+                    break;
+                    case 'phpupload':
+                        type = 'upload';
+                    break;
+                    case 'phpuploads':
+                        type = 'uploads';
+                    break;
                 }
                 
                 fieldRow.find('select').val(type.replace('-', '_'));
