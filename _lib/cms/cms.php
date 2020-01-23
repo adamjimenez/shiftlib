@@ -703,6 +703,9 @@ class cms
             case 'parent':
                 $type = 'select_parent';
                 break;
+            case 'page-name':
+                $type = 'page_name';
+                break;
         }
 
         $class = 'cms\\components\\' . $this->camelize($type);
