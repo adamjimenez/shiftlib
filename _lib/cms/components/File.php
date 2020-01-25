@@ -7,30 +7,35 @@ use cms\ComponentInterface;
 
 class File extends Component implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     *@throws \Exception
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1); ?>
-        <div>
-            <?php
-            if ($value) {
-                ?>
-                <input type="hidden" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= $value; ?>">
-                <a href="/_lib/cms/file.php?f=<?= $value; ?>">
-                    <img src="/_lib/cms/file.php?f=<?= $value; ?>" style="max-width: 100px; max-height: 100px;"><br>
-                    <?= $file['name']; ?>
-                </a>
-                <a href="javascript:" onClick="clearFile('<?= $field_name; ?>')">clear</a>
-                <?php
-            } else {
-                ?>
-                <input type="file" id="<?= $field_name; ?>" name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>/>
-                <?php
-            } ?>
-        </div>
-        <?php
+        $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
+        $parts = [];
+
+        $parts[] = '<div>';
+
+        if ($value) {
+            $parts[] = '<input type="hidden" id="' . $fieldName . '" name="' . $fieldName . '" value="' . $value . '">';
+            $parts[] = '<a href="/_lib/cms/file.php?f=' . $value . '">';
+            $parts[] = '<img src="/_lib/cms/file.php?f=' . $value . '" style="max-width: 100px; max-height: 100px;"><br>';
+            $parts[] = $file['name'];
+            $parts[] = '</a>';
+            $parts[] = '<a href="javascript:" onClick="clearFile(' . $fieldName . ')">clear</a>';
+        } else {
+            $parts[] = '<input type="file" id="' . $fieldName . '" name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '/>';
+        }
+        $parts[] = '</div>';
+        return implode(' ', $parts);
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
@@ -90,18 +95,21 @@ class File extends Component implements ComponentInterface
         return false;
     }
 
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        return $table_prefix . $field_name . ' > 0';
+        return $tablePrefix . $fieldName . ' > 0';
     }
 
-    public function searchField($name, $value): void
+    public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name); ?>
-        <div>
-            <input type="checkbox" name="<?= $field_name; ?>" value="1" <?php if ($_GET[$field_name]) { ?>checked<?php } ?>>
-            <label for="<?= underscored($name); ?>" class="col-form-label"><?= ucfirst($name); ?></label>
-        </div>
-        <?php
+        $field_name = underscored($name);
+
+        $html = [];
+        $html[] = '<div>';
+        $html[] = '<input type="checkbox" name="' . $field_name . '" value="1" ' . ($_GET[$field_name] ? 'checked' : '') . '>';
+        $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '</div>';
+
+        return implode(' ', $html);
     }
 }

@@ -5,18 +5,19 @@ namespace cms;
 interface ComponentInterface
 {
     /**
-     * @param string $field_name
+     * @param string $fieldName
      * @param string $value
      * @param array $options
+     * @return string
      */
-    public function field(string $field_name, $value = '', array $options = []): void;
+    public function field(string $fieldName, $value = '', array $options = []): string;
 
     /**
      * @param $value
      * @param string $name
      * @return string
      */
-    public function value($value, $name = ''): string;
+    public function value($value, string $name = ''): string;
 
     /**
      * @param $value
@@ -25,19 +26,20 @@ interface ComponentInterface
     public function isValid($value): bool;
 
     /**
-     * @param $field_name
+     * @param string $fieldName
      * @param $value
      * @param string $func
-     * @param string $table_prefix
+     * @param string $tablePrefix
      * @return string|null
      */
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string;
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string;
 
     /**
      * @param $name
      * @param $value
+     * @return string
      */
-    public function searchField($name, $value): void;
+    public function searchField(string $name, $value): string;
 
 
     /**

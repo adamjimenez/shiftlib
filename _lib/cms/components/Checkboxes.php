@@ -13,11 +13,18 @@ class Checkboxes extends Select implements ComponentInterface
         return null;
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     *@throws \Exception
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $vars, $cms;
 
-        $name = spaced($field_name);
+        $name = spaced($fieldName);
 
         $value = [];
 
@@ -48,8 +55,6 @@ class Checkboxes extends Select implements ComponentInterface
                         break;
                     }
                 }
-
-                $raw_option = $vars['fields'][$vars['options'][$name]][$field];
 
                 $cols = '';
                 $cols .= '`' . underscored($field) . '`';
@@ -96,18 +101,19 @@ class Checkboxes extends Select implements ComponentInterface
 
         $is_assoc = is_assoc_array($vars['options'][$name]);
 
-        print '<ul class="checkboxes">';
+        $parts = [];
+        $parts[] = '<ul class="checkboxes">';
 
         foreach ($vars['options'][$name] as $k => $v) {
-            $val = $is_assoc ? $k : $v; ?>
-            <li><label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?> <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?= $v; ?></label></li>
-            <?php
+            $val = $is_assoc ? $k : $v;
+            $parts[] = '<li><label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, $value) ? 'checked="checked"' : '') . '/>' . $v . '</label></li>';
         }
 
-        print '</ul>';
+        $parts[] = '</ul>';
+        return implode('', $parts);
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         global $vars, $cms;
 
@@ -145,11 +151,10 @@ class Checkboxes extends Select implements ComponentInterface
             }
         }
 
-        $value = implode('<br>' . "\n", $array);
-        return $value;
+        return implode('<br>' . "\n", $array);
     }
 
-    public function formatValue($value, $field_name = null)
+    public function formatValue($value, string $field_name = null)
     {
         global $cms;
 
@@ -188,12 +193,12 @@ class Checkboxes extends Select implements ComponentInterface
     }
 
     // generates sql code for use in where statement
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         return null;
     }
 
-    public function searchField($name, $value): void
+    public function searchField(string $name, $value): string
     {
         global $vars;
 
@@ -201,19 +206,20 @@ class Checkboxes extends Select implements ComponentInterface
 
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
             $vars['options'][$name] = $this->get_options(underscored($vars['options'][$name]), underscored(key($vars['fields'][$vars['options'][$name]])));
-        } ?>
-        <div>
-            <label for="<?= underscored($name); ?>" class="col-form-label"><?= ucfirst($name); ?></label>
-        </div>
-        <div style="max-height: 200px; width: 200px; overflow: scroll">
-            <?php
-            $is_assoc = is_assoc_array($vars['options'][$name]);
+        }
+
+        $html = [];
+
+        $html[] = '<div>';
+        $html[] = '     <label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '</div>';
+        $html[] = '<div style="max-height: 200px; width: 200px; overflow: scroll">';
+        $is_assoc = is_assoc_array($vars['options'][$name]);
         foreach ($vars['options'][$name] as $k => $v) {
-            $val = $is_assoc ? $k : $v; ?>
-                <label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if (in_array($val, $_GET[$field_name])) { ?>checked<?php } ?>> <?= $v; ?></label><br>
-                <?php
-        } ?>
-        </div>
-        <?php
+            $val = $is_assoc ? $k : $v;
+            $html[] = '<label><input type="checkbox" name="' . $field_name . '[]" value="' . $val . '" ' . (in_array($val, $_GET[$field_name]) ? 'checked' : '') . '>' . $v . '</label><br>';
+        }
+        $html[] = '</div>';
+        return implode(' ', $html);
     }
 }

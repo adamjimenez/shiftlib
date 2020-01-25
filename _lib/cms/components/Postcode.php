@@ -12,15 +12,18 @@ class Postcode extends Component implements ComponentInterface
         return false !== format_postcode($value);
     }
 
-    public function formatValue($value)
+    public function formatValue($value, string $field_name = null)
     {
         return format_postcode($value);
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param mixed $name
+     * @param mixed $value
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
-        global $vars;
-
         $field_name = underscored($name);
 
         //distance options
@@ -36,16 +39,20 @@ class Postcode extends Component implements ComponentInterface
             100 => '100 miles',
             150 => '150 miles',
             200 => '200 miles',
-        ]; ?>
-        Distance from <?= $name; ?><br>
+        ];
 
-        Within
-        <select name="func[<?= $field_name; ?>]">
-            <option value=""></option>
-            <?= html_options($opts['distance'], $_GET['func'][$field_name]); ?>
-        </select>
-        of
-        <input type="text" name="<?= $field_name; ?>" value="<?= $_GET[$field_name]; ?>" size="7">
-        <?php
+        $html = [];
+
+        $html[] = 'Distance from ' . $name . '<br>';
+
+        $html[] = 'Within';
+
+        $html[] = '<select name="func[' . $field_name . ']">';
+        $html[] = '<option value=""></option>';
+        $html[] = html_options($opts['distance'], $_GET['func'][$field_name]);
+        $html[] = '</select>';
+        $html[] = 'of';
+        $html[] = '<input type="text" name="' . $field_name . '" value="' . $_GET[$field_name] . '" size="7">';
+        return implode(' ', $html);
     }
 }

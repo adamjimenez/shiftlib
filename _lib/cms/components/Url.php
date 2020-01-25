@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Url extends Component implements ComponentInterface
 {
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         return '<a href="' . $value . '" target="_blank">' . $value . '</a>';
     }

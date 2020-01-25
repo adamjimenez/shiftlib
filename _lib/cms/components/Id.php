@@ -11,7 +11,7 @@ class Id extends Integer implements ComponentInterface
         return null;
     }
 
-    public function formatValue($value)
+    public function formatValue($value, string $field_name = null)
     {
         return false;
     }

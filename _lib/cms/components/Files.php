@@ -6,44 +6,56 @@ use cms\ComponentInterface;
 
 class Files extends File implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TEXT';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     *@throws \Exception
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         if ($value) {
             $value = explode("\n", $value);
-        } ?>
+        }
 
-        <ul class="files">
-            <?php
-            if (is_array($value)) {
-                foreach ($value as $key => $val) {
-                    $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1); ?>
-                    <li>
-                        <?php if ($file) { ?>
-                            <input type="hidden" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?>>
-                            <a href="/_lib/cms/file.php?f=<?= $val; ?>">
-                                <img src="/_lib/cms/file.php?f=<?= $val; ?>" style="max-width: 100px; max-height: 100px;"><br>
-                                <?= $file['name']; ?>
-                            </a>
-                            <a href="javascript:" class="link" onClick="delItem(this)">delete</a>
-                        <?php } ?>
-                    </li>
-                    <?php
+        $parts = [];
+
+        $parts[] = '<ul class="files">';
+
+        if (is_array($value)) {
+            foreach ($value as $key => $val) {
+                $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1);
+                $parts[] = '<li>';
+                if ($file) {
+                    $parts[] = '<input type="hidden" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . '>';
+                    $parts[] = '<a href="/_lib/cms/file.php?f=' . $val . '">';
+                    $parts[] = '<img src="/_lib/cms/file.php?f=' . $val . '" style="max-width: 100px; max-height: 100px;"><br>';
+                    $parts[] = $file['name'];
+                    $parts[] = '</a>';
+                    $parts[] = '<a href="javascript:" class="link" onClick="delItem(this)">delete</a>';
                 }
-            } ?>
+                $parts[] = '</li>';
+            }
+        }
 
-            <li>
-                <input type="file" name="<?= $field_name; ?>[]" multiple="multiple" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>/>
-            </li>
-        </ul>
-        <?php
+        $parts[] = '<li>';
+        $parts[] = '<input type="file" name="' . $fieldName . '[]" multiple="multiple" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '/>';
+        $parts[] = '</li>';
+        $parts[] = '</ul>';
+
+        return implode(' ', $parts);
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         if ($value) {
             $files = explode("\n", $value);

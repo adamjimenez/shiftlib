@@ -12,22 +12,24 @@ use cms\ComponentInterface;
  */
 class Radio extends Select implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = []): void
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $vars;
 
-        $name = spaced($field_name);
+        $name = spaced($fieldName);
         $vars['options'][$name] = $this->get_options($name, false);
 
         $assoc = is_assoc_array($vars['options'][$name]);
+        $html = [];
         foreach ($vars['options'][$name] as $k => $v) {
-            $val = $assoc ? $k : $v; ?>
-        <label <?= $attribs; ?>><input type="radio" name="<?= $field_name; ?>" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if (isset($value) and $val == $value) { ?>checked="checked"<?php } ?> <?= $options['attribs']; ?>> <?= $v; ?> &nbsp;</label><?= $options['separator']; ?>
-            <?php
+            $val = $assoc ? $k : $v;
+            $html[] = '<label ' . $attribs . '><input type="radio" name="' . $fieldName . '" value="' . $val . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . (isset($value) && $val == $value ? 'checked="checked"' : '') . ' ' . $options['attribs'] . '>' . $v . '&nbsp;</label>' . $options['separator'];
         }
+
+        return implode(' ', $html);
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         global $vars;
 

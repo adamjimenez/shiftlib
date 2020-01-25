@@ -3,24 +3,30 @@
 namespace cms\components;
 
 use cms\Component;
+use cms\ComponentInterface;
 
-class Select extends Component
+class Select extends Component implements ComponentInterface
 {
     public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $vars, $cms, $auth;
 
-        $name = spaced($field_name);
+        $name = spaced($fieldName);
 
+        $parts = [];
         if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
-            ?>
-            <div class="chained" data-name="<?= $field_name; ?>" data-section="<?= $vars['options'][$name]; ?>" data-value="<?= $value; ?>"></div>
-            <?php
+            $parts[] = '<div class="chained" data-name="' . $fieldName . '" data-section="' . $vars['options'][$name] . '" data-value="' . $value . '"></div>';
         } else {
             if (!is_array($vars['options'][$name])) {
                 $conditions = [];
@@ -29,13 +35,15 @@ class Select extends Component
                 }
 
                 $vars['options'][$name] = $this->get_options($name, false);
-            } ?>
-            <select name="<?= $field_name; ?>" <?php if ($option['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>>
-                <option value=""><?= $placeholder ?: 'Choose'; ?></option>
-                <?= html_options($vars['options'][$name], $value); ?>
-            </select>
-            <?php
+            }
+
+            $parts[] = '<select name="' . $fieldName . '" ' . ($option['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '>';
+            $parts[] = '<option value="">' . $placeholder ?: 'Choose' . '</option>';
+            $parts[] = html_options($vars['options'][$name], $value);
+            $parts[] = '</select>';
         }
+
+        return implode('', $parts);
     }
 
     // get parent fields child rows
@@ -155,7 +163,7 @@ class Select extends Component
         return $parents;
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         global $vars, $cms;
 
@@ -174,24 +182,30 @@ class Select extends Component
         return $value ?: '';
     }
 
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         if (is_array($value)) {
             $or = '(';
             foreach ($value as $k => $v) {
-                $or .= $table_prefix . $field_name . " LIKE '" . escape($v) . "' OR ";
+                $or .= $tablePrefix . $fieldName . " LIKE '" . escape($v) . "' OR ";
             }
             $or = substr($or, 0, -4);
             $or .= ')';
 
             return $or;
         }
-        return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
+        return $tablePrefix . $fieldName . " LIKE '" . escape($value) . "'";
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param $name
+     * @param $value
+     * @throws \Exception
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
-        global $vars;
+        global $vars, $auth;
 
         $field_name = underscored($name);
         $options = $vars['options'][$name];
@@ -212,15 +226,17 @@ class Select extends Component
             foreach ($rows as $v) {
                 $options[$v['id']] = current($v);
             }
-        } ?>
-        <div>
-            <?= ucfirst($name); ?>
-        </div>
-        <select name="<?= $name; ?>[]" multiple size="4" class="form-control">
-            <?= html_options($options, $_GET[$field_name]); ?>
-        </select>
-        <br>
-        <br>
-        <?php
+        }
+        $html = [];
+        $html[] = '<div>';
+        $html[] = ucfirst($name);
+        $html[] = '</div>';
+        $html[] = '<select name="' . $name . '[]" multiple size="4" class="form-control">';
+        $html[] = html_options($options, $_GET[$field_name]);
+        $html[] = '</select>';
+        $html[] = '<br>';
+        $html[] = '<br>';
+
+        return implode(' ', $html);
     }
 }

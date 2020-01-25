@@ -11,25 +11,28 @@ class Combo extends Select implements ComponentInterface
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
-    {
-        global $cms; ?>
-        <input type="hidden" name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?> value="<?= $value; ?>">
-        <input type="text" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?> value="<?= $cms->content[$field_name . '_label']; ?>" data-type="combo" data-field="<?= $field_name; ?>">
-        <?php
-    }
-
-    public function searchField($name, $value): void
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $cms;
 
-        $field_name = underscored($name); ?>
-        <div>
-            <?= $name; ?>
-        </div>
-        <?= $cms->get_field($name, 'class="form-control"'); ?>
-        <br>
-        <br>
-        <?php
+        $parts = [];
+        $parts[] = '<input type="hidden" name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $value . '">';
+        $parts[] = '<input type="text" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $cms->content[$fieldName . '_label'] . '" data-type="combo" data-field="' . $fieldName . '">';
+        return implode(' ', $parts);
+    }
+
+    public function searchField(string $name, $value): string
+    {
+        global $cms;
+
+        $html = [];
+        $html[] = '<div>';
+        $html[] = $name;
+        $html[] = '</div>';
+        $html[] = $cms->get_field($name, 'class="form-control"');
+        $html[] = '<br>';
+        $html[] = '<br>';
+
+        return implode(' ', $html);
     }
 }

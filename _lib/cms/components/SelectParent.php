@@ -9,14 +9,12 @@ class SelectParent extends Component implements ComponentInterface
 {
     public function getFieldSql(): ?string
     {
-        return "INT";
+        return 'INT';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $vars, $cms;
-
-        $parent_field = array_search('parent', $vars['fields'][$cms->section]);
 
         reset($vars['fields'][$cms->section]);
 
@@ -30,15 +28,17 @@ class SelectParent extends Component implements ComponentInterface
                 continue;
             }
             $parents[$row['id']] = $row[$label];
-        } ?>
-        <select name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?> <?= $options['attribs']; ?>>
-            <option value=""></option>
-            <?= html_options($parents, $value); ?>
-        </select>
-        <?php
+        }
+
+        $html = [];
+        $html[] = '<select name="' . $fieldName . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . $options['attribs'] . '>';
+        $html[] = '<option value=""></option>';
+        $html[] = html_options($parents, $value);
+        $html[] = '</select>';
+        return implode(' ', $html);
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         global $vars, $cms;
 
@@ -48,8 +48,6 @@ class SelectParent extends Component implements ComponentInterface
 
         $row = sql_query("SELECT id,`$field` FROM `" . $cms->table . "` WHERE id='" . escape($value) . "' ORDER BY `$field`", 1);
 
-        $value = '<a href="?option=' . escape($cms->section) . '&view=true&id=' . $value . '">' . ($row[$field]) . '</a>';
-
-        return $value;
+        return '<a href="?option=' . escape($cms->section) . '&view=true&id=' . $value . '">' . ($row[$field]) . '</a>';
     }
 }

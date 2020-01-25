@@ -12,7 +12,7 @@ class Decimal extends Integer implements ComponentInterface
         return 'DECIMAL( 8,2 )';
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         if ($value <= 0) {
             $value = '';
@@ -22,8 +22,8 @@ class Decimal extends Integer implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($value)
+    public function formatValue($value, string $field_name = null)
     {
-        return component::formatValue($value);
+        return Component::formatValue($value);
     }
 }

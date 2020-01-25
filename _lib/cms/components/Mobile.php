@@ -12,7 +12,7 @@ class Mobile extends Component implements ComponentInterface
         return false !== format_mobile($value);
     }
 
-    public function formatValue($value)
+    public function formatValue($value, string $field_name = null)
     {
         return format_mobile($value);
     }

@@ -10,12 +10,12 @@ class Password extends Component implements ComponentInterface
     public $field_type = 'password';
     public $preserve_value = true;
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         return '';
     }
 
-    public function formatValue($value)
+    public function formatValue($value, string $field_name = null)
     {
         global $auth;
 

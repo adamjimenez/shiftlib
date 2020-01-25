@@ -11,14 +11,12 @@ class Uploads extends Upload implements ComponentInterface
         return 'TEXT';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <textarea name="<?= $field_name; ?>" class="upload"><?= $value; ?></textarea>
-        <?php
+        return '<textarea name="' . $fieldName . '" class="upload">' . $value . '</textarea>';
     }
 
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         if ($value) {
             $files = explode("\n", trim($value));

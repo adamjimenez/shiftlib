@@ -12,10 +12,8 @@ class Time extends Component implements ComponentInterface
         return 'TIME';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <input type="time" step="1" data-type="time" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ('00:00:00' != $value) ? substr($value, 0, -3) : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>/>
-        <?php
+        return '<input type="time" step="1" data-type="time" id="' . $fieldName . '" name="' . $fieldName . '" value="' . ('00:00:00' != $value ? substr($value, 0, -3) : '') . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '/>';
     }
 }
