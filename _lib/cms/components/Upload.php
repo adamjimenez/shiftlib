@@ -20,6 +20,6 @@ class Upload extends Component implements ComponentInterface
                 <label id="' . $name . '_label">' . $value . '</label>
 			';
         }
-        return $value;
+        return $value ?: '';
     }
 }

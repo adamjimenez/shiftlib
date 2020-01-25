@@ -29,4 +29,14 @@ class Textarea extends Component implements ComponentInterface
 
         return implode(' ', $html);
     }
+
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return string
+     */
+    public function formatValue($value, string $fieldName = null)
+    {
+        return trim(strip_tags($value, '<iframe>'));
+    }
 }
