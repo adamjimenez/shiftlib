@@ -25,7 +25,7 @@ class Datetime extends Date implements ComponentInterface
             $value = '';
         }
 
-        return $value;
+        return $value ?: '';
     }
 
     public function formatValue($value)

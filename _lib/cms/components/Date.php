@@ -26,7 +26,7 @@ class Date extends Component implements ComponentInterface
         } elseif ('' != $value) {
             $value = dateformat('d/m/Y', $value);
         }
-        return $value;
+        return $value ?: '';
     }
 
     public function isValid($value): bool
