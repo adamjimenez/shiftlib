@@ -43,6 +43,6 @@ class Radio extends Select implements ComponentInterface
             }
         }
 
-        return $value;
+        return $value ?: '';
     }
 }
