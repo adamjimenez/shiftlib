@@ -773,6 +773,12 @@ class cms
         global $vars;
 
         $type = $vars['fields'][$this->section][$name];
+        
+        if (!$type) {
+            trigger_error('Field does not exist: ' . $this->section . ' - ' . $name, E_ERROR);
+            return false;
+        }
+        
         $field_name = underscored($name);
         $value = $this->content[$field_name];
 
