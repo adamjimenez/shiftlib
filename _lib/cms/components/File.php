@@ -37,6 +37,8 @@ class File extends Component implements ComponentInterface
 
     public function value($value, string $name = ''): string
     {
+        global $auth;
+
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 

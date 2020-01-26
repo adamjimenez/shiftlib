@@ -37,8 +37,8 @@ class Select extends Component implements ComponentInterface
                 $vars['options'][$name] = $this->get_options($name, false);
             }
 
-            $parts[] = '<select name="' . $fieldName . '" ' . ($option['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '>';
-            $parts[] = '<option value="">' . $placeholder ?: 'Choose' . '</option>';
+            $parts[] = '<select name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '>';
+            $parts[] = '<option value="">' . $options['placeholder'] ?: 'Choose' . '</option>';
             $parts[] = html_options($vars['options'][$name], $value);
             $parts[] = '</select>';
         }
@@ -66,7 +66,7 @@ class Select extends Component implements ComponentInterface
                 }
             }
 
-            $cols = '`' . underscored($field) . '`';
+            $cols = '`' . underscored($name) . '`';
 
             //sortable
             $order = in_array('position', $vars['fields'][$vars['options'][$name]]) ? 'position' : $field;

@@ -23,7 +23,7 @@ class Radio extends Select implements ComponentInterface
         $html = [];
         foreach ($vars['options'][$name] as $k => $v) {
             $val = $assoc ? $k : $v;
-            $html[] = '<label ' . $attribs . '><input type="radio" name="' . $fieldName . '" value="' . $val . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . (isset($value) && $val == $value ? 'checked="checked"' : '') . ' ' . $options['attribs'] . '>' . $v . '&nbsp;</label>' . $options['separator'];
+            $html[] = '<label ' . $options['attribs'] . '><input type="radio" name="' . $fieldName . '" value="' . $val . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . (isset($value) && $val == $value ? 'checked="checked"' : '') . ' ' . $options['attribs'] . '>' . $v . '&nbsp;</label>' . $options['separator'];
         }
 
         return implode(' ', $html);

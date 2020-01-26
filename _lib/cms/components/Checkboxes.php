@@ -17,7 +17,7 @@ class Checkboxes extends Select implements ComponentInterface
      * @param string $fieldName
      * @param string $value
      * @param array $options
-     *@throws \Exception
+     * @throws \Exception
      * @return string
      */
     public function field(string $fieldName, $value = '', array $options = []): string
@@ -57,13 +57,13 @@ class Checkboxes extends Select implements ComponentInterface
                 }
 
                 $cols = '';
-                $cols .= '`' . underscored($field) . '`';
+                $cols .= '`' . underscored($fieldName) . '`';
 
                 $rows = sql_query("SELECT id,$cols FROM
                     $table
                     WHERE
                         language='" . $language . "'
-                    ORDER BY `" . underscored($field) . '`
+                    ORDER BY `" . underscored($fieldName) . '`
                 ');
 
                 $options = [];
