@@ -11,8 +11,7 @@ class Email extends Component implements ComponentInterface
 
     public function value($value, $name = ''): string
     {
-        $value = '<a href="mailto:' . $value . '" target="_blank">' . $value . '</a>';
-        return $value;
+        return '<a href="mailto:' . $value . '" target="_blank">' . $value . '</a>';
     }
 
     public function is_valid($value): bool

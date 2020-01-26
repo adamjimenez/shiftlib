@@ -14,6 +14,6 @@ class Url extends Component implements ComponentInterface
 
     public function isValid($value): bool
     {
-        return is_url($value);
+        return preg_match('/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i', $value);
     }
 }
