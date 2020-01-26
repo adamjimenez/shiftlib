@@ -15,7 +15,7 @@ class Password extends Component implements ComponentInterface
         return '';
     }
 
-    public function formatValue($value, string $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         global $auth;
 

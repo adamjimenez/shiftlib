@@ -26,7 +26,7 @@ class Month extends Date implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($value, string $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         if ($value) {
             $value .= '-01';

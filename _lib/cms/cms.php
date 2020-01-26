@@ -240,7 +240,8 @@ class cms
         $this->trigger_event('delete', [$ids]);
     }
     
-    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null) {
+    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
+    {
         return $this->conditionsToSql($section, $conditions, $num_results, $cols);
     }
 

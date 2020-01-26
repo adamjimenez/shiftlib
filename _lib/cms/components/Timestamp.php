@@ -24,7 +24,7 @@ class Timestamp extends Date implements ComponentInterface
         return ((string) (int) $value === $value) && ($value <= PHP_INT_MAX) && ($value >= ~PHP_INT_MAX);
     }
 
-    public function formatValue($value, string $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         return false;
     }

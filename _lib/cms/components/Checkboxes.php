@@ -154,11 +154,11 @@ class Checkboxes extends Select implements ComponentInterface
         return implode('<br>' . "\n", $array);
     }
 
-    public function formatValue($value, string $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         global $cms;
 
-        $name = spaced($field_name);
+        $name = spaced($fieldName);
 
         if ($cms->id) {
             // create NOT IN string

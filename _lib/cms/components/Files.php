@@ -87,7 +87,7 @@ class Files extends File implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($files, $field_name = '')
+    public function formatValue($files, string $fieldName = null)
     {
         global $vars, $cms;
 
@@ -95,17 +95,17 @@ class Files extends File implements ComponentInterface
             $files = [];
         }
 
-        if (is_array($_FILES[$field_name])) {
-            foreach ($_FILES[$field_name]['error'] as $key => $error) {
+        if (is_array($_FILES[$fieldName])) {
+            foreach ($_FILES[$fieldName]['error'] as $key => $error) {
                 if (UPLOAD_ERR_OK !== $error) {
                     continue;
                 }
 
                 sql_query("INSERT INTO files SET
                     date=NOW(),
-                    name='" . escape($_FILES[$field_name]['name'][$key]) . "',
-                    size='" . escape(filesize($_FILES[$field_name]['tmp_name'][$key])) . "',
-                    type='" . escape($_FILES[$field_name]['type'][$key]) . "'
+                    name='" . escape($_FILES[$fieldName]['name'][$key]) . "',
+                    size='" . escape(filesize($_FILES[$fieldName]['tmp_name'][$key])) . "',
+                    type='" . escape($_FILES[$fieldName]['type'][$key]) . "'
                 ");
                 $value = sql_insert_id();
 
@@ -113,13 +113,13 @@ class Files extends File implements ComponentInterface
 
                 // move file
                 $file_path = $vars['files']['dir'] . $value;
-                rename($_FILES[$field_name]['tmp_name'][$key], $file_path)
+                rename($_FILES[$fieldName]['tmp_name'][$key], $file_path)
                 or trigger_error("Can't save " . $file_path, E_ERROR);
             }
         }
 
         if ($cms->id) {
-            $old_files = explode("\n", $cms->content[$field_name]);
+            $old_files = explode("\n", $cms->content[$fieldName]);
 
             //clean up old files
             foreach ($old_files as $old_file) {

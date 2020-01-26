@@ -46,4 +46,11 @@ interface ComponentInterface
      * @return string
      */
     public function getFieldSql(): ?string;
+
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed
+     */
+    public function formatValue($value, string $fieldName = null);
 }

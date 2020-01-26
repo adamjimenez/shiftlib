@@ -29,7 +29,7 @@ class Editor extends Component implements ComponentInterface
                   data-type="tinymce">' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8') . '</textarea>';
     }
 
-    public function formatValue($value, $field_name = '')
+    public function formatValue($value, string $fieldName = null)
     {
         $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');

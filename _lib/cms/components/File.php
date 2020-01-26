@@ -54,24 +54,24 @@ class File extends Component implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($value, $field_name = '')
+    public function formatValue($value, string $fieldName = null)
     {
         global $vars, $cms;
 
-        $file_id = (int) $cms->content[$field_name];
+        $file_id = (int) $cms->content[$fieldName];
 
-        if (UPLOAD_ERR_OK === $_FILES[$field_name]['error']) {
+        if (UPLOAD_ERR_OK === $_FILES[$fieldName]['error']) {
             sql_query("INSERT INTO files SET
                 date=NOW(),
-                name='" . escape($_FILES[$field_name]['name']) . "',
-                size='" . escape(filesize($_FILES[$field_name]['tmp_name'])) . "',
-                type='" . escape($_FILES[$field_name]['type']) . "'
+                name='" . escape($_FILES[$fieldName]['name']) . "',
+                size='" . escape(filesize($_FILES[$fieldName]['tmp_name'])) . "',
+                type='" . escape($_FILES[$fieldName]['type']) . "'
             ");
             $value = sql_insert_id();
 
             // move file
             $file_path = $vars['files']['dir'] . $value;
-            rename($_FILES[$field_name]['tmp_name'], $file_path)
+            rename($_FILES[$fieldName]['tmp_name'], $file_path)
             or trigger_error("Can't save " . $file_path, E_ERROR);
         } elseif (!$value && $file_id) {
             // delete file

@@ -57,7 +57,7 @@ class Integer extends Component implements ComponentInterface
     }
 
     // applies any cleanup before saving
-    public function formatValue($value, string $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         return (int) $value;
     }

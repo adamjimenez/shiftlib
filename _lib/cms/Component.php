@@ -53,7 +53,7 @@ abstract class Component
      * @param string $name
      * @return string
      */
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         return trim($value);
     }
@@ -73,10 +73,10 @@ abstract class Component
      * Applies any cleanup before saving value is mixed
      *
      * @param $value
-     * @param string|null $field_name
+     * @param string|null $fieldName
      * @return string
      */
-    public function formatValue($value, string $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         return trim(strip_tags($value));
     }
