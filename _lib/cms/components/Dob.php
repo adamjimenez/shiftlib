@@ -14,7 +14,7 @@ class Dob extends Date implements ComponentInterface
     public function field(string $field_name, $value = '', array $options = []): void
     {
         ?>
-        <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?>>
+        <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs']; ?>>
         <?php
     }
 
