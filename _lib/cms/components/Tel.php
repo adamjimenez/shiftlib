@@ -11,6 +11,6 @@ class Tel extends Component implements ComponentInterface
 
     public function isValid($value): bool
     {
-        return is_tel($value);
+        return preg_match("/^[0-9\-\s]+$/", $value);
     }
 }

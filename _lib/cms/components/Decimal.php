@@ -19,7 +19,8 @@ class Decimal extends Integer implements ComponentInterface
         } else {
             $value = number_format($value, 2);
         }
-        return $value;
+        
+        return $value ?: '';
     }
 
     public function formatValue($value, string $fieldName = null)

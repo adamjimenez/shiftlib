@@ -1085,17 +1085,6 @@ function is_postcode($code): bool
     return true;
 }
 
-function is_tel($string)
-{
-    return preg_match("/^[0-9\-\s]+$/", $string);
-}
-
-function is_url($str)
-{
-    return preg_match('/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i', $str);
-    //return filter_var($email, FILTER_VALIDATE_URL);
-}
-
 function load_js($libs)
 {
     if (!is_array($libs)) {

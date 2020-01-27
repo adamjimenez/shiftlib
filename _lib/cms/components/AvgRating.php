@@ -24,7 +24,7 @@ class AvgRating extends Rating implements ComponentInterface
     {
         global $cms;
 
-        return '<select name="' . $fieldName . '" class="rating" data-section="' . $cms->section . '" data-item="' . $cms->content['id'] . '"  ' . ('avg-rating' === $type ? 'data-avg="data-avg"' : '') . ' ' . $options['attribs'] . '>
+        return '<select name="' . $fieldName . '" class="rating" data-section="' . $cms->section . '" data-item="' . $cms->content['id'] . '"  data-avg="data-avg" ' . $options['attribs'] . '>
             <option value="">Choose</option>
             ' . html_options($this->rating_opts, $value, true) . '
         </select>';
