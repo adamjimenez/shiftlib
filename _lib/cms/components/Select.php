@@ -4,9 +4,13 @@ namespace cms\components;
 
 use cms\Component;
 use cms\ComponentInterface;
+use Exception;
 
 class Select extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
@@ -46,8 +50,14 @@ class Select extends Component implements ComponentInterface
         return implode('', $parts);
     }
 
-    // get parent fields child rows
-
+    /**
+     * Get parent fields child rows
+     *
+     * @param string $name
+     * @param bool $where
+     * @throws Exception
+     * @return bool
+     */
     public function get_options(string $name, $where = false)
     {
         global $vars;
@@ -127,6 +137,14 @@ class Select extends Component implements ComponentInterface
         return $vars['options'][$name];
     }
 
+    /**
+     * @param $section
+     * @param $parent_field
+     * @param int $parent
+     * @param int $depth
+     * @throws Exception
+     * @return array
+     */
     public function get_children($section, $parent_field, int $parent = 0, int $depth = 0)
     {
         global $vars, $cms;
@@ -163,6 +181,11 @@ class Select extends Component implements ComponentInterface
         return $parents;
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         global $vars, $cms;
@@ -182,6 +205,13 @@ class Select extends Component implements ComponentInterface
         return $value ?: '';
     }
 
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         if (is_array($value)) {
@@ -200,7 +230,7 @@ class Select extends Component implements ComponentInterface
     /**
      * @param $name
      * @param $value
-     * @throws \Exception
+     * @throws Exception
      * @return string
      */
     public function searchField(string $name, $value): string

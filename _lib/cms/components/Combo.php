@@ -2,15 +2,25 @@
 
 namespace cms\components;
 
+use cms;
 use cms\ComponentInterface;
 
 class Combo extends Select implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }
 
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $cms;
@@ -21,8 +31,14 @@ class Combo extends Select implements ComponentInterface
         return implode(' ', $parts);
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
+        /** @var cms $cms */
         global $cms;
 
         $html = [];

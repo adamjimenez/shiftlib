@@ -7,6 +7,9 @@ use cms\ComponentInterface;
 
 class Datetime extends Date implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'DATETIME';
@@ -23,6 +26,11 @@ class Datetime extends Date implements ComponentInterface
         return '<input type="datetime-local" name="' . $fieldName . '" value="' . $value . '" ' . ($options['readonly'] ? 'disabled' : '') . ' size="10" ' . $options['attribs'] . '>';
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         if (starts_with($value, '0000-00-00')) {
@@ -32,6 +40,11 @@ class Datetime extends Date implements ComponentInterface
         return $value ?: '';
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         if ($value) {
@@ -40,6 +53,10 @@ class Datetime extends Date implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
         return Component::isValid($value);

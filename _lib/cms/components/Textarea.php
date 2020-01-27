@@ -7,6 +7,9 @@ use cms\ComponentInterface;
 
 class Textarea extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TEXT';

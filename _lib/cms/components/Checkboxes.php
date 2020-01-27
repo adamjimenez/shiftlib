@@ -2,12 +2,17 @@
 
 namespace cms\components;
 
+use cms;
 use cms\ComponentInterface;
+use Exception;
 
 class Checkboxes extends Select implements ComponentInterface
 {
     public $id_required = true;
 
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return null;
@@ -17,13 +22,15 @@ class Checkboxes extends Select implements ComponentInterface
      * @param string $fieldName
      * @param string $value
      * @param array $options
-     * @throws \Exception
+     * @throws Exception
      * @return string
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
+        /** @var cms $cms */
         global $vars, $cms;
 
+        /** @var string $name */
         $name = spaced($fieldName);
 
         $value = [];
@@ -113,8 +120,15 @@ class Checkboxes extends Select implements ComponentInterface
         return implode('', $parts);
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @throws Exception
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
+        /** @var cms $cms */
         global $vars, $cms;
 
         $array = [];
@@ -154,6 +168,12 @@ class Checkboxes extends Select implements ComponentInterface
         return implode('<br>' . "\n", $array);
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @throws Exception
+     * @return bool|mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         global $cms;
@@ -192,12 +212,25 @@ class Checkboxes extends Select implements ComponentInterface
         return false;
     }
 
-    // generates sql code for use in where statement
+    /**
+     * Generates sql code for use in where statement
+     *
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         return null;
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
         global $vars;

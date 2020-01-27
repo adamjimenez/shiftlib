@@ -7,7 +7,6 @@ use cms\ComponentInterface;
 
 class Rating extends Component implements ComponentInterface
 {
-    // rating widget options
     public $rating_opts = [
         1 => 'Very Poor',
         2 => 'Poor',
@@ -16,11 +15,20 @@ class Rating extends Component implements ComponentInterface
         5 => 'Excellent',
     ];
 
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TINYINT';
     }
 
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
     public function field(string $fieldName, $value = '', $options = []): string
     {
         $html = [];
@@ -31,6 +39,11 @@ class Rating extends Component implements ComponentInterface
         return implode(' ', $html);
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         $field_name = underscored($name);
@@ -41,6 +54,11 @@ class Rating extends Component implements ComponentInterface
         </select>';
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
         return '';

@@ -7,6 +7,9 @@ use cms\ComponentInterface;
 
 class Checkbox extends Integer implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TINYINT';
@@ -35,11 +38,23 @@ class Checkbox extends Integer implements ComponentInterface
         return $value ? 'Yes' : 'No';
     }
 
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         return Component::conditionsToSql($fieldName, $value, $func, $tablePrefix);
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
         $field_name = underscored($name);

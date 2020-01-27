@@ -18,6 +18,11 @@ class Month extends Date implements ComponentInterface
         return '<input type="text" class="month" id="' . $fieldName . '" name="' . $fieldName . '" value="' . ($value && '0000-00-00' != $value ? $value : '') . '" ' . ($options['readonly'] ? 'disabled' : '') . ' size="10" ' . $options['attribs'] . ' style="width:75px;" />';
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         if ('0000-00-00' != $value and '' != $value) {
@@ -26,6 +31,11 @@ class Month extends Date implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         if ($value) {
@@ -34,6 +44,10 @@ class Month extends Date implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
         return Component::isValid($value);

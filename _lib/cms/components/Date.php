@@ -7,6 +7,9 @@ use cms\ComponentInterface;
 
 class Date extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'DATE';
@@ -23,6 +26,11 @@ class Date extends Component implements ComponentInterface
         return '<input type="date" name="' . $fieldName . '" value="' . ($value && '0000-00-00' != $value ? $value : '') . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '>';
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         if (starts_with($value, '0000-00-00')) {
@@ -33,11 +41,22 @@ class Date extends Component implements ComponentInterface
         return $value ?: '';
     }
 
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
         return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
     }
 
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         if ('now' == $value) {

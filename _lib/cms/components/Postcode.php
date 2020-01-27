@@ -7,11 +7,20 @@ use cms\ComponentInterface;
 
 class Postcode extends Component implements ComponentInterface
 {
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
         return false !== format_postcode($value);
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return bool|mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         return format_postcode($value);

@@ -3,6 +3,7 @@
 namespace cms\components;
 
 use cms\ComponentInterface;
+use Exception;
 
 class Files extends File implements ComponentInterface
 {
@@ -18,7 +19,7 @@ class Files extends File implements ComponentInterface
      * @param string $fieldName
      * @param string $value
      * @param array $options
-     *@throws \Exception
+     * @throws Exception
      * @return string
      */
     public function field(string $fieldName, $value = '', array $options = []): string
@@ -55,6 +56,12 @@ class Files extends File implements ComponentInterface
         return implode(' ', $parts);
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @throws Exception
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         if ($value) {
@@ -87,6 +94,12 @@ class Files extends File implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $files
+     * @param string|null $fieldName
+     * @throws Exception
+     * @return int|mixed|string
+     */
     public function formatValue($files, string $fieldName = null)
     {
         global $vars, $cms;

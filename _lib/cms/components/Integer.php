@@ -9,21 +9,40 @@ class Integer extends Component implements ComponentInterface
 {
     public $field_type = 'number';
 
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'INT';
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         return number_format($value);
     }
 
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
         return is_numeric($value);
     }
 
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         // check for range
@@ -56,12 +75,23 @@ class Integer extends Component implements ComponentInterface
         return $where;
     }
 
-    // applies any cleanup before saving
+    /**
+     * Applies any cleanup before saving
+     *
+     * @param $value
+     * @param string|null $fieldName
+     * @return int|mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         return (int) $value;
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
         $field_name = underscored($name);

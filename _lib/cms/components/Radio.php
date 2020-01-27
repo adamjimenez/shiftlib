@@ -12,6 +12,12 @@ use cms\ComponentInterface;
  */
 class Radio extends Select implements ComponentInterface
 {
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $vars;
@@ -29,6 +35,11 @@ class Radio extends Select implements ComponentInterface
         return implode(' ', $html);
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         global $vars;

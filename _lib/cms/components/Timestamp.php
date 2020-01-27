@@ -8,6 +8,9 @@ class Timestamp extends Date implements ComponentInterface
 {
     public $field_type = 'hidden';
 
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
@@ -24,6 +27,11 @@ class Timestamp extends Date implements ComponentInterface
         return ((string) (int) $value === $value) && ($value <= PHP_INT_MAX) && ($value >= ~PHP_INT_MAX);
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return bool|mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         return false;

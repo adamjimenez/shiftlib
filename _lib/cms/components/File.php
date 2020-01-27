@@ -4,6 +4,7 @@ namespace cms\components;
 
 use cms\Component;
 use cms\ComponentInterface;
+use Exception;
 
 class File extends Component implements ComponentInterface
 {
@@ -11,7 +12,7 @@ class File extends Component implements ComponentInterface
      * @param string $fieldName
      * @param string $value
      * @param array $options
-     *@throws \Exception
+     * @throws Exception
      * @return string
      */
     public function field(string $fieldName, $value = '', array $options = []): string
@@ -35,6 +36,12 @@ class File extends Component implements ComponentInterface
         return implode(' ', $parts);
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @throws Exception
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         global $auth;
@@ -56,6 +63,12 @@ class File extends Component implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @throws Exception
+     * @return int|mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         global $vars, $cms;
@@ -88,6 +101,10 @@ class File extends Component implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $file
+     * @return bool
+     */
     public function delete($file): bool
     {
         if (true === file_exists($file)) {
@@ -97,11 +114,23 @@ class File extends Component implements ComponentInterface
         return false;
     }
 
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         return $tablePrefix . $fieldName . ' > 0';
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
         $field_name = underscored($name);

@@ -8,6 +8,9 @@ use DOMDocument;
 
 class Editor extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TEXT';
@@ -29,6 +32,11 @@ class Editor extends Component implements ComponentInterface
                   data-type="tinymce">' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8') . '</textarea>';
     }
 
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed|string
+     */
     public function formatValue($value, string $fieldName = null)
     {
         $doc = new DOMDocument();
@@ -54,6 +62,11 @@ class Editor extends Component implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
     public function searchField(string $name, $value): string
     {
         return '';

@@ -7,11 +7,22 @@ use cms\ComponentInterface;
 
 class Upload extends Component implements ComponentInterface
 {
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
         return '<input type="text" name="' . $fieldName . '" class="upload" value="' . $value . '">';
     }
 
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
     public function value($value, string $name = ''): string
     {
         if ($value) {
