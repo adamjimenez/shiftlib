@@ -35,10 +35,12 @@ class Checkboxes extends Select implements ComponentInterface
 
         $value = [];
 
+        // get options from a section
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
             if ($cms->id) {
                 $join_id = $cms->get_id_field($name);
 
+                // get preselected values
                 $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
                     INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 ON T1.value=T2.$join_id
                     WHERE
@@ -52,45 +54,7 @@ class Checkboxes extends Select implements ComponentInterface
                 }
             }
 
-            if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
-                $language = $cms->language ? $cms->language : 'en';
-                $table = underscored($vars['options'][$name]);
-
-                foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-                    if ('separator' != $v) {
-                        $field = $k;
-                        break;
-                    }
-                }
-
-                $cols = '';
-                $cols .= '`' . underscored($fieldName) . '`';
-
-                $rows = sql_query("SELECT id,$cols FROM
-                    $table
-                    WHERE
-                        language='" . $language . "'
-                    ORDER BY `" . underscored($fieldName) . '`
-                ');
-
-                $options = [];
-                foreach ($rows as $row) {
-                    if ($row['translated_from']) {
-                        $id = $row['translated_from'];
-                    } else {
-                        $id = $row['id'];
-                    }
-
-                    $options[$id] = $row[underscored($field)];
-                }
-
-                $vars['options'][$name] = $options;
-            } else {
-                //make sure we get the first field
-                reset($vars['fields'][$vars['options'][$name]]);
-
-                $vars['options'][$name] = $this->get_options($name, false);
-            }
+            $vars['options'][$name] = $this->get_options($name, false);
         } else {
             if ($cms->id) {
                 $rows = sql_query("SELECT value FROM cms_multiple_select

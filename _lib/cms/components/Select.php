@@ -54,80 +54,52 @@ class Select extends Component implements ComponentInterface
      * Get parent fields child rows
      *
      * @param string $name
-     * @param bool $where
+     * @param string $where
      * @throws Exception
-     * @return bool
+     * @return array
      */
-    public function get_options(string $name, $where = false)
+    public function get_options(string $name, $where = null)
     {
         global $vars;
 
         if (!isset($vars['options'][$name])) {
-            return false;
+            return null;
         }
 
+        // get options from a section
         if (!is_array($vars['options'][$name])) {
+            // get section table name
             $table = underscored($vars['options'][$name]);
 
-            foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-                if ('separator' != $v) {
-                    $field = $k;
-                    break;
-                }
-            }
+            // get first field from section as we will use this for the option labels
+            reset($vars['fields'][$vars['options'][$name]]);
+            $field = key($vars['fields'][$vars['options'][$name]]);
+        
+            $cols = '`' . underscored($field) . '`';
 
-            $cols = '`' . underscored($name) . '`';
-
-            //sortable
+            // sort by position if available or fall back to field order
             $order = in_array('position', $vars['fields'][$vars['options'][$name]]) ? 'position' : $field;
 
-            if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
+            $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
+
+            if (false !== $parent_field) {
+                // if we have a parent field than get an indented list of options
+                $options = $this->get_children($vars['options'][$name], $parent_field);
+            } else {
                 $where_str = '';
                 if ($where) {
-                    $where_str = 'AND ' . $where;
+                    $where_str = 'WHERE ' . $where;
                 }
-
-                $language = 'en';
 
                 $rows = sql_query("SELECT id, $cols FROM
                     $table
-                    WHERE
-                        language='" . $language . "'
-                        $where_str
+                    $where_str
                     ORDER BY `" . underscored($order) . '`
                 ');
 
                 $options = [];
                 foreach ($rows as $row) {
-                    if ($row['translated_from']) {
-                        $id = $row['translated_from'];
-                    } else {
-                        $id = $row['id'];
-                    }
-
-                    $options[$id] = $row[underscored($field)];
-                }
-            } else {
-                $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
-
-                if (false !== $parent_field) {
-                    $options = $this->get_children($vars['options'][$name], $parent_field);
-                } else {
-                    $where_str = '';
-                    if ($where) {
-                        $where_str = 'WHERE ' . $where;
-                    }
-
-                    $rows = sql_query("SELECT id, $cols FROM
-                        $table
-                        $where_str
-                        ORDER BY `" . underscored($order) . '`
-                    ');
-
-                    $options = [];
-                    foreach ($rows as $row) {
-                        $options[$row['id']] = $row[underscored($field)];
-                    }
+                    $options[$row['id']] = $row[underscored($field)];
                 }
             }
 
