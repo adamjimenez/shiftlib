@@ -131,7 +131,7 @@ class auth
      * @param array $config
      * @throws Exception
      */
-    public function __construct(array $config = [])
+    public function __construct(?array $config = [])
     {
         global $vars, $email_templates;
 
