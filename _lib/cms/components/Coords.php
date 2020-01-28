@@ -7,22 +7,28 @@ use cms\ComponentInterface;
 
 class Coords extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
-        return "POINT";
+        return 'POINT';
     }
 
-    function field($field_name, $value = '', $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', $options = []): string
     {
-        ?>
-        <input type="text"
-               name="<?= $field_name; ?>"
-               value="<?= htmlspecialchars(substr($value, 6, -1)); ?>"
-               <?php if ($options['readonly']) { ?>disabled<?php } ?>
-               size="50"
-               <?= $options['attribs']; ?>
-               <?php if ($options['placeholder']) { ?>placeholder="<?= $options['placeholder']; ?>"<?php } ?>
-        >
-        <?
+        return '<input type="text"
+                       name="' . $fieldName . '"
+                       value="' . htmlspecialchars(substr($value, 6, -1)) . '"
+                       ' . ($options['readonly'] ? 'disabled' : '') . '
+                       size="50"
+                       ' . $options['attribs'] . '
+                       ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . '"' : '') . '>';
     }
 }

@@ -6,19 +6,31 @@ use cms\ComponentInterface;
 
 class Uploads extends Upload implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TEXT';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <textarea name="<?= $field_name; ?>" class="upload"><?= $value; ?></textarea>
-        <?php
+        return '<textarea name="' . $fieldName . '" class="upload">' . $value . '</textarea>';
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         if ($value) {
             $files = explode("\n", trim($value));

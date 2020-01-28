@@ -240,7 +240,8 @@ class cms
         $this->trigger_event('delete', [$ids]);
     }
     
-    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null) {
+    public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
+    {
         return $this->conditionsToSql($section, $conditions, $num_results, $cols);
     }
 
@@ -763,7 +764,7 @@ class cms
 
         if ($component = $this->get_component($type)) {
             $readonly = !in_array($name, $this->editable_fields);
-            $component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
+            echo $component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
         }
     }
 

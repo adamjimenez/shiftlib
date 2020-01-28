@@ -36,17 +36,14 @@ abstract class Component
     }
 
     /**
-     * Returns the editable field
-     *
-     * @param string $field_name
+     * @param string $fieldName
      * @param string $value
      * @param array $options
+     * @return string
      */
-    public function field(string $field_name, $value = '', array $options = []): void
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <input type="<?= $this->field_type; ?>" name="<?= $field_name; ?>" value="<?= htmlspecialchars($value); ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?php if ($options['placeholder']) { ?>placeholder="<?= $options['placeholder']; ?>"<?php } ?> <?= $options['attribs']; ?>>
-        <?php
+        return '<input type="' . $this->field_type . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ?  'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
     }
 
     /**
@@ -56,7 +53,7 @@ abstract class Component
      * @param string $name
      * @return string
      */
-    public function value($value, $name = ''): string
+    public function value($value, string $name = ''): string
     {
         return trim($value);
     }
@@ -76,36 +73,39 @@ abstract class Component
      * Applies any cleanup before saving value is mixed
      *
      * @param $value
-     * @param null $field_name
+     * @param string|null $fieldName
      * @return string
      */
-    public function formatValue($value, $field_name = null)
+    public function formatValue($value, string $fieldName = null)
     {
         return trim(strip_tags($value));
     }
 
     /**
-     * @param $field_name
+     * @param string $fieldName
      * @param $value
      * @param string $func
-     * @param string $table_prefix
+     * @param string $tablePrefix
      * @return string|null
      */
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         $value = str_replace('*', '%', $value);
-        return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
+        return $tablePrefix . $fieldName . " LIKE '" . escape($value) . "'";
     }
 
     /**
-     * @param mixed $name
-     * @param mixed $value
+     * @param $name
+     * @param $value
+     * @return string
      */
-    public function searchField($name, $value): void
+    public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name); ?>
-        <label for="<?= $field_name; ?>" class="col-form-label"><?= ucfirst($name); ?></label>
-        <input type="text" class="form-control" name="<?= $field_name; ?>" value="<?= $value; ?>">
-        <?php
+        $field_name = underscored($name);
+        $html = [];
+        $html[] = '<label for="' . $field_name . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '<input type="text" class="form-control" name="' . $field_name . '" value="' . $value . '">';
+
+        return implode(' ', $html);
     }
 }

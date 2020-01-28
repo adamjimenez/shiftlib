@@ -4,34 +4,48 @@ namespace cms\components;
 
 use cms\Component;
 use cms\ComponentInterface;
+use Exception;
 
 class File extends Component implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @throws Exception
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1); ?>
-        <div>
-            <?php
-            if ($value) {
-                ?>
-                <input type="hidden" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= $value; ?>">
-                <a href="/_lib/cms/file.php?f=<?= $value; ?>">
-                    <img src="/_lib/cms/file.php?f=<?= $value; ?>" style="max-width: 100px; max-height: 100px;"><br>
-                    <?= $file['name']; ?>
-                </a>
-                <a href="javascript:" onClick="clearFile('<?= $field_name; ?>')">clear</a>
-                <?php
-            } else {
-                ?>
-                <input type="file" id="<?= $field_name; ?>" name="<?= $field_name; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>/>
-                <?php
-            } ?>
-        </div>
-        <?php
+        $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
+        $parts = [];
+
+        $parts[] = '<div>';
+
+        if ($value) {
+            $parts[] = '<input type="hidden" id="' . $fieldName . '" name="' . $fieldName . '" value="' . $value . '">';
+            $parts[] = '<a href="/_lib/cms/file.php?f=' . $value . '">';
+            $parts[] = '<img src="/_lib/cms/file.php?f=' . $value . '" style="max-width: 100px; max-height: 100px;"><br>';
+            $parts[] = $file['name'];
+            $parts[] = '</a>';
+            $parts[] = '<a href="javascript:" onClick="clearFile(' . $fieldName . ')">clear</a>';
+        } else {
+            $parts[] = '<input type="file" id="' . $fieldName . '" name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '/>';
+        }
+        $parts[] = '</div>';
+        return implode(' ', $parts);
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @throws Exception
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
+        global $auth;
+
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 
@@ -49,24 +63,30 @@ class File extends Component implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($value, $field_name = '')
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @throws Exception
+     * @return int|mixed|string
+     */
+    public function formatValue($value, string $fieldName = null)
     {
         global $vars, $cms;
 
-        $file_id = (int) $cms->content[$field_name];
+        $file_id = (int) $cms->content[$fieldName];
 
-        if (UPLOAD_ERR_OK === $_FILES[$field_name]['error']) {
+        if (UPLOAD_ERR_OK === $_FILES[$fieldName]['error']) {
             sql_query("INSERT INTO files SET
                 date=NOW(),
-                name='" . escape($_FILES[$field_name]['name']) . "',
-                size='" . escape(filesize($_FILES[$field_name]['tmp_name'])) . "',
-                type='" . escape($_FILES[$field_name]['type']) . "'
+                name='" . escape($_FILES[$fieldName]['name']) . "',
+                size='" . escape(filesize($_FILES[$fieldName]['tmp_name'])) . "',
+                type='" . escape($_FILES[$fieldName]['type']) . "'
             ");
             $value = sql_insert_id();
 
             // move file
             $file_path = $vars['files']['dir'] . $value;
-            rename($_FILES[$field_name]['tmp_name'], $file_path)
+            rename($_FILES[$fieldName]['tmp_name'], $file_path)
             or trigger_error("Can't save " . $file_path, E_ERROR);
         } elseif (!$value && $file_id) {
             // delete file
@@ -81,6 +101,10 @@ class File extends Component implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $file
+     * @return bool
+     */
     public function delete($file): bool
     {
         if (true === file_exists($file)) {
@@ -90,18 +114,33 @@ class File extends Component implements ComponentInterface
         return false;
     }
 
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        return $table_prefix . $field_name . ' > 0';
+        return $tablePrefix . $fieldName . ' > 0';
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name); ?>
-        <div>
-            <input type="checkbox" name="<?= $field_name; ?>" value="1" <?php if ($_GET[$field_name]) { ?>checked<?php } ?>>
-            <label for="<?= underscored($name); ?>" class="col-form-label"><?= ucfirst($name); ?></label>
-        </div>
-        <?php
+        $field_name = underscored($name);
+
+        $html = [];
+        $html[] = '<div>';
+        $html[] = '<input type="checkbox" name="' . $field_name . '" value="1" ' . ($_GET[$field_name] ? 'checked' : '') . '>';
+        $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '</div>';
+
+        return implode(' ', $html);
     }
 }

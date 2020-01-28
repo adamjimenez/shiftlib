@@ -2,29 +2,45 @@
 
 namespace cms\components;
 
+use cms;
 use cms\ComponentInterface;
+use Exception;
 
 class Checkboxes extends Select implements ComponentInterface
 {
     public $id_required = true;
 
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return null;
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @throws Exception
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
+        /** @var cms $cms */
         global $vars, $cms;
 
-        $name = spaced($field_name);
+        /** @var string $name */
+        $name = spaced($fieldName);
 
         $value = [];
 
+        // get options from a section
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
             if ($cms->id) {
                 $join_id = $cms->get_id_field($name);
 
+                // get preselected values
                 $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
                     INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 ON T1.value=T2.$join_id
                     WHERE
@@ -38,47 +54,7 @@ class Checkboxes extends Select implements ComponentInterface
                 }
             }
 
-            if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
-                $language = $cms->language ? $cms->language : 'en';
-                $table = underscored($vars['options'][$name]);
-
-                foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-                    if ('separator' != $v) {
-                        $field = $k;
-                        break;
-                    }
-                }
-
-                $raw_option = $vars['fields'][$vars['options'][$name]][$field];
-
-                $cols = '';
-                $cols .= '`' . underscored($field) . '`';
-
-                $rows = sql_query("SELECT id,$cols FROM
-                    $table
-                    WHERE
-                        language='" . $language . "'
-                    ORDER BY `" . underscored($field) . '`
-                ');
-
-                $options = [];
-                foreach ($rows as $row) {
-                    if ($row['translated_from']) {
-                        $id = $row['translated_from'];
-                    } else {
-                        $id = $row['id'];
-                    }
-
-                    $options[$id] = $row[underscored($field)];
-                }
-
-                $vars['options'][$name] = $options;
-            } else {
-                //make sure we get the first field
-                reset($vars['fields'][$vars['options'][$name]]);
-
-                $vars['options'][$name] = $this->get_options($name, false);
-            }
+            $vars['options'][$name] = $this->get_options($name, false);
         } else {
             if ($cms->id) {
                 $rows = sql_query("SELECT value FROM cms_multiple_select
@@ -96,19 +72,27 @@ class Checkboxes extends Select implements ComponentInterface
 
         $is_assoc = is_assoc_array($vars['options'][$name]);
 
-        print '<ul class="checkboxes">';
+        $parts = [];
+        $parts[] = '<ul class="checkboxes">';
 
         foreach ($vars['options'][$name] as $k => $v) {
-            $val = $is_assoc ? $k : $v; ?>
-            <li><label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?> <?php if (in_array($val, $value)) { ?>checked="checked"<?php } ?> /> <?= $v; ?></label></li>
-            <?php
+            $val = $is_assoc ? $k : $v;
+            $parts[] = '<li><label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, $value) ? 'checked="checked"' : '') . '/>' . $v . '</label></li>';
         }
 
-        print '</ul>';
+        $parts[] = '</ul>';
+        return implode('', $parts);
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @throws Exception
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
+        /** @var cms $cms */
         global $vars, $cms;
 
         $array = [];
@@ -145,15 +129,20 @@ class Checkboxes extends Select implements ComponentInterface
             }
         }
 
-        $value = implode('<br>' . "\n", $array);
-        return $value;
+        return implode('<br>' . "\n", $array);
     }
 
-    public function formatValue($value, $field_name = null)
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @throws Exception
+     * @return bool|mixed|string
+     */
+    public function formatValue($value, string $fieldName = null)
     {
         global $cms;
 
-        $name = spaced($field_name);
+        $name = spaced($fieldName);
 
         if ($cms->id) {
             // create NOT IN string
@@ -187,13 +176,26 @@ class Checkboxes extends Select implements ComponentInterface
         return false;
     }
 
-    // generates sql code for use in where statement
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    /**
+     * Generates sql code for use in where statement
+     *
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         return null;
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
         global $vars;
 
@@ -201,19 +203,20 @@ class Checkboxes extends Select implements ComponentInterface
 
         if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
             $vars['options'][$name] = $this->get_options(underscored($vars['options'][$name]), underscored(key($vars['fields'][$vars['options'][$name]])));
-        } ?>
-        <div>
-            <label for="<?= underscored($name); ?>" class="col-form-label"><?= ucfirst($name); ?></label>
-        </div>
-        <div style="max-height: 200px; width: 200px; overflow: scroll">
-            <?php
-            $is_assoc = is_assoc_array($vars['options'][$name]);
+        }
+
+        $html = [];
+
+        $html[] = '<div>';
+        $html[] = '     <label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '</div>';
+        $html[] = '<div style="max-height: 200px; width: 200px; overflow: scroll">';
+        $is_assoc = is_assoc_array($vars['options'][$name]);
         foreach ($vars['options'][$name] as $k => $v) {
-            $val = $is_assoc ? $k : $v; ?>
-                <label><input type="checkbox" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if (in_array($val, $_GET[$field_name])) { ?>checked<?php } ?>> <?= $v; ?></label><br>
-                <?php
-        } ?>
-        </div>
-        <?php
+            $val = $is_assoc ? $k : $v;
+            $html[] = '<label><input type="checkbox" name="' . $field_name . '[]" value="' . $val . '" ' . (in_array($val, $_GET[$field_name]) ? 'checked' : '') . '>' . $v . '</label><br>';
+        }
+        $html[] = '</div>';
+        return implode(' ', $html);
     }
 }

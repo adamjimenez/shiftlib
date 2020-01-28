@@ -7,19 +7,31 @@ use cms\ComponentInterface;
 
 class Datetime extends Date implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'DATETIME';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <input type="datetime-local" name="<?= $field_name; ?>" value="<?= $value; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: ''; ?>>
-        <?php
+        return '<input type="datetime-local" name="' . $fieldName . '" value="' . $value . '" ' . ($options['readonly'] ? 'disabled' : '') . ' size="10" ' . $options['attribs'] . '>';
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         if (starts_with($value, '0000-00-00')) {
             $value = '';
@@ -28,7 +40,12 @@ class Datetime extends Date implements ComponentInterface
         return $value ?: '';
     }
 
-    public function formatValue($value)
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed|string
+     */
+    public function formatValue($value, string $fieldName = null)
     {
         if ($value) {
             $value .= ':00';
@@ -36,8 +53,12 @@ class Datetime extends Date implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
-        return component::isValid($value);
+        return Component::isValid($value);
     }
 }

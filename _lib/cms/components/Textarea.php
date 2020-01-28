@@ -7,23 +7,38 @@ use cms\ComponentInterface;
 
 class Textarea extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
-        return "TEXT";
+        return 'TEXT';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <textarea name="<?= $field_name; ?>"
-                  <?php if ($options['readonly']) { ?>disabled<?php } ?>
-                  <?php if ($options['placeholder']) { ?>placeholder="<?= $options['placeholder']; ?>"<?php } ?>
-                  <?= $options['attribs']; ?>
-        ><?= $value; ?></textarea>
-        <?
+        $html = [];
+        $html[] = '<textarea name="' . $fieldName . '"';
+        $html[] = ($options['readonly'] ? 'disabled' : '');
+        $html[] = ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . '"' : '');
+        $html[] = $options['attribs'];
+        $html[] = '>' . $value . '</textarea>';
+
+        return implode(' ', $html);
     }
-    
-    public function formatValue($value, $field_name = null)
+
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return string
+     */
+    public function formatValue($value, string $fieldName = null)
     {
         return trim(strip_tags($value, '<iframe>'));
     }

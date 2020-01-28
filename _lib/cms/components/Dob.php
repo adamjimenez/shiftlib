@@ -6,55 +6,81 @@ use cms\ComponentInterface;
 
 class Dob extends Date implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'DATE';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <input type="text" data-type="dob" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs']; ?>>
-        <?php
+        return '<input type="text" data-type="dob" id="' . $fieldName . '" name="' . $fieldName . '" value="' . ($value && '0000-00-00' != $value ? $value : '') . ' ' . ($options['readonly'] ? 'disabled' : '') . ' size="10" ' . $options['attribs'] . '>';
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         if ('0000-00-00' != $value and '' != $value) {
             $age = age($value);
             $value = dateformat('d/m/Y', $value);
         }
 
-        $value = $value . ' (' . $age . ')';
-        return $value;
+        return $value . ' (' . $age . ')';
     }
 
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        return '`' . $field_name . "`!='0000-00-00' AND " .
-            "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $field_name . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $field_name . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';
+        return '`' . $fieldName . "`!='0000-00-00' AND " .
+            "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $fieldName . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $fieldName . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
         $field_name = underscored($name);
 
         for ($i = 1; $i <= 60; $i++) {
             $opts['age'][] = $i;
-        } ?>
+        }
 
-        <?= ucfirst($name); ?><br>
-        <select name="<?= $field_name; ?>">
-            <option value="">Any</option>
-            <?= html_options($opts['age'], $_GET[$field_name]); ?>
-        </select>
-        to
-        <select name="func[<?= $field_name; ?>]">
-            <option value="">Any</option>
-            <?= html_options($opts['age'], $_GET['func'][$field_name]); ?>
-        </select>
-        <br>
-        <br>
-        <?php
+        $html = [];
+
+        $html[] = ucfirst($name) . '<br>';
+        $html[] = '<select name="' . $field_name . '">';
+        $html[] = '<option value="">Any</option>';
+        $html[] = html_options($opts['age'], $_GET[$field_name]);
+        $html[] = '</select>';
+        $html[] = 'to';
+        $html[] = '<select name="func[' . $field_name . ']">';
+        $html[] = '<option value="">Any</option>';
+        $html[] = html_options($opts['age'], $_GET['func'][$field_name]);
+        $html[] = '</select>';
+        $html[] = '<br>';
+        $html[] = '<br>';
+
+        return implode(' ', $html);
     }
 }

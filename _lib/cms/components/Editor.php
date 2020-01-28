@@ -8,22 +8,36 @@ use DOMDocument;
 
 class Editor extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TEXT';
     }
 
-    public function field($field_name, $value = '', $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', $options = []): string
     {
-        ?>
-        <textarea name="<?= $field_name; ?>"
-                  <?php if ($options['readonly']) { ?>disabled<?php } ?>
-                  <?= $options['attribs'] ?: 'rows="25" style="width:100%; height: 400px;"'; ?>
-                  data-type="tinymce"><?= htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8'); ?></textarea>
-        <?
+        return '<textarea name="' . $fieldName . '"'
+            . ($options['readonly'] ? 'disabled' : '') . ' '
+            . $options['attribs'] . ' 
+                  rows="25" 
+                  style="width:100%; height: 400px;"
+                  data-type="tinymce">' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8') . '</textarea>';
     }
 
-    public function formatValue($value, $field_name = '')
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed|string
+     */
+    public function formatValue($value, string $fieldName = null)
     {
         $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');
@@ -48,8 +62,13 @@ class Editor extends Component implements ComponentInterface
         return $value;
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
-
+        return '';
     }
 }

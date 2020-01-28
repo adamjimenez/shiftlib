@@ -3,24 +3,34 @@
 namespace cms\components;
 
 use cms\Component;
+use cms\ComponentInterface;
+use Exception;
 
-class Select extends Component
+class Select extends Component implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         global $vars, $cms, $auth;
 
-        $name = spaced($field_name);
+        $name = spaced($fieldName);
 
+        $parts = [];
         if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
-            ?>
-            <div class="chained" data-name="<?= $field_name; ?>" data-section="<?= $vars['options'][$name]; ?>" data-value="<?= $value; ?>"></div>
-            <?php
+            $parts[] = '<div class="chained" data-name="' . $fieldName . '" data-section="' . $vars['options'][$name] . '" data-value="' . $value . '"></div>';
         } else {
             if (!is_array($vars['options'][$name])) {
                 $conditions = [];
@@ -29,87 +39,67 @@ class Select extends Component
                 }
 
                 $vars['options'][$name] = $this->get_options($name, false);
-            } ?>
-            <select name="<?= $field_name; ?>" <?php if ($option['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>>
-                <option value=""><?= $placeholder ?: 'Choose'; ?></option>
-                <?= html_options($vars['options'][$name], $value); ?>
-            </select>
-            <?php
+            }
+
+            $parts[] = '<select name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '>';
+            $parts[] = '<option value="">' . $options['placeholder'] ?: 'Choose' . '</option>';
+            $parts[] = html_options($vars['options'][$name], $value);
+            $parts[] = '</select>';
         }
+
+        return implode('', $parts);
     }
 
-    // get parent fields child rows
-
-    public function get_options(string $name, $where = false)
+    /**
+     * Get parent fields child rows
+     *
+     * @param string $name
+     * @param string $where
+     * @throws Exception
+     * @return array
+     */
+    public function get_options(string $name, $where = null)
     {
         global $vars;
 
         if (!isset($vars['options'][$name])) {
-            return false;
+            return null;
         }
 
+        // get options from a section
         if (!is_array($vars['options'][$name])) {
+            // get section table name
             $table = underscored($vars['options'][$name]);
 
-            foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-                if ('separator' != $v) {
-                    $field = $k;
-                    break;
-                }
-            }
-
+            // get first field from section as we will use this for the option labels
+            reset($vars['fields'][$vars['options'][$name]]);
+            $field = key($vars['fields'][$vars['options'][$name]]);
+        
             $cols = '`' . underscored($field) . '`';
 
-            //sortable
+            // sort by position if available or fall back to field order
             $order = in_array('position', $vars['fields'][$vars['options'][$name]]) ? 'position' : $field;
 
-            if (in_array('language', $vars['fields'][$vars['options'][$name]])) {
+            $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
+
+            if (false !== $parent_field) {
+                // if we have a parent field than get an indented list of options
+                $options = $this->get_children($vars['options'][$name], $parent_field);
+            } else {
                 $where_str = '';
                 if ($where) {
-                    $where_str = 'AND ' . $where;
+                    $where_str = 'WHERE ' . $where;
                 }
-
-                $language = 'en';
 
                 $rows = sql_query("SELECT id, $cols FROM
                     $table
-                    WHERE
-                        language='" . $language . "'
-                        $where_str
+                    $where_str
                     ORDER BY `" . underscored($order) . '`
                 ');
 
                 $options = [];
                 foreach ($rows as $row) {
-                    if ($row['translated_from']) {
-                        $id = $row['translated_from'];
-                    } else {
-                        $id = $row['id'];
-                    }
-
-                    $options[$id] = $row[underscored($field)];
-                }
-            } else {
-                $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
-
-                if (false !== $parent_field) {
-                    $options = $this->get_children($vars['options'][$name], $parent_field);
-                } else {
-                    $where_str = '';
-                    if ($where) {
-                        $where_str = 'WHERE ' . $where;
-                    }
-
-                    $rows = sql_query("SELECT id, $cols FROM
-                        $table
-                        $where_str
-                        ORDER BY `" . underscored($order) . '`
-                    ');
-
-                    $options = [];
-                    foreach ($rows as $row) {
-                        $options[$row['id']] = $row[underscored($field)];
-                    }
+                    $options[$row['id']] = $row[underscored($field)];
                 }
             }
 
@@ -119,6 +109,14 @@ class Select extends Component
         return $vars['options'][$name];
     }
 
+    /**
+     * @param $section
+     * @param $parent_field
+     * @param int $parent
+     * @param int $depth
+     * @throws Exception
+     * @return array
+     */
     public function get_children($section, $parent_field, int $parent = 0, int $depth = 0)
     {
         global $vars, $cms;
@@ -155,7 +153,12 @@ class Select extends Component
         return $parents;
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         global $vars, $cms;
 
@@ -174,24 +177,37 @@ class Select extends Component
         return $value ?: '';
     }
 
-    public function conditionsToSql($field_name, $value, $func = '', $table_prefix = ''): ?string
+    /**
+     * @param string $fieldName
+     * @param $value
+     * @param string $func
+     * @param string $tablePrefix
+     * @return string|null
+     */
+    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         if (is_array($value)) {
             $or = '(';
             foreach ($value as $k => $v) {
-                $or .= $table_prefix . $field_name . " LIKE '" . escape($v) . "' OR ";
+                $or .= $tablePrefix . $fieldName . " LIKE '" . escape($v) . "' OR ";
             }
             $or = substr($or, 0, -4);
             $or .= ')';
 
             return $or;
         }
-        return $table_prefix . $field_name . " LIKE '" . escape($value) . "'";
+        return $tablePrefix . $fieldName . " LIKE '" . escape($value) . "'";
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param $name
+     * @param $value
+     * @throws Exception
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
-        global $vars;
+        global $vars, $auth;
 
         $field_name = underscored($name);
         $options = $vars['options'][$name];
@@ -212,15 +228,17 @@ class Select extends Component
             foreach ($rows as $v) {
                 $options[$v['id']] = current($v);
             }
-        } ?>
-        <div>
-            <?= ucfirst($name); ?>
-        </div>
-        <select name="<?= $name; ?>[]" multiple size="4" class="form-control">
-            <?= html_options($options, $_GET[$field_name]); ?>
-        </select>
-        <br>
-        <br>
-        <?php
+        }
+        $html = [];
+        $html[] = '<div>';
+        $html[] = ucfirst($name);
+        $html[] = '</div>';
+        $html[] = '<select name="' . $name . '[]" multiple size="4" class="form-control">';
+        $html[] = html_options($options, $_GET[$field_name]);
+        $html[] = '</select>';
+        $html[] = '<br>';
+        $html[] = '<br>';
+
+        return implode(' ', $html);
     }
 }

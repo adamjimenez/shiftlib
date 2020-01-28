@@ -3,47 +3,66 @@
 namespace cms\components;
 
 use cms\ComponentInterface;
+use Exception;
 
 class Files extends File implements ComponentInterface
 {
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TEXT';
     }
 
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @throws Exception
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
         if ($value) {
             $value = explode("\n", $value);
-        } ?>
+        }
 
-        <ul class="files">
-            <?php
-            if (is_array($value)) {
-                foreach ($value as $key => $val) {
-                    $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1); ?>
-                    <li>
-                        <?php if ($file) { ?>
-                            <input type="hidden" name="<?= $field_name; ?>[]" value="<?= $val; ?>" <?php if ($options['readonly']) { ?>readonly<?php } ?>>
-                            <a href="/_lib/cms/file.php?f=<?= $val; ?>">
-                                <img src="/_lib/cms/file.php?f=<?= $val; ?>" style="max-width: 100px; max-height: 100px;"><br>
-                                <?= $file['name']; ?>
-                            </a>
-                            <a href="javascript:" class="link" onClick="delItem(this)">delete</a>
-                        <?php } ?>
-                    </li>
-                    <?php
+        $parts = [];
+
+        $parts[] = '<ul class="files">';
+
+        if (is_array($value)) {
+            foreach ($value as $key => $val) {
+                $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1);
+                $parts[] = '<li>';
+                if ($file) {
+                    $parts[] = '<input type="hidden" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . '>';
+                    $parts[] = '<a href="/_lib/cms/file.php?f=' . $val . '">';
+                    $parts[] = '<img src="/_lib/cms/file.php?f=' . $val . '" style="max-width: 100px; max-height: 100px;"><br>';
+                    $parts[] = $file['name'];
+                    $parts[] = '</a>';
+                    $parts[] = '<a href="javascript:" class="link" onClick="delItem(this)">delete</a>';
                 }
-            } ?>
+                $parts[] = '</li>';
+            }
+        }
 
-            <li>
-                <input type="file" name="<?= $field_name; ?>[]" multiple="multiple" <?php if ($options['readonly']) { ?>disabled<?php } ?> <?= $options['attribs']; ?>/>
-            </li>
-        </ul>
-        <?php
+        $parts[] = '<li>';
+        $parts[] = '<input type="file" name="' . $fieldName . '[]" multiple="multiple" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '/>';
+        $parts[] = '</li>';
+        $parts[] = '</ul>';
+
+        return implode(' ', $parts);
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @throws Exception
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         if ($value) {
             $files = explode("\n", $value);
@@ -75,7 +94,13 @@ class Files extends File implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($files, $field_name = '')
+    /**
+     * @param $files
+     * @param string|null $fieldName
+     * @throws Exception
+     * @return int|mixed|string
+     */
+    public function formatValue($files, string $fieldName = null)
     {
         global $vars, $cms;
 
@@ -83,17 +108,17 @@ class Files extends File implements ComponentInterface
             $files = [];
         }
 
-        if (is_array($_FILES[$field_name])) {
-            foreach ($_FILES[$field_name]['error'] as $key => $error) {
+        if (is_array($_FILES[$fieldName])) {
+            foreach ($_FILES[$fieldName]['error'] as $key => $error) {
                 if (UPLOAD_ERR_OK !== $error) {
                     continue;
                 }
 
                 sql_query("INSERT INTO files SET
                     date=NOW(),
-                    name='" . escape($_FILES[$field_name]['name'][$key]) . "',
-                    size='" . escape(filesize($_FILES[$field_name]['tmp_name'][$key])) . "',
-                    type='" . escape($_FILES[$field_name]['type'][$key]) . "'
+                    name='" . escape($_FILES[$fieldName]['name'][$key]) . "',
+                    size='" . escape(filesize($_FILES[$fieldName]['tmp_name'][$key])) . "',
+                    type='" . escape($_FILES[$fieldName]['type'][$key]) . "'
                 ");
                 $value = sql_insert_id();
 
@@ -101,13 +126,13 @@ class Files extends File implements ComponentInterface
 
                 // move file
                 $file_path = $vars['files']['dir'] . $value;
-                rename($_FILES[$field_name]['tmp_name'][$key], $file_path)
+                rename($_FILES[$fieldName]['tmp_name'][$key], $file_path)
                 or trigger_error("Can't save " . $file_path, E_ERROR);
             }
         }
 
         if ($cms->id) {
-            $old_files = explode("\n", $cms->content[$field_name]);
+            $old_files = explode("\n", $cms->content[$fieldName]);
 
             //clean up old files
             foreach ($old_files as $old_file) {

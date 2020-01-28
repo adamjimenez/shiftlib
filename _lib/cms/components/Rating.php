@@ -7,7 +7,6 @@ use cms\ComponentInterface;
 
 class Rating extends Component implements ComponentInterface
 {
-    // rating widget options
     public $rating_opts = [
         1 => 'Very Poor',
         2 => 'Poor',
@@ -16,34 +15,52 @@ class Rating extends Component implements ComponentInterface
         5 => 'Excellent',
     ];
 
+    /**
+     * @return string|null
+     */
     public function getFieldSql(): ?string
     {
         return 'TINYINT';
     }
 
-    public function field($field_name, $value = '', $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', $options = []): string
     {
-        ?>
-        <select name="<?= $field_name; ?>" class="rating" <?= $options['attribs']; ?>>
-            <option value="">Choose</option>
-            <?= html_options($this->rating_opts, $value, true); ?>
-        </select>
-        <?php
+        $html = [];
+        $html[] = '<select name="' . $fieldName . '" class="rating" ' . $options['attribs'] . '>';
+        $html[] = '<option value="">Choose</option>';
+        $html[] = html_options($this->rating_opts, $value, true);
+        $html[] = '</select>';
+        return implode(' ', $html);
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         $field_name = underscored($name);
 
-        $value = '<select name="' . $field_name . '" class="rating" disabled="disabled">
+        return '<select name="' . $field_name . '" class="rating" disabled="disabled">
             <option value="">Choose</option>
             ' . html_options($this->rating_opts, $value, true) . '
         </select>';
-
-        return $value;
     }
 
-    public function searchField($name, $value): void
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
+    public function searchField(string $name, $value): string
     {
+        return '';
     }
 }

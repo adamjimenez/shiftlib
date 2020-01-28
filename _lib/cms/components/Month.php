@@ -7,14 +7,23 @@ use cms\ComponentInterface;
 
 class Month extends Date implements ComponentInterface
 {
-    public function field(string $field_name, $value = '', array $options = []): void
+    /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
     {
-        ?>
-        <input type="text" class="month" id="<?= $field_name; ?>" name="<?= $field_name; ?>" value="<?= ($value && '0000-00-00' != $value) ? $value : ''; ?>" <?php if ($options['readonly']) { ?>disabled<?php } ?> size="10" <?= $options['attribs'] ?: 'style="width:75px;"'; ?>/>
-        <?php
+        return '<input type="text" class="month" id="' . $fieldName . '" name="' . $fieldName . '" value="' . ($value && '0000-00-00' != $value ? $value : '') . '" ' . ($options['readonly'] ? 'disabled' : '') . ' size="10" ' . $options['attribs'] . ' style="width:75px;" />';
     }
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         if ('0000-00-00' != $value and '' != $value) {
             $value = dateformat('F Y', $value);
@@ -22,7 +31,12 @@ class Month extends Date implements ComponentInterface
         return $value;
     }
 
-    public function formatValue($value)
+    /**
+     * @param $value
+     * @param string|null $fieldName
+     * @return mixed|string
+     */
+    public function formatValue($value, string $fieldName = null)
     {
         if ($value) {
             $value .= '-01';
@@ -30,8 +44,12 @@ class Month extends Date implements ComponentInterface
         return $value;
     }
 
+    /**
+     * @param $value
+     * @return bool
+     */
     public function isValid($value): bool
     {
-        return component::isValid($value);
+        return Component::isValid($value);
     }
 }

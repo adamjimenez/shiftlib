@@ -9,7 +9,12 @@ class Hidden extends Component implements ComponentInterface
 {
     public $field_type = 'hidden';
 
-    public function value($value, $name = ''): string
+    /**
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
     {
         if ('0000-00-00 00:00:00' != $value) {
             $date = explode(' ', $value);
