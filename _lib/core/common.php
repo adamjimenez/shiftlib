@@ -1573,11 +1573,6 @@ function validate($fields, $required, $array = true)
                     $errors[] = $v;
                 }
             break;
-            case 'tel':
-                if (!is_tel($fields[$v])) {
-                    $errors[] = $v;
-                }
-            break;
             case 'postcode':
                 if ('' == $fields[$v] or ((!$fields['country'] or 'UK' == $fields['country']) and !format_postcode($fields[$v]))) {
                     $errors[] = $v;
