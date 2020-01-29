@@ -14,12 +14,10 @@ class Position extends Integer implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        global $cms;
-
         // add 1 to max position
-        if (!$cms->id) {
+        if (!$this->cms->id) {
             // todo position might have a different field name..
-            $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $cms->table . '`', 1);
+            $max_pos = sql_query('SELECT MAX(position) AS `max_pos` FROM `' . $this->cms->table . '`', 1);
             return $max_pos['max_pos'] + 1;
         }
 

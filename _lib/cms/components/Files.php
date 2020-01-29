@@ -102,8 +102,6 @@ class Files extends File implements ComponentInterface
      */
     public function formatValue($files, string $fieldName = null)
     {
-        global $vars, $cms;
-
         if (!is_array($files)) {
             $files = [];
         }
@@ -125,14 +123,14 @@ class Files extends File implements ComponentInterface
                 $files[] = $value;
 
                 // move file
-                $file_path = $vars['files']['dir'] . $value;
+                $file_path = $this->vars['files']['dir'] . $value;
                 rename($_FILES[$fieldName]['tmp_name'][$key], $file_path)
                 or trigger_error("Can't save " . $file_path, E_ERROR);
             }
         }
 
-        if ($cms->id) {
-            $old_files = explode("\n", $cms->content[$fieldName]);
+        if ($this->cms->id) {
+            $old_files = explode("\n", $this->cms->content[$fieldName]);
 
             //clean up old files
             foreach ($old_files as $old_file) {
@@ -144,7 +142,7 @@ class Files extends File implements ComponentInterface
                             id='" . $file_id . "'
                     ");
 
-                    $this->delete($vars['files']['dir'] . $file_id);
+                    $this->delete($this->vars['files']['dir'] . $file_id);
                 }
             }
         }

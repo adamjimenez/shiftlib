@@ -5,6 +5,34 @@ namespace cms;
 abstract class Component
 {
     /**
+     * @var \cms
+     */
+    protected $cms;
+
+    /**
+     * @var \auth
+     */
+    protected $auth;
+
+    /**
+     * @var array
+     */
+    protected $vars;
+
+    /**
+     * Component constructor.
+     * @param \cms $cms
+     * @param \auth $auth
+     * @param array $vars
+     */
+    public function __construct(\cms $cms, \auth $auth, array $vars)
+    {
+        $this->cms = $cms;
+        $this->auth = $auth;
+        $this->vars = $vars;
+    }
+
+    /**
      * Used for input field
      *
      * @var string
@@ -43,7 +71,7 @@ abstract class Component
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        return '<input type="' . $this->field_type . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ?  'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
+        return '<input type="' . $this->field_type . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
     }
 
     /**

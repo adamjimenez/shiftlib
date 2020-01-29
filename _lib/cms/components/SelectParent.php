@@ -24,17 +24,15 @@ class SelectParent extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        global $vars, $cms;
+        reset($this->vars['fields'][$this->cms->section]);
 
-        reset($vars['fields'][$cms->section]);
+        $label = key($this->vars['fields'][$this->cms->section]);
 
-        $label = key($vars['fields'][$cms->section]);
-
-        $rows = sql_query("SELECT id,`$label` FROM `" . $cms->table . "` ORDER BY `$label`");
+        $rows = sql_query("SELECT id,`$label` FROM `" . $this->cms->table . "` ORDER BY `$label`");
 
         $parents = [];
         foreach ($rows as $row) {
-            if ($row['id'] == $cms->id) {
+            if ($row['id'] == $this->cms->id) {
                 continue;
             }
             $parents[$row['id']] = $row[$label];
@@ -56,14 +54,12 @@ class SelectParent extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        global $vars, $cms;
+        reset($this->vars['fields'][$this->cms->section]);
 
-        reset($vars['fields'][$cms->section]);
+        $field = key($this->vars['fields'][$this->cms->section]);
 
-        $field = key($vars['fields'][$cms->section]);
+        $row = sql_query("SELECT id,`$field` FROM `" . $this->cms->table . "` WHERE id='" . escape($value) . "' ORDER BY `$field`", 1);
 
-        $row = sql_query("SELECT id,`$field` FROM `" . $cms->table . "` WHERE id='" . escape($value) . "' ORDER BY `$field`", 1);
-
-        return '<a href="?option=' . escape($cms->section) . '&view=true&id=' . $value . '">' . ($row[$field]) . '</a>';
+        return '<a href="?option=' . escape($this->cms->section) . '&view=true&id=' . $value . '">' . ($row[$field]) . '</a>';
     }
 }

@@ -24,26 +24,24 @@ class Select extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        global $vars, $cms, $auth;
-
         $name = spaced($fieldName);
 
         $parts = [];
-        if (!is_array($vars['options'][$name]) and in_array('parent', $vars['fields'][$vars['options'][$name]])) {
-            $parts[] = '<div class="chained" data-name="' . $fieldName . '" data-section="' . $vars['options'][$name] . '" data-value="' . $value . '"></div>';
+        if (!is_array($this->vars['options'][$name]) and in_array('parent', $this->vars['fields'][$this->vars['options'][$name]])) {
+            $parts[] = '<div class="chained" data-name="' . $fieldName . '" data-section="' . $this->vars['options'][$name] . '" data-value="' . $value . '"></div>';
         } else {
-            if (!is_array($vars['options'][$name])) {
+            if (!is_array($this->vars['options'][$name])) {
                 $conditions = [];
-                foreach ($auth->user['filters'][$cms->section] as $k => $v) {
+                foreach ($this->auth->user['filters'][$this->cms->section] as $k => $v) {
                     $conditions[$k] = $v;
                 }
 
-                $vars['options'][$name] = $this->get_options($name, false);
+                $this->vars['options'][$name] = $this->get_options($name, false);
             }
 
             $parts[] = '<select name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . '>';
             $parts[] = '<option value="">' . $options['placeholder'] ?: 'Choose' . '</option>';
-            $parts[] = html_options($vars['options'][$name], $value);
+            $parts[] = html_options($this->vars['options'][$name], $value);
             $parts[] = '</select>';
         }
 
@@ -60,31 +58,29 @@ class Select extends Component implements ComponentInterface
      */
     public function get_options(string $name, $where = null)
     {
-        global $vars;
-
-        if (!isset($vars['options'][$name])) {
+        if (!isset($this->vars['options'][$name])) {
             return null;
         }
 
         // get options from a section
-        if (!is_array($vars['options'][$name])) {
+        if (!is_array($this->vars['options'][$name])) {
             // get section table name
-            $table = underscored($vars['options'][$name]);
+            $table = underscored($this->vars['options'][$name]);
 
             // get first field from section as we will use this for the option labels
-            reset($vars['fields'][$vars['options'][$name]]);
-            $field = key($vars['fields'][$vars['options'][$name]]);
+            reset($this->vars['fields'][$this->vars['options'][$name]]);
+            $field = key($this->vars['fields'][$this->vars['options'][$name]]);
         
             $cols = '`' . underscored($field) . '`';
 
             // sort by position if available or fall back to field order
-            $order = in_array('position', $vars['fields'][$vars['options'][$name]]) ? 'position' : $field;
+            $order = in_array('position', $this->vars['fields'][$this->vars['options'][$name]]) ? 'position' : $field;
 
-            $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
+            $parent_field = array_search('parent', $this->vars['fields'][$this->vars['options'][$name]]);
 
             if (false !== $parent_field) {
                 // if we have a parent field than get an indented list of options
-                $options = $this->get_children($vars['options'][$name], $parent_field);
+                $options = $this->get_children($this->vars['options'][$name], $parent_field);
             } else {
                 $where_str = '';
                 if ($where) {
@@ -103,10 +99,10 @@ class Select extends Component implements ComponentInterface
                 }
             }
 
-            $vars['options'][$name] = $options;
+            $this->vars['options'][$name] = $options;
         }
 
-        return $vars['options'][$name];
+        return $this->vars['options'][$name];
     }
 
     /**
@@ -119,10 +115,8 @@ class Select extends Component implements ComponentInterface
      */
     public function get_children($section, $parent_field, int $parent = 0, int $depth = 0)
     {
-        global $vars, $cms;
-
-        reset($vars['fields'][$section]);
-        $label = key($vars['fields'][$section]);
+        reset($this->vars['fields'][$section]);
+        $label = key($this->vars['fields'][$section]);
 
         $rows = sql_query("SELECT id,`$label` FROM `" . underscored($section) . '`
             WHERE
@@ -137,7 +131,7 @@ class Select extends Component implements ComponentInterface
 
         $parents = [];
         foreach ($rows as $row) {
-            if ($row['id'] === $cms->id and $section === $cms->section) {
+            if ($row['id'] === $this->cms->id and $section === $this->cms->section) {
                 continue;
             }
 
@@ -160,17 +154,15 @@ class Select extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        global $vars, $cms;
-
-        if (!is_array($vars['options'][$name])) {
+        if (!is_array($this->vars['options'][$name])) {
             if ('0' == $value) {
                 $value = '';
             } else {
-                $value = '<a href="?option=' . escape($vars['options'][$name]) . '&view=true&id=' . $value . '">' . $cms->content[underscored($name) . '_label'] . '</a>';
+                $value = '<a href="?option=' . escape($this->vars['options'][$name]) . '&view=true&id=' . $value . '">' . $this->cms->content[underscored($name) . '_label'] . '</a>';
             }
         } else {
-            if (is_assoc_array($vars['options'][$name])) {
-                $value = $vars['options'][$name][$value];
+            if (is_assoc_array($this->vars['options'][$name])) {
+                $value = $this->vars['options'][$name][$value];
             }
         }
 
@@ -207,20 +199,18 @@ class Select extends Component implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        global $vars, $auth;
-
         $field_name = underscored($name);
-        $options = $vars['options'][$name];
-        if (!is_array($vars['options'][$name])) {
-            reset($vars['fields'][$vars['options'][$name]]);
+        $options = $this->vars['options'][$name];
+        if (!is_array($this->vars['options'][$name])) {
+            reset($this->vars['fields'][$this->vars['options'][$name]]);
 
             $conditions = [];
-            foreach ($auth->user['filters'][$vars['options'][$name]] as $k => $v) {
+            foreach ($this->auth->user['filters'][$this->vars['options'][$name]] as $k => $v) {
                 $conditions[$k] = $v;
             }
 
-            $field = key($vars['fields'][$vars['options'][$name]]);
-            $table = underscored($vars['options'][$name]);
+            $field = key($this->vars['fields'][$this->vars['options'][$name]]);
+            $table = underscored($this->vars['options'][$name]);
             $cols = '`' . underscored($field) . '` AS `' . underscored($field) . '`' . "\n";
             $rows = sql_query("SELECT $cols, id FROM $table ORDER BY `" . underscored($field) . '`');
 

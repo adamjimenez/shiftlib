@@ -699,8 +699,14 @@ class cms
         return truncate($value);
     }
 
-    private function get_component(string $type)
+    /**
+     * @param string $type
+     * @return \cms\ComponentInterface
+     */
+    private function get_component(string $type): \cms\ComponentInterface
     {
+        global $cms, $auth, $vars;
+
         switch ($type) {
             case 'int':
                 $type = 'integer';
@@ -721,7 +727,7 @@ class cms
 
         $class = 'cms\\components\\' . $this->camelize($type);
         if (true === class_exists($class)) {
-            return new $class;
+            return new $class($cms, $auth, $vars);
         }
     }
 

@@ -23,29 +23,25 @@ class Combo extends Select implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        global $cms;
-
         $parts = [];
         $parts[] = '<input type="hidden" name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $value . '">';
-        $parts[] = '<input type="text" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $cms->content[$fieldName . '_label'] . '" data-type="combo" data-field="' . $fieldName . '">';
+        $parts[] = '<input type="text" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $this->cms->content[$fieldName . '_label'] . '" data-type="combo" data-field="' . $fieldName . '">';
         return implode(' ', $parts);
     }
 
     /**
+     * TODO: This won't work currently ($this->cms->get_field)
      * @param string $name
      * @param $value
      * @return string
      */
     public function searchField(string $name, $value): string
     {
-        /** @var cms $cms */
-        global $cms;
-
         $html = [];
         $html[] = '<div>';
         $html[] = $name;
         $html[] = '</div>';
-        $html[] = $cms->get_field($name, 'class="form-control"');
+        $html[] = $this->cms->get_field($name, 'class="form-control"');
         $html[] = '<br>';
         $html[] = '<br>';
 

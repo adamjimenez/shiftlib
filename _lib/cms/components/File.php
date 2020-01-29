@@ -44,8 +44,6 @@ class File extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        global $auth;
-
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 
@@ -57,7 +55,7 @@ class File extends Component implements ComponentInterface
 
             $doc_types = ['pdf', 'doc', 'docx', 'xls', 'tiff'];
             if (in_array(file_ext($file['name']), $doc_types)) {
-                $value .= '<a href="http://docs.google.com/viewer?url=' . rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '&auth_user=' . $_SESSION[$auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($auth->secret_phrase . $_SESSION[$auth->cookie_prefix . '_password'])) . '" target="_blank">(view)</a>';
+                $value .= '<a href="http://docs.google.com/viewer?url=' . rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '&auth_user=' . $_SESSION[$this->auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($this->auth->secret_phrase . $_SESSION[$this->auth->cookie_prefix . '_password'])) . '" target="_blank">(view)</a>';
             }
         }
         return $value;
@@ -71,9 +69,7 @@ class File extends Component implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        global $vars, $cms;
-
-        $file_id = (int) $cms->content[$fieldName];
+        $file_id = (int) $this->cms->content[$fieldName];
 
         if (UPLOAD_ERR_OK === $_FILES[$fieldName]['error']) {
             sql_query("INSERT INTO files SET
@@ -85,7 +81,7 @@ class File extends Component implements ComponentInterface
             $value = sql_insert_id();
 
             // move file
-            $file_path = $vars['files']['dir'] . $value;
+            $file_path = $this->vars['files']['dir'] . $value;
             rename($_FILES[$fieldName]['tmp_name'], $file_path)
             or trigger_error("Can't save " . $file_path, E_ERROR);
         } elseif (!$value && $file_id) {
@@ -95,7 +91,7 @@ class File extends Component implements ComponentInterface
                     id='" . $file_id . "'
             ");
 
-            $this->delete($vars['files']['dir'] . $file_id);
+            $this->delete($this->vars['files']['dir'] . $file_id);
         }
 
         return $value;
