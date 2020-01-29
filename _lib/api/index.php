@@ -392,10 +392,6 @@ switch ($_GET['cmd']) {
                                     $v = $v;
                                 }
                             }
-                        } elseif ('mobile' == $vars['fields'][$_GET['section']][$k]) {
-                            $v = format_mobile($v);
-                        } elseif ('postcode' == $vars['fields'][$_GET['section']][$k]) {
-                            $v = format_postcode($v);
                         } elseif ('select-multiple' == $vars['fields'][$_GET['section']][$k] or 'checkboxes' == $vars['fields'][$_GET['section']][$k]) {
                             $data[$field_name] = explode("\n", $v);
         
