@@ -1274,7 +1274,7 @@ function parse_links($text)
 		   $text = substr($text, 0, $last) . "&hellip;";
 	   }
 
-	   return sprintf(\'<a rel="nowfollow" href="%s" target="_blank">%s</a>\', $url, $text);
+	   return sprintf(\'<a rel="nofollow" href="%s" target="_blank">%s</a>\', $url, $text);
    ');
 
     return preg_replace_callback($pattern, $callback, $text);
