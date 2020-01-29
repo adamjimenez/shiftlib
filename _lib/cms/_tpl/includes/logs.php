@@ -28,7 +28,7 @@ if (count($logs)) {
         $name = $v['name'] ? $v['name'] . ' ' . $v['surname'] : $v['email']; ?>
 	<p>
 		<strong><a href="?option=<?=$v['section']; ?>&view=true&id=<?=$v['item']; ?>"><?=$item_name; ?></a> <?=ucfirst($v['task']); ?> by <a href="?option=users&view=true&id=<?=$v['user']; ?>"><?=$name; ?></a> on <?=$v['date']; ?></strong><br>
-		<?=nl2br($v['details']); ?>
+		<?=nl2br(htmlentities($v['details'])); ?>
 	</p>
 	<?php
     } ?>
