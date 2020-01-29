@@ -19,7 +19,7 @@ class Upload extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */

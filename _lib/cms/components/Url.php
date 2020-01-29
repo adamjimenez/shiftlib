@@ -8,7 +8,7 @@ use cms\ComponentInterface;
 class Url extends Component implements ComponentInterface
 {
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -18,7 +18,7 @@ class Url extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool

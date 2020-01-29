@@ -8,6 +8,8 @@ use Exception;
 
 class File extends Component implements ComponentInterface
 {
+    public const IMAGE_TYPES = ['jpg', 'jpeg', 'gif', 'png'];
+
     /**
      * @param string $fieldName
      * @param string $value
@@ -37,43 +39,38 @@ class File extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @throws Exception
      * @return string
      */
     public function value($value, string $name = ''): string
     {
-        global $auth;
-
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 
-            $image_types = ['jpg', 'jpeg', 'gif', 'png'];
-            if (in_array(file_ext($file['name']), $image_types)) {
+            if (in_array(file_ext($file['name']), self::IMAGE_TYPES)) {
                 $value = '<img src="https://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file_preview.php?f=' . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
             $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
 
             $doc_types = ['pdf', 'doc', 'docx', 'xls', 'tiff'];
             if (in_array(file_ext($file['name']), $doc_types)) {
-                $value .= '<a href="http://docs.google.com/viewer?url=' . rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '&auth_user=' . $_SESSION[$auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($auth->secret_phrase . $_SESSION[$auth->cookie_prefix . '_password'])) . '" target="_blank">(view)</a>';
+                $value .= '<a href="http://docs.google.com/viewer?url=' . rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '&auth_user=' . $_SESSION[$this->auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($this->auth->secret_phrase . $_SESSION[$this->auth->cookie_prefix . '_password'])) . '" target="_blank">(view)</a>';
             }
         }
         return $value;
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @throws Exception
      * @return int|mixed|string
      */
     public function formatValue($value, string $fieldName = null)
     {
-        global $vars, $cms;
-
-        $file_id = (int) $cms->content[$fieldName];
+        $fileId = (int) $this->cms->content[$fieldName];
 
         if (UPLOAD_ERR_OK === $_FILES[$fieldName]['error']) {
             sql_query("INSERT INTO files SET
@@ -85,27 +82,27 @@ class File extends Component implements ComponentInterface
             $value = sql_insert_id();
 
             // move file
-            $file_path = $vars['files']['dir'] . $value;
+            $file_path = $this->vars['files']['dir'] . $value;
             rename($_FILES[$fieldName]['tmp_name'], $file_path)
             or trigger_error("Can't save " . $file_path, E_ERROR);
-        } elseif (!$value && $file_id) {
+        } elseif (!$value && $fileId) {
             // delete file
             sql_query("DELETE FROM files
                 WHERE
-                    id='" . $file_id . "'
+                    id='" . $fileId . "'
             ");
 
-            $this->delete($vars['files']['dir'] . $file_id);
+            $this->delete($this->vars['files']['dir'] . $fileId);
         }
 
         return $value;
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return bool
      */
-    public function delete($file): bool
+    public function delete(string $file): bool
     {
         if (true === file_exists($file)) {
             return unlink($file);
@@ -116,7 +113,7 @@ class File extends Component implements ComponentInterface
 
     /**
      * @param string $fieldName
-     * @param $value
+     * @param mixed $value
      * @param string $func
      * @param string $tablePrefix
      * @return string|null
@@ -128,16 +125,16 @@ class File extends Component implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
         $html = [];
         $html[] = '<div>';
-        $html[] = '<input type="checkbox" name="' . $field_name . '" value="1" ' . ($_GET[$field_name] ? 'checked' : '') . '>';
+        $html[] = '<input type="checkbox" name="' . $fieldName . '" value="1" ' . ($_GET[$fieldName] ? 'checked' : '') . '>';
         $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
         $html[] = '</div>';
 

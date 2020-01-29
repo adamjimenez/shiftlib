@@ -34,7 +34,7 @@ class Textarea extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return string
      */

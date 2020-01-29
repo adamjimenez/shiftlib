@@ -7,10 +7,10 @@ use cms\ComponentInterface;
 
 class Hidden extends Component implements ComponentInterface
 {
-    public $field_type = 'hidden';
+    public $fieldType = 'hidden';
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */

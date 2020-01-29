@@ -9,21 +9,49 @@ abstract class Component
      *
      * @var string
      */
-    public $field_type = 'text';
+    public $fieldType = 'text';
 
     /**
      * Keep value when empty
      *
      * @var bool
      */
-    public $preserve_value = false;
+    public $preserveValue = false;
 
     /**
      * Whether we need an id to save the value
      *
      * @var bool
      */
-    public $id_required = false;
+    public $idRequired = false;
+
+    /**
+     * @var \cms
+     */
+    protected $cms;
+
+    /**
+     * @var \auth
+     */
+    protected $auth;
+
+    /**
+     * @var array
+     */
+    protected $vars;
+
+    /**
+     * Component constructor.
+     * @param \cms $cms
+     * @param \auth $auth
+     * @param array $vars
+     */
+    public function __construct(\cms $cms, \auth $auth, array $vars)
+    {
+        $this->cms = $cms;
+        $this->auth = $auth;
+        $this->vars = $vars;
+    }
 
     /**
      * SQL code for field creation
@@ -43,7 +71,7 @@ abstract class Component
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        return '<input type="' . $this->field_type . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ?  'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
+        return '<input type="' . $this->fieldType . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
     }
 
     /**
@@ -101,10 +129,10 @@ abstract class Component
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
         $html = [];
-        $html[] = '<label for="' . $field_name . '" class="col-form-label">' . ucfirst($name) . '</label>';
-        $html[] = '<input type="text" class="form-control" name="' . $field_name . '" value="' . $value . '">';
+        $html[] = '<label for="' . $fieldName . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '<input type="text" class="form-control" name="' . $fieldName . '" value="' . $value . '">';
 
         return implode(' ', $html);
     }

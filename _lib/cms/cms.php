@@ -676,17 +676,17 @@ class cms
         global $vars;
 
         $field = underscored(key($vars['fields'][$this->section]));
-        $field_type = $vars['fields'][$this->section][$field];
+        $fieldType = $vars['fields'][$this->section][$field];
 
-        if (in_array($field_type, ['select', 'combo'])) {
+        if (in_array($fieldType, ['select', 'combo'])) {
             if (!is_array($vars['options'][$field])) {
                 if (0 == $value) {
                     $value = '';
                 } else {
-                    $join_id = $this->get_id_field($field);
+                    $joinId = $this->get_id_field($field);
                     $option = $this->get_option_label($field);
 
-                    $row = sql_query('SELECT `' . underscored($option) . '` FROM `' . underscored($vars['options'][$field]) . "` WHERE $join_id='" . escape($value) . "'");
+                    $row = sql_query('SELECT `' . underscored($option) . '` FROM `' . underscored($vars['options'][$field]) . "` WHERE $joinId='" . escape($value) . "'");
                     $value = '<a href="?option=' . escape($vars['options'][$field]) . '&view=true&id=' . $value . '">' . reset($row[0]) . '</a>';
                 }
             } else {
@@ -699,8 +699,14 @@ class cms
         return truncate($value);
     }
 
-    private function get_component(string $type)
+    /**
+     * @param string $type
+     * @return \cms\ComponentInterface
+     */
+    private function get_component(string $type): cms\ComponentInterface
     {
+        global $cms, $auth, $vars;
+
         switch ($type) {
             case 'int':
                 $type = 'integer';
@@ -721,7 +727,7 @@ class cms
 
         $class = 'cms\\components\\' . $this->camelize($type);
         if (true === class_exists($class)) {
-            return new $class;
+            return new $class($cms, $auth, $vars);
         }
     }
 
@@ -750,7 +756,7 @@ class cms
     }
 
     // get field widget
-    public function get_field(string $name, $attribs = '', $placeholder = '', $separator = null, $where = false)
+    public function get_field(string $name, $attribs = '', $placeholder = '', $separator = null, $where = false): string
     {
         global $vars;
 
@@ -764,8 +770,10 @@ class cms
 
         if ($component = $this->get_component($type)) {
             $readonly = !in_array($name, $this->editable_fields);
-            echo $component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
+            return $component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
         }
+
+        return '';
     }
 
     // get formatted value
@@ -943,7 +951,7 @@ class cms
             // skip readonly and blank passwords
             if (
                 !in_array($field_name, $this->editable_fields) ||
-                ($component->preserve_value and '' == $data[$field_name] && $this->id)
+                ($component->preserveValue and '' == $data[$field_name] && $this->id)
             ) {
                 continue;
             }
@@ -1021,7 +1029,7 @@ class cms
             // skip if preserving or not for saving this way
             if (
                 false === $data[$field_name] or
-                ($component->preserve_value and '' == $data[$field_name] && $this->id)
+                ($component->preserveValue and '' == $data[$field_name] && $this->id)
             ) {
                 continue;
             }
@@ -1068,7 +1076,7 @@ class cms
 
         $details = '';
         if ($this->id) {
-            $where_str = $this->field_id . "='" . escape($this->id) . "'";
+            $whereStr = $this->field_id . "='" . escape($this->id) . "'";
 
             // remember old state
             $row = sql_query('SELECT * FROM `' . $this->table . "`
@@ -1079,7 +1087,7 @@ class cms
             sql_query('UPDATE `' . $this->table . '` SET
                 ' . $this->query . "
                 WHERE 
-                    $where_str
+                    $whereStr
             ");
 
             // find changes
@@ -1107,12 +1115,12 @@ class cms
                     continue;
                 }
 
-                $field_name = underscored($name);
+                $fieldName = underscored($name);
                 $component = $this->get_component($type);
 
                 // apply field formatting
-                if ($component->id_required) {
-                    $data[$field_name] = $component->formatValue($data[$field_name], $field_name);
+                if ($component->idRequired) {
+                    $data[$fieldName] = $component->formatValue($data[$fieldName], $fieldName);
                 }
             }
 

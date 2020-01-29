@@ -6,7 +6,7 @@ use cms\ComponentInterface;
 
 class Timestamp extends Date implements ComponentInterface
 {
-    public $field_type = 'hidden';
+    public $fieldType = 'hidden';
 
     /**
      * @return string|null
@@ -28,7 +28,7 @@ class Timestamp extends Date implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return bool|mixed|string
      */

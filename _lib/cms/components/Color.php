@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Color extends Component implements ComponentInterface
 {
-    public $field_type = 'color';
+    public $fieldType = 'color';
 
     /**
      * @return string|null

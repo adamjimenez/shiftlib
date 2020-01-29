@@ -33,7 +33,7 @@ class Editor extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return mixed|string
      */
@@ -64,7 +64,7 @@ class Editor extends Component implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

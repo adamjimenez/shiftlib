@@ -96,8 +96,8 @@ if ($_POST['custom_button']) {
 
                                 <!-- fake fields are a workaround for chrome autofill -->
                                 <div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
-                                    <input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername"></input>
-                                    <input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
+                                    <input type="text" style="height:0; background: transparent; color: transparent; border: none;" data-description="dummyUsername"></input>
+                                    <input type="password" style="height:0; background: transparent; color: transparent; border: none;" data-description="dummyPassword"></input>
                                 </div>
 
                                 <div class="modal-header">
@@ -108,16 +108,16 @@ if ($_POST['custom_button']) {
 
                                     <?php
                                     $this->set_section($this->section);
-                                    $this->content = $_GET;
+    $this->content = $_GET;
 
-                                    foreach ($vars['fields'][$this->section] as $name => $type) {
-                                        $field_name = underscored($name);
-                                        $component = $this->get_component($type); ?>
+    foreach ($vars['fields'][$this->section] as $name => $type) {
+        $field_name = underscored($name);
+        $component = $this->get_component($type); ?>
                                         <div>
                                             <?= $component->searchField($name, $_GET[$field_name]); ?>
                                         </div>
                                         <?php
-                                    } ?>
+    } ?>
 
                                 </div>
                                 <div class="modal-footer">
@@ -199,10 +199,10 @@ if ($_POST['custom_button']) {
 
                             <?php
                             $conditions = $_GET;
-                            unset($conditions['option']);
+    unset($conditions['option']);
 
-                            $qs = http_build_query(['s' => $conditions]);
-                            require(dirname(__FILE__) . '/list.php'); ?>
+    $qs = http_build_query(['s' => $conditions]);
+    require(dirname(__FILE__) . '/list.php'); ?>
 
                         </div>
                     </div>
