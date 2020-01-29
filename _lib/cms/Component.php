@@ -129,10 +129,10 @@ abstract class Component
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
         $html = [];
-        $html[] = '<label for="' . $field_name . '" class="col-form-label">' . ucfirst($name) . '</label>';
-        $html[] = '<input type="text" class="form-control" name="' . $field_name . '" value="' . $value . '">';
+        $html[] = '<label for="' . $fieldName . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '<input type="text" class="form-control" name="' . $fieldName . '" value="' . $value . '">';
 
         return implode(' ', $html);
     }
