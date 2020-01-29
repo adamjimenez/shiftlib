@@ -8,7 +8,7 @@ use cms\ComponentInterface;
 class PageName extends Component implements ComponentInterface
 {
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return mixed|string
      */

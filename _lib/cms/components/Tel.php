@@ -10,7 +10,7 @@ class Tel extends Component implements ComponentInterface
     public $field_type = 'tel';
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool

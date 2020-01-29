@@ -10,7 +10,7 @@ class Email extends Component implements ComponentInterface
     public $field_type = 'email';
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -20,7 +20,7 @@ class Email extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
     public function is_valid($value): bool

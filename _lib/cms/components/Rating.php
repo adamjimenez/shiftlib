@@ -40,7 +40,7 @@ class Rating extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -56,7 +56,7 @@ class Rating extends Component implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

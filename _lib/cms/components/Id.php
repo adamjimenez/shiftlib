@@ -15,7 +15,7 @@ class Id extends Integer implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return bool|int|mixed|string
      */

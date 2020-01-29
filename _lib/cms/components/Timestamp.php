@@ -28,7 +28,7 @@ class Timestamp extends Date implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return bool|mixed|string
      */

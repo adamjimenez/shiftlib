@@ -29,7 +29,7 @@ class Checkbox extends Integer implements ComponentInterface
     /**
      * Output the
      *
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -40,7 +40,7 @@ class Checkbox extends Integer implements ComponentInterface
 
     /**
      * @param string $fieldName
-     * @param $value
+     * @param mixed $value
      * @param string $func
      * @param string $tablePrefix
      * @return string|null
@@ -52,7 +52,7 @@ class Checkbox extends Integer implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

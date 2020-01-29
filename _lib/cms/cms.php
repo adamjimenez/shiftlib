@@ -703,7 +703,7 @@ class cms
      * @param string $type
      * @return \cms\ComponentInterface
      */
-    private function get_component(string $type): \cms\ComponentInterface
+    private function get_component(string $type): cms\ComponentInterface
     {
         global $cms, $auth, $vars;
 

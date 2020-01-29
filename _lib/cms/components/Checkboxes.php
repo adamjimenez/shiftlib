@@ -2,7 +2,6 @@
 
 namespace cms\components;
 
-use cms;
 use cms\ComponentInterface;
 use Exception;
 
@@ -82,7 +81,7 @@ class Checkboxes extends Select implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @throws Exception
      * @return string
@@ -127,7 +126,7 @@ class Checkboxes extends Select implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @throws Exception
      * @return bool|mixed|string
@@ -172,7 +171,7 @@ class Checkboxes extends Select implements ComponentInterface
      * Generates sql code for use in where statement
      *
      * @param string $fieldName
-     * @param $value
+     * @param mixed $value
      * @param string $func
      * @param string $tablePrefix
      * @return string|null
@@ -184,9 +183,9 @@ class Checkboxes extends Select implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
-     * @return string
+     * @param mixed $value
      * @throws Exception
+     * @return string
      */
     public function searchField(string $name, $value): string
     {

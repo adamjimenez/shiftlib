@@ -16,8 +16,8 @@ class Radio extends Select implements ComponentInterface
      * @param string $fieldName
      * @param string $value
      * @param array $options
-     * @return string
      * @throws \Exception
+     * @return string
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
@@ -35,7 +35,7 @@ class Radio extends Select implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */

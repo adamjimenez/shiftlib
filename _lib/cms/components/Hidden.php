@@ -10,7 +10,7 @@ class Hidden extends Component implements ComponentInterface
     public $field_type = 'hidden';
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */

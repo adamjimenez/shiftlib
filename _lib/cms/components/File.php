@@ -37,7 +37,7 @@ class File extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @throws Exception
      * @return string
@@ -62,7 +62,7 @@ class File extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @throws Exception
      * @return int|mixed|string
@@ -98,10 +98,10 @@ class File extends Component implements ComponentInterface
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return bool
      */
-    public function delete($file): bool
+    public function delete(string $file): bool
     {
         if (true === file_exists($file)) {
             return unlink($file);
@@ -112,7 +112,7 @@ class File extends Component implements ComponentInterface
 
     /**
      * @param string $fieldName
-     * @param $value
+     * @param mixed $value
      * @param string $func
      * @param string $tablePrefix
      * @return string|null
@@ -124,7 +124,7 @@ class File extends Component implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

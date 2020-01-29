@@ -32,7 +32,7 @@ class Combo extends Select implements ComponentInterface
     /**
      * TODO: This won't work currently ($this->cms->get_field)
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

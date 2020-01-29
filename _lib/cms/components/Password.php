@@ -2,7 +2,6 @@
 
 namespace cms\components;
 
-use auth;
 use cms\Component;
 use cms\ComponentInterface;
 
@@ -12,7 +11,7 @@ class Password extends Component implements ComponentInterface
     public $preserve_value = true;
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -22,7 +21,7 @@ class Password extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return bool|mixed|string
      */

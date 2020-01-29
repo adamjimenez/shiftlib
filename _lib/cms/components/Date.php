@@ -27,7 +27,7 @@ class Date extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -42,7 +42,7 @@ class Date extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool
@@ -52,7 +52,7 @@ class Date extends Component implements ComponentInterface
 
     /**
      * @param string $fieldName
-     * @param $value
+     * @param mixed $value
      * @param string $func
      * @param string $tablePrefix
      * @return string|null
@@ -88,7 +88,7 @@ class Date extends Component implements ComponentInterface
 
     /**
      * @param $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

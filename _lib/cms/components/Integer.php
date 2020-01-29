@@ -18,7 +18,7 @@ class Integer extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -28,7 +28,7 @@ class Integer extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool
@@ -38,7 +38,7 @@ class Integer extends Component implements ComponentInterface
 
     /**
      * @param string $fieldName
-     * @param $value
+     * @param mixed $value
      * @param string $func
      * @param string $tablePrefix
      * @return string|null
@@ -78,7 +78,7 @@ class Integer extends Component implements ComponentInterface
     /**
      * Applies any cleanup before saving
      *
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return int|mixed|string
      */
@@ -89,7 +89,7 @@ class Integer extends Component implements ComponentInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return string
      */
     public function searchField(string $name, $value): string

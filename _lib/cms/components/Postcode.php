@@ -8,7 +8,7 @@ use cms\ComponentInterface;
 class Postcode extends Component implements ComponentInterface
 {
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool
@@ -17,7 +17,7 @@ class Postcode extends Component implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return bool|mixed|string
      */

@@ -16,7 +16,7 @@ class Decimal extends Integer implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string $name
      * @return string
      */
@@ -32,12 +32,12 @@ class Decimal extends Integer implements ComponentInterface
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param string|null $fieldName
      * @return int|mixed|string
      */
     public function formatValue($value, string $fieldName = null)
     {
-        return Component::formatValue($value);
+        return Component::formatValue($value, $fieldName);
     }
 }
