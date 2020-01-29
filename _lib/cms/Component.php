@@ -5,6 +5,27 @@ namespace cms;
 abstract class Component
 {
     /**
+     * Used for input field
+     *
+     * @var string
+     */
+    public $fieldType = 'text';
+
+    /**
+     * Keep value when empty
+     *
+     * @var bool
+     */
+    public $preserveValue = false;
+
+    /**
+     * Whether we need an id to save the value
+     *
+     * @var bool
+     */
+    public $idRequired = false;
+
+    /**
      * @var \cms
      */
     protected $cms;
@@ -33,27 +54,6 @@ abstract class Component
     }
 
     /**
-     * Used for input field
-     *
-     * @var string
-     */
-    public $field_type = 'text';
-
-    /**
-     * Keep value when empty
-     *
-     * @var bool
-     */
-    public $preserve_value = false;
-
-    /**
-     * Whether we need an id to save the value
-     *
-     * @var bool
-     */
-    public $id_required = false;
-
-    /**
      * SQL code for field creation
      *
      * @return string|null
@@ -71,7 +71,7 @@ abstract class Component
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        return '<input type="' . $this->field_type . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
+        return '<input type="' . $this->fieldType . '" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
     }
 
     /**

@@ -33,7 +33,7 @@ class Postcode extends Component implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
         //distance options
         $opts['distance'] = [
@@ -56,12 +56,12 @@ class Postcode extends Component implements ComponentInterface
 
         $html[] = 'Within';
 
-        $html[] = '<select name="func[' . $field_name . ']">';
+        $html[] = '<select name="func[' . $fieldName . ']">';
         $html[] = '<option value=""></option>';
-        $html[] = html_options($opts['distance'], $_GET['func'][$field_name]);
+        $html[] = html_options($opts['distance'], $_GET['func'][$fieldName]);
         $html[] = '</select>';
         $html[] = 'of';
-        $html[] = '<input type="text" name="' . $field_name . '" value="' . $_GET[$field_name] . '" size="7">';
+        $html[] = '<input type="text" name="' . $fieldName . '" value="' . $_GET[$fieldName] . '" size="7">';
         return implode(' ', $html);
     }
 }

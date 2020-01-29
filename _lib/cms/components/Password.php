@@ -7,8 +7,8 @@ use cms\ComponentInterface;
 
 class Password extends Component implements ComponentInterface
 {
-    public $field_type = 'password';
-    public $preserve_value = true;
+    public $fieldType = 'password';
+    public $preserveValue = true;
 
     /**
      * @param mixed $value

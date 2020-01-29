@@ -6,7 +6,7 @@ use cms\ComponentInterface;
 
 class Timestamp extends Date implements ComponentInterface
 {
-    public $field_type = 'hidden';
+    public $fieldType = 'hidden';
 
     /**
      * @return string|null

@@ -60,8 +60,9 @@ class Dob extends Date implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
+        $opts = [];
         for ($i = 1; $i <= 60; $i++) {
             $opts['age'][] = $i;
         }
@@ -69,14 +70,14 @@ class Dob extends Date implements ComponentInterface
         $html = [];
 
         $html[] = ucfirst($name) . '<br>';
-        $html[] = '<select name="' . $field_name . '">';
+        $html[] = '<select name="' . $fieldName . '">';
         $html[] = '<option value="">Any</option>';
-        $html[] = html_options($opts['age'], $_GET[$field_name]);
+        $html[] = html_options($opts['age'], $_GET[$fieldName]);
         $html[] = '</select>';
         $html[] = 'to';
-        $html[] = '<select name="func[' . $field_name . ']">';
+        $html[] = '<select name="func[' . $fieldName . ']">';
         $html[] = '<option value="">Any</option>';
-        $html[] = html_options($opts['age'], $_GET['func'][$field_name]);
+        $html[] = html_options($opts['age'], $_GET['func'][$fieldName]);
         $html[] = '</select>';
         $html[] = '<br>';
         $html[] = '<br>';

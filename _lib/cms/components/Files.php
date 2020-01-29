@@ -80,8 +80,7 @@ class Files extends File implements ComponentInterface
                     $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1);
                 }
 
-                $image_types = ['jpg', 'jpeg', 'gif', 'png'];
-                if (in_array(file_ext($file['name']), $image_types)) {
+                if (in_array(file_ext($file['name']), parent::IMAGE_TYPES)) {
                     $value .= '<img src="http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file_preview.php?f=' . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
                 }
 
@@ -123,26 +122,26 @@ class Files extends File implements ComponentInterface
                 $files[] = $value;
 
                 // move file
-                $file_path = $this->vars['files']['dir'] . $value;
-                rename($_FILES[$fieldName]['tmp_name'][$key], $file_path)
-                or trigger_error("Can't save " . $file_path, E_ERROR);
+                $filePath = $this->vars['files']['dir'] . $value;
+                rename($_FILES[$fieldName]['tmp_name'][$key], $filePath)
+                or trigger_error("Can't save " . $filePath, E_ERROR);
             }
         }
 
         if ($this->cms->id) {
-            $old_files = explode("\n", $this->cms->content[$fieldName]);
+            $oldFiles = explode("\n", $this->cms->content[$fieldName]);
 
             //clean up old files
-            foreach ($old_files as $old_file) {
-                $file_id = (int) $old_file['id'];
+            foreach ($oldFiles as $old_file) {
+                $fileId = (int) $old_file['id'];
 
-                if (!in_array($file_id, $files)) {
+                if (!in_array($fileId, $files)) {
                     sql_query("DELETE FROM files
                         WHERE
-                            id='" . $file_id . "'
+                            id='" . $fileId . "'
                     ");
 
-                    $this->delete($this->vars['files']['dir'] . $file_id);
+                    $this->delete($this->vars['files']['dir'] . $fileId);
                 }
             }
         }

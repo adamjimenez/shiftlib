@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Email extends Component implements ComponentInterface
 {
-    public $field_type = 'email';
+    public $fieldType = 'email';
 
     /**
      * @param mixed $value

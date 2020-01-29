@@ -7,7 +7,7 @@ use Exception;
 
 class Checkboxes extends Select implements ComponentInterface
 {
-    public $id_required = true;
+    public $idRequired = true;
 
     /**
      * @return string|null
@@ -34,11 +34,11 @@ class Checkboxes extends Select implements ComponentInterface
         // get options from a section
         if (!is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             if ($this->cms->id) {
-                $join_id = $this->cms->get_id_field($name);
+                $joinId = $this->cms->get_id_field($name);
 
                 // get preselected values
                 $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
-                    INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value=T2.$join_id
+                    INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value=T2.$joinId
                     WHERE
                         section='" . escape($this->cms->section) . "' AND
                         field='" . escape($name) . "' AND
@@ -66,13 +66,13 @@ class Checkboxes extends Select implements ComponentInterface
             }
         }
 
-        $is_assoc = is_assoc_array($this->vars['options'][$name]);
+        $isAssoc = is_assoc_array($this->vars['options'][$name]);
 
         $parts = [];
         $parts[] = '<ul class="checkboxes">';
 
         foreach ($this->vars['options'][$name] as $k => $v) {
-            $val = $is_assoc ? $k : $v;
+            $val = $isAssoc ? $k : $v;
             $parts[] = '<li><label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, $value) ? 'checked="checked"' : '') . '/>' . $v . '</label></li>';
         }
 
@@ -90,13 +90,13 @@ class Checkboxes extends Select implements ComponentInterface
     {
         $array = [];
         if (!is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
-            $join_id = $this->cms->get_id_field($name);
+            $joinId = $this->cms->get_id_field($name);
 
             //make sure we get the label from the first array item
             reset($this->vars['fields'][$this->vars['options'][$name]]);
 
             $rows = sql_query('SELECT `' . underscored(key($this->vars['fields'][$this->vars['options'][$name]])) . '`,T1.value FROM cms_multiple_select T1
-                INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value = T2.$join_id
+                INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value = T2.$joinId
                 WHERE
                     T1.field='" . escape($name) . "' AND
                     T1.item='" . $this->cms->id . "' AND
@@ -116,9 +116,9 @@ class Checkboxes extends Select implements ComponentInterface
                 ORDER BY id
             ");
 
-            $is_assoc = is_assoc_array($this->vars['options'][$name]);
+            $isAssoc = is_assoc_array($this->vars['options'][$name]);
             foreach ($rows as $row) {
-                $array[] = $is_assoc ? $this->vars['options'][$name][$row['value']] : current($row);
+                $array[] = $isAssoc ? $this->vars['options'][$name][$row['value']] : current($row);
             }
         }
 
@@ -137,13 +137,13 @@ class Checkboxes extends Select implements ComponentInterface
 
         if ($this->cms->id) {
             // create NOT IN string
-            $value_str = '';
+            $valueStr = '';
             if (count($value)) {
                 foreach ($value as $v) {
-                    $value_str .= "'" . escape($v) . "',";
+                    $valueStr .= "'" . escape($v) . "',";
                 }
-                $value_str = substr($value_str, 0, -1);
-                $value_str = 'AND item NOT IN (' . $value_str . ')';
+                $valueStr = substr($valueStr, 0, -1);
+                $valueStr = 'AND item NOT IN (' . $valueStr . ')';
             }
 
             sql_query("DELETE FROM cms_multiple_select
@@ -151,7 +151,7 @@ class Checkboxes extends Select implements ComponentInterface
                     section='" . escape($this->cms->section) . "' AND
                     field='" . escape($name) . "' AND
                     item='" . escape($this->cms->id) . "'
-                    $value_str
+                    $valueStr
             ");
 
             foreach ($value as $v) {
@@ -189,7 +189,7 @@ class Checkboxes extends Select implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
         if (!is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             $this->vars['options'][$name] = $this->get_options(underscored($this->vars['options'][$name]), underscored(key($this->vars['fields'][$this->vars['options'][$name]])));
@@ -201,10 +201,10 @@ class Checkboxes extends Select implements ComponentInterface
         $html[] = '     <label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
         $html[] = '</div>';
         $html[] = '<div style="max-height: 200px; width: 200px; overflow: scroll">';
-        $is_assoc = is_assoc_array($this->vars['options'][$name]);
+        $isAssoc = is_assoc_array($this->vars['options'][$name]);
         foreach ($this->vars['options'][$name] as $k => $v) {
-            $val = $is_assoc ? $k : $v;
-            $html[] = '<label><input type="checkbox" name="' . $field_name . '[]" value="' . $val . '" ' . (in_array($val, $_GET[$field_name]) ? 'checked' : '') . '>' . $v . '</label><br>';
+            $val = $isAssoc ? $k : $v;
+            $html[] = '<label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . (in_array($val, $_GET[$fieldName]) ? 'checked' : '') . '>' . $v . '</label><br>';
         }
         $html[] = '</div>';
         return implode(' ', $html);

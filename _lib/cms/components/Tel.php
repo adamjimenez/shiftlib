@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Tel extends Component implements ComponentInterface
 {
-    public $field_type = 'tel';
+    public $fieldType = 'tel';
 
     /**
      * @param mixed $value

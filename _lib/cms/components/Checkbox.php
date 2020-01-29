@@ -57,14 +57,14 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
         $html = [];
         $html[] = '<div>';
         $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label><br>';
-        $html[] = '<select name="' . $field_name . '" class="form-control">';
+        $html[] = '<select name="' . $fieldName . '" class="form-control">';
         $html[] = '<option value=""></option>';
-        $html[] = html_options([1 => 'Yes', 0 => 'No'], $_GET[$field_name]);
+        $html[] = html_options([1 => 'Yes', 0 => 'No'], $_GET[$fieldName]);
         $html[] = '</select>';
         $html[] = '<br>';
         $html[] = '<br>';

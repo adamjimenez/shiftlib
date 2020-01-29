@@ -20,6 +20,7 @@ class Select extends Component implements ComponentInterface
      * @param string $fieldName
      * @param string $value
      * @param array $options
+     * @throws Exception
      * @return string
      */
     public function field(string $fieldName, $value = '', array $options = []): string
@@ -82,14 +83,14 @@ class Select extends Component implements ComponentInterface
                 // if we have a parent field than get an indented list of options
                 $options = $this->get_children($this->vars['options'][$name], $parent_field);
             } else {
-                $where_str = '';
+                $whereStr = '';
                 if ($where) {
-                    $where_str = 'WHERE ' . $where;
+                    $whereStr = 'WHERE ' . $where;
                 }
 
                 $rows = sql_query("SELECT id, $cols FROM
                     $table
-                    $where_str
+                    $whereStr
                     ORDER BY `" . underscored($order) . '`
                 ');
 
@@ -199,7 +200,7 @@ class Select extends Component implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
         $options = $this->vars['options'][$name];
         if (!is_array($this->vars['options'][$name])) {
             reset($this->vars['fields'][$this->vars['options'][$name]]);
@@ -224,7 +225,7 @@ class Select extends Component implements ComponentInterface
         $html[] = ucfirst($name);
         $html[] = '</div>';
         $html[] = '<select name="' . $name . '[]" multiple size="4" class="form-control">';
-        $html[] = html_options($options, $_GET[$field_name]);
+        $html[] = html_options($options, $_GET[$fieldName]);
         $html[] = '</select>';
         $html[] = '<br>';
         $html[] = '<br>';

@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Integer extends Component implements ComponentInterface
 {
-    public $field_type = 'number';
+    public $fieldType = 'number';
 
     /**
      * @return string|null
@@ -57,13 +57,13 @@ class Integer extends Component implements ComponentInterface
                 $tablePrefix . $fieldName . " <= '" . escape($max) . "'
             )";
         } elseif (is_array($value)) {
-            $value_str = '';
+            $valueStr = '';
             foreach ($value as $v) {
-                $value_str .= (int) ($v) . ',';
+                $valueStr .= (int) ($v) . ',';
             }
-            $value_str = substr($value_str, 0, -1);
+            $valueStr = substr($valueStr, 0, -1);
 
-            $where = $tablePrefix . $fieldName . ' IN (' . escape($value_str) . ')';
+            $where = $tablePrefix . $fieldName . ' IN (' . escape($valueStr) . ')';
         } else {
             if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
                 $func = '=';
@@ -94,20 +94,20 @@ class Integer extends Component implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
         $html = [];
         $html[] = '<label>' . ucfirst($name) . '</label><br>';
 
         $html[] = '<div>';
         $html[] = '<div style="float:left">';
-        $html[] = '<select name="func[' . $field_name . ']" class="form-control">';
+        $html[] = '<select name="func[' . $fieldName . ']" class="form-control">';
         $html[] = '<option value=""></option>';
-        $html[] = html_options(['=' => '=', '!=' => '!=', '>' => '>', '<' => '<'], $_GET['func'][$field_name]);
+        $html[] = html_options(['=' => '=', '!=' => '!=', '>' => '>', '<' => '<'], $_GET['func'][$fieldName]);
         $html[] = '</select>';
         $html[] = '</div>';
         $html[] = '<div style="float:left">';
-        $html[] = '<input type="number" id="' . $name . '" name="' . $field_name . '" value="' . $_GET[$field_name] . '" size="8" class="form-control">';
+        $html[] = '<input type="number" id="' . $name . '" name="' . $fieldName . '" value="' . $_GET[$fieldName] . '" size="8" class="form-control">';
         $html[] = '</div>';
         $html[] = '<br style="clear: both;">';
         $html[] = '</div>';

@@ -98,7 +98,6 @@ class Date extends Component implements ComponentInterface
         $html = [];
         $html[] = '<div>';
         $html[] = '<label class="col-form-label">' . ucfirst($name) . '</label>';
-
         $html[] = '<div>';
         $html[] = '<div style="float:left">';
         $html[] = 'From&nbsp;';

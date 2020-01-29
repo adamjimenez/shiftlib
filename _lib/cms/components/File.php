@@ -8,6 +8,8 @@ use Exception;
 
 class File extends Component implements ComponentInterface
 {
+    public const IMAGE_TYPES = ['jpg', 'jpeg', 'gif', 'png'];
+
     /**
      * @param string $fieldName
      * @param string $value
@@ -47,8 +49,7 @@ class File extends Component implements ComponentInterface
         if ($value) {
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 
-            $image_types = ['jpg', 'jpeg', 'gif', 'png'];
-            if (in_array(file_ext($file['name']), $image_types)) {
+            if (in_array(file_ext($file['name']), self::IMAGE_TYPES)) {
                 $value = '<img src="https://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file_preview.php?f=' . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
             $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
@@ -69,7 +70,7 @@ class File extends Component implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        $file_id = (int) $this->cms->content[$fieldName];
+        $fileId = (int) $this->cms->content[$fieldName];
 
         if (UPLOAD_ERR_OK === $_FILES[$fieldName]['error']) {
             sql_query("INSERT INTO files SET
@@ -84,14 +85,14 @@ class File extends Component implements ComponentInterface
             $file_path = $this->vars['files']['dir'] . $value;
             rename($_FILES[$fieldName]['tmp_name'], $file_path)
             or trigger_error("Can't save " . $file_path, E_ERROR);
-        } elseif (!$value && $file_id) {
+        } elseif (!$value && $fileId) {
             // delete file
             sql_query("DELETE FROM files
                 WHERE
-                    id='" . $file_id . "'
+                    id='" . $fileId . "'
             ");
 
-            $this->delete($this->vars['files']['dir'] . $file_id);
+            $this->delete($this->vars['files']['dir'] . $fileId);
         }
 
         return $value;
@@ -129,11 +130,11 @@ class File extends Component implements ComponentInterface
      */
     public function searchField(string $name, $value): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
         $html = [];
         $html[] = '<div>';
-        $html[] = '<input type="checkbox" name="' . $field_name . '" value="1" ' . ($_GET[$field_name] ? 'checked' : '') . '>';
+        $html[] = '<input type="checkbox" name="' . $fieldName . '" value="1" ' . ($_GET[$fieldName] ? 'checked' : '') . '>';
         $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
         $html[] = '</div>';
 

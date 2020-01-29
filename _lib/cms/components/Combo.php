@@ -2,7 +2,6 @@
 
 namespace cms\components;
 
-use cms;
 use cms\ComponentInterface;
 
 class Combo extends Select implements ComponentInterface
@@ -30,7 +29,6 @@ class Combo extends Select implements ComponentInterface
     }
 
     /**
-     * TODO: This won't work currently ($this->cms->get_field)
      * @param string $name
      * @param mixed $value
      * @return string

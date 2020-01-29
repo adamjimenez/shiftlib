@@ -7,7 +7,7 @@ use cms\ComponentInterface;
 
 class Rating extends Component implements ComponentInterface
 {
-    public $rating_opts = [
+    public const RATING_OPTS = [
         1 => 'Very Poor',
         2 => 'Poor',
         3 => 'Average',
@@ -34,7 +34,7 @@ class Rating extends Component implements ComponentInterface
         $html = [];
         $html[] = '<select name="' . $fieldName . '" class="rating" ' . $options['attribs'] . '>';
         $html[] = '<option value="">Choose</option>';
-        $html[] = html_options($this->rating_opts, $value, true);
+        $html[] = html_options(self::RATING_OPTS, $value, true);
         $html[] = '</select>';
         return implode(' ', $html);
     }
@@ -46,12 +46,12 @@ class Rating extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        $field_name = underscored($name);
+        $fieldName = underscored($name);
 
-        return '<select name="' . $field_name . '" class="rating" disabled="disabled">
-            <option value="">Choose</option>
-            ' . html_options($this->rating_opts, $value, true) . '
-        </select>';
+        return '<select name="' . $fieldName . '" class="rating" disabled="disabled">
+                    <option value="">Choose</option>
+                    ' . html_options(self::RATING_OPTS, $value, true) . '
+                </select>';
     }
 
     /**
