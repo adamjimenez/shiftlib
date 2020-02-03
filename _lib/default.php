@@ -72,6 +72,8 @@ function get_include($request)
         redirect($redirect, 301);
     } elseif ($catcher = get_tpl_catcher($request)) {
         $include_file = $root_folder . '/_tpl/' . $catcher . '.php';
+    } elseif (file_exists($root_folder . '/_tpl/' . $request)) {
+        redirect($request . '/');
     } else {
         // check pages
         if (in_array('pages', $vars['sections'])) {
@@ -208,18 +210,16 @@ if (!$title and preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches
     $title = trim(preg_replace("/\r|\n/", '', strip_tags($matches[1])));
 }
 
-/*
-find template file
-- check current folder
-- check for any catchers
-- fall back to root folder
-*/
-if (file_exists($root_folder . '/_tpl/' . dirname($request) . '/template.php')) {
-    require($root_folder . '/_tpl/' . dirname($request) . '/template.php');
-} elseif ($catcher and file_exists($root_folder . '/_tpl/' . dirname($catcher) . '/template.php')) {
-    require($root_folder . '/_tpl/' . dirname($catcher) . '/template.php');
-} else {
-    require($root_folder . '/_tpl/template.php');
+// find closest template.php
+$dir = $request;
+while ($dir = dirname($dir)) {
+    if (include($root_folder . '/_tpl/' . $dir . '/template.php')) {
+        break;
+    }
+    
+    if ($dir == dirname($dir)) {
+        die('template not found');
+    }
 }
 
 // debug page speed
