@@ -822,13 +822,9 @@ function file_size($size): string
 }
 
 // return number abbreviaion e.g. 10K
-function number_abbr($size, $dp = null): string
+function number_abbr($size, $dp = 1): string
 {
     for ($si = 0; $size >= 1000; $size /= 1000, $si++);
-    
-    if (null == $dp and 2 == $si) {
-        $dp = 1;
-    }
     
     return number_format($size, $dp) . substr(' KMBT', $si, 1);
 }
