@@ -467,10 +467,11 @@ function blog_save_handler()
 		");
     }
 
+    /*
     // email subscribers
-    $blog = sql_query('SELECT * FROM ' . $this->table_blog . " WHERE id='" . escape($_GET['id']) . "'");
+    $blog = sql_query('SELECT * FROM ' . $this->table_blog . " WHERE id='" . escape($_GET['id']) . "'", 1);
 
-    if ($_POST['display'] and !$blog[0]['display'] and $vars['fields']['newsletter']) {
+    if ($_POST['display'] and !$blog['display'] and $vars['fields']['newsletter']) {
         $users = sql_query('SELECT * FROM newsletter');
 
         $valid_users = [];
@@ -488,6 +489,7 @@ function blog_save_handler()
             email_template($user['email'], 'New Blog Entry', $reps);
         }
     }
+    */
 }
 
 global $cms_handlers;
