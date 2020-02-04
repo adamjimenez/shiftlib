@@ -359,7 +359,7 @@ switch ($_GET['cmd']) {
                         if ('related' == $k or 'position' == $k) {
                             continue;
                         } elseif ('select' == $vars['fields'][$_GET['section']][$k]) {
-                            if (!is_array($vars['options'][$k])) {
+                            if (false === is_array($vars['options'][$k])) {
                                 if (!$v) {
                                     $v = '';
                                 } elseif (!is_numeric($v)) {

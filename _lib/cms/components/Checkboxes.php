@@ -32,7 +32,7 @@ class Checkboxes extends Select implements ComponentInterface
         $value = [];
 
         // get options from a section
-        if (!is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
+        if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             if ($this->cms->id) {
                 $joinId = $this->cms->get_id_field($name);
 
@@ -89,7 +89,7 @@ class Checkboxes extends Select implements ComponentInterface
     public function value($value, string $name = ''): string
     {
         $array = [];
-        if (!is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
+        if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             $joinId = $this->cms->get_id_field($name);
 
             //make sure we get the label from the first array item
@@ -191,7 +191,7 @@ class Checkboxes extends Select implements ComponentInterface
     {
         $fieldName = underscored($name);
 
-        if (!is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
+        if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             $this->vars['options'][$name] = $this->get_options(underscored($this->vars['options'][$name]), underscored(key($this->vars['fields'][$this->vars['options'][$name]])));
         }
 
