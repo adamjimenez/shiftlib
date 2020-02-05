@@ -7,7 +7,7 @@
 
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
-	<?php load_js(['jqueryui', 'cms', 'google', 'lightbox', 'fontawesome']); ?>
+	<?php load_js(['jqueryui', 'cms', 'fontawesome']); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
 
@@ -26,7 +26,6 @@
 	<link type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.5/css/rowReorder.dataTables.min.css" rel="stylesheet">
 	<link type="text/css" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" rel="stylesheet">
 	<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/css/dataTables.checkboxes.css" rel="stylesheet">
-	
 	<link type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.bootstrap4.min.css" rel="stylesheet">
 
     <!-- others css -->
