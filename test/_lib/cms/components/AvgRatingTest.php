@@ -46,12 +46,7 @@ final class AvgRatingTest extends TestCase
         $output = $component->field('foo', 'bar', ['attribs' => 'my custom attribs']);
 
         $this->assertEquals(
-            '<select name="foo" class="rating" data-section="my-section" data-item="some-id" data-avg="data-avg" my custom attribs><option value="">Choose</option><option label="Very Poor" value="1">Very Poor</option>
-<option label="Poor" value="2">Poor</option>
-<option label="Average" value="3">Average</option>
-<option label="Good" value="4">Good</option>
-<option label="Excellent" value="5">Excellent</option>
-</select>',
+            '<select name="foo" class="rating" data-section="my-section" data-item="some-id" data-avg="data-avg" my custom attribs><option value="">Choose</option><option label="Very Poor" value="1">Very Poor</option><option label="Poor" value="2">Poor</option><option label="Average" value="3">Average</option><option label="Good" value="4">Good</option><option label="Excellent" value="5">Excellent</option></select>',
             $output
         );
     }

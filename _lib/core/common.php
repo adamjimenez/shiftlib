@@ -995,7 +995,7 @@ function html_options_optoutput($key, $value, $selected, $disabled)
         if (in_array((string) $key, $disabled)) {
             $_html_result .= ' disabled="disabled"';
         }
-        $_html_result .= '>' . ($value) . '</option>' . "\n";
+        $_html_result .= '>' . ($value) . '</option>';
     } else {
         $_html_result = html_options_optgroup($key, $value, $selected);
     }

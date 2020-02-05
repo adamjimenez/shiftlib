@@ -23,7 +23,7 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        return '<input type="checkbox" name="' . $fieldName . '" value="1" ' . ($options['readonly'] ? 'disabled' : '') . '  ' . ($value ? 'checked' : '') . ' ' . $options['attribs'] . '>';
+        return '<input type="checkbox" name="' . $fieldName . '" value="1"' . ($options['readonly'] ? ' disabled' : '') . ($value ? ' checked' : '') . ' ' . $options['attribs'] . '>';
     }
 
     /**
@@ -70,6 +70,6 @@ class Checkbox extends Integer implements ComponentInterface
         $html[] = '<br>';
         $html[] = '</div>';
 
-        return implode(' ', $html);
+        return implode('', $html);
     }
 }
