@@ -8,8 +8,9 @@ require(dirname(__FILE__) . '/base.php');
 
 function get_tpl_catcher($request)
 {
-    global $tpl_config;
+    global $tpl_config, $root_folder;
 
+    // deprecated
     if (is_array($tpl_config['catchers'])) {
         foreach ($tpl_config['catchers'] as $catcher) {
             if (substr($request, 0, strlen($catcher) + 1) == $catcher . '/') {
@@ -17,6 +18,16 @@ function get_tpl_catcher($request)
             }
         }
     }
+    
+    // find closest catcher
+    $dir = $request;
+    while ($dir = dirname($dir)) {
+        if (file_exists($root_folder . '/_tpl/' . $dir . '.catcher.php')) {
+            return $dir . '.catcher';
+        } elseif ($dir == dirname($dir)) {
+            return false;
+        }
+    }    
 
     return false;
 }
@@ -28,116 +39,68 @@ function trigger_404()
 
 function parse_request(): string
 {
-    $script_url = rawurldecode($_SERVER['REQUEST_URI']);
-    $pos = strpos($script_url, '?');
-
+    $request = rawurldecode($_SERVER['REQUEST_URI']);
+    
+    // strip query string
+    $pos = strpos($request, '?');
     if ($pos) {
-        $script_url = substr($script_url, 0, $pos);
+        $request = substr($request, 0, $pos);
     }
 
-    if (ends_with($script_url, '/index')) { //redirect /index to /
-        redirect(substr($script_url, 0, -5), true);
-    }
-
-    $request = $script_url ?: 'index';
-
-    if (ends_with($request, '/')) {
+    // append index if directory
+    if (!$request || ends_with($request, '/')) {
         $request .= 'index';
     }
 
     // strip prepending slash
-    if (starts_with($request, '/')) {
-        $request = (substr($request, 1));
-    }
-
-    return $request;
+    return ltrim($request, '/');
 }
 
 function get_include($request)
 {
-    global $tpl_config, $root_folder, $catcher, $vars, $cms, $content;
-
-    $include_file = false;
-
-    if (in_array($request, $tpl_config['catchers']) or file_exists($root_folder . '/_tpl/' . $request . '/index.php')) {
+    global $tpl_config, $root_folder, $vars, $cms, $content;
+    
+    // enforce ssl
+    if (!$_SERVER['HTTPS'] && $tpl_config['ssl']) {
+        redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+    // strip file extension from url
+    } elseif (strstr($request, '.php')) {
+        redirect('http'.($_SERVER['HTTPS'] ? 's' : '').'://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '',$_SERVER['REQUEST_URI']));
+    // redirect if a folder and missing trailing /
+    } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, $tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php')) {
         redirect('/' . $request . '/', 301);
+    // check if template exists
+    } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {
+        return $root_folder . '/_tpl/' . $request . '.php';
+    // check domain redirects
     } elseif ($tpl_config['redirects']['http://' . $_SERVER['HTTP_HOST'] . '/']) {
         $redirect = $tpl_config['redirects']['http://' . $_SERVER['HTTP_HOST'] . '/'];
         redirect($redirect, 301);
-    } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {
-        $include_file = $root_folder . '/_tpl/' . $request . '.php';
-    //check redirects
+    // check redirects list
     } elseif ($tpl_config['redirects'][$request]) {
         $redirect = $tpl_config['redirects'][$request];
         redirect($redirect, 301);
+    // check catchers
     } elseif ($catcher = get_tpl_catcher($request)) {
-        $include_file = $root_folder . '/_tpl/' . $catcher . '.php';
-    } elseif (file_exists($root_folder . '/_tpl/' . $request)) {
-        redirect($request . '/');
+        return $root_folder . '/_tpl/' . $catcher . '.php';
     } else {
-        // check pages
+        // check pages section
         if (in_array('pages', $vars['sections'])) {
             $content = $cms->get('pages', $request);
 
-            if ($content and file_exists('_tpl/pages.php')) {
+            if ($content && file_exists('_tpl/pages.php')) {
                 return $root_folder . '/_tpl/pages.php';
             }
         }
 
-        if (file_exists('_tpl/' . $request) and !is_dir('_tpl/' . $request)) {
-            $url = 'http://' . $_SERVER['SERVER_NAME'] . '/' . str_replace('.php', '', $request);
-
-            unset($_GET['page']);
-
-            if (count($_GET)) {
-                $url .= '?' . http_build_query($_GET);
-            }
-
-            redirect($url, 301);
-        }
-
-        //check if using urlencode
-        $decoded = urldecode($request);
-        if (!file_exists($request) and file_exists($decoded)) {
-            redirect('/' . $decoded);
-        }
-
+        // deprecated: check if catch all file exists
         if (file_exists($root_folder . '/_inc/catch_all.php')) {
-            $include_file = $root_folder . '/_inc/catch_all.php';
-        } else {
-            $trigger_404 = true;
+            return $root_folder . '/_inc/catch_all.php';
         }
     }
-
-    return $include_file;
 }
 
 $request = parse_request();
-
-//enforce ssl
-if (!$_SERVER['HTTPS'] and ($tpl_config['ssl'] or in_array($request, $tpl_config['secure']))) {
-    if ('index' == substr($request, -5)) {
-        $request = substr($request, 0, -5);
-    }
-
-    if ($_SERVER['QUERY_STRING']) {
-        $request .= '?' . $_SERVER['QUERY_STRING'];
-    }
-
-    redirect('https://' . $_SERVER['HTTP_HOST'] . '/' . $request);
-} elseif ($_SERVER['HTTPS'] and (!$tpl_config['ssl'] and !in_array($request, $tpl_config['secure']))) {
-    if ('index' == substr($request, -5)) {
-        $request = substr($request, 0, -5);
-    }
-
-    if ($_SERVER['QUERY_STRING']) {
-        $request .= '?' . $_SERVER['QUERY_STRING'];
-    }
-
-    redirect('http://' . $_SERVER['HTTP_HOST'] . '/' . $request);
-}
-
-$time_start = microtime(true);
 
 //check for predefined pages
 switch ($request) {
@@ -161,15 +124,15 @@ switch ($request) {
     break;
 }
 
-//current tab
+// current tab
 $sections = explode('/', $request);
 
-//templates
-$catcher = '';
+// templates
 $include_file = get_include($request);
 
 // get include content
-if ('template' == end($sections) or false === $include_file) {
+$time_start = microtime(true);
+if (!$include_file || 'template' == end($sections)) {
     $trigger_404 = true;
 } elseif ($include_file) {
     ob_start();
@@ -181,8 +144,7 @@ if ('template' == end($sections) or false === $include_file) {
                 $trigger_404 = true;
             break;
             default:
-                $msg = $e->getMessage() . "\n" . $e->getTraceAsString();
-                $msg = nl2br($msg);
+                $msg = nl2br($e->getMessage() . "\n" . $e->getTraceAsString());
                 error_handler(E_USER_ERROR, $msg, $e->getFile(), $e->getLine());
             break;
         }
@@ -206,7 +168,7 @@ if ($trigger_404) {
 }
 
 // get page title from h1 tag if it doesn't exist
-if (!$title and preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches)) {
+if (!$title && preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $include_content, $matches)) {
     $title = trim(preg_replace("/\r|\n/", '', strip_tags($matches[1])));
 }
 
@@ -215,16 +177,13 @@ $dir = $request;
 while ($dir = dirname($dir)) {
     if (include($root_folder . '/_tpl/' . $dir . '/template.php')) {
         break;
-    }
-    
-    if ($dir == dirname($dir)) {
+    } else if ($dir == dirname($dir)) {
         die('template not found');
     }
 }
 
 // debug page speed
-if ($auth->user['admin'] and $_GET['debug']) {
+if ($auth->user['admin'] && $_GET['debug']) {
     $time_end = microtime(true);
-    $time = $time_end - $time_start;
-    echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0; z-index: 100;">Loaded in ' . number_format($time, 3) . 's</span>';
+    echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0; z-index: 100;">Loaded in ' . number_format($time_end - $time_start, 3) . 's</span>';
 }
