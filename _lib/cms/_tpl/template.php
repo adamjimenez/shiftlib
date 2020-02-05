@@ -7,13 +7,12 @@
 
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
-	<?php load_js(['jqueryui', 'cms', 'fontawesome']); ?>
+	<?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome']); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
-    <link rel="stylesheet" href="/_lib/cms/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/metisMenu.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/slicknav.min.css">
     
@@ -34,7 +33,7 @@
     <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css?v=1">
     <link rel="stylesheet" href="/_lib/cms/assets/css/responsive.css">
     <!-- modernizr css -->
-    <script src="/_lib/cms/assets/js/vendor/modernizr-2.8.3.min.js"></script>
+    <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 
     <link rel="stylesheet" href="/_lib/cms/css/cms.css">
     
@@ -263,8 +262,6 @@
     <!-- import modal end -->
 
     <!-- bootstrap 4 js -->
-    <script src="/_lib/cms/assets/js/popper.min.js"></script>
-    <script src="/_lib/cms/assets/js/bootstrap.min.js"></script>
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
