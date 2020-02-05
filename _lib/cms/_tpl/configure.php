@@ -216,7 +216,7 @@ function str_to_bool($str): string
 
 // generate field list from the components dir
 $field_opts = [];
-foreach (glob(dirname(__FILE__)."/../components/*.php") as $filename) {
+foreach (glob(__DIR__ . "/../components/*.php") as $filename) {
     $filename = str_replace('.php', '', basename($filename));
     $field_opts[] = camelCaseToSnakeCase($filename);
 }

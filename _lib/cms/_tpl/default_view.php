@@ -245,7 +245,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 <div class="tab-pane fade" id="pills-<?=$count; ?>" role="tabpanel" aria-labelledby="pills-<?=$count; ?>-tab">
 	<?php
     if (count($vars['fields'][$subsection])) {
-        require(dirname(__FILE__) . '/list.php');
+        require(__DIR__ . '/list.php');
     } elseif (file_exists('_tpl/admin/' . $subsection . '.php')) {
         require('_tpl/admin/' . $subsection . '.php');
     } ?>

@@ -7,8 +7,8 @@ $root_folder = $_SERVER['DOCUMENT_ROOT'];
 chdir($root_folder);
 
 include('vendor/autoload.php');
-require(dirname(__FILE__) . '/autoload.php');
-require_once(dirname(__FILE__) . '/core/common.php');
+require(__DIR__ . '/autoload.php');
+require_once(__DIR__ . '/core/common.php');
 require($root_folder . '/_inc/config.php');
 
 if ($db_config['user'] or $db_connection) {
@@ -28,7 +28,7 @@ if ($db_config['user'] or $db_connection) {
     $auth->init();
 } elseif (false !== $db_config) {
     //prompt to configure connection
-    require(dirname(__FILE__) . '/cms/_tpl/db.php');
+    require(__DIR__ . '/cms/_tpl/db.php');
     exit;
 }
 
