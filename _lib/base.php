@@ -1,7 +1,5 @@
 <?php
 //send errors and notifications to
-//$admin_email = 'adam@shiftcreate.com';
-
 $admin_email = $_SERVER['SERVER_ADMIN'];
 $root_folder = $_SERVER['DOCUMENT_ROOT'];
 chdir($root_folder);
