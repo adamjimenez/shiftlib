@@ -680,15 +680,11 @@ class cms
 
         if (in_array($fieldType, ['select', 'combo'])) {
             if (!is_array($vars['options'][$field])) {
-                if (0 == $value) {
-                    $value = '';
-                } else {
-                    $joinId = $this->get_id_field($field);
-                    $option = $this->get_option_label($field);
+                $joinId = $this->get_id_field($field);
+                $option = $this->get_option_label($field);
 
-                    $row = sql_query('SELECT `' . underscored($option) . '` FROM `' . underscored($vars['options'][$field]) . "` WHERE $joinId='" . escape($value) . "'");
-                    $value = '<a href="?option=' . escape($vars['options'][$field]) . '&view=true&id=' . $value . '">' . reset($row[0]) . '</a>';
-                }
+                $row = sql_query('SELECT `' . underscored($option) . '` FROM `' . underscored($vars['options'][$field]) . "` WHERE $joinId='" . escape($value) . "'", 1);
+                $value = '<a href="?option=' . escape($vars['options'][$field]) . '&view=true&id=' . $value . '">' . reset($row) . '</a>';
             } else {
                 $value = $vars['options'][$field][$value];
             }
@@ -1035,17 +1031,19 @@ class cms
             }
 
             // handle null fields
-            $this->query .= "`$field_name`=";
+            $query .= "`$field_name`=";
             if (empty($data[$field_name]) && in_array($field_name, $null_fields)) {
-                $this->query .= 'NULL';
+                $query .= 'NULL';
             } elseif ('coords' == $type) {
                 // todo: move to components
-                $this->query .= "GeomFromText('POINT(" . escape($data[$field_name]) . ")')";
+                $query .= "GeomFromText('POINT(" . escape($data[$field_name]) . ")')";
             } else {
-                $this->query .= "'" . escape($data[$field_name]) . "'";
+                $query .= "'" . escape($data[$field_name]) . "'";
             }
-            $this->query .= ",\n";
+            $query .= ",\n";
         }
+        
+        return substr($query, 0, -2);
     }
 
     // save data, called after set_section
@@ -1070,9 +1068,7 @@ class cms
         }
 
         //build query
-        $this->query = '';
-        $this->build_query($vars['fields'][$this->section], $data);
-        $this->query = substr($this->query, 0, -2);
+        $this->query = $this->build_query($vars['fields'][$this->section], $data);
 
         $details = '';
         if ($this->id) {
@@ -1178,7 +1174,7 @@ class cms
 
         ob_start();
         if ($local) {
-            require(dirname(__FILE__) . '/_tpl/' . $include);
+            require(__DIR__ . '/_tpl/' . $include);
         } else {
             require('_tpl/admin/' . $include);
         }
@@ -1195,7 +1191,7 @@ class cms
             $this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
         }
 
-        require(dirname(__FILE__) . '/_tpl/template.php');
+        require(__DIR__ . '/_tpl/template.php');
         exit;
     }
 
