@@ -114,7 +114,7 @@ switch ($request) {
     break;
     case 'sitemap.xml':
         if (!file_exists($root_folder . '/_tpl/sitemap.xml.php')) {
-            require(dirname(__FILE__) . '/sitemap.xml.php');
+            require(dirname(__FILE__) . '/core/sitemap.xml.php');
             exit;
         }
     break;
