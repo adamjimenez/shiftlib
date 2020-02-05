@@ -240,6 +240,46 @@ class cms
         $this->trigger_event('delete', [$ids]);
     }
     
+    public function file($file_id) {
+        global $auth, $vars;
+
+        if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads']) {
+            die('access denied');
+        }
+        
+        $row = sql_query("SELECT * FROM files 
+            WHERE 
+        	    id='" . escape($file_id) . "'
+        ", 1) or die('file not found');
+        
+        header('filename="' . $row['name'] . '"');
+        header('Content-type: ' . $row['type']);
+        
+        if (!$_GET['w'] && !$_GET['h']) {
+            print file_get_contents($vars['files']['dir'] . $row['id']);
+        } else {
+            // end configure
+            $max_width = $_GET['w'] ?: 320;
+            $max_height = $_GET['h'] ?: 240;
+            
+            $img = imageorientationfix($vars['files']['dir'] . $row['id']);
+            $img = thumb_img($img, [$max_width, $max_height], false);
+            $ext = file_ext($row['name']);
+            
+            switch ($ext) {
+                case 'png':
+                    imagepng($img);
+                break;
+                case 'gif':
+                    imagegif($img);
+                break;
+                default:
+                    imagejpeg($img, null, 85);
+                break;
+            }
+        }
+    }
+    
     public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
     {
         return $this->conditionsToSql($section, $conditions, $num_results, $cols);
@@ -848,6 +888,8 @@ class cms
             $this->template(underscored($option) . '.php');
         } elseif (in_array($option, ['index', 'login', 'configure', 'upgrade', 'choose_filter'])) {
             $this->template($option . '.php', true);
+        } elseif ('file' == $option) {
+            $this->file($_GET['f']);
         } elseif ('index' != $option) {
             $this->default_section($option);
         }

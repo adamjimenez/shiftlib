@@ -9,6 +9,7 @@ use Exception;
 class File extends Component implements ComponentInterface
 {
     public const IMAGE_TYPES = ['jpg', 'jpeg', 'gif', 'png'];
+    public $previewUrl = '/admin?option=file&f=';
 
     /**
      * @param string $fieldName
@@ -26,8 +27,8 @@ class File extends Component implements ComponentInterface
 
         if ($value) {
             $parts[] = '<input type="hidden" id="' . $fieldName . '" name="' . $fieldName . '" value="' . $value . '">';
-            $parts[] = '<a href="/_lib/cms/file.php?f=' . $value . '">';
-            $parts[] = '<img src="/_lib/cms/file.php?f=' . $value . '" style="max-width: 100px; max-height: 100px;"><br>';
+            $parts[] = '<a href="' . $this->previewUrl . $value . '">';
+            $parts[] = '<img src="' . $this->previewUrl . $value . '" style="max-width: 100px; max-height: 100px;"><br>';
             $parts[] = $file['name'];
             $parts[] = '</a>';
             $parts[] = '<a href="javascript:" onClick="clearFile(' . $fieldName . ')">clear</a>';
@@ -50,14 +51,9 @@ class File extends Component implements ComponentInterface
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 
             if (in_array(file_ext($file['name']), self::IMAGE_TYPES)) {
-                $value = '<img src="https://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file_preview.php?f=' . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
+                $value = '<img src="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
-            $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
-
-            $doc_types = ['pdf', 'doc', 'docx', 'xls', 'tiff'];
-            if (in_array(file_ext($file['name']), $doc_types)) {
-                $value .= '<a href="http://docs.google.com/viewer?url=' . rawurlencode('http://' . $_SERVER['HTTP_HOST'] . '/_lib/cms/file.php?f=' . $file['id'] . '&auth_user=' . $_SESSION[$this->auth->cookie_prefix . '_email'] . '&auth_pw=' . md5($this->auth->secret_phrase . $_SESSION[$this->auth->cookie_prefix . '_password'])) . '" target="_blank">(view)</a>';
-            }
+            $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl. $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
         }
         return $value;
     }

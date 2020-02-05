@@ -63,6 +63,45 @@ function imageorientationfix($path)
     return $img;
 }
 
+function thumb_img($img, $dimensions, $output = true, $margin = false)
+{
+    $width = imagesx($img);
+    $height = imagesy($img);
+    $scale = min($dimensions[0] / $width, $dimensions[1] / $height);
+
+    if ($scale < 1) {
+        $new_width = floor($scale * $width);
+        $new_height = floor($scale * $height);
+
+        $tmp_img = imagecreatetruecolor($new_width, $new_height);
+
+        imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+        imagedestroy($img);
+        $img = $tmp_img;
+    } else {
+        $new_width = $width;
+        $new_height = $height;
+    }
+
+    if ($margin) {
+        $dest = imagecreatetruecolor($dimensions[0], $dimensions[1]);
+        imagecolorallocate($dest, 255, 255, 255);
+
+        $padding_left = ($dimensions[0] - $new_width) / 2;
+        $padding_top = ($dimensions[1] - $new_height) / 2;
+
+        imagecopy($dest, $img, $padding_left, $padding_top, 0, 0, $new_width, $new_height);
+        $img = $dest;
+    }
+
+    if ($output) {
+        header('Content-type: image/jpeg');
+        imagejpeg($img, null, 85);
+    } else {
+        return $img;
+    }
+}
+
 /*
 function imagefile($img, $path): bool
 {
