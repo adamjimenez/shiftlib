@@ -5,7 +5,7 @@
 <?php
 if (is_array($vars['subsections'][$this->section])) {
     ?>
-<ul style="margin: 0 50px;">
+<ul class="mx-3">
 <?php
     foreach ($vars['subsections'][$this->section] as $count => $subsection) {
         ?>
