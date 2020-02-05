@@ -2,7 +2,7 @@
 spl_autoload_register(function (string $class) {
     switch ($class) {
         case 'paging':
-            require(__DIR__ . '/core/paging.class.php');
+            require(__DIR__ . '/core/paging.php');
             return;
         case 'blog':
             require(__DIR__ . '/core/blog.php');
