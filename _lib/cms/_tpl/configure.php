@@ -699,7 +699,7 @@ $count['options'] = 0;
                             <div class="tab-pane fade" id="dropdowns" role="tabpanel" aria-labelledby="pills-dropdowns-tab">
                                 
                                 <div class="container m-0"></div>
-                                <span class="addDropdown">Add option</span>
+                                <span class="btn btn-secondary addDropdown">Add option</span>
                             
                             </div>
                 
