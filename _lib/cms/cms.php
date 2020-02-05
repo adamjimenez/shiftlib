@@ -474,12 +474,13 @@ class cms
 
         $table = underscored($section);
 
-        //set a default prefix to prevent pagination clashing
+        // set a default prefix to prevent pagination clashing
         if (!$prefix) {
             $prefix = $table;
         }
 
         // select columns
+        // todo move to components
         $cols = '';
         foreach ($vars['fields'][$section] as $name => $type) {
             if (in_array($type, ['checkboxes', 'separator'])) {
