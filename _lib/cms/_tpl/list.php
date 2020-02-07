@@ -225,9 +225,20 @@ $(function() {
         e.stopPropagation();
     });
     
-    $(table.table().container()).on('click', 'tr[role]', function (e) {
+    $(table.table().container()).on('mousedown', 'tr[role]', function (e) {
+    	if ($(e.target).hasClass('dt-checkboxes-cell') || $(e.target).hasClass('dt-checkboxes')) {
+    		return;
+    	}
+    	
         var data = table.row( this ).data();
-        location.href = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
+    	var url = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
+    	
+    	if (e.ctrlKey || e.metaKey || e.which === 2) {
+    		window.open(url);
+    	} else if (e.which == 1) {
+    		location.href = url;
+    	}
+    	
         e.stopPropagation();
     });
     
