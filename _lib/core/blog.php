@@ -50,6 +50,7 @@ class blog
         $this->table_categories = $options['table_categories'] ?: 'blog_categories';
 
         $this->category_field = array_search($this->table_categories, $opts);
+        $this->limit = $options['limit'] ?: 6;
         
         $this->conditions = [];
 
@@ -135,7 +136,7 @@ class blog
                     $this->conditions['w'] = $_GET['w'];
                 }
 
-                $limit = 6;
+                $limit = $this->limit;
             }
 
             $this->conditions['display'] = 1;
