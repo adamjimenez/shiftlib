@@ -628,7 +628,8 @@ function send_mail($opts = []): bool
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
         
-        return $response;
+        //return $response;
+        return true;
     } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         $mail = new \PHPMailer\PHPMailer\PHPMailer();
         
