@@ -529,7 +529,7 @@ switch ($_GET['cmd']) {
             
             // use labels when available
             foreach ($fields as $name) {
-                if (in_array($name, ['password'])) {
+                if ($vars['fields'][$_GET['section']][$name] == 'password') {
                     continue;
                 }
                 
