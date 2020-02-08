@@ -748,6 +748,9 @@ class cms
             case 'int':
                 $type = 'integer';
                 break;
+            case 'number':
+                $type = 'decimal';
+                break;
             case 'parent':
                 $type = 'select_parent';
                 break;

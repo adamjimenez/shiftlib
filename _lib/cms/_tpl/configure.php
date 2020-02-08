@@ -612,7 +612,7 @@ if ($release['tag_name'] != $this::VERSION) {
     </p>
     <a href="?option=upgrade">Upgrade now</a>
 </div>
-<?
+<?php
 }
 
 $count['sections'] = 0;
@@ -1017,6 +1017,9 @@ $count['options'] = 0;
                 switch (type) {
                     case 'int':
                         type = 'integer';
+                    break;
+                    case 'number':
+                        type = 'decimal';
                     break;
                     case 'parent':
                         type = 'select_parent';
