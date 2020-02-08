@@ -85,7 +85,7 @@ function get_include($request)
         return $root_folder . '/_tpl/' . $catcher . '.php';
     } else {
         // check pages section
-        if (in_array('pages', $vars['sections'])) {
+        if ($vars['fields']['pages']['id']) {
             $content = $cms->get('pages', $request);
 
             if ($content && file_exists('_tpl/pages.php')) {
