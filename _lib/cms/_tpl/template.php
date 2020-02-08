@@ -7,7 +7,7 @@
 
 	<title>Admin Area | <?=$title ?: 'Main'; ?></title>
 	
-	<?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome']); ?>
+	<?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome', 'lightbox']); ?>
 	<script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
 	<script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
 
