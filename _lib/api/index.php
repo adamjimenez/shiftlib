@@ -496,8 +496,6 @@ switch ($_GET['cmd']) {
         $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
             ' . $sql['joins'] . '
             ' . $sql['where_str'] . "
-            GROUP BY
-                T_$table.id
         ", 1);
         
         $response = [
