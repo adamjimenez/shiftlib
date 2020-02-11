@@ -131,20 +131,20 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
                     <span class="holder"></span>
                     
                     <span data-section="<?=$this->section;?>">
-            	        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
                         
-            	        <form method="post" style="display:inline;">
-            		        <input type="hidden" name="delete" value="1">
-            		        <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
-            	        </form>
-        	        </span>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="delete" value="1">
+                            <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </span>
                         
                     <div class="dropdown" style="display: inline-block;">
                         <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?=underscored($button['section']);?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                            <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']);?>">
-                			<?php
+                            <?php
                             foreach ($cms_buttons as $k => $button) {
                                 if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'view' == $button['page']) {
                                     require('includes/button.php');
@@ -159,41 +159,41 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             <ul class="nav nav-tabs" id="pills-tab" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="pills-summary-tab" data-toggle="pill" href="#pills-summary" role="tab" aria-controls="pills-summary" aria-selected="true" data-section="<?=$this->section;?>">
-                    	<?=ucwords($this->section);?>
+                        <?=ucwords($this->section);?>
                     </a>
                 </li>
-				<?php
+                <?php
                 foreach ($vars['subsections'][$this->section] as $count => $subsection) {
                     ?>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-<?=$count; ?>-tab" data-toggle="pill" href="#pills-<?=$count; ?>" role="tab" aria-controls="pills-tab_<?=$count; ?>" aria-selected="true" data-section="<?=$subsection; ?>">
-						<?=ucfirst($subsection); ?>
-					</a>
-				</li>
-				<?php
+                        <?=ucfirst($subsection); ?>
+                    </a>
+                </li>
+                <?php
                 } ?>
-				<?php if ($has_privileges) { ?>
+                <?php if ($has_privileges) { ?>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-priveleges-tab" data-toggle="pill" href="#pills-priveleges" role="tab" aria-controls="pills-priveleges" aria-selected="true">
-						Privileges
-					</a>
-				</li>
-				<?php } ?>
-				<?php if ($has_logs) { ?>
+                        Privileges
+                    </a>
+                </li>
+                <?php } ?>
+                <?php if ($has_logs) { ?>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-logs-tab" data-toggle="pill" href="#pills-logs" role="tab" aria-controls="pills-logs" aria-selected="true">
-						Logs
-					</a>
-				</li>
-				<?php } ?>
+                        Logs
+                    </a>
+                </li>
+                <?php } ?>
             </ul>
             <div class="tab-content mt-3" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
 
-	<div class="box">
-    	<table border="0" cellspacing="0" cellpadding="5" width="100%">
+    <div class="box">
+        <table border="0" cellspacing="0" cellpadding="5" width="100%">
     
-    	<?php
+        <?php
         foreach ($vars['fields'][$this->section] as $name => $type) {
             $label = $vars['label'][$this->section][$name];
     
@@ -207,16 +207,16 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
                 continue;
             } ?>
     
-    		<tr>
-    			<th align="left" valign="top" width="20%"><?=$label; ?></th>
-    			<td>
-            		<?=$value; ?>
-    			</td>
-    		</tr>
-    	<?php
+            <tr>
+                <th align="left" valign="top" width="20%"><?=$label; ?></th>
+                <td>
+                    <?=$value; ?>
+                </td>
+            </tr>
+        <?php
         } ?>
-    	</table>
-	</div>
+        </table>
+    </div>
 <?php
 ?>
 
@@ -243,7 +243,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
         } ?>
 
 <div class="tab-pane fade" id="pills-<?=$count; ?>" role="tabpanel" aria-labelledby="pills-<?=$count; ?>-tab">
-	<?php
+    <?php
     if (count($vars['fields'][$subsection])) {
         require(__DIR__ . '/list.php');
     } elseif (file_exists('_tpl/admin/' . $subsection . '.php')) {
@@ -255,19 +255,19 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
     }
     
     if ($has_privileges) { ?>
-	<div class="tab-pane fade" id="pills-priveleges" role="tabpanel" aria-labelledby="pills-priveleges-tab">
-	    <div class="box" style="clear:both;">
-			<?php require('includes/privileges.php'); ?>
-		</div>
-	</div>
+    <div class="tab-pane fade" id="pills-priveleges" role="tabpanel" aria-labelledby="pills-priveleges-tab">
+        <div class="box" style="clear:both;">
+            <?php require('includes/privileges.php'); ?>
+        </div>
+    </div>
 <?php }
 
     if ($has_logs) { ?>
-	<div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
-	    <div class="box" style="clear:both;">
-			<?php require('includes/logs.php'); ?>
-		</div>
-	</div>
+    <div class="tab-pane fade" id="pills-logs" role="tabpanel" aria-labelledby="pills-logs-tab">
+        <div class="box" style="clear:both;">
+            <?php require('includes/logs.php'); ?>
+        </div>
+    </div>
 <?php } ?>
             </div>
         </div>
@@ -275,7 +275,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 </div>
 <!-- tab end -->
 
-	</div>
+    </div>
 </div>
 
 <script>

@@ -38,28 +38,28 @@ $db_config["name"] = "' . addslashes($_POST['name']) . '";
 
 //fields in each section
 $vars["fields"]["users"]=array(
-	"name"=>"text",
-	"surname"=>"text",
-	"email"=>"email",
-	"password"=>"password",
-	"address"=>"textarea",
-	"city"=>"text",
-	"postcode"=>"text",
-	"tel"=>"text",
-	"admin"=>"select",
-	"id"=>"id",
+    "name"=>"text",
+    "surname"=>"text",
+    "email"=>"email",
+    "password"=>"password",
+    "address"=>"textarea",
+    "city"=>"text",
+    "postcode"=>"text",
+    "tel"=>"text",
+    "admin"=>"select",
+    "id"=>"id",
 );
 
 // sections in menu
 $vars["sections"]=array(
-	"users",
+    "users",
 );
 
 #OPTIONS
 $opts["admin"]=array(
-	"1"=>"admin",
-	"2"=>"staff",
-	"3"=>"guest",
+    "1"=>"admin",
+    "2"=>"staff",
+    "3"=>"guest",
 );
 ?>';
 
