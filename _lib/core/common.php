@@ -1416,7 +1416,7 @@ function sql_insert_id()
     return mysqli_insert_id($db_connection);
 }
 
-function sql_num_rows($result): int
+function sql_num_rows($result): ?int
 {
     return mysqli_num_rows($result);
 }
