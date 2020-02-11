@@ -93,12 +93,6 @@ if ($_GET['id']) {
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
 <input type="hidden" name="save" value="1">
 
-<!-- fake fields are a workaround for chrome autofill -->
-<div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
-	<input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername" onchange="event.stopPropagation();"></input>
-	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword" onchange="event.stopPropagation();"></input>
-</div>
-
 <div class="toolbar top-row mt-1 mb-3">
 	<button type="button" class="btn btn-secondary" onclick="window.location.href='<?=$cancel_url;?>';"><i class="fas fa-arrow-left"></i></button>
 	<button id="save" type="button" class="btn btn-primary">Save</button>
@@ -145,6 +139,12 @@ if ($_GET['id']) {
 			    <?=$this->get_field($name, 'class="' . $class . '"');?>
 				<?php
                     break;
+                    case 'password':
+                ?>
+			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+			   	<?=$this->get_field($name, 'class="form-control" autocomplete="new-password"');?>
+				<?php
+                    break;
                     default:
                 ?>
 			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
@@ -173,19 +173,19 @@ if ($_GET['id']) {
 </div>
 
 <style>
-.mce-notification {
-	display: none !important;
-}
+    .mce-notification {
+    	display: none !important;
+    }
 </style>
 
 <script>
-<?php
-if ($this->components) {
-            ?>
-var components = <?=json_encode($this->components); ?>;
-<?php
-        }
-?>
+    <?php
+    if ($this->components) {
+                ?>
+        var components = <?=json_encode($this->components); ?>;
+    <?php
+            }
+    ?>
 </script>
 
 <script>

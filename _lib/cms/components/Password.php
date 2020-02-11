@@ -11,6 +11,17 @@ class Password extends Component implements ComponentInterface
     public $preserveValue = true;
 
     /**
+     * @param string $fieldName
+     * @param string $value
+     * @param array $options
+     * @return string
+     */
+    public function field(string $fieldName, $value = '', array $options = []): string
+    {
+        return '<input type="' . $this->fieldType . '" name="' . $fieldName . '" value="" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . ' "' : '') . ' ' . $options['attribs'] . '>';
+    }
+
+    /**
      * @param mixed $value
      * @param string $name
      * @return string
@@ -28,7 +39,7 @@ class Password extends Component implements ComponentInterface
     public function formatValue($value, string $fieldName = null)
     {
         // add 1 to max position
-        if ($this->auth->hash_password) {
+        if ($value && $this->auth->hash_password) {
             $value = $this->auth->create_hash($value);
         }
 

@@ -995,7 +995,7 @@ class cms
             // skip readonly and blank passwords
             if (
                 !in_array($field_name, $this->editable_fields) ||
-                ($component->preserveValue and '' == $data[$field_name] && $this->id)
+                ($component->preserveValue && '' == $data[$field_name] && $this->id)
             ) {
                 continue;
             }
@@ -1072,8 +1072,8 @@ class cms
 
             // skip if preserving or not for saving this way
             if (
-                false === $data[$field_name] or
-                ($component->preserveValue and '' == $data[$field_name] && $this->id)
+                false === $data[$field_name] ||
+                ($component->preserveValue && '' == $data[$field_name] && $this->id)
             ) {
                 continue;
             }
