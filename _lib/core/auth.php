@@ -38,23 +38,6 @@ class auth
     public $expiry = 60;
 
     /**
-     * Specify pages where users are redirected
-     *
-     * @var string
-     */
-    public $login = 'login';
-
-    /**
-     * @var string
-     */
-    public $register_success = 'thanks';
-
-    /**
-     * @var string
-     */
-    public $forgot_success = 'index';
-
-    /**
      * email activation
      * @var bool
      */
@@ -593,12 +576,10 @@ class auth
 
             email_template($email, 'Password Reminder', $reps);
     
-            if ($this->forgot_success) {
-                $result = [
-                    'code' => 1,
-                    'message' => 'Password recovery email sent',
-                ];
-            }
+            $result = [
+                'code' => 1,
+                'message' => 'Password recovery email sent',
+            ];
         }
         
         return $result;
@@ -678,7 +659,7 @@ class auth
 
         if (!$this->user) {
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
-            redirect($this->login);
+            redirect('/login');
         }
     }
 
