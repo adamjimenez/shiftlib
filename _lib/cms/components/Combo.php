@@ -23,8 +23,8 @@ class Combo extends Select implements ComponentInterface
     public function field(string $fieldName, $value = '', array $options = []): string
     {
         $parts = [];
-        $parts[] = '<input type="hidden" name="' . $fieldName . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $value . '">';
-        $parts[] = '<input type="text" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . $options['attribs'] . ' value="' . $this->cms->content[$fieldName . '_label'] . '" data-type="combo" data-field="' . $fieldName . '">';
+        $parts[] = '<input type="hidden" name="' . $fieldName . '"' . ($options['readonly'] ? ' disabled' : '') . ' value="' . $value . '" ' . $options['attribs'] . '>';
+        $parts[] = '<input type="text"' . ($options['readonly'] ? ' disabled' : '') . ' value="' . $this->cms->getContent()[$fieldName . '_label'] . '" data-type="combo" data-field="' . $fieldName . '" ' . $options['attribs'] . '>';
         return implode(' ', $parts);
     }
 
