@@ -279,7 +279,7 @@ function loop_fields($field_arr)
                 continue;
             }
 
-            if (underscored($k) != underscored($new_name) or $v != $new_type) {
+            if (underscored($k) != underscored($new_name) || $cms->get_component_name($v) !== $cms->get_component_name($new_type)) {
                 $db_field = $cms->form_to_db($new_type);
 
                 if ($db_field) {
