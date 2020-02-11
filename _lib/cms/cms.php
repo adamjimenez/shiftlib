@@ -744,31 +744,33 @@ class cms
     {
         global $cms, $auth, $vars;
 
-        switch ($type) {
-            case 'int':
-                $type = 'integer';
-                break;
-            case 'number':
-                $type = 'decimal';
-                break;
-            case 'parent':
-                $type = 'select_parent';
-                break;
-            case 'page-name':
-                $type = 'page_name';
-                break;
-            case 'phpupload':
-                $type = 'upload';
-                break;
-            case 'phpuploads':
-                $type = 'uploads';
-                break;
-        }
+        $type = $this->get_component_name($type);
 
         $class = 'cms\\components\\' . $this->camelize($type);
         if (true === class_exists($class)) {
             return new $class($cms, $auth, $vars);
         }
+    }
+    
+    // get component name, needed for backward compatibility
+    public function get_component_name(string $type): string
+    {
+        switch ($type) {
+            case 'int':
+                return 'integer';
+            case 'number':
+                return 'decimal';
+            case 'parent':
+                return 'select_parent';
+            case 'page-name':
+                return 'page_name';
+            case 'phpupload':
+                return 'upload';
+            case 'phpuploads':
+                return 'uploads';
+        }
+        
+        return $type;
     }
 
     // get name of the id field
