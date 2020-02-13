@@ -23,12 +23,6 @@ class Coords extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', $options = []): string
     {
-        return '<input type="text"
-                       name="' . $fieldName . '"
-                       value="' . htmlspecialchars(substr($value, 6, -1)) . '"
-                       ' . ($options['readonly'] ? 'disabled' : '') . '
-                       size="50"
-                       ' . $options['attribs'] . '
-                       ' . ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . '"' : '') . '>';
+        return '<input type="text" name="' . $fieldName . '" value="' . htmlspecialchars(substr($value, 6, -1)) . '"' . ($options['readonly'] ? ' disabled' : '') . ' size="50"' . ($options['placeholder'] ? ' placeholder="' . $options['placeholder'] . '"' : '') . ' ' . $options['attribs'] . '>';
     }
 }
