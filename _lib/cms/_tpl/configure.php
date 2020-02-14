@@ -216,7 +216,7 @@ function str_to_bool($str): string
 
 // generate field list from the components dir
 $field_opts = [];
-foreach (glob(dirname(__FILE__)."/../components/*.php") as $filename) {
+foreach (glob(__DIR__ . "/../components/*.php") as $filename) {
     $filename = str_replace('.php', '', basename($filename));
     $field_opts[] = camelCaseToSnakeCase($filename);
 }
@@ -279,7 +279,7 @@ function loop_fields($field_arr)
                 continue;
             }
 
-            if (underscored($k) != underscored($new_name) or $v != $new_type) {
+            if (underscored($k) != underscored($new_name) || $cms->get_component_name($v) !== $cms->get_component_name($new_type)) {
                 $db_field = $cms->form_to_db($new_type);
 
                 if ($db_field) {
@@ -612,7 +612,7 @@ if ($release['tag_name'] != $this::VERSION) {
     </p>
     <a href="?option=upgrade">Upgrade now</a>
 </div>
-<?
+<?php
 }
 
 $count['sections'] = 0;
@@ -699,7 +699,7 @@ $count['options'] = 0;
                             <div class="tab-pane fade" id="dropdowns" role="tabpanel" aria-labelledby="pills-dropdowns-tab">
                                 
                                 <div class="container m-0"></div>
-                                <span class="addDropdown">Add option</span>
+                                <span class="btn btn-secondary addDropdown">Add option</span>
                             
                             </div>
                 
@@ -1017,6 +1017,9 @@ $count['options'] = 0;
                 switch (type) {
                     case 'int':
                         type = 'integer';
+                    break;
+                    case 'number':
+                        type = 'decimal';
                     break;
                     case 'parent':
                         type = 'select_parent';

@@ -192,7 +192,7 @@ class Checkboxes extends Select implements ComponentInterface
         $fieldName = underscored($name);
 
         if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
-            $this->vars['options'][$name] = $this->get_options(underscored($this->vars['options'][$name]), underscored(key($this->vars['fields'][$this->vars['options'][$name]])));
+            $this->vars['options'][$name] = $this->get_options($name);
         }
 
         $html = [];

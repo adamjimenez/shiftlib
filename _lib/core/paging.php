@@ -346,12 +346,6 @@ class paging
         return $paging;
     }
 
-    public function do_query()
-    {
-        $select = sql_query($this->query);
-        return $select;
-    }
-
     /**
      * @return mixed[]
      */

@@ -1,11 +1,3 @@
-<?
-$cms->components = array('foo');
+<?php
 
-$cms_buttons[] = array(
-	'section'=>'service',
-	'page'=>'list',
-	'label'=> 'Test button',
-	'handler' => function() {
-		die('hello world');
-	}
-);
+// global application logic goes here

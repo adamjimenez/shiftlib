@@ -9,25 +9,25 @@ if ($_POST['delete_filter']) {
     $qs = http_build_query($_GET);
 
     sql_query("DELETE FROM cms_filters WHERE
-		user = '" . escape($auth->user['id']) . "' AND
-		section = '" . escape($this->section) . "' AND
-		`filter` = '" . escape($qs) . "'
-	");
+        user = '" . escape($auth->user['id']) . "' AND
+        section = '" . escape($this->section) . "' AND
+        `filter` = '" . escape($qs) . "'
+    ");
 } elseif ($_POST['save_filter']) {
     $qs = http_build_query($_GET);
 
     sql_query("INSERT INTO cms_filters SET
-		user = '" . escape($auth->user['id']) . "',
-		section = '" . escape($this->section) . "',
-		name = '" . escape($_POST['save_filter']) . "',
-		`filter` = '" . escape($qs) . "'
-	");
+        user = '" . escape($auth->user['id']) . "',
+        section = '" . escape($this->section) . "',
+        name = '" . escape($_POST['save_filter']) . "',
+        `filter` = '" . escape($qs) . "'
+    ");
 }
 
 // search filters
 $filters = sql_query("SELECT * FROM cms_filters WHERE 
-	user = '" . escape($auth->user['id']) . "' AND
-	section = '" . escape($this->section) . "'
+    user = '" . escape($auth->user['id']) . "' AND
+    section = '" . escape($this->section) . "'
 ");
 
 $filter_exists = false;
@@ -199,10 +199,10 @@ if ($_POST['custom_button']) {
 
                             <?php
                             $conditions = $_GET;
-    unset($conditions['option']);
-
-    $qs = http_build_query(['s' => $conditions]);
-    require(dirname(__FILE__) . '/list.php'); ?>
+                            unset($conditions['option']);
+                        
+                            $qs = http_build_query(['s' => $conditions]);
+                            require(__DIR__ . '/list.php'); ?>
 
                         </div>
                     </div>

@@ -8,16 +8,16 @@ function get_items($value)
     global $options, $section, $field, $last_parent;
     
     $item = sql_query('SELECT parent FROM `' . escape(underscored($section)) . "`
-		WHERE 
-			id = '" . escape($value) . "'
-	", 1);
+        WHERE 
+            id = '" . escape($value) . "'
+    ", 1);
 
     $parent = $item['parent'];
     
     $parents = sql_query('SELECT id, ' . $field . ' FROM `' . escape(underscored($section)) . "`
-		WHERE 
-			parent = '" . escape($parent) . "'
-	");
+        WHERE 
+            parent = '" . escape($parent) . "'
+    ");
 
     $opts = [];
     foreach ($parents as $v) {
@@ -88,12 +88,12 @@ switch ($_GET['cmd']) {
             $options = $this->get_children($vars['options'][$name], $parent_field);
         } else {
             $rows = sql_query("SELECT id,$cols FROM
-				$table
-				WHERE
-					`$field` LIKE '" . escape($_GET['term']) . "%'
-				ORDER BY `" . underscored($field) . '`
-				LIMIT 10
-			');
+                $table
+                WHERE
+                    `$field` LIKE '" . escape($_GET['term']) . "%'
+                ORDER BY `" . underscored($field) . '`
+                LIMIT 10
+            ');
     
             $options = [];
             foreach ($rows as $row) {
@@ -143,9 +143,9 @@ switch ($_GET['cmd']) {
             get_items($value);
         } else {
             $parents = sql_query('SELECT id, ' . $field . ' FROM `' . escape(underscored($section)) . "`
-				WHERE 
-					parent = '" . escape($value) . "'
-			");
+                WHERE 
+                    parent = '" . escape($value) . "'
+            ");
             
             foreach ($parents as $v) {
                 $options[$v['id']] = ['value' => $v[$field]];
@@ -163,46 +163,46 @@ switch ($_GET['cmd']) {
         if ($_POST['section'] and $_POST['field'] and $_POST['item'] and $_POST['value']) {
             if (!table_exists('cms_ratings')) {
                 sql_query('CREATE TABLE IF NOT EXISTS `cms_ratings` (
-	              `id` int(11) NOT NULL AUTO_INCREMENT,
-	              `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	              `user` varchar(255) NOT NULL,
-	              `section` varchar(255) NOT NULL,
-	              `field` varchar(255) NOT NULL,
-	              `item` int(11) NOT NULL,
-	              `value` tinyint(4) NOT NULL,
-	              PRIMARY KEY (`id`),
-	              UNIQUE KEY `id` (`id`),
-	              UNIQUE KEY `user_section_field_item` (`user`,`section`,`field`,`item`)
-	            )');
+                  `id` int(11) NOT NULL AUTO_INCREMENT,
+                  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  `user` varchar(255) NOT NULL,
+                  `section` varchar(255) NOT NULL,
+                  `field` varchar(255) NOT NULL,
+                  `item` int(11) NOT NULL,
+                  `value` tinyint(4) NOT NULL,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY `id` (`id`),
+                  UNIQUE KEY `user_section_field_item` (`user`,`section`,`field`,`item`)
+                )');
             }
     
             $user = $auth->user['id'] ?: $_SERVER['REMOTE_ADDR'];
     
             sql_query("INSERT INTO cms_ratings SET
-	            user = '" . $user . "',
-	            section = '" . escape($_POST['section']) . "',
-	            field = '" . escape($_POST['field']) . "',
-	            item = '" . escape($_POST['item']) . "',
-	            value = '" . escape($_POST['value']) . "'
-	            ON DUPLICATE KEY UPDATE value = '" . escape($_POST['value']) . "'
-	        ");
+                user = '" . $user . "',
+                section = '" . escape($_POST['section']) . "',
+                field = '" . escape($_POST['field']) . "',
+                item = '" . escape($_POST['item']) . "',
+                value = '" . escape($_POST['value']) . "'
+                ON DUPLICATE KEY UPDATE value = '" . escape($_POST['value']) . "'
+            ");
     
             //get average
             $row = sql_query("SELECT AVG(value) AS `value` FROM cms_ratings
-	            WHERE
-	                section = '" . escape($_POST['section']) . "' AND
-	                field = '" . escape($_POST['field']) . "' AND
-	                item = '" . escape($_POST['item']) . "'
-	        ", 1);
+                WHERE
+                    section = '" . escape($_POST['section']) . "' AND
+                    field = '" . escape($_POST['field']) . "' AND
+                    item = '" . escape($_POST['item']) . "'
+            ", 1);
             $value = round($row['value']);
     
             //update average
             sql_query('UPDATE ' . underscored(escape($_POST['section'])) . ' SET
-	            `' . underscored(escape($_POST['field'])) . "` = '" . $value . "'
-	            WHERE
-	                id = '" . escape($_POST['item']) . "'
-	            LIMIT 1
-	        ");
+                `' . underscored(escape($_POST['field'])) . "` = '" . $value . "'
+                WHERE
+                    id = '" . escape($_POST['item']) . "'
+                LIMIT 1
+            ");
     
             $response['success'] = true;
         } else {
@@ -215,10 +215,10 @@ switch ($_GET['cmd']) {
 
         foreach ($_POST['items'] as $v) {
             sql_query('UPDATE ' . escape(underscored($_GET['section'])) . " SET
-				`position` = '" . escape($v['position']) . "'
-				WHERE
-					id = '" . escape($v['id']) . "'
-			");
+                `position` = '" . escape($v['position']) . "'
+                WHERE
+                    id = '" . escape($v['id']) . "'
+            ");
         }
         
         $response['success'] = true;
@@ -424,9 +424,9 @@ switch ($_GET['cmd']) {
                         $_GET['update'] = 1;
                     } else {
                         $qry = 'SELECT id FROM `' . underscored(escape($_GET['section'])) . "` WHERE
-			    			$where
-			    			LIMIT 1
-			    		";
+                            $where
+                            LIMIT 1
+                        ";
             
                         $row = sql_query($qry, 1);
                         $row_id = $row['id'];
@@ -494,8 +494,9 @@ switch ($_GET['cmd']) {
         $sql = $cms->conditionsToSql($_GET['section'], $_GET['fields']);
         
         $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
-    		' . $sql['joins'] . '
-    		' . $sql['where_str'], 1);
+            ' . $sql['joins'] . '
+            ' . $sql['where_str'] . "
+        ", 1);
         
         $response = [
             'draw' => $_POST['draw'],
@@ -515,12 +516,14 @@ switch ($_GET['cmd']) {
         
         // gather rows
         $rows = sql_query("SELECT T_$table.* " . $sql['cols'] . " FROM $table T_$table
-    		" . $sql['joins'] . '
-    		' . $sql['where_str'] . "
-    		ORDER BY
-    	    	T_$table.$order $dir
-    	    	$limit
-		");
+            " . $sql['joins'] . '
+            ' . $sql['where_str'] . "
+            GROUP BY
+                T_$table.id
+            ORDER BY
+                T_$table.$order $dir
+                $limit
+        ");
         
         // prepare rows
         foreach ($rows as $row) {
@@ -529,7 +532,7 @@ switch ($_GET['cmd']) {
             
             // use labels when available
             foreach ($fields as $name) {
-                if (in_array($name, ['password'])) {
+                if ($vars['fields'][$_GET['section']][$name] == 'password') {
                     continue;
                 }
                 

@@ -93,22 +93,16 @@ if ($_GET['id']) {
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
 <input type="hidden" name="save" value="1">
 
-<!-- fake fields are a workaround for chrome autofill -->
-<div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
-	<input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername" onchange="event.stopPropagation();"></input>
-	<input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword" onchange="event.stopPropagation();"></input>
-</div>
-
 <div class="toolbar top-row mt-1 mb-3">
-	<button type="button" class="btn btn-secondary" onclick="window.location.href='<?=$cancel_url;?>';"><i class="fas fa-arrow-left"></i></button>
-	<button id="save" type="button" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='<?=$cancel_url;?>';"><i class="fas fa-arrow-left"></i></button>
+    <button id="save" type="button" class="btn btn-primary">Save</button>
 </div>
 
     <h1 class="header-title"><?=ucwords($this->section);?></h1>
 
-	<div class="box">
+    <div class="box">
 
-		<?php
+        <?php
         foreach ($vars['fields'][$this->section] as $name => $type) {
             if (in_array($type, ['id','ip','position','timestamp','deleted'])) {
                 continue;
@@ -124,40 +118,46 @@ if ($_GET['id']) {
             if (!$label) {
                 $label = ucfirst(spaced($name));
             } ?>
-			
-			<div class="form-group">
-				<?php
+            
+            <div class="form-group">
+                <?php
                 switch ($type) {
                     case 'checkbox':
                 ?>
-			    <div>
-			    	<?=$this->get_field($name, 'id="' . underscored($name) . '" class="' . $class . '"');?>
-			    	<label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			    </div>
-				<?php
+                <div>
+                    <?=$this->get_field($name, 'id="' . underscored($name) . '" class="' . $class . '"');?>
+                    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+                </div>
+                <?php
                     break;
                     case 'radio':
                 ?>
-			    <div>
-			    	<?=$label;?>
-			    </div>
-			    <br>
-			    <?=$this->get_field($name, 'class="' . $class . '"');?>
-				<?php
+                <div>
+                    <?=$label;?>
+                </div>
+                <br>
+                <?=$this->get_field($name, 'class="' . $class . '"');?>
+                <?php
+                    break;
+                    case 'password':
+                ?>
+                <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+                   <?=$this->get_field($name, 'class="form-control" autocomplete="new-password"');?>
+                <?php
                     break;
                     default:
                 ?>
-			    <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
-			   	<?=$this->get_field($name, 'class="form-control"');?>
-				<?php
+                <label for="<?=underscored($name);?>" class="col-form-label"><?=$label;?></label>
+                   <?=$this->get_field($name, 'class="form-control"');?>
+                <?php
                     break;
                 } ?>
-			</div>
-		
-		<?php
+            </div>
+        
+        <?php
         } ?>
 
-	</div>
+    </div>
 
 <?php if (!$_GET['id'] and in_array('id', $vars['fields'][$this->section])) { ?>
 <p><label><input type="checkbox" name="add_another" value="1" <?php if ($_GET['add_another']) { ?>checked="checked"<?php } ?> /> add another?</label></p>
@@ -166,46 +166,46 @@ if ($_GET['id']) {
 
 </form>
 
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
-	</div>
+    </div>
 </div>
 
 <style>
-.mce-notification {
-	display: none !important;
-}
+    .mce-notification {
+        display: none !important;
+    }
 </style>
 
 <script>
-<?php
-if ($this->components) {
-            ?>
-var components = <?=json_encode($this->components); ?>;
-<?php
-        }
-?>
+    <?php
+    if ($this->components) {
+                ?>
+        var components = <?=json_encode($this->components); ?>;
+    <?php
+            }
+    ?>
 </script>
 
 <script>
-	var formChanged = false;
-		
-	$(function() {
-		$('#form').change(function(){
-		    console.log('yooo');
-			formChanged = true;
-		});
-			
-		window.addEventListener('beforeunload', (event) => {
-			if (formChanged) {
-				event.returnValue = `Continue without saving?`;
-			}
-		});
-		
-		$('#save').click(function() {
-			formChanged = false;
-			$(this).closest('form').submit();
-		});
-	});
+    var formChanged = false;
+        
+    $(function() {
+        $('#form').change(function(){
+            console.log('yooo');
+            formChanged = true;
+        });
+            
+        window.addEventListener('beforeunload', (event) => {
+            if (formChanged) {
+                event.returnValue = `Continue without saving?`;
+            }
+        });
+        
+        $('#save').click(function() {
+            formChanged = false;
+            $(this).closest('form').submit();
+        });
+    });
 </script>

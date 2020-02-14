@@ -63,6 +63,45 @@ function imageorientationfix($path)
     return $img;
 }
 
+function thumb_img($img, $dimensions, $output = true, $margin = false)
+{
+    $width = imagesx($img);
+    $height = imagesy($img);
+    $scale = min($dimensions[0] / $width, $dimensions[1] / $height);
+
+    if ($scale < 1) {
+        $new_width = floor($scale * $width);
+        $new_height = floor($scale * $height);
+
+        $tmp_img = imagecreatetruecolor($new_width, $new_height);
+
+        imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+        imagedestroy($img);
+        $img = $tmp_img;
+    } else {
+        $new_width = $width;
+        $new_height = $height;
+    }
+
+    if ($margin) {
+        $dest = imagecreatetruecolor($dimensions[0], $dimensions[1]);
+        imagecolorallocate($dest, 255, 255, 255);
+
+        $padding_left = ($dimensions[0] - $new_width) / 2;
+        $padding_top = ($dimensions[1] - $new_height) / 2;
+
+        imagecopy($dest, $img, $padding_left, $padding_top, 0, 0, $new_width, $new_height);
+        $img = $dest;
+    }
+
+    if ($output) {
+        header('Content-type: image/jpeg');
+        imagejpeg($img, null, 85);
+    } else {
+        return $img;
+    }
+}
+
 /*
 function imagefile($img, $path): bool
 {
@@ -589,7 +628,8 @@ function send_mail($opts = []): bool
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
         
-        return $response;
+        //return $response;
+        return true;
     } elseif (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         $mail = new \PHPMailer\PHPMailer\PHPMailer();
         
@@ -822,13 +862,9 @@ function file_size($size): string
 }
 
 // return number abbreviaion e.g. 10K
-function number_abbr($size, $dp = null): string
+function number_abbr($size, $dp = 1): string
 {
     for ($si = 0; $size >= 1000; $size /= 1000, $si++);
-    
-    if (null == $dp and 2 == $si) {
-        $dp = 1;
-    }
     
     return number_format($size, $dp) . substr(' KMBT', $si, 1);
 }
@@ -1380,7 +1416,7 @@ function sql_insert_id()
     return mysqli_insert_id($db_connection);
 }
 
-function sql_num_rows($result): int
+function sql_num_rows($result): ?int
 {
     return mysqli_num_rows($result);
 }
