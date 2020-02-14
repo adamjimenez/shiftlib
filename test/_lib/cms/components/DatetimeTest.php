@@ -63,4 +63,12 @@ class DatetimeTest extends TestCase
             $datetime->formatValue('2019-01-01 12:10')
         );
     }
+
+    public function testIsValid(): void
+    {
+        $datetime = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
+        $this->assertTrue(
+            $datetime->isValid('2019-01-01 12:10')
+        );
+    }
 }
