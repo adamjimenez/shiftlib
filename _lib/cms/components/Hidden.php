@@ -16,7 +16,7 @@ class Hidden extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        if ('0000-00-00 00:00:00' != $value) {
+        if ('0000-00-00 00:00:00' !== $value) {
             $date = explode(' ', $value);
             $value = dateformat('d/m/Y', $date[0]) . ' ' . $date[1];
         }

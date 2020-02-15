@@ -495,8 +495,8 @@ switch ($_GET['cmd']) {
         
         $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
             ' . $sql['joins'] . '
-            ' . $sql['where_str'] . "
-        ", 1);
+            ' . $sql['where_str'] . '
+        ', 1);
         
         $response = [
             'draw' => $_POST['draw'],
@@ -532,7 +532,7 @@ switch ($_GET['cmd']) {
             
             // use labels when available
             foreach ($fields as $name) {
-                if ($vars['fields'][$_GET['section']][$name] == 'password') {
+                if ('password' == $vars['fields'][$_GET['section']][$name]) {
                     continue;
                 }
                 

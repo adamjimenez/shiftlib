@@ -29,7 +29,7 @@ class DobTest extends TestCase
     public function testGetFieldSql(): void
     {
         $datetime = new \cms\components\Dob($this->cms, $this->auth, $this->vars);
-        $this->assertEquals('TEXT', $datetime->getFieldSql());
+        $this->assertEquals('DATE', $datetime->getFieldSql());
     }
 
     public function testField(): void

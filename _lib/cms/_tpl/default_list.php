@@ -199,10 +199,10 @@ if ($_POST['custom_button']) {
 
                             <?php
                             $conditions = $_GET;
-                            unset($conditions['option']);
+    unset($conditions['option']);
                         
-                            $qs = http_build_query(['s' => $conditions]);
-                            require(__DIR__ . '/list.php'); ?>
+    $qs = http_build_query(['s' => $conditions]);
+    require(__DIR__ . '/list.php'); ?>
 
                         </div>
                     </div>

@@ -27,7 +27,7 @@ function get_tpl_catcher($request)
         } elseif ($dir == dirname($dir)) {
             return false;
         }
-    }    
+    }
 
     return false;
 }
@@ -65,7 +65,7 @@ function get_include($request)
         redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     // strip file extension from url
     } elseif (strstr($request, '.php')) {
-        redirect('http'.($_SERVER['HTTPS'] ? 's' : '').'://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '',$_SERVER['REQUEST_URI']));
+        redirect('http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '', $_SERVER['REQUEST_URI']));
     // redirect if a folder and missing trailing /
     } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, $tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php')) {
         redirect('/' . $request . '/', 301);
@@ -177,7 +177,7 @@ $dir = $request;
 while ($dir = dirname($dir)) {
     if (include($root_folder . '/_tpl/' . $dir . '/template.php')) {
         break;
-    } else if ($dir == dirname($dir)) {
+    } elseif ($dir == dirname($dir)) {
         die('template not found');
     }
 }

@@ -266,7 +266,8 @@ class cms
         $this->trigger_event('delete', [$ids]);
     }
     
-    public function file($file_id) {
+    public function file($file_id)
+    {
         global $auth, $vars;
 
         if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads']) {

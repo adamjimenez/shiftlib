@@ -25,7 +25,7 @@ $default_tables = [
             'name' => 'user',
             'type' => 'index',
             'fields' => ['user'],
-        ]]
+        ]],
     ],
     
     'cms filters' => [
@@ -38,7 +38,7 @@ $default_tables = [
             'name' => 'user',
             'type' => 'index',
             'fields' => ['user'],
-        ]]
+        ]],
     ],
     
     'cms multiple select' => [
@@ -55,7 +55,7 @@ $default_tables = [
             'name' => 'section_field_item_value',
             'type' => 'index',
             'fields' => ['section', 'field', 'item', 'value'],
-        ]]
+        ]],
     ],
     
     'cms logs' => [
@@ -70,7 +70,7 @@ $default_tables = [
             'name' => 'section_item',
             'type' => 'index',
             'fields' => ['section', 'item'],
-        ]]
+        ]],
     ],
     
     'cms activation' => [
@@ -82,7 +82,7 @@ $default_tables = [
             'name' => 'user',
             'type' => 'unique',
             'fields' => ['user'],
-        ]]
+        ]],
     ],
     
     'cms login attempts' => [
@@ -94,8 +94,8 @@ $default_tables = [
             'name' => 'ip_date',
             'type' => 'index',
             'fields' => ['ip', 'date'],
-        ]]
-    ]
+        ]],
+    ],
 ];
 
 //section templates
@@ -159,7 +159,7 @@ $section_templates = [
         'subject' => 'text',
         'body' => 'editor',
         'id' => 'id',
-    ]
+    ],
 ];
 
 function array_to_csv($array): ?string // returns null or string
@@ -216,7 +216,7 @@ function str_to_bool($str): string
 
 // generate field list from the components dir
 $field_opts = [];
-foreach (glob(__DIR__ . "/../components/*.php") as $filename) {
+foreach (glob(__DIR__ . '/../components/*.php') as $filename) {
     $filename = str_replace('.php', '', basename($filename));
     $field_opts[] = camelCaseToSnakeCase($filename);
 }
@@ -482,7 +482,7 @@ $auth_config["google_appId"] = "' . $_POST['auth_config']['google_appId'] . '" ?
 $auth_config["google_secret"] = "' . $_POST['auth_config']['google_secret'] . '" ?: $_SERVER["google_secret"];
 
 // deprecated
-$auth_config["login_wherestr"] = "' . $auth_config["login_wherestr"] . '";
+$auth_config["login_wherestr"] = "' . $auth_config['login_wherestr'] . '";
 
 # UPLOADS
 $upload_config = [];
@@ -532,7 +532,7 @@ $vars["fields"]["' . $section . '"] = [
 
 $vars["required"]["' . $section . '"] = [' . $required . '];
 
-$vars["label"]["'.$section.'"]=array('.$label.');
+$vars["label"]["' . $section . '"]=array(' . $label . ');
 
 $vars["subsections"]["' . $section . '"] = [' . $subsections . '];
 
@@ -604,11 +604,11 @@ $release = wget($release_url);
 
 // zipball_url
 if ($release['tag_name'] != $this::VERSION) {
-?>
+    ?>
 <div class="alert alert-primary mt-3" role="alert">
-    New version available: <?=$release['tag_name'];?>
+    New version available: <?=$release['tag_name']; ?>
     <p>
-        <?=$release['body'];?>
+        <?=$release['body']; ?>
     </p>
     <a href="?option=upgrade">Upgrade now</a>
 </div>
