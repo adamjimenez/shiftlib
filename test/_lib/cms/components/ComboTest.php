@@ -28,8 +28,8 @@ class ComboTest extends TestCase
 
     public function testGetFieldSql(): void
     {
-        $combo = new \cms\components\Combo($this->cms, $this->auth, $this->vars);
-        $this->assertEquals("VARCHAR( 64 ) NOT NULL DEFAULT ''", $combo->getFieldSql());
+        $component = new \cms\components\Combo($this->cms, $this->auth, $this->vars);
+        $this->assertEquals("VARCHAR( 64 ) NOT NULL DEFAULT ''", $component->getFieldSql());
     }
 
     public function testField(): void
@@ -38,10 +38,10 @@ class ComboTest extends TestCase
             ->method('getContent')
             ->willReturn(['my-field_label' => 'my-value']);
 
-        $combo = new \cms\components\Combo($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Combo($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<input type="hidden" name="my-field" value="foo" some-attributes> <input type="text" value="my-value" data-type="combo" data-field="my-field" some-attributes>',
-            $combo->field('my-field', 'foo', ['readonly', 'attribs' => 'some-attributes'])
+            $component->field('my-field', 'foo', ['readonly', 'attribs' => 'some-attributes'])
         );
     }
 
@@ -51,10 +51,10 @@ class ComboTest extends TestCase
             ->method('get_field')
             ->willReturn('<input type="text" placeholder="search" />');
 
-        $combo = new \cms\components\Combo($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Combo($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<div> my-field </div> <input type="text" placeholder="search" /> <br> <br>',
-            $combo->searchField('my-field', 'foo')
+            $component->searchField('my-field', 'foo')
         );
     }
 }

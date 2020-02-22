@@ -14,7 +14,7 @@ class Ip extends Component implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        if (!$this->cms->id) {
+        if (!$this->cms->getId()) {
             return $_SERVER['REMOTE_ADDR'];
         }
 

@@ -28,35 +28,35 @@ class EditorTest extends TestCase
 
     public function testGetFieldSql(): void
     {
-        $datetime = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
-        $this->assertEquals('TEXT', $datetime->getFieldSql());
+        $component = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
+        $this->assertEquals('TEXT', $component->getFieldSql());
     }
 
     public function testField(): void
     {
-        $datetime = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<textarea name="foo" disabled something rows="25" style="width:100%; height: 400px;" data-type="tinymce">bar</textarea>',
-            $datetime->field('foo', 'bar', ['readonly' => true, 'attribs' => 'something'])
+            $component->field('foo', 'bar', ['readonly' => true, 'attribs' => 'something'])
         );
     }
 
     public function testFormatValue(): void
     {
-        $datetime = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<p><b>This</b> is an example</p>',
-            $datetime->formatValue('<html><p><b>This</b> is an example</p></html>')
+            $component->formatValue('<html><p><b>This</b> is an example</p></html>')
         );
     }
 
     public function testConditionsToSql(): void
     {
         // TODO: This uses mysqli so the value isn't being substituted in properly
-        $datetime = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Editor($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             "table-prefixfield-name LIKE ''",
-            $datetime->conditionsToSql('field-name', 'value', '', 'table-prefix')
+            $component->conditionsToSql('field-name', 'value', '', 'table-prefix')
         );
     }
 }

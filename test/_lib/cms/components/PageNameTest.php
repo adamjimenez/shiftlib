@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 
-class HiddenTest extends TestCase
+class PageNameTest extends TestCase
 {
     /**
      * @var cms|\PHPUnit\Framework\MockObject\MockObject
@@ -26,16 +26,12 @@ class HiddenTest extends TestCase
         $this->vars = [];
     }
 
-    public function testValue(): void
+    public function testFormatValue(): void
     {
-        $component = new \cms\components\Hidden($this->cms, $this->auth, $this->vars);
-        $this->assertEquals(
-            '0000-00-00 00:00:00',
-            $component->value('0000-00-00 00:00:00')
-        );
-        $this->assertEquals(
-            '01/01/2019 12:00:00',
-            $component->value('2019-01-01 12:00:00')
-        );
+        $component = new \cms\components\PageName($this->cms, $this->auth, $this->vars);
+        $this->assertEquals('my-new-page-name', $component->formatValue('my new page name'));
+
+        // TODO: Does this need fixing?
+        $this->assertEquals('this--is-a-test/ofstuff', $component->formatValue('this--is-a-test/of=stuff'));
     }
 }

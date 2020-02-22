@@ -28,17 +28,17 @@ class EmailTest extends TestCase
 
     public function testValue(): void
     {
-        $datetime = new \cms\components\Email($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Email($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<a href="mailto:foo@bar.com" target="_blank">foo@bar.com</a>',
-            $datetime->value('foo@bar.com')
+            $component->value('foo@bar.com')
         );
     }
 
     public function testIsValid(): void
     {
-        $datetime = new \cms\components\Email($this->cms, $this->auth, $this->vars);
-        $this->assertTrue($datetime->is_valid('foo@bar.com'));
-        $this->assertFalse($datetime->is_valid('foo@bar'));
+        $component = new \cms\components\Email($this->cms, $this->auth, $this->vars);
+        $this->assertTrue($component->is_valid('foo@bar.com'));
+        $this->assertFalse($component->is_valid('foo@bar'));
     }
 }

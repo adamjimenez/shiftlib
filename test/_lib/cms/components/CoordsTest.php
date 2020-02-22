@@ -28,16 +28,16 @@ class CoordsTest extends TestCase
 
     public function testGetFieldSql(): void
     {
-        $coords = new \cms\components\Coords($this->cms, $this->auth, $this->vars);
-        $this->assertEquals('POINT', $coords->getFieldSql());
+        $component = new \cms\components\Coords($this->cms, $this->auth, $this->vars);
+        $this->assertEquals('POINT', $component->getFieldSql());
     }
 
     public function testField(): void
     {
-        $coords = new \cms\components\Coords($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Coords($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<input type="text" name="my-field" value="" size="50" placeholder="my-placeholder" some-attributes>',
-            $coords->field('my-field', 'foo', ['readonly', 'placeholder' => 'my-placeholder', 'attribs' => 'some-attributes'])
+            $component->field('my-field', 'foo', ['readonly', 'placeholder' => 'my-placeholder', 'attribs' => 'some-attributes'])
         );
     }
 }

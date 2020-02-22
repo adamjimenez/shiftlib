@@ -28,47 +28,47 @@ class DatetimeTest extends TestCase
 
     public function testGetFieldSql(): void
     {
-        $datetime = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
-        $this->assertEquals('DATETIME', $datetime->getFieldSql());
+        $component = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
+        $this->assertEquals('DATETIME', $component->getFieldSql());
     }
 
     public function testField(): void
     {
-        $datetime = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<input type="datetime-local" name="foo" value="bar" disabled size="10" something>',
-            $datetime->field('foo', 'bar', ['readonly' => true, 'attribs' => 'something'])
+            $component->field('foo', 'bar', ['readonly' => true, 'attribs' => 'something'])
         );
     }
 
     public function testValue(): void
     {
-        $datetime = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '',
-            $datetime->value('0000-00-00')
+            $component->value('0000-00-00')
         );
 
         $this->assertEquals(
             '2019-01-01 12:12:11',
-            $datetime->value('2019-01-01 12:12:11')
+            $component->value('2019-01-01 12:12:11')
         );
     }
 
     public function testFormatValue(): void
     {
-        $datetime = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '2019-01-01 12:10:00',
-            $datetime->formatValue('2019-01-01 12:10')
+            $component->formatValue('2019-01-01 12:10')
         );
     }
 
     public function testIsValid(): void
     {
-        $datetime = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Datetime($this->cms, $this->auth, $this->vars);
         $this->assertTrue(
-            $datetime->isValid('2019-01-01 12:10')
+            $component->isValid('2019-01-01 12:10')
         );
     }
 }

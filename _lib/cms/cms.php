@@ -36,6 +36,11 @@ class cms
         ];
     }
 
+    public function getId()
+    {
+        return $this->id;
+    }
+
     /**
      * @return string
      */

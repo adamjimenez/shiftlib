@@ -28,44 +28,44 @@ class DecimalTest extends TestCase
 
     public function testGetFieldSql(): void
     {
-        $datetime = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
-        $this->assertEquals('DECIMAL( 8,2 )', $datetime->getFieldSql());
+        $component = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
+        $this->assertEquals('DECIMAL( 8,2 )', $component->getFieldSql());
     }
 
     public function testField(): void
     {
-        $datetime = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '<input type="number" name="foo" value="bar" disabled  something>',
-            $datetime->field('foo', 'bar', ['readonly' => true, 'attribs' => 'something'])
+            $component->field('foo', 'bar', ['readonly' => true, 'attribs' => 'something'])
         );
     }
 
     public function testValue(): void
     {
-        $datetime = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '',
-            $datetime->value(-1.00)
+            $component->value(-1.00)
         );
 
         $this->assertEquals(
             '2.00',
-            $datetime->value(2)
+            $component->value(2)
         );
 
         $this->assertEquals(
             '',
-            $datetime->value('')
+            $component->value('')
         );
     }
 
     public function testFormatValue(): void
     {
-        $datetime = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
+        $component = new \cms\components\Decimal($this->cms, $this->auth, $this->vars);
         $this->assertEquals(
             '2',
-            $datetime->formatValue(' 2 ')
+            $component->formatValue(' 2 ')
         );
     }
 }

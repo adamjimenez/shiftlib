@@ -28,7 +28,7 @@ class ColorTest extends TestCase
 
     public function testGetFieldSql(): void
     {
-        $color = new \cms\components\Color($this->cms, $this->auth, $this->vars);
-        $this->assertEquals("VARCHAR( 7 ) NOT NULL DEFAULT ''", $color->getFieldSql());
+        $component = new \cms\components\Color($this->cms, $this->auth, $this->vars);
+        $this->assertEquals("VARCHAR( 7 ) NOT NULL DEFAULT ''", $component->getFieldSql());
     }
 }

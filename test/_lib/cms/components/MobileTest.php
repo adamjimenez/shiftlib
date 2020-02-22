@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 
-class IdTest extends TestCase
+class MobileTest extends TestCase
 {
     /**
      * @var cms|\PHPUnit\Framework\MockObject\MockObject
@@ -26,15 +26,16 @@ class IdTest extends TestCase
         $this->vars = [];
     }
 
-    public function testGetFieldSql(): void
+    public function testIsValid(): void
     {
-        $component = new \cms\components\Id($this->cms, $this->auth, $this->vars);
-        $this->assertNull($component->getFieldSql());
+        $component = new \cms\components\Mobile($this->cms, $this->auth, $this->vars);
+        $this->assertTrue($component->isValid('+4407970557211'));
+        $this->assertFalse($component->isValid('foo'));
     }
 
     public function testFormatValue(): void
     {
-        $component = new \cms\components\Id($this->cms, $this->auth, $this->vars);
-        $this->assertFalse($component->formatValue('kbjdsakjndsajknjndas'));
+        $component = new \cms\components\Mobile($this->cms, $this->auth, $this->vars);
+        $this->assertEquals('4407970557211', $component->formatValue('+44 07970557211'));
     }
 }
