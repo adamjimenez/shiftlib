@@ -28,7 +28,7 @@ class Radio extends Select implements ComponentInterface
         $html = [];
         foreach ($this->vars['options'][$name] as $k => $v) {
             $val = $assoc ? $k : $v;
-            $html[] = '<label ' . $options['attribs'] . '><input type="radio" name="' . $fieldName . '" value="' . $val . '" ' . ($options['readonly'] ? 'disabled' : '') . ' ' . (isset($value) && $val == $value ? 'checked="checked"' : '') . ' ' . $options['attribs'] . '>' . $v . '&nbsp;</label>' . $options['separator'];
+            $html[] = '<label ' . $options['attribs'] . '><input type="radio" name="' . $fieldName . '" value="' . $val . '"' . ($options['readonly'] ? ' disabled' : '') . (isset($value) && $val == $value ? ' checked="checked"' : '') . ' ' . $options['attribs'] . '>' . $v . '&nbsp;</label>' . $options['separator'];
         }
 
         return implode(' ', $html);
@@ -43,16 +43,16 @@ class Radio extends Select implements ComponentInterface
     {
         if (false === is_array($this->vars['options'][$name])) {
             if ('0' == $value) {
-                $value = '';
-            } else {
-                $value = '<a href="?option=' . escape($this->vars['options'][$name]) . '&view=true&id=' . $value . '">' . $this->content[underscored($name) . '_label'] . '</a>';
+                return '';
             }
-        } else {
-            if (is_assoc_array($this->vars['options'][$name])) {
-                $value = $this->vars['options'][$name][$value];
-            }
+
+            return '<a href="?option=' . escape($this->vars['options'][$name]) . '&view=true&id=' . $value . '">' . $this->content[underscored($name) . '_label'] . '</a>';
         }
 
-        return $value ?: '';
+        if (is_assoc_array($this->vars['options'][$name])) {
+            return $this->vars['options'][$name][$value];
+        }
+
+        return '';
     }
 }

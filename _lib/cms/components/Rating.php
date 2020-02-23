@@ -48,10 +48,7 @@ class Rating extends Component implements ComponentInterface
     {
         $fieldName = underscored($name);
 
-        return '<select name="' . $fieldName . '" class="rating" disabled="disabled">
-                    <option value="">Choose</option>
-                    ' . html_options(self::RATING_OPTS, $value, true) . '
-                </select>';
+        return '<select name="' . $fieldName . '" class="rating" disabled="disabled"><option value="">Choose</option>' . html_options(self::RATING_OPTS, $value, true) . '</select>';
     }
 
     /**
