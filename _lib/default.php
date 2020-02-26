@@ -58,7 +58,7 @@ function parse_request(): string
 
 function get_include($request)
 {
-    global $tpl_config, $root_folder, $vars, $cms, $content;
+    global $tpl_config, $root_folder, $vars, $cms, $content, $auth;
     
     // enforce ssl
     if (!$_SERVER['HTTPS'] && $tpl_config['ssl']) {
