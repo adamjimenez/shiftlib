@@ -16,14 +16,16 @@
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.16",
     "rector/rector": "^0.6.1",
-    "phpstan/phpstan": "^0.12.3"
+    "phpstan/phpstan": "^0.12.3",
+    "phpunit/phpunit": "^8"
   },
   "suggest": {
     "sendgrid/sendgrid": "Allows sending of email via sendGrid"
   },
   "scripts": {
     "php-cs-fixer": "vendor/bin/php-cs-fixer fix",
+    "php-stan": "vendor/bin/phpstan analyse --level=0 -c phpstan.neon _lib/cms/",
     "rector": "vendor/bin/rector process _lib/cms/components",
-    "php-stan": "vendor/bin/phpstan analyse --level=0 -c phpstan.neon _lib/cms/"
+    "test": "vendor/bin/phpunit --bootstrap test/autoload.php test/"
   }
 }

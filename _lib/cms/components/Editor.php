@@ -24,12 +24,7 @@ class Editor extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', $options = []): string
     {
-        return '<textarea name="' . $fieldName . '"'
-            . ($options['readonly'] ? 'disabled' : '') . ' '
-            . $options['attribs'] . ' 
-                  rows="25" 
-                  style="width:100%; height: 400px;"
-                  data-type="tinymce">' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8') . '</textarea>';
+        return '<textarea name="' . $fieldName . '"' . ($options['readonly'] ? ' disabled' : '') . ' ' . $options['attribs'] . ' rows="25" style="width:100%; height: 400px;" data-type="tinymce">' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'utf-8') . '</textarea>';
     }
 
     /**
@@ -59,7 +54,7 @@ class Editor extends Component implements ComponentInterface
         }
 
         $value = $doc->saveHTML();
-        return $value;
+        return trim($value);
     }
 
     /**

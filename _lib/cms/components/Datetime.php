@@ -33,7 +33,7 @@ class Datetime extends Date implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        if (starts_with($value, '0000-00-00')) {
+        if (true === starts_with($value, '0000-00-00')) {
             $value = '';
         }
 

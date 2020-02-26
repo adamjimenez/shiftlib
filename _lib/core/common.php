@@ -965,9 +965,9 @@ function get_options($table, $field, $where = false): array
 function html_options($opts, $selected = [], $force_assoc = false, $disabled = [])
 {
     $params = [
-        'options' => $options,
-        'values' => $values,
-        'output' => $output,
+        'options' => null,
+        'values' => null,
+        'output' => null,
         'selected' => $selected,
         'disabled' => $disabled,
     ];
@@ -1022,7 +1022,7 @@ function html_options($opts, $selected = [], $force_assoc = false, $disabled = [
 // used by html_options
 function html_options_optoutput($key, $value, $selected, $disabled)
 {
-    if (!is_array($value)) {
+    if (false === is_array($value)) {
         $_html_result = '<option label="' . htmlspecialchars($value) . '" value="' .
             htmlspecialchars($key) . '"';
         if (in_array((string) $key, $selected)) {
@@ -1031,7 +1031,7 @@ function html_options_optoutput($key, $value, $selected, $disabled)
         if (in_array((string) $key, $disabled)) {
             $_html_result .= ' disabled="disabled"';
         }
-        $_html_result .= '>' . ($value) . '</option>' . "\n";
+        $_html_result .= '>' . ($value) . '</option>';
     } else {
         $_html_result = html_options_optgroup($key, $value, $selected);
     }
@@ -1073,7 +1073,7 @@ function is_alphanumeric($string): bool
 
 function is_assoc_array($var): bool
 {
-    if (!is_array($var)) {
+    if (false === is_array($var)) {
         return false;
     }
     return array_keys($var) !== range(0, sizeof($var) - 1);
@@ -1123,7 +1123,7 @@ function is_postcode($code): bool
 
 function load_js($libs)
 {
-    if (!is_array($libs)) {
+    if (false === is_array($libs)) {
         $libs = [$libs];
     }
 

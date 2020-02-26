@@ -153,6 +153,14 @@ class auth
         $this->required = $vars['required'][$this->table];
     }
 
+    /**
+     * @return bool
+     */
+    public function shouldHashPassword(): bool
+    {
+        return $this->hash_password;
+    }
+
     public function init()
     {
         //check for cookies or basic auth

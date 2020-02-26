@@ -3,7 +3,7 @@
 $finder = PhpCsFixer\Finder::create()
     ->exclude([])
     ->notPath([])
-    ->in(['_lib/']);
+    ->in(['_lib/', 'test']);
 
 return PhpCsFixer\Config::create()
     ->setRules([

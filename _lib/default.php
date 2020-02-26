@@ -18,7 +18,7 @@ function get_tpl_catcher($request)
             }
         }
     }
-    
+
     // find closest catcher
     $dir = $request;
     while ($dir = dirname($dir)) {
@@ -27,7 +27,7 @@ function get_tpl_catcher($request)
         } elseif ($dir == dirname($dir)) {
             return false;
         }
-    }    
+    }
 
     return false;
 }
@@ -40,7 +40,7 @@ function trigger_404()
 function parse_request(): string
 {
     $request = rawurldecode($_SERVER['REQUEST_URI']);
-    
+
     // strip query string
     $pos = strpos($request, '?');
     if ($pos) {
@@ -59,37 +59,37 @@ function parse_request(): string
 function get_include($request)
 {
     global $tpl_config, $root_folder, $vars, $cms, $content, $auth;
-    
+
     // enforce ssl
     if (!$_SERVER['HTTPS'] && $tpl_config['ssl']) {
         redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     }
-    
+
     //check for predefined pages
     switch ($request) {
         case 'admin':
             if (!$cms) {
                 die('Error: db is not configured');
             }
-    
+
             $cms->admin();
             exit;
-        break;
+            break;
         case 'sitemap.xml':
             if (!file_exists($root_folder . '/_tpl/sitemap.xml.php')) {
                 require(dirname(__FILE__) . '/core/sitemap.xml.php');
                 exit;
             }
-        break;
+            break;
         case 'logout':
             $auth->logout();
             redirect('/');
-        break;
+            break;
     }
-    
+
     // strip file extension from url
     if (strstr($request, '.php')) {
-        redirect('http'.($_SERVER['HTTPS'] ? 's' : '').'://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '',$_SERVER['REQUEST_URI']));
+        redirect('http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '', $_SERVER['REQUEST_URI']));
     // redirect if a folder and missing trailing /
     } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, $tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php')) {
         redirect('/' . $request . '/', 301);
@@ -144,11 +144,11 @@ if (!$include_file || 'template' == end($sections)) {
         switch ($e->getMessage()) {
             case 404:
                 $trigger_404 = true;
-            break;
+                break;
             default:
                 $msg = nl2br($e->getMessage() . "\n" . $e->getTraceAsString());
                 error_handler(E_USER_ERROR, $msg, $e->getFile(), $e->getLine());
-            break;
+                break;
         }
     }
     $include_content = ob_get_contents();
@@ -179,7 +179,7 @@ $dir = $request;
 while ($dir = dirname($dir)) {
     if (include($root_folder . '/_tpl/' . $dir . '/template.php')) {
         break;
-    } else if ($dir == dirname($dir)) {
+    } elseif ($dir == dirname($dir)) {
         die('template not found');
     }
 }
