@@ -359,7 +359,7 @@ class auth
 
     public function register($fields = ['email']) //invoked by $_POST['register']
     {
-        global $cms;
+        global $cms, $request;
         
         $result = [];
         $data = $_POST;
@@ -387,7 +387,7 @@ class auth
                 $this->load();
             }
             
-            $result = [
+            return [
                 'code' => 3,
                 'message' => 'Thanks for verifying your email address',
             ];
