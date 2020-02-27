@@ -384,7 +384,7 @@ class auth
                 sql_query('UPDATE ' . $this->table . " SET
         			email_verified = 1
         			WHERE
-        				id='" . escape($user['user']) . "'
+        				id='" . escape($user['id']) . "'
         			LIMIT 1
         		");
                 
@@ -448,8 +448,9 @@ class auth
         }
         
         // check status
+        $this->load();
+        
         if ($this->user) {
-            $this->load();
         
             if ($this->email_activation and !$this->user['email_verified']) {
                 $result = [
