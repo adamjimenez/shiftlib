@@ -278,6 +278,10 @@ class auth
 
     public function load()
     {
+        if (!$_SESSION[$this->cookie_prefix . '_email'] || !$_SESSION[$this->cookie_prefix . '_password']) {
+            return false;
+        }
+        
         $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
 			email='" . escape($_SESSION[$this->cookie_prefix . '_email']) . "' AND
 			password='" . escape($_SESSION[$this->cookie_prefix . '_password']) . "'
@@ -318,7 +322,7 @@ class auth
      * @throws Exception
      * @return bool
      */
-    public function failed_login_attempt(string $email)
+    public function failed_login_attempt(string $email = '')
     {
         if (false === $this->check_login_attempts or !table_exists('cms_login_attempts')) {
             return false;
