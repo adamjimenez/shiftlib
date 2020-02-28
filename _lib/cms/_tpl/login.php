@@ -19,7 +19,7 @@ if (1 === $result['code']) {
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>Login</title>
 
-    <?php load_js(['cms']); ?>
+    <?php load_js(['cms', 'bootstrap']); ?>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
@@ -32,7 +32,7 @@ if (1 === $result['code']) {
     <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/responsive.css">
     <!-- modernizr css -->
-    <script src="/_lib/cms/assets/js/vendor/modernizr-2.8.3.min.js"></script>
+    <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 </head>
 
 <body>
@@ -110,9 +110,6 @@ if (1 === $result['code']) {
     <!-- login area end -->
 
     <!-- bootstrap 4 js -->
-    <script src="/_lib/cms/assets/js/popper.min.js"></script>
-    <script src="/_lib/cms/assets/js/bootstrap.min.js"></script>
-    <script src="/_lib/cms/assets/js/owl.carousel.min.js"></script>
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slimscroll.min.js"></script>
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
