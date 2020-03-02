@@ -76,7 +76,7 @@ if ($_POST['custom_button']) {
                         <input class="search-field form-control" type="text" name="s" id="s" value="<?= $_GET['s']; ?>" tabindex="1" placeholder="Search">
                     </form>
 
-                    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#searchModal">Advanced search</button>
+                    <button type="button" class="btn btn-default" id="advancedSearch">Advanced search</button>
 
                     <?php if (count($_GET) > 1) { ?>
                         <?php if ($filter_exists) { ?>
@@ -108,16 +108,22 @@ if ($_POST['custom_button']) {
 
                                     <?php
                                     $this->set_section($this->section);
-    $this->content = $_GET;
-
-    foreach ($vars['fields'][$this->section] as $name => $type) {
-        $field_name = underscored($name);
-        $component = $this->get_component($type); ?>
-                                        <div>
+                                    $this->content = $_GET;
+                                
+                                    foreach ($vars['fields'][$this->section] as $name => $type) {
+                                        if (in_array($type, $this->hidden_columns)) {
+                                            continue;
+                                        }
+                                        
+                                        $field_name = underscored($name);
+                                        $component = $this->get_component($type);
+                                        
+                                    ?>
+                                        <div data-name="<?=$name;?>">
                                             <?= $component->searchField($name, $_GET[$field_name]); ?>
                                         </div>
-                                        <?php
-    } ?>
+                                    <?php
+                                    } ?>
 
                                 </div>
                                 <div class="modal-footer">
@@ -199,10 +205,11 @@ if ($_POST['custom_button']) {
 
                             <?php
                             $conditions = $_GET;
-    unset($conditions['option']);
-                        
-    $qs = http_build_query(['s' => $conditions]);
-    require(__DIR__ . '/list.php'); ?>
+                            unset($conditions['option']);
+                                                
+                            $qs = http_build_query(['s' => $conditions]);
+                            require(__DIR__ . '/list.php'); 
+                            ?>
 
                         </div>
                     </div>
@@ -213,7 +220,8 @@ if ($_POST['custom_button']) {
     </div>
 
     <script>
-        jQuery(document).ready(function () {
+        $(function () {
+
             $('.save_filter').click(function () {
                 var filter = prompt('Save filter', 'New filter');
 
@@ -227,9 +235,7 @@ if ($_POST['custom_button']) {
                     $('<form method="post"><input type="hidden" name="delete_filter" value="1"></form>').appendTo('body').submit();
                 }
             });
-        });
 
-        jQuery(document).ready(function () {
             //omit empty fields on search
             $("#search_form").submit(function () {
                 $(this).find(":input").filter(function () {
@@ -237,6 +243,32 @@ if ($_POST['custom_button']) {
                 }).prop("disabled", true);
                 return true; // ensure form still submits
             });
+            
+            $('#advancedSearch').click(function() {
+                
+                // hide fields
+                table.columns().every( function (index) {
+                    var data = this.data();
+                    console.log(index)
+                    console.log(data)
+                    
+                    var name = $(table.column( index ).header()).data('name');
+                    
+                    if (!name) {
+                        return;
+                    }
+                    
+                    console.log(table.column(index).visible());
+                    
+                    $('#search_form div[data-name="' + name + '"]').toggle(table.column(index).visible());
+                    
+                });
+                
+                
+                $('#searchModal').modal('show')
+                
+            });
+
         });
     </script>
     <?php
