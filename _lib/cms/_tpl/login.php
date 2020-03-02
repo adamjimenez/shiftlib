@@ -4,10 +4,14 @@ $result = $auth->login();
 
 // handle login
 if (1 === $result['code']) {
-    if ($_SESSION['request']) {
-        redirect($_SESSION['request']);
+    if ($auth->user['admin']) {
+        if ($_SESSION['request']) {
+            redirect($_SESSION['request']);
+        } else {
+            redirect('/admin');
+        }
     } else {
-        redirect('/admin');
+        $auth->logout();
     }
 }
 ?>
