@@ -433,7 +433,7 @@ switch ($_GET['cmd']) {
                     }
         
                     //CMS SAVE
-                    $cms->set_section($_GET['section'], $row_id);
+                    $cms->set_section($_GET['section'], $row_id, array_keys($data));
         
                     $result = 1;
                     if ($_GET['validate'] and count($cms->validate($data))) {
