@@ -20,7 +20,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
                         if (in_array($type, $this->hidden_columns)) {
                             continue;
                         } ?>
-                        <th><?=ucfirst(spaced($name)); ?></th>
+                        <th data-name="<?=$name;?>"><?=ucfirst(spaced($name)); ?></th>
                     <?php
                     }
                     ?>
@@ -63,6 +63,8 @@ $order = 2;
 
 
 <script>
+var table;
+
 $(function() {
     var buttons = [{
         text: '<i class="fas fa-plus"></i> Add',
@@ -112,7 +114,7 @@ $(function() {
     */
     ?>
     
-    var table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
+    table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
         dom: 'Bfrtip',
         buttons: buttons,
         ajax: {
@@ -241,7 +243,6 @@ $(function() {
         
         e.stopPropagation();
     });
-    
     
     $(table.table().container()).on('click', 'tr.child', function (e) {
         $(this).prev().trigger('click');
