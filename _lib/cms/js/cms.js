@@ -724,12 +724,11 @@ function selectNone(field){
 
 function clearFile(field)
 {
-    var inputHidden = document.getElementById(field);
     inputFile = document.createElement("input");
     inputFile.setAttribute('name', field);
     inputFile.setAttribute('type', 'file');
 
-    var cell=inputHidden.parentNode;
+    var cell = field.parentNode;
 
     while ( cell.childNodes.length >= 1 )
     {
