@@ -245,20 +245,17 @@ if ($_POST['custom_button']) {
             });
             
             $('#advancedSearch').click(function() {
+                var table = $('.dataTable').DataTable();
                 
                 // hide fields
                 table.columns().every( function (index) {
-                    var data = this.data();
-                    console.log(index)
-                    console.log(data)
                     
+                    var data = this.data();
                     var name = $(table.column( index ).header()).data('name');
                     
                     if (!name) {
                         return;
                     }
-                    
-                    console.log(table.column(index).visible());
                     
                     $('#search_form div[data-name="' + name + '"]').toggle(table.column(index).visible());
                     

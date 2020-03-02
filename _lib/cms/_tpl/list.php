@@ -63,9 +63,10 @@ $order = 2;
 
 
 <script>
-var table;
 
 $(function() {
+    var table;
+    
     var buttons = [{
         text: '<i class="fas fa-plus"></i> Add',
         className: 'btn-primary',
