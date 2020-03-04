@@ -454,6 +454,9 @@ $auth_config["required"] = [
     ' . array_to_csv($_POST['auth_config']['required']) . '
 ];
 
+// show errors
+$show_errors = ' . str_to_bool($_POST['show_errors']) . ';
+
 // automated emails will be sent from this address
 $from_email = "' . $_POST['from_email'] . '";
 $auth_config["from_email"] = $from_email;
@@ -488,7 +491,7 @@ $auth_config["login_wherestr"] = "' . $auth_config['login_wherestr'] . '";
 $upload_config = [];
 
 // configure the variables before use.
-$upload_config["upload_dir"] = "' . $upload_config['upload_dir'] . '";
+$upload_config["upload_dir"] = "' . ($upload_config['upload_dir'] ?: 'uploads/') . '";
 $upload_config["resize_images"] = ' . str_to_bool($_POST['upload_config']['resize_images']) . ';
 $upload_config["resize_dimensions"] = [' . str_replace('x', ',', $_POST['upload_config']['resize_dimensions']) . '];
 
@@ -707,6 +710,11 @@ $count['options'] = 0;
                                 
                                 <label>From email</label><br>
                                 <input type="email" name="from_email" value="<?=$from_email;?>">
+                                <br>
+                                <br>
+                
+                                <label>Show errors</label><br>
+                                <input type="checkbox" name="show_errors" value="1" <?php if ($show_errors) { ?> checked<?php } ?>>
                                 <br>
                                 <br>
                 
