@@ -102,7 +102,7 @@ function thumb_img($img, $dimensions, $output = true, $margin = false)
     }
 }
 
-/*
+// used by phpupload
 function imagefile($img, $path): bool
 {
     $ext = file_ext($path);
@@ -117,7 +117,6 @@ function imagefile($img, $path): bool
 
     return $result;
 }
-*/
 
 // create a thumbnail from an uploaded file
 function image($file, $w = null, $h = null, $attribs = true, $crop = false)
