@@ -43,7 +43,7 @@ class CheckboxTest extends TestCase
     public function testConditionsToSql()
     {
         $component = new Checkbox($this->cms, $this->auth, $this->vars);
-        $this->assertEquals('', $component->conditionsToSql('my-field', 'my-value', '', 'table-prefix'));
+        $this->assertEquals('table-prefixmy-field LIKE \'\'', $component->conditionsToSql('my-field', 'my-value', '', 'table-prefix'));
     }
 
     public function testSearchField()
