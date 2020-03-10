@@ -22,5 +22,8 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress --no-suggest
 
+    - name: PHPCsFixes
+      run: vendor/bin/php-cs-fixer fix --stop-on-violation --dry-run
+
     - name: Unit Tests
-      run: composer test
+      run: vendor/bin/phpunit --bootstrap test/autoload.php test/
