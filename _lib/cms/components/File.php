@@ -53,7 +53,7 @@ class File extends Component implements ComponentInterface
             if (in_array(file_ext($file['name']), self::IMAGE_TYPES)) {
                 $value = '<img src="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
-            $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl. $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
+            $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl . $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
         }
         return $value;
     }

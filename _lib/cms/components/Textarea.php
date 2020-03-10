@@ -25,8 +25,8 @@ class Textarea extends Component implements ComponentInterface
     {
         $html = [];
         $html[] = '<textarea name="' . $fieldName . '"';
-        $html[] = ($options['readonly'] ? 'disabled' : '');
-        $html[] = ($options['placeholder'] ? 'placeholder="' . $options['placeholder'] . '"' : '');
+        $html[] = ($options['readonly'] ? ' disabled' : '');
+        $html[] = ($options['placeholder'] ? ' placeholder="' . $options['placeholder'] . '"' : '');
         $html[] = $options['attribs'];
         $html[] = '>' . $value . '</textarea>';
 

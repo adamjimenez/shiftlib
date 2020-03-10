@@ -153,6 +153,14 @@ class auth
         $this->required = $vars['required'][$this->table];
     }
 
+    /**
+     * @return bool
+     */
+    public function shouldHashPassword(): bool
+    {
+        return $this->hash_password;
+    }
+
     public function init()
     {
         //check for cookies or basic auth
@@ -270,6 +278,10 @@ class auth
 
     public function load()
     {
+        if (!$_SESSION[$this->cookie_prefix . '_email'] || !$_SESSION[$this->cookie_prefix . '_password']) {
+            return false;
+        }
+        
         $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
 			email='" . escape($_SESSION[$this->cookie_prefix . '_email']) . "' AND
 			password='" . escape($_SESSION[$this->cookie_prefix . '_password']) . "'
@@ -310,7 +322,7 @@ class auth
      * @throws Exception
      * @return bool
      */
-    public function failed_login_attempt(string $email)
+    public function failed_login_attempt(string $email = '')
     {
         if (false === $this->check_login_attempts or !table_exists('cms_login_attempts')) {
             return false;
@@ -351,7 +363,7 @@ class auth
 
     public function register($fields = ['email']) //invoked by $_POST['register']
     {
-        global $cms;
+        global $cms, $request;
         
         $result = [];
         $data = $_POST;
@@ -372,14 +384,14 @@ class auth
                 sql_query('UPDATE ' . $this->table . " SET
         			email_verified = 1
         			WHERE
-        				id='" . escape($user['user']) . "'
+        				id='" . escape($user['id']) . "'
         			LIMIT 1
         		");
                 
                 $this->load();
             }
             
-            $result = [
+            return [
                 'code' => 3,
                 'message' => 'Thanks for verifying your email address',
             ];
@@ -436,8 +448,9 @@ class auth
         }
         
         // check status
+        $this->load();
+        
         if ($this->user) {
-            $this->load();
         
             if ($this->email_activation and !$this->user['email_verified']) {
                 $result = [

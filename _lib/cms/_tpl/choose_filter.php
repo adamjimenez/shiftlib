@@ -55,7 +55,7 @@ window.close();
             <?php
             } elseif ('select' == $type or 'radio' == $type) {
                 $options = $vars['options'][$name];
-                if (!is_array($vars['options'][$name])) {
+                if (false === is_array($vars['options'][$name])) {
                     $table = underscored($vars['options'][$name]);
 
                     reset($vars['fields'][$vars['options'][$name]]);
@@ -90,7 +90,7 @@ window.close();
             <?php
             } elseif ('select-multiple' == $type) {
                 $value = [];
-                if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
+                if (false === is_array($vars['options'][$name]) and $vars['options'][$name]) {
                     $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
                         INNER JOIN `' . escape($vars['options'][$name]) . "` T2 ON T1.value=T2.$field_id
                         WHERE
@@ -117,7 +117,7 @@ window.close();
             <?php
             } elseif ('checkboxes' == $type) {
                 $value = [];
-                if (!is_array($vars['options'][$name]) and $vars['options'][$name]) {
+                if (false === is_array($vars['options'][$name]) and $vars['options'][$name]) {
                     $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
                         INNER JOIN `' . escape($vars['options'][$name]) . "` T2 ON T1.value=T2.$field_id
                         WHERE

@@ -72,7 +72,7 @@
     /*================================
     form bootstrap validation
     ==================================*/
-    $('[data-toggle="popover"]').popover()
+    // $('[data-toggle="popover"]').popover()
 
     /*------------- Start form Validation -------------*/
     window.addEventListener('load', function() {

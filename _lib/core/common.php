@@ -102,7 +102,7 @@ function thumb_img($img, $dimensions, $output = true, $margin = false)
     }
 }
 
-/*
+// used by phpupload
 function imagefile($img, $path): bool
 {
     $ext = file_ext($path);
@@ -117,7 +117,6 @@ function imagefile($img, $path): bool
 
     return $result;
 }
-*/
 
 // create a thumbnail from an uploaded file
 function image($file, $w = null, $h = null, $attribs = true, $crop = false)
@@ -750,7 +749,7 @@ function shutdown()
 // output error and email them to admin
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 {
-    global $db_connection, $debug_ip, $auth, $admin_email;
+    global $db_connection, $auth, $admin_email, $show_errors;
 
     switch ($errno) {
         case E_USER_NOTICE:
@@ -817,7 +816,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 			</div>
 			';
 
-            if ($_SERVER['REMOTE_ADDR'] == $debug_ip or $auth->user['admin']) {
+            if ($show_errors or $auth->user['admin']) {
                 echo "<p>The following has been reported to the administrator:</p>\n";
                 echo "<strong><pre>$errorstring\n</pre></strong>";
             }
@@ -965,9 +964,9 @@ function get_options($table, $field, $where = false): array
 function html_options($opts, $selected = [], $force_assoc = false, $disabled = [])
 {
     $params = [
-        'options' => $options,
-        'values' => $values,
-        'output' => $output,
+        'options' => null,
+        'values' => null,
+        'output' => null,
         'selected' => $selected,
         'disabled' => $disabled,
     ];
@@ -1022,7 +1021,7 @@ function html_options($opts, $selected = [], $force_assoc = false, $disabled = [
 // used by html_options
 function html_options_optoutput($key, $value, $selected, $disabled)
 {
-    if (!is_array($value)) {
+    if (false === is_array($value)) {
         $_html_result = '<option label="' . htmlspecialchars($value) . '" value="' .
             htmlspecialchars($key) . '"';
         if (in_array((string) $key, $selected)) {
@@ -1031,7 +1030,7 @@ function html_options_optoutput($key, $value, $selected, $disabled)
         if (in_array((string) $key, $disabled)) {
             $_html_result .= ' disabled="disabled"';
         }
-        $_html_result .= '>' . ($value) . '</option>' . "\n";
+        $_html_result .= '>' . ($value) . '</option>';
     } else {
         $_html_result = html_options_optgroup($key, $value, $selected);
     }
@@ -1073,7 +1072,7 @@ function is_alphanumeric($string): bool
 
 function is_assoc_array($var): bool
 {
-    if (!is_array($var)) {
+    if (false === is_array($var)) {
         return false;
     }
     return array_keys($var) !== range(0, sizeof($var) - 1);
@@ -1123,7 +1122,7 @@ function is_postcode($code): bool
 
 function load_js($libs)
 {
-    if (!is_array($libs)) {
+    if (false === is_array($libs)) {
         $libs = [$libs];
     }
 

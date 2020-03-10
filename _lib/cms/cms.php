@@ -3,7 +3,17 @@
 class cms
 {
     const VERSION = 'v2.0.1';
-    
+
+    /**
+     * @var string
+     */
+    public $section = '';
+
+    /**
+     * @var array
+     */
+    public $content = [];
+
     // hide these field types from the list view
     public $hidden_columns = ['id', 'password', 'editor', 'textarea', 'checkboxes'];
 
@@ -24,6 +34,27 @@ class cms
                 $_SESSION['message'] = 'Preview sent';
             },
         ];
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSection(): string
+    {
+        return $this->section;
+    }
+
+    /**
+     * @return array
+     */
+    public function getContent(): array
+    {
+        return $this->content;
     }
 
     /**
@@ -197,7 +228,7 @@ class cms
     {
         global $vars;
 
-        if (!is_array($ids)) {
+        if (false === is_array($ids)) {
             $ids = [$ids];
         }
 
@@ -240,32 +271,33 @@ class cms
         $this->trigger_event('delete', [$ids]);
     }
     
-    public function file($file_id) {
+    public function file($file_id)
+    {
         global $auth, $vars;
 
         if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads']) {
             die('access denied');
         }
-        
+
         $row = sql_query("SELECT * FROM files 
             WHERE 
         	    id='" . escape($file_id) . "'
         ", 1) or die('file not found');
-        
+
         header('filename="' . $row['name'] . '"');
         header('Content-type: ' . $row['type']);
-        
+
         if (!$_GET['w'] && !$_GET['h']) {
             print file_get_contents($vars['files']['dir'] . $row['id']);
         } else {
             // end configure
             $max_width = $_GET['w'] ?: 320;
             $max_height = $_GET['h'] ?: 240;
-            
+
             $img = imageorientationfix($vars['files']['dir'] . $row['id']);
             $img = thumb_img($img, [$max_width, $max_height], false);
             $ext = file_ext($row['name']);
-            
+
             switch ($ext) {
                 case 'png':
                     imagepng($img);
@@ -279,7 +311,7 @@ class cms
             }
         }
     }
-    
+
     public function conditions_to_sql($section, $conditions = [], $num_results = null, $cols = null)
     {
         return $this->conditionsToSql($section, $conditions, $num_results, $cols);
@@ -351,7 +383,7 @@ class cms
             switch ($type) {
                 case 'checkboxes':
                     // todo: move to component
-                    if (!is_array($value)) {
+                    if (false === is_array($value)) {
                         $value = [$value];
                     }
 
@@ -464,7 +496,7 @@ class cms
             $keys = array_merge($selects, $radios, $combos);
 
             foreach ($keys as $key) {
-                if (!is_array($vars['options'][$key])) {
+                if (false === is_array($vars['options'][$key])) {
                     $option_table = underscored($vars['options'][$key]) or trigger_error('missing options array value for: ' . $key, E_ERROR);
 
                     $join_id = $this->get_id_field($key);
@@ -505,9 +537,9 @@ class cms
      */
     public function get($section, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false)
     {
-        global $vars, $auth;
+        global $vars;
 
-        if (!is_array($vars['fields'][$section])) {
+        if (false === is_array($vars['fields'][$section])) {
             trigger_error('missing section: ' . $section, E_ERROR);
             return false;
         }
@@ -617,7 +649,7 @@ class cms
             }
 
             foreach ($content as $k => $v) {
-                if (!is_array($vars['options'][$name]) && $vars['options'][$name]) {
+                if (false === is_array($vars['options'][$name]) && $vars['options'][$name]) {
                     $join_id = $this->get_id_field($name);
                     $key = $this->get_option_label($name);
 
@@ -751,7 +783,7 @@ class cms
             return new $class($cms, $auth, $vars);
         }
     }
-    
+
     // get component name, needed for backward compatibility
     public function get_component_name(string $type): string
     {
@@ -769,7 +801,7 @@ class cms
             case 'phpuploads':
                 return 'uploads';
         }
-        
+
         return $type;
     }
 
@@ -969,13 +1001,13 @@ class cms
     {
         global $vars;
 
-        if (!is_array($data)) {
+        if (false === is_array($data)) {
             $data = $_POST;
         }
 
         $errors = $this->trigger_event('beforeValidate', ['data' => $data]);
 
-        if (!is_array($errors)) {
+        if (false === is_array($errors)) {
             $errors = [];
         }
 
@@ -1090,7 +1122,7 @@ class cms
             }
             $query .= ",\n";
         }
-        
+
         return substr($query, 0, -2);
     }
 
@@ -1201,7 +1233,7 @@ class cms
 
         if (is_array($cms_handlers)) {
             foreach ($cms_handlers as $handler) {
-                if (!is_array($handler['section'])) {
+                if (false === is_array($handler['section'])) {
                     $handler['section'] = [$handler['section']];
                 }
 

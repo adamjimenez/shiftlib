@@ -28,10 +28,10 @@ class Select extends Component implements ComponentInterface
         $name = spaced($fieldName);
 
         $parts = [];
-        if (!is_array($this->vars['options'][$name]) and in_array('parent', $this->vars['fields'][$this->vars['options'][$name]])) {
+        if (false === is_array($this->vars['options'][$name]) and in_array('parent', $this->vars['fields'][$this->vars['options'][$name]])) {
             $parts[] = '<div class="chained" data-name="' . $fieldName . '" data-section="' . $this->vars['options'][$name] . '" data-value="' . $value . '"></div>';
         } else {
-            if (!is_array($this->vars['options'][$name])) {
+            if (false === is_array($this->vars['options'][$name])) {
                 $conditions = [];
                 foreach ($this->auth->user['filters'][$this->cms->section] as $k => $v) {
                     $conditions[$k] = $v;
@@ -64,7 +64,7 @@ class Select extends Component implements ComponentInterface
         }
 
         // get options from a section
-        if (!is_array($this->vars['options'][$name])) {
+        if (false === is_array($this->vars['options'][$name])) {
             // get section table name
             $table = underscored($this->vars['options'][$name]);
 
@@ -155,7 +155,7 @@ class Select extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        if (!is_array($this->vars['options'][$name])) {
+        if (false === is_array($this->vars['options'][$name])) {
             if ('0' == $value) {
                 $value = '';
             } else {
@@ -202,7 +202,7 @@ class Select extends Component implements ComponentInterface
     {
         $fieldName = underscored($name);
         $options = $this->vars['options'][$name];
-        if (!is_array($this->vars['options'][$name])) {
+        if (false === is_array($this->vars['options'][$name])) {
             reset($this->vars['fields'][$this->vars['options'][$name]]);
 
             $conditions = [];

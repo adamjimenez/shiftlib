@@ -181,10 +181,10 @@ if ($_GET['id']) {
 <script>
     <?php
     if ($this->components) {
-                ?>
+        ?>
         var components = <?=json_encode($this->components); ?>;
     <?php
-            }
+    }
     ?>
 </script>
 
