@@ -20,7 +20,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
                         if (in_array($type, $this->hidden_columns)) {
                             continue;
                         } ?>
-                        <th data-name="<?=$name;?>"><?=ucfirst(spaced($name)); ?></th>
+                        <th data-name="<?=$name; ?>"><?=ucfirst(spaced($name)); ?></th>
                     <?php
                     }
                     ?>

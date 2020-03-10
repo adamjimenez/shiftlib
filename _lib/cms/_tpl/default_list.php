@@ -73,16 +73,19 @@ if ($_POST['custom_button']) {
                     <form method="get" class="flex-grow-1" style="flex: 1;">
                         <input type="hidden" name="option" value="<?= $this->section; ?>"/>
 
-                        <input class="search-field form-control" type="text" name="s" id="s" value="<?= $_GET['s']; ?>" tabindex="1" placeholder="Search">
+                        <input class="search-field form-control" type="text" name="s" id="s" value="<?= $_GET['s']; ?>"
+                               tabindex="1" placeholder="Search">
                     </form>
 
                     <button type="button" class="btn btn-default" id="advancedSearch">Advanced search</button>
 
                     <?php if (count($_GET) > 1) { ?>
                         <?php if ($filter_exists) { ?>
-                            <button type="button" class="btn btn-default delete_filter" title="Delete filter"><i class="fas fa-trash"></i></button>
+                            <button type="button" class="btn btn-default delete_filter" title="Delete filter"><i
+                                        class="fas fa-trash"></i></button>
                         <?php } else { ?>
-                            <button type="button" class="btn btn-default save_filter" title="Save filter"><i class="fas fa-save"></i></button>
+                            <button type="button" class="btn btn-default save_filter" title="Save filter"><i
+                                        class="fas fa-save"></i></button>
                         <?php } ?>
                     <?php } ?>
                 </div>
@@ -95,35 +98,39 @@ if ($_POST['custom_button']) {
                                 <input type="hidden" name="option" value="<?= $this->section; ?>"/>
 
                                 <!-- fake fields are a workaround for chrome autofill -->
-                                <div style="overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
-                                    <input type="text" style="height:0; background: transparent; color: transparent; border: none;" data-description="dummyUsername"></input>
-                                    <input type="password" style="height:0; background: transparent; color: transparent; border: none;" data-description="dummyPassword"></input>
+                                <div style="overflow: none; height: 0px;background: transparent;"
+                                     data-description="dummyPanel for Chrome auto-fill issue">
+                                    <input type="text"
+                                           style="height:0; background: transparent; color: transparent; border: none;"
+                                           data-description="dummyUsername"></input>
+                                    <input type="password"
+                                           style="height:0; background: transparent; color: transparent; border: none;"
+                                           data-description="dummyPassword"></input>
                                 </div>
 
                                 <div class="modal-header">
                                     <h5 class="modal-title">Advanced search</h5>
-                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                                    </button>
                                 </div>
                                 <div class="modal-body">
 
                                     <?php
                                     $this->set_section($this->section);
-                                    $this->content = $_GET;
-                                
-                                    foreach ($vars['fields'][$this->section] as $name => $type) {
-                                        if (in_array($type, $this->hidden_columns)) {
-                                            continue;
-                                        }
-                                        
-                                        $field_name = underscored($name);
-                                        $component = $this->get_component($type);
-                                        
-                                    ?>
-                                        <div data-name="<?=$name;?>">
+    $this->content = $_GET;
+
+    foreach ($vars['fields'][$this->section] as $name => $type) {
+        if (in_array($type, $this->hidden_columns)) {
+            continue;
+        }
+
+        $field_name = underscored($name);
+        $component = $this->get_component($type); ?>
+                                        <div data-name="<?= $name; ?>">
                                             <?= $component->searchField($name, $_GET[$field_name]); ?>
                                         </div>
-                                    <?php
-                                    } ?>
+                                        <?php
+    } ?>
 
                                 </div>
                                 <div class="modal-footer">
@@ -186,10 +193,13 @@ if ($_POST['custom_button']) {
                                 <span class="holder"></span>
 
                                 <div class="dropdown" style="display: inline-block;">
-                                    <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?= underscored($button['section']); ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button class="btn btn-secondary" type="button"
+                                            id="dropdownMenuButton<?= underscored($button['section']); ?>"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?= underscored($button['section']); ?>">
+                                    <div class="dropdown-menu"
+                                         aria-labelledby="dropdownMenuButton<?= underscored($button['section']); ?>">
                                         <?php
                                         foreach ($cms_buttons as $k => $button) {
                                             if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
@@ -205,11 +215,10 @@ if ($_POST['custom_button']) {
 
                             <?php
                             $conditions = $_GET;
-                            unset($conditions['option']);
-                                                
-                            $qs = http_build_query(['s' => $conditions]);
-                            require(__DIR__ . '/list.php'); 
-                            ?>
+    unset($conditions['option']);
+
+    $qs = http_build_query(['s' => $conditions]);
+    require(__DIR__ . '/list.php'); ?>
 
                         </div>
                     </div>
@@ -243,27 +252,27 @@ if ($_POST['custom_button']) {
                 }).prop("disabled", true);
                 return true; // ensure form still submits
             });
-            
-            $('#advancedSearch').click(function() {
+
+            $('#advancedSearch').click(function () {
                 var table = $('.dataTable').DataTable();
-                
+
                 // hide fields
-                table.columns().every( function (index) {
-                    
+                table.columns().every(function (index) {
+
                     var data = this.data();
-                    var name = $(table.column( index ).header()).data('name');
-                    
+                    var name = $(table.column(index).header()).data('name');
+
                     if (!name) {
                         return;
                     }
-                    
+
                     $('#search_form div[data-name="' + name + '"]').toggle(table.column(index).visible());
-                    
+
                 });
-                
-                
+
+
                 $('#searchModal').modal('show')
-                
+
             });
 
         });
