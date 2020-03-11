@@ -8,8 +8,8 @@
     <title>Admin Area | <?=$title ?: 'Main'; ?></title>
     
     <?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome', 'lightbox']); ?>
-    <script type="text/javascript" src="/_lib/cms/js/list.js?v=5"></script>
-    <script type="text/javascript" src="/_lib/cms/js/ui.list.js"></script>
+    <script type="text/javascript" src="/_lib/cms/assets/js/list.js?v=5"></script>
+    <script type="text/javascript" src="/_lib/cms/assets/js/ui.list.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
@@ -35,7 +35,7 @@
     <!-- modernizr css -->
     <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 
-    <link rel="stylesheet" href="/_lib/cms/css/cms.css">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/cms.css">
     
     <script>
         // used for imports
