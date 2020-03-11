@@ -451,7 +451,6 @@ class auth
         $this->load();
         
         if ($this->user) {
-        
             if ($this->email_activation and !$this->user['email_verified']) {
                 $result = [
                     'code' => 2,
