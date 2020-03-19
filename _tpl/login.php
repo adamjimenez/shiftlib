@@ -5,6 +5,9 @@ $result = $auth->login();
 // handle login
 if ($result['code']===1) {
 	redirect('/');
+// new registration via single sign on
+} elseif ($result['code']===2) {
+	redirect('/register/success');
 }
 ?>
 
@@ -44,6 +47,9 @@ if ($result['code']===1) {
 			
 			<h3>Or sign in with:</h3>
 			
+			<?php 
+			if ($auth_config["facebook_appId"]) { 
+			?>
 			<div class="row">
 			
 				<div class="col">
@@ -53,7 +59,13 @@ if ($result['code']===1) {
 				</div>
 			
 			</div>
+			<?php
+			}
+			?>
 			
+			<?php 
+			if ($auth_config["google_appId"]) { 
+			?>
 			<div class="row">
 			
 				<div class="col">
@@ -63,6 +75,9 @@ if ($result['code']===1) {
 				</div>
 			
 			</div>
+			<?php
+			}
+			?>
 			
 		</div>
 		

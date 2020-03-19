@@ -209,6 +209,8 @@ class auth
             return;
         }
         
+        $result = [];
+        
         // single sign on, triggerd by $_GET['provider'] = google
         if (isset($_GET['provider'])) {
             $config = [
@@ -261,6 +263,11 @@ class auth
         			email='" . escape($email) . "',
         			password='" . escape($user['password']) . "'
         		");
+        		
+                $result = [
+                    'code' => 2,
+                    'message' => 'Registration success',
+                ];        		
             }
         
             // log in
@@ -274,6 +281,8 @@ class auth
                 echo 'Login error';
             }
         }
+        
+        return $result;
     }
 
     public function load()
@@ -363,7 +372,7 @@ class auth
 
     public function register($fields = ['email']) //invoked by $_POST['register']
     {
-        global $cms, $request;
+        global $cms, $request, $sections;
         
         $result = [];
         $data = $_POST;
@@ -371,7 +380,7 @@ class auth
         //activation
         if ($_GET['code']) {
             //check code
-            $user = sql_query("SELECT id FROM cms_activation
+            $user = sql_query("SELECT user FROM cms_activation
         		WHERE
         			code = '" . escape($_GET['code']) . "' AND
         			user = '" . escape($_GET['user']) . "' AND
@@ -384,7 +393,7 @@ class auth
                 sql_query('UPDATE ' . $this->table . " SET
         			email_verified = 1
         			WHERE
-        				id='" . escape($user['id']) . "'
+        				id='" . escape($user['user']) . "'
         			LIMIT 1
         		");
                 
@@ -451,7 +460,7 @@ class auth
         $this->load();
         
         if ($this->user) {
-            if ($this->email_activation and !$this->user['email_verified']) {
+            if ($this->email_activation && !$this->user['email_verified']) {
                 $result = [
                     'code' => 2,
                     'message' => 'Activation required, please check your email',
@@ -462,6 +471,14 @@ class auth
                     'message' => 'Registration success',
                 ];
             }
+        }
+
+        if (in_array($result['code'], [1,3])) {
+            if (end($sections)!=='success') {
+        	    redirect('success');
+            }
+        } else if (end($sections)==='success') {
+        	redirect('index');
         }
 
         return $result;
@@ -599,7 +616,11 @@ class auth
 
     public function login()
     {
-        $this->single_sign_on();
+        $result = $this->single_sign_on();
+        
+        if ($result['code']) {
+            return $result;
+        }
         
         $data = $_POST;
         $result = [];
