@@ -55,6 +55,8 @@ if (!$auth->user['admin'] and !$auth->user['privileges'][$_GET['section']]) {
 $response = [];
 
 switch ($_GET['cmd']) {
+    case 'ping':
+    break;
     case 'autocomplete':
 
         $name = $_GET['field'];

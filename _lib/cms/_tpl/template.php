@@ -260,6 +260,27 @@
         </div>
     </form>
     <!-- import modal end -->
+    
+    <!-- stay logged in modal start -->
+    <div class="modal fade stayLoggedInModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Notice</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            You are about to be logged out.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary stayLoggedInBtn">Stay logged in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- stay logged in modal end -->
 
     <!-- bootstrap 4 js -->
     <script src="/_lib/cms/assets/js/metisMenu.min.js"></script>
@@ -346,6 +367,35 @@
                 }
             });
         });
+        
+        // stay logged in start
+        var session_duration = '<?=ini_get("session.gc_maxlifetime");?>';
+        var logInTimer;
+        
+        function setLogInTimer() {
+            logInTimer = setTimeout(function() {
+                $('.stayLoggedInModal').modal('show');
+            }, (session_duration - 60) * 1000);
+        }
+        
+        $(function() {
+            setLogInTimer();
+        
+            $('.stayLoggedInBtn').click(function() {
+                $.ajax( '/_lib/api/?cmd=ping', {
+                    dataType: 'json',
+                    success: function(data) {
+                        $('.stayLoggedInModal').modal('hide');
+                        setLogInTimer();
+                        
+                        if (data.error) {
+                            alert(data.error);
+                        }
+                    }
+                });
+            })
+        })
+        // stay logged in end
     </script>
 </body>
 
