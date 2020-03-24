@@ -15,9 +15,11 @@ function get_all_headers()
 //check user permissions
 $auth->check_login();
 
+$cms->check_permissions();
+
 if ($auth->user and $upload_config['user_uploads']) {
     $upload_config['user'] = $auth->user['id'];
-} elseif (1 != $auth->user['admin'] and 2 != $auth->user['privileges']['uploads']) {
+} elseif (1 != $auth->user['admin'] && 2 != $auth->user['privileges']['uploads']) {
     die('Permission denied.');
 }
 
