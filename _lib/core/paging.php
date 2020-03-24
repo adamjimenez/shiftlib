@@ -106,8 +106,14 @@ class paging
 
         $this->str_ext_argv = http_build_query($qs);
 
-        $this->int_num_result = (is_numeric($int_num_result)) ? $int_num_result : null;
-        $this->page = (int) $_GET[$this->prefix . 'page'];
+        if (is_string($int_num_result) && str_contains($int_num_result, ',')) {
+            $arr = explode(', ', $int_num_result);
+            $this->page = $arr[0];
+            $this->int_num_result = $arr[1];
+        } else {
+            $this->int_num_result = (is_numeric($int_num_result)) ? $int_num_result : null;
+            $this->page = (int) $_GET[$this->prefix . 'page'];
+        }
 
         if (is_numeric($_GET[$this->prefix . 'limit'])) {
             $this->int_num_result = $_GET[$this->prefix . 'limit'];
@@ -144,7 +150,7 @@ class paging
             $this->asc = $asc;
         }
 
-        if ($this->int_num_result and is_string($query)) {
+        if ($this->int_num_result !== null and is_string($query)) {
             $this->query .= ' LIMIT ' . $this->page . ', ' . $this->int_num_result;
         }
 

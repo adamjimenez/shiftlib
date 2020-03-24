@@ -15,7 +15,7 @@ class cms
     public $content = [];
 
     // hide these field types from the list view
-    public $hidden_columns = ['id', 'password', 'editor', 'textarea', 'checkboxes'];
+    public $hidden_columns = ['id', 'password', 'editor', 'textarea'];
 
     public function __construct()
     {
@@ -872,6 +872,29 @@ class cms
 
         return $value;
     }
+    
+    public function check_permissions()
+    {
+        global $auth;
+        
+        // check permissions
+        if ($auth->user['admin'] > 1 && table_exists('cms_privileges')) {
+            $rows = sql_query("SELECT * FROM cms_privileges
+                WHERE
+                    user='" . escape($auth->user['id']) . "'
+            ");
+
+            foreach ($rows as $row) {
+                $auth->user['privileges'][$row['section']] = $row['access'];
+                $pairs = explode('&', $row['filter']);
+
+                foreach ($pairs as $pair) {
+                    $arr = explode('=', $pair);
+                    $auth->user['filters'][$row['section']][underscored($arr[0])] = urldecode($arr[1]);
+                }
+            }
+        }
+    }
 
     // loads the current view
     public function admin()
@@ -902,24 +925,8 @@ class cms
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
             redirect('/admin?option=login');
         }
-
-        // check permissions
-        if ($auth->user['admin'] > 1 && table_exists('cms_privileges')) {
-            $rows = sql_query("SELECT * FROM cms_privileges
-                WHERE
-                    user='" . escape($auth->user['id']) . "'
-            ");
-
-            foreach ($rows as $row) {
-                $auth->user['privileges'][$row['section']] = $row['access'];
-                $pairs = explode('&', $row['filter']);
-
-                foreach ($pairs as $pair) {
-                    $arr = explode('=', $pair);
-                    $auth->user['filters'][$row['section']][underscored($arr[0])] = urldecode($arr[1]);
-                }
-            }
-        }
+        
+        $this->check_permissions();
 
         if (file_exists('_tpl/admin/' . underscored($option) . '.php')) {
             $this->template(underscored($option) . '.php');

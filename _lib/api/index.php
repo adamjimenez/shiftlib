@@ -394,7 +394,7 @@ switch ($_GET['cmd']) {
                                     $v = $v;
                                 }
                             }
-                        } elseif ('select-multiple' == $vars['fields'][$_GET['section']][$k] or 'checkboxes' == $vars['fields'][$_GET['section']][$k]) {
+                        } elseif ('select-multiple' == $vars['fields'][$_GET['section']][$k] || 'checkboxes' == $vars['fields'][$_GET['section']][$k]) {
                             $data[$field_name] = explode("\n", $v);
         
                             //trim data
@@ -513,19 +513,11 @@ switch ($_GET['cmd']) {
         $length = (int) $_POST['length'];
         
         if (-1 != $length) {
-            $limit = 'LIMIT ' . $start . ', ' . $length;
+            $limit = $start . ', ' . $length;
         }
         
         // gather rows
-        $rows = sql_query("SELECT T_$table.* " . $sql['cols'] . " FROM $table T_$table
-            " . $sql['joins'] . '
-            ' . $sql['where_str'] . "
-            GROUP BY
-                T_$table.id
-            ORDER BY
-                T_$table.$order $dir
-                $limit
-        ");
+        $rows = $cms->get($_GET['section'], $_GET['fields'], $limit);
         
         // prepare rows
         foreach ($rows as $row) {
@@ -534,10 +526,6 @@ switch ($_GET['cmd']) {
             
             // use labels when available
             foreach ($fields as $name) {
-                if ('password' == $vars['fields'][$_GET['section']][$name]) {
-                    continue;
-                }
-                
                 $field_name = underscored($name);
                 $item[] = $row[$field_name . '_label'] ?: $row[$field_name];
             }
