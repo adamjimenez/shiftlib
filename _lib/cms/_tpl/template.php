@@ -150,7 +150,8 @@
                             <li><a href="/" title="Website"><i class="fas fa-home"></i></a></li>
                             
 
-                            <?php if (1 == $auth->user['admin'] or $auth->user['privileges']['uploads']) { ?>
+                            <?php 
+                            if (1 == $auth->user['admin'] || $auth->user['privileges']['uploads']) { ?>
                             <li>
                                 <a href="#" class="upload">
                                     <i class="fas fa-file-upload"></i>
