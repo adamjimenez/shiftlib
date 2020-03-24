@@ -94,19 +94,8 @@ if ($_POST['custom_button']) {
                 <div class="modal fade" id="searchModal">
                     <div class="modal-dialog">
                         <div class="modal-content">
-                            <form method="get" id="search_form">
+                            <form method="get" id="search_form" autocomplete="something-new">
                                 <input type="hidden" name="option" value="<?= $this->section; ?>"/>
-
-                                <!-- fake fields are a workaround for chrome autofill -->
-                                <div style="overflow: none; height: 0px;background: transparent;"
-                                     data-description="dummyPanel for Chrome auto-fill issue">
-                                    <input type="text"
-                                           style="height:0; background: transparent; color: transparent; border: none;"
-                                           data-description="dummyUsername"></input>
-                                    <input type="password"
-                                           style="height:0; background: transparent; color: transparent; border: none;"
-                                           data-description="dummyPassword"></input>
-                                </div>
 
                                 <div class="modal-header">
                                     <h5 class="modal-title">Advanced search</h5>
@@ -189,7 +178,7 @@ if ($_POST['custom_button']) {
                     <div class="card">
                         <div class="card-body">
 
-                            <div class="toolbar top-row mt-1 mb-3">
+                            <div class="top-row mt-1 mb-3">
                                 <span class="holder"></span>
 
                                 <div class="dropdown" style="display: inline-block;">
