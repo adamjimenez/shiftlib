@@ -132,7 +132,7 @@ class paging
             $_GET[$this->prefix . 'hash'] and
             $_GET[$this->prefix . 'hash'] == md5($_GET[$this->prefix . 'order'] . $this->hash_secret)
         ) {
-            $order = $_GET[$this->prefix . 'order'];
+            $order = escape($_GET[$this->prefix . 'order']);
         }
 
         if (isset($_GET[$this->prefix . 'asc'])) {
@@ -140,7 +140,7 @@ class paging
         }
 
         if ($order and is_string($query)) {
-            $this->query .= ' ORDER BY ' . escape($order);
+            $this->query .= ' ORDER BY ' . $order;
 
             if (!$asc and ' DESC' !== substr($order, -5) and ' ASC' !== substr($order, -4)) {
                 $this->query .= ' DESC';

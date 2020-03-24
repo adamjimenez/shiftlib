@@ -572,12 +572,40 @@ class cms
         $cols .= "\tT_$table.$field_id";
 
         // determine sort order
+        if ($conditions['s'] || $conditions['w']) {
+            $word = $conditions['w'] ?: $conditions['s'];
+            
+            // find first text field
+            $field = null;
+            foreach ($vars['fields'][$section] as $name => $type) {
+                if ($type === 'text') {
+                    $field = underscored($name);
+                    break;
+                }
+            }
+            
+            if ($field) {
+                if ($order) {
+                    $order = ', '.$order;
+                }
+                
+                $order = "
+                    CASE
+                        WHEN T_".$table.".".$field." LIKE '".escape($word)."' THEN 1
+                        WHEN T_".$table.".".$field." LIKE '".escape($word)."%' THEN 2
+                        WHEN T_".$table.".".$field." LIKE '%".escape($word)."' THEN 4
+                        ELSE 3
+                    END
+                " . $order;
+            }
+        }
+        
         if (!$order) {
             $field_date = array_search('date', $vars['fields'][$section]);
             if (false === $field_date) {
                 $field_date = array_search('timestamp', $vars['fields'][$section]);
             }
-
+            
             if (in_array('position', $vars['fields'][$section])) {
                 $order = 'T_' . $table . '.position';
             } elseif (false !== $field_date) {
@@ -1042,7 +1070,7 @@ class cms
             // check fields
             if (
                 ('' != $data[$field_name] && $component && !$component->isValid($data[$field_name])) ||
-                (in_array($name, $vars['required'][$this->section]) && '' == $data[$field_name])
+                (in_array($name, $vars['required'][$this->section]) && '' == $data[$field_name] && !count($_FILES[$field_name]))
             ) {
                 $errors[] = $field_name;
                 continue;
