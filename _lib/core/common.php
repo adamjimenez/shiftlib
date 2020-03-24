@@ -1446,6 +1446,13 @@ function sql_query($query, $single = false)
     return $single ? $return_array[0] : $return_array;
 }
 
+// polyfill for PHP < 8
+if (!function_exists('str_contains')) {
+    function str_contains(string $haystack, string $needle): bool {
+        return '' === $needle || false !== strpos($haystack, $needle);
+    }
+}
+
 function str_to_pagename($page_name): string
 {
     //remove odd chars
