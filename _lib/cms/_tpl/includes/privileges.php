@@ -1,10 +1,10 @@
 <?php
 //save privileges
 if (
-    1 == $auth->user['admin'] and
-    underscored($this->section) == $auth->table and
-    (2 == $content['admin'] or 3 == $content['admin']) and
-    $_POST['privileges']
+    1 == $auth->user['admin'] &&
+    underscored($_GET['option']) == $auth->table &&
+    (2 == $content['admin'] || 3 == $content['admin']) &&
+    is_array($_POST['privileges'])
 ) {
     sql_query("DELETE FROM cms_privileges WHERE user='" . $this->id . "'");
 
@@ -20,8 +20,8 @@ if (
 
 //privileges
 if (
-    1 == $auth->user['admin'] and
-    underscored($_GET['option']) == $auth->table and
+    1 == $auth->user['admin'] &&
+    underscored($_GET['option']) == $auth->table &&
     1 < $content['admin']
  ) {
     $rows = sql_query("SELECT * FROM cms_privileges WHERE user='" . $this->id . "'");
