@@ -78,17 +78,20 @@ $(function() {
         columns: ':not(.noVis)',
         text: '<i class="fas fa-columns"></i>'
     }, {
+        titleAttr: 'Import',
         text: '<i class="fas fa-file-import"></i>',
         action: function ( e, dt, node, config ) {
             $('#importSection').val('<?=$this->section;?>');
             $('#importModal').modal('show');
         }
     }, {
+        titleAttr: 'Export',
         text: '<i class="fas fa-file-export"></i>',
         action: function ( e, dt, node, config ) {
             button_handler('export', false, dt);
         }
     }, {
+        titleAttr: 'Delete',
         text: '<i class="fas fa-trash"></i>',
         className: 'btn-danger',
         action: function ( e, dt, node, config ) {
@@ -234,6 +237,11 @@ $(function() {
         }
         
         var data = table.row( this ).data();
+        
+        if (!data) {
+            return;
+        }
+        
         var url = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
         
         if (e.ctrlKey || e.metaKey || e.which === 2) {
