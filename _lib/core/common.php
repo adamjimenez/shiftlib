@@ -890,7 +890,11 @@ function format_mobile($mobile)
 // format postcode e.g. sg64lz -> SG6 4LZ
 function format_postcode($postcode)
 {
+    // force uppercase
     $postcode = strtoupper($postcode);
+    
+    // replace spaces with single space
+    $postcode = preg_replace('!\s+!', ' ', $postcode);
 
     if (!strstr($postcode, ' ')) {
         $part1 = substr($postcode, 0, -3);
