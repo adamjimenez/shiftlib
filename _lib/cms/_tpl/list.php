@@ -86,6 +86,7 @@ $(function() {
         }
     }, {
         titleAttr: 'Export',
+        className: 'rowsRequired',
         text: '<i class="fas fa-file-export"></i>',
         action: function ( e, dt, node, config ) {
             button_handler('export', false, dt);
@@ -93,7 +94,7 @@ $(function() {
     }, {
         titleAttr: 'Delete',
         text: '<i class="fas fa-trash"></i>',
-        className: 'btn-danger',
+        className: 'btn-danger rowsRequired',
         action: function ( e, dt, node, config ) {
             button_handler('delete', true, dt);
         }
@@ -150,7 +151,8 @@ $(function() {
         }, {
             'targets': 1,
             'checkboxes': {
-               'selectRow': true
+               'selectRow': true,
+               'stateSave': false
             },
             "width": 20,
             "orderable": false
@@ -170,6 +172,9 @@ $(function() {
     // move to toolbar
     table.buttons().container()
         .appendTo( $('.toolbar .holder' ) ).attr('data-section', '<?=$this->section;?>');
+    
+    // disable buttons that need require a row to be selected
+    table.buttons('.rowsRequired').disable()
     
     // reordering
     table.on( 'row-reorder', function ( e, diff, edit ) {
@@ -207,12 +212,22 @@ $(function() {
         if(info.pages > 1 && !selectAllPagesEl.length && selectAllEl.checked && !selectAllEl.indeterminate) {
             $(dt.table().node()).before('<div class="selectAllPages"><span>Select all pages</span></div>');
         }
+        
+        // toggle buttons
+        table.buttons('.rowsRequired').enable();
     } );
     
     table.on( 'deselect', function ( e, dt, type, indexes ) {
         $(dt.table().container()).find('.selectAllPages').remove();
+        
+        // toggle buttons
+        var selectAllEl = $('.dt-checkboxes-select-all input').get(0);
+        if (selectAllEl.checked === false && selectAllEl.indeterminate === false) {
+            table.buttons('.rowsRequired').disable();
+        }
     } );
     
+    // toggle selecting all pages
     $('body').on('click', '.selectAllPages', function() {
         if (!$(this).data('selected')) {
             $(this).find('span').text('Clear selection');
