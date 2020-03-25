@@ -120,7 +120,7 @@ $(function() {
     ?>
     
     table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
-        dom: 'Bfrtip',
+        dom: 'Bfrtlip',
         buttons: buttons,
         ajax: {
             url: '/_lib/api/?<?=http_build_query($params);?>',
@@ -134,6 +134,8 @@ $(function() {
         <?php } ?>
         
         "pageLength": 10,
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        
         "stateSave": true,
         "stateDuration": 60 * 60 * 24 * 365,
         
