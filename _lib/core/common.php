@@ -1093,6 +1093,10 @@ function is_domain($domain): bool
     return $matches[0][0] == $domain;
 }
 
+function is_hostname($value){
+	return filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME);
+}
+
 function is_email($email)
 {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
