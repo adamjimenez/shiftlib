@@ -473,14 +473,6 @@ class auth
             }
         }
 
-        if (in_array($result['code'], [1,3])) {
-            if (end($sections)!=='success') {
-        	    redirect('success');
-            }
-        } else if (end($sections)==='success') {
-        	redirect('index');
-        }
-
         return $result;
     }
 
@@ -657,7 +649,7 @@ class auth
     					");
                     }
     
-                    if ($remember) {
+                    if ($data['remember']) {
                         setcookie($this->cookie_prefix . '_email', $data['email'], time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
                         setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
                     }
