@@ -4,7 +4,7 @@ $result = $auth->login();
 
 // handle login
 if ($result['code']===1) {
-	redirect('/');
+	redirect($_SESSION['request'] ?: '/');
 // new registration via single sign on
 } elseif ($result['code']===2) {
 	redirect('/register/success');
