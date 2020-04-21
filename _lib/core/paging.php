@@ -134,6 +134,11 @@ class paging
         ) {
             $order = escape($_GET[$this->prefix . 'order']);
         }
+        
+        // enclose in backticks
+        if (is_string($order) && str_contains($order, ' ') === false && str_contains($order, '.') === false && str_contains($order, '(') === false) {
+            $order = '`'.$order.'`';
+        }
 
         if (isset($_GET[$this->prefix . 'asc'])) {
             $asc = $_GET[$this->prefix . 'asc'];
