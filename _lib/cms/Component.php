@@ -118,6 +118,10 @@ abstract class Component
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
+        if (is_array($value)) {
+            $value = $value[0];
+        }
+        
         $value = str_replace('*', '%', $value);
         return $tablePrefix . $fieldName . " LIKE '" . escape($value) . "'";
     }
