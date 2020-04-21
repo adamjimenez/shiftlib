@@ -193,7 +193,6 @@ if ($_GET['id']) {
         
     $(function() {
         $('#form').change(function(){
-            console.log('yooo');
             formChanged = true;
         });
             

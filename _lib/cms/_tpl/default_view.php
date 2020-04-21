@@ -279,9 +279,15 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 </div>
 
 <script>
+    var section = <?=json_encode($_GET['option']);?>;
+    var id = <?=json_encode($id);?>;
+    var offset = 0;
+    var length = 20;
     
     // hash tabs
     $(function() {
+        $('.dt-buttons').hide();
+        
         var hash = window.location.hash;
         hash && $('ul.nav a[href="' + hash + '"]').tab('show');
         
@@ -291,25 +297,79 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             window.location.hash = this.hash;
             $('html,body').scrollTop(scrollmem);
         });
-    });
-    
-    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
-        // resize datatables
-        $($.fn.dataTable.tables(true)).DataTable()
-           .columns.adjust()
-           .responsive.recalc();
-        
-        // refresh toolbar
-        set_toolbar($(this).data('section') );
-    });
-    
-    function set_toolbar(section) {
-        $('.toolbar [data-section]').hide();
-        $('.toolbar [data-section="' + section+ '"]').show()
-    }
 
-    $(function() {
-        $('.dt-buttons').hide();
+    
+        $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+            // resize datatables
+            $($.fn.dataTable.tables(true)).DataTable()
+               .columns.adjust()
+               .responsive.recalc();
+            
+            // refresh toolbar
+            set_toolbar($(this).data('section') );
+            
+            // load logs
+            if ($(this).attr('id') === 'pills-logs-tab') {
+                load_logs();
+            }
+        });
+        
+        // switch tab on load
+        var url = document.location.toString();
+        if (url.match('#')) {
+            $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+        }
+    
+        function set_toolbar(section) {
+            $('.toolbar [data-section]').hide();
+            $('.toolbar [data-section="' + section+ '"]').show()
+        }
+        
+        function load_logs() {
+            if (offset < 0) {
+                return false;
+            }
+            
+            $.ajax({
+                url: "_lib/api/?cmd=logs",
+                type: 'GET',
+                data: {
+                    section: section,
+                    id: id,
+                    offset: offset,
+                    length: length,
+                },
+                cache: false,
+                success: function(result) {
+                    result.data.forEach(function(item) {
+                        var html = '\
+                        	<div>\
+                        		<strong>' + item.task + ' by <a href="?option=users&view=true&id= ' + item.user + '"> ' + item.name + '</a> on ' + item.date + '</strong><br>\
+                        		<pre>' + item.details + '</pre>\
+                        	</div>\
+                        ';
+                        
+                        $('#logs').append(html);
+                    })
+                    
+                    if (result.data.length < length) {
+                        offset = -1;
+                    } else {
+                        offset += length;
+                    }
+                },
+                error: function() {
+                    alert("Error loading logs");
+                }
+            });
+        }
+        
+        $(window).scroll(function() {
+            if($(window).scrollTop() == $(document).height() - $(window).height()) {
+                   load_logs();
+            }
+        });
+                
     });
     
 </script>

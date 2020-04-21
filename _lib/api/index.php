@@ -57,6 +57,23 @@ $response = [];
 switch ($_GET['cmd']) {
     case 'ping':
     break;
+    
+    case 'logs':
+        $offset = (int)$_GET['offset'] ?: 0;
+        $length = (int)$_GET['length'] ?: 20;
+        
+        if ($_GET['section'] && $_GET['section']) {
+            $response['data'] = sql_query("SELECT *,L.date FROM cms_logs L
+            	LEFT JOIN users U ON L.user=U.id
+            	WHERE
+            		section='" . escape($_GET['section']) . "' AND
+            		item='" . escape($_GET['id']) . "'
+            	ORDER BY L.id DESC
+            	LIMIT " . $offset . ", " . $length . "
+            ");
+        }
+    break;
+    
     case 'autocomplete':
 
         $name = $_GET['field'];
