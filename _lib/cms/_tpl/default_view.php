@@ -124,7 +124,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
         <div class="card-body">
             
             <div class="top-row mb-3">
-                <div class="pull-left toolbar">
+                <div class="pull-left toolbar sticky">
                     
                     <a href="<?=$back_link; ?>" class="btn btn-secondary" title="Back to <?=$back_label; ?>"><i class="fas fa-arrow-left"></i></a>
                     

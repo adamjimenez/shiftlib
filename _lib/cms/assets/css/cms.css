@@ -38,7 +38,7 @@ div.dt-buttons {
 	margin-bottom: 0;
 }
 
-.toolbar {
+.sticky {
 	position: sticky;
 	top: 0;
 	z-index: 90;

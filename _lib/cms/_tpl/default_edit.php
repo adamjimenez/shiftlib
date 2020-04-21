@@ -93,7 +93,7 @@ if ($_GET['id']) {
 <!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
 <input type="hidden" name="save" value="1">
 
-<div class="toolbar top-row mt-1 mb-3">
+<div class="toolbar top-row mt-1 mb-3 sticky">
     <button type="button" class="btn btn-secondary" onclick="window.location.href='<?=$cancel_url;?>';"><i class="fas fa-arrow-left"></i></button>
     <button id="save" type="button" class="btn btn-primary">Save</button>
 </div>

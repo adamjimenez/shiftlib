@@ -178,7 +178,7 @@ if ($_POST['custom_button']) {
                     <div class="card">
                         <div class="card-body">
 
-                            <div class="top-row mt-1 mb-3">
+                            <div class="top-row mt-1 mb-3 toolbar">
                                 <span class="holder"></span>
 
                                 <div class="dropdown" style="display: inline-block;">
