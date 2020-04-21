@@ -492,7 +492,7 @@ switch ($_GET['cmd']) {
             $order = underscored($fields[($_POST['order'][0]['column'] - 1)]) ?: 'id';
         }
         $dir = ('desc' == $_POST['order'][0]['dir']) ? 'DESC' : '';
-        $asc = ('desc' == $_POST['order'][0]['dir']) ? true : false;
+        $asc = ('desc' == $_POST['order'][0]['dir']) ? false : true;
     
         $sql = $cms->conditionsToSql($_GET['section'], $_GET['fields']);
         
