@@ -34,6 +34,18 @@ class Textarea extends Component implements ComponentInterface
     }
 
     /**
+     * Returns the display value
+     *
+     * @param $value
+     * @param string $name
+     * @return string
+     */
+    public function value($value, string $name = ''): string
+    {
+        return nl2br($value);
+    }
+
+    /**
      * @param mixed $value
      * @param string|null $fieldName
      * @return string
