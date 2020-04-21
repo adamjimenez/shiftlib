@@ -42,14 +42,14 @@ class blog
 
     public function blog($options = null)
     {
-        global $cms, $sections, $vars, $from_email, $opts, $request;
+        global $cms, $sections, $vars, $from_email, $request;
 
         $this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
 
         $this->table_blog = $options['table_blog'] ?: 'blog';
         $this->table_categories = $options['table_categories'] ?: 'blog_categories';
 
-        $this->category_field = array_search($this->table_categories, $opts);
+        $this->category_field = array_search($this->table_categories, $vars['options']);
         
         $this->conditions = [];
 
