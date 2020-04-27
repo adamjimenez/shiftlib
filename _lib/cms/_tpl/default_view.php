@@ -4,7 +4,7 @@ if (1 != $auth->user['admin'] and !$auth->user['privileges'][$this->section]) {
     die('access denied');
 }
 
-$this->set_section($this->section, $_GET['id']);
+$this->set_section($this->section, $_GET['id'], ['read']);
 $content = $this->content;
 
 // get id if it exists
