@@ -144,7 +144,7 @@ class cms
         $table = underscored($section);
         $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
 
-        $query = "SELECT *
+        $query = "SELECT T_$table.* ".$sql['cols']."
             FROM `$table` T_$table
             " . $sql['joins'] . '
             ' . $sql['where_str'] . '
@@ -266,6 +266,9 @@ class cms
                         item = '$id'
                 ");
             }
+        
+            // log it
+            $this->save_log($section, $id, 'delete');
         }
 
         $this->trigger_event('delete', [$ids]);
@@ -1239,9 +1242,7 @@ class cms
         }
 
         // log it
-        if (table_exists('cms_logs')) {
-            $this->save_log($this->section, $this->id, $task, $details);
-        }
+        $this->save_log($this->section, $this->id, $task, $details);
 
         $this->trigger_event('save', [$this->id, $data]);
         $this->saved = true;
@@ -1249,9 +1250,14 @@ class cms
         return $this->id;
     }
 
-    public function save_log($section, $id, $task, $details)
+    public function save_log($section, $id, $task, $details='')
     {
         global $auth;
+        
+        
+        if (!table_exists('cms_logs')) {
+            return;   
+        }
 
         sql_query("INSERT INTO cms_logs SET
             user = '" . $auth->user['id'] . "',
