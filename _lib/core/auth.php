@@ -497,14 +497,14 @@ class auth
         		LIMIT 1
         	", 1);
         
-            if ($user and isset($_POST['reset_password'])) {
+            if ($user and isset($data['reset_password'])) {
                 //check fields are completed
                 $errors = [];
         
-                if (!$_POST['password']) {
+                if (!$data['password']) {
                     $errors[] = 'password';
                 }
-                if ($values['password'] && strlen($values['password']) < 6) {
+                if ($data['password'] && strlen($data['password']) < 6) {
                     $errors[] = 'password min 6 characters';
                 }
         
@@ -512,18 +512,19 @@ class auth
                 if (count($errors)) {
                     print json_encode($errors);
                     exit;
-                } elseif ($_POST['validate']) {
+                } elseif ($data['validate']) {
                     print 1;
                     exit;
                 }
+                
                 //hash password
-                $hash = $this->create_hash($_POST['password']);
+                $hash = $this->create_hash($data['password']);
         
                 // save user
                 sql_query("UPDATE users SET
         			password = '" . escape($hash) . "'
         			WHERE
-        				id='" . escape($user['id']) . "'
+        				id='" . escape($user['user']) . "'
         			LIMIT 1
         		");
                 
@@ -531,7 +532,7 @@ class auth
                     sql_query("UPDATE users SET
         			    email_verified = 1
             			WHERE
-            				id='" . escape($user['id']) . "'
+            				id='" . escape($user['user']) . "'
             			LIMIT 1
             		");
                 }
