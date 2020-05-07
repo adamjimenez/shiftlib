@@ -287,8 +287,8 @@ class cms
         	    id='" . escape($file_id) . "'
         ", 1) or die('file not found');
 
-        header('filename="' . $row['name'] . '"');
         header('Content-type: ' . $row['type']);
+        header('Content-Disposition: attachment; filename="' . $row['name'] . '"');
 
         if (!$_GET['w'] && !$_GET['h']) {
             print file_get_contents($vars['files']['dir'] . $row['id']);
