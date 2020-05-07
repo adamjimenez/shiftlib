@@ -1009,9 +1009,41 @@ class cms
     }
 
     // handle ajax form submission
-    public function submit($notify = null, $other_errors = [])
+    public function submit($options = [], $other_errors = [])
     {
+        // backcompat
+        if ($options === true) {
+            $options = $options['notify'] = true;
+        }
+        
         $errors = $this->validate();
+        
+        if ($options['recaptcha']) {
+            global $auth_config;
+            
+        	if ($auth_config['recaptcha_secret']) {
+        		if( !$_POST['g-recaptcha-response'] ){
+        			$errors[] = 'captcha';
+        		} else {
+        			$data = array(
+        				'secret' => $auth_config['recaptcha_secret'],
+        				'response' => $_POST['g-recaptcha-response']
+        			);
+        			
+        			$verify = curl_init();
+        			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+        			curl_setopt($verify, CURLOPT_POST, true);
+        			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
+        			curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+        			$response = curl_exec($verify);
+        			
+        			if (!$response['success']) {
+        				$errors[] = 'captcha';
+        			}
+        		}
+        	}
+            
+        }
 
         if (is_array($other_errors)) {
             $errors = array_values(array_unique(array_merge($errors, $other_errors)));
@@ -1027,7 +1059,7 @@ class cms
         }
         $this->id = $this->save();
 
-        if ($notify) {
+        if ($options['notify']) {
             $this->notify(null, $notify);
         }
 

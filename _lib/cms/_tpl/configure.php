@@ -484,6 +484,9 @@ $auth_config["facebook_secret"] = "' . $_POST['auth_config']['facebook_secret'] 
 $auth_config["google_appId"] = "' . $_POST['auth_config']['google_appId'] . '" ?: $_SERVER["google_appId"];
 $auth_config["google_secret"] = "' . $_POST['auth_config']['google_secret'] . '" ?: $_SERVER["google_secret"];
 
+$auth_config["recaptcha_key"] = "' . $_POST['auth_config']['recaptcha_key'] . '" ?: $_SERVER["recaptcha_key"];
+$auth_config["recaptcha_secret"] = "' . $_POST['auth_config']['recaptcha_secret'] . '" ?: $_SERVER["recaptcha_secret"];
+
 // deprecated
 $auth_config["login_wherestr"] = "' . $auth_config['login_wherestr'] . '";
 
@@ -815,6 +818,16 @@ $count['options'] = 0;
                                 
                                 <label>Google secret</label><br>
                                 <input type="text" name="auth_config[google_secret]" value="<?=$auth_config['google_secret'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>ReCAPTHA key</label><br>
+                                <input type="text" name="auth_config[recaptcha_key]" value="<?=$auth_config['recaptcha_key'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>ReCAPTHA secret</label><br>
+                                <input type="text" name="auth_config[recaptcha_secret]" value="<?=$auth_config['recaptcha_secret'];?>">
                                 <br>
                                 <br>
                                 

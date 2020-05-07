@@ -1211,6 +1211,12 @@ function load_js($libs)
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
 	<?php
     }
+
+    if ($deps['recaptcha']) {
+        ?>
+		<script src='https://www.google.com/recaptcha/api.js'></script>
+	<?php
+    }
 }
 
 function make_timestamp($string)
@@ -1321,6 +1327,11 @@ function parse_links($text)
    ');
 
     return preg_replace_callback($pattern, $callback, $text);
+}
+
+function recaptcha() {
+    global $auth_config;
+    print '<div class="g-recaptcha" data-sitekey="' . $auth_config['recaptcha_key'] . '"></div>';
 }
 
 function redirect($url, $http_response_code = null)
