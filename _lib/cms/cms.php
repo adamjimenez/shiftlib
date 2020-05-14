@@ -16,24 +16,35 @@ class cms
 
     // hide these field types from the list view
     public $hidden_columns = ['id', 'password', 'editor', 'textarea'];
+    
+    public $buttons = [];
+    
+    public $handlers = [];
 
     public function __construct()
     {
-        global $cms_buttons, $vars;
-
-        //built in extensions
-        $cms_buttons[] = [
+    }
+    
+    public function addButton($buttons)
+    {
+        $default_buttons = [[
             'section' => 'email templates',
             'page' => 'view',
             'label' => 'Send Preview',
             'handler' => function () {
                 global $auth, $cms;
-
+    
                 $content = $cms->get('email templates', $_GET['id']);
                 email_template($auth->user['email'], $content['id'], $auth->user);
                 $_SESSION['message'] = 'Preview sent';
-            },
-        ];
+            }
+        ]];
+        $this->buttons = array_merge($default_buttons, $buttons);
+    }
+    
+    public function bind($handlers)
+    {
+        $this->handlers = array_merge($this->handlers, $handlers);
     }
 
     public function getId()
@@ -1016,34 +1027,7 @@ class cms
             $options = $options['notify'] = true;
         }
         
-        $errors = $this->validate();
-        
-        if ($options['recaptcha']) {
-            global $auth_config;
-            
-        	if ($auth_config['recaptcha_secret']) {
-        		if( !$_POST['g-recaptcha-response'] ){
-        			$errors[] = 'captcha';
-        		} else {
-        			$data = array(
-        				'secret' => $auth_config['recaptcha_secret'],
-        				'response' => $_POST['g-recaptcha-response']
-        			);
-        			
-        			$verify = curl_init();
-        			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-        			curl_setopt($verify, CURLOPT_POST, true);
-        			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
-        			curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
-        			$response = curl_exec($verify);
-        			
-        			if (!$response['success']) {
-        				$errors[] = 'captcha';
-        			}
-        		}
-        	}
-            
-        }
+        $errors = $this->validate($_POST, $options['recaptcha']);
 
         if (is_array($other_errors)) {
             $errors = array_values(array_unique(array_merge($errors, $other_errors)));
@@ -1067,7 +1051,7 @@ class cms
     }
 
     // validate fields before saving
-    public function validate($data = null)
+    public function validate($data = null, $recaptcha)
     {
         global $vars;
 
@@ -1096,7 +1080,7 @@ class cms
 
             // skip readonly and blank passwords
             if (
-                !in_array($field_name, $this->editable_fields) ||
+                !in_array($name, $this->editable_fields) ||
                 ($component->preserveValue && '' == $data[$field_name] && $this->id)
             ) {
                 continue;
@@ -1142,6 +1126,32 @@ class cms
                     break;
                 }
             }
+        }
+        
+        if ($recaptcha) {
+            global $auth_config;
+            
+        	if ($auth_config['recaptcha_secret']) {
+        		if (!$data['g-recaptcha-response']) {
+        			$errors[] = 'recaptcha';
+        		} else {
+        			$data = array(
+        				'secret' => $auth_config['recaptcha_secret'],
+        				'response' => $data['g-recaptcha-response']
+        			);
+        			
+        			$verify = curl_init();
+        			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+        			curl_setopt($verify, CURLOPT_POST, true);
+        			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
+        			curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+        			$response = curl_exec($verify);
+        			
+        			if (!$response['success']) {
+        				$errors[] = 'recaptcha';
+        			}
+        		}
+        	}
         }
 
         return array_values(array_unique($errors));
@@ -1302,10 +1312,8 @@ class cms
 
     public function trigger_event($event, $args)
     {
-        global $cms_handlers;
-
-        if (is_array($cms_handlers)) {
-            foreach ($cms_handlers as $handler) {
+        if (is_array($this->handlers)) {
+            foreach ($this->handlers as $handler) {
                 if (false === is_array($handler['section'])) {
                     $handler['section'] = [$handler['section']];
                 }
@@ -1323,7 +1331,7 @@ class cms
     public function template($include, $local = false)
     {
         // globals are needed for the page templates
-        global $vars, $auth, $shop_enabled, $live_site, $cms_buttons, $message;
+        global $vars, $auth, $shop_enabled, $live_site, $message;
 
         ob_start();
         if ($local) {

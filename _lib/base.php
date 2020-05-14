@@ -32,6 +32,14 @@ if ($db_config['user'] or $db_connection) {
 
 include($root_folder . '/_inc/custom.php');
 
+//backcompat
+if ($cms_buttons) {
+    $cms->addButton($cms_buttons);
+}
+if ($cms_handlers) {
+    $cms->addButton($cms_handlers);
+}
+
 if ($shop_enabled) {
     $shop = new shop();
 }

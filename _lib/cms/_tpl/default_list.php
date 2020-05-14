@@ -42,7 +42,7 @@ foreach ($filters as $v) {
 
 // custom button handler
 if ($_POST['custom_button']) {
-    if ('list' == $cms_buttons[$_POST['custom_button']]['page'] and $cms_buttons[$_POST['custom_button']]['handler']) {
+    if ('list' == $this->buttons[$_POST['custom_button']]['page'] and $this->buttons[$_POST['custom_button']]['handler']) {
         $items = [];
         if ($_POST['select_all_pages'] or !$_POST['id']) {
             $items = $this->get($_GET['option'], $_GET);
@@ -52,7 +52,7 @@ if ($_POST['custom_button']) {
             }
         }
 
-        $cms_buttons[$_POST['custom_button']]['handler']($items);
+        $this->buttons[$_POST['custom_button']]['handler']($items);
     }
 } else {
     foreach ($vars['fields'][$this->section] as $field => $type) {
@@ -190,7 +190,7 @@ if ($_POST['custom_button']) {
                                     <div class="dropdown-menu"
                                          aria-labelledby="dropdownMenuButton<?= underscored($button['section']); ?>">
                                         <?php
-                                        foreach ($cms_buttons as $k => $button) {
+                                        foreach ($this->buttons as $k => $button) {
                                             if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
                                                 require('includes/button.php');
                                             }

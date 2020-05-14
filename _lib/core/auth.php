@@ -86,7 +86,7 @@ class auth
      *
      * @var string
      */
-    public $facebook_id;
+    public $facebook_appId;
 
     /**
      * for use with single sign on
@@ -100,7 +100,7 @@ class auth
      *
      * @var string
      */
-    public $google_id;
+    public $google_appId;
 
     /**
      * for use with single sign on
@@ -219,13 +219,13 @@ class auth
                 'providers' => [
                     'Facebook' => [
                         'enabled' => true,
-                        'keys' => [ 'id' => $this->facebook_id, 'secret' => $this->facebook_secret ],
+                        'keys' => [ 'id' => $this->facebook_appId, 'secret' => $this->facebook_secret ],
                          'trustForwarded' => true,
                           'scope' => 'email',
                     ],
                     'Google' => [
                         'enabled' => true,
-                        'keys' => [ 'id' => $this->google_id, 'secret' => $this->google_secret ],
+                        'keys' => [ 'id' => $this->google_appId, 'secret' => $this->google_secret ],
                         'scope' => 'profile email',
                     ],
                 ],
@@ -271,7 +271,7 @@ class auth
             }
         
             // log in
-            $this->set_login($user['email'], $user['password']);
+            $this->set_login($email, $user['password']);
         }
         
         if ('auth' == $_GET['action']) {
@@ -370,9 +370,13 @@ class auth
         exit;
     }
 
-    public function register($fields = ['email']) //invoked by $_POST['register']
+    public function register($options = []) //invoked by $_POST['register']
     {
         global $cms, $request, $sections;
+        
+        if (isset($options['fields'])) {
+            $options['fields'] = ['email'];
+        }
         
         $result = [];
         $data = $_POST;
@@ -405,11 +409,11 @@ class auth
                 'message' => 'Thanks for verifying your email address',
             ];
         } elseif ($data['register']) {
-            $cms->set_section($this->table, $fields);
+            $cms->set_section($this->table, $options['fields']);
     
             unset($data['admin']);
     
-            $errors = $cms->validate();
+            $errors = $cms->validate($_POST, $options['recaptcha']);
     
             if (isset($data['confirm']) && ($data['confirm'] !== $data['password'])) {
                 $errors[] = 'password passwords do not match';

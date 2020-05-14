@@ -45,9 +45,12 @@ if ($_GET['path']) {
 
 if ('preview' == $_GET['func']) {
     $image = image($_GET['file'], $_GET['w'], $_GET['h'], false);
+    
     if ($image) {
         header('Content-type: image/jpeg');
         print file_get_contents('.' . $image);
+    } else {
+        trigger_404();
     }
     exit;
 }

@@ -28,7 +28,7 @@ if (
 }
 
 if ($_POST['custom_button']) {
-    $cms_buttons[$_POST['custom_button']]['handler']($_GET['id']);
+    $this->buttons[$_POST['custom_button']]['handler']($_GET['id']);
 
     $content = $this->get($this->section, $_GET['id']);
 }
@@ -145,7 +145,7 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']);?>">
                             <?php
-                            foreach ($cms_buttons as $k => $button) {
+                            foreach ($this->buttons as $k => $button) {
                                 if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'view' == $button['page']) {
                                     require('includes/button.php');
                                 }

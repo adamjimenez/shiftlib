@@ -267,8 +267,18 @@ function initForms()
             altFormat: 'yy-mm-dd',
             constrainInput: false
         });
+
+    	//dob
+    	$("input[data-type='dob']").datepicker({
+    		dateFormat: 'yy-mm-dd',
+    		altFormat: 'yy-mm-dd',
+    		changeMonth : true,
+    		changeYear : true,
+    		yearRange: '-100y:c+nn',
+    		maxDate: '-1d'
+    	});
     }
-    
+
     //month
     if( $('input.month').length ){
         $("head").append("<link>");

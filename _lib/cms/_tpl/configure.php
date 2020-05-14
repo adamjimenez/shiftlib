@@ -601,7 +601,8 @@ $vars["options"]["' . $field_option . '"] = "";
 
     $_SESSION['message'] = 'Configuration Saved';
 
-    redirect('/admin?option=configure');
+    //reload config
+    require('_inc/config.php');
 }
 
 // version check
