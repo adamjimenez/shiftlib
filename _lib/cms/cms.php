@@ -1051,7 +1051,7 @@ class cms
     }
 
     // validate fields before saving
-    public function validate($data = null, $recaptcha)
+    public function validate($data = null, $recaptcha = false)
     {
         global $vars;
 
@@ -1135,7 +1135,7 @@ class cms
         		if (!$data['g-recaptcha-response']) {
         			$errors[] = 'recaptcha';
         		} else {
-        			$data = array(
+        			$params = array(
         				'secret' => $auth_config['recaptcha_secret'],
         				'response' => $data['g-recaptcha-response']
         			);
@@ -1143,7 +1143,7 @@ class cms
         			$verify = curl_init();
         			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
         			curl_setopt($verify, CURLOPT_POST, true);
-        			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
+        			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($params));
         			curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
         			$response = curl_exec($verify);
         			
