@@ -153,6 +153,7 @@ $section_templates = [
         'tel' => 'tel',
         'enquiry' => 'textarea',
         'date' => 'timestamp',
+        'read' => 'read',
         'id' => 'id',
     ],
     'email templates' => [
