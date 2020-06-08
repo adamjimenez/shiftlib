@@ -488,6 +488,7 @@ switch ($_GET['cmd']) {
         }
         
         $table = escape(underscored($_GET['section']));
+        $field_id = in_array('id', $vars['fields'][$_GET['section']]) ? array_search('id', $vars['fields'][$_GET['section']]) : 'id';
         
         // get field names
         $fields = [];
@@ -513,10 +514,11 @@ switch ($_GET['cmd']) {
     
         $sql = $cms->conditionsToSql($_GET['section'], $_GET['fields']);
         
-        $count = sql_query('SELECT count(*) AS `count` FROM ' . $table . ' T_' . $table . '
+        $count = sql_query('SELECT COUNT(DISTINCT T_' . $table . '.' . $field_id . ') AS `count` FROM ' . $table . ' T_' . $table . '
             ' . $sql['joins'] . '
             ' . $sql['where_str'] . '
-        ', 1);
+            ' . $sql['having_str']
+        , 1);
         
         $response = [
             'draw' => $_POST['draw'],
