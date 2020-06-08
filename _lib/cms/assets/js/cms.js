@@ -121,10 +121,10 @@ function initForms()
                 var errorMethod = 'inline';
                 var firstError;
 
-                if( $(this).attr('data-errorMethod') ){
+                if ( $(this).attr('data-errorMethod') ) {
                     errorMethod = $(this).attr('data-errorMethod');
                 //legacy support
-                }else if( $(this).attr('errorMethod') ){
+                } else if ( $(this).attr('errorMethod') ) {
                     errorMethod = $(this).attr('errorMethod');
                 }
 
@@ -221,7 +221,7 @@ function initForms()
                         //focus field
                     //    $(this).find('[name="'+returned[0]+'"]:first').focus();
                     }
-                }else{
+                } else {
                     //submit form
                     window.onbeforeunload = null;
 
@@ -262,11 +262,23 @@ function initForms()
 
     //datefields
     if( $().datepicker ){
+        
         $("input[data-type='date']").datepicker({
             dateFormat: 'yy-mm-dd',
             altFormat: 'yy-mm-dd',
             constrainInput: false
         });
+
+    	//dob
+    	$("input[data-type='dob']").datepicker({
+    		dateFormat: 'yy-mm-dd',
+    		altFormat: 'yy-mm-dd',
+    		changeMonth : true,
+    		changeYear : true,
+    		yearRange: '-100y:c+nn',
+    		maxDate: '-1d'
+    	});
+        
     }
     
     //month
@@ -743,11 +755,9 @@ function delRow(row) {
     row.parentNode.parentNode.parentNode.deleteRow(row.parentNode.parentNode.rowIndex);
 }
 
-$(document).ready(function() {
+$(function() {
     initForms();
-});
 
-$(document).ready(function(){
     $('.mob-nav-icon').click(function () {
         $('.content-wrapper').toggleClass('fullwidth');
         $('.leftcol').toggleClass('nav-hdn');
