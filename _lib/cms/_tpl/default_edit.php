@@ -22,7 +22,7 @@ if ($this->id and $section and in_array('id', $vars['fields'][$this->section])) 
     $cancel_url = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[underscored($section)];
 } elseif ($this->id) {
     $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id;
-} elseif (in_array('id', $vars['fields'][$this->section])) {
+} else {
     $cancel_url = '?option=' . $this->section;
 }
 
