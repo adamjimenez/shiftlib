@@ -36,6 +36,12 @@ class auth
      * @var int
      */
     public $expiry = 60;
+    
+    /**
+     * timeout in hours
+     * @var int
+     */
+    public $activation_timeout = 24;
 
     /**
      * email activation
@@ -128,26 +134,26 @@ class auth
 
         if (!$email_templates['Password Reminder']) {
             $email_templates['Password Reminder'] = 'Dear {$name},
-		
-		    You have requested a password reset for your {$domain} member account.
-		    Please use the following link:
-		
-			{$link}
-		
-			Kind regards
-		
-			The {$domain} Team';
+        
+            You have requested a password reset for your {$domain} member account.
+            Please use the following link:
+        
+            {$link}
+        
+            Kind regards
+        
+            The {$domain} Team';
         }
 
         if (!$email_templates['Registration Confirmation']) {
             $email_templates['Registration Confirmation'] = 'Dear {$name},
-		
-		    Thank you for registering as a member of {$domain}.
-		
-		    To login to your new account, visit: {$link}
-		
-			Kind regards
-			The {$domain} Team';
+        
+            Thank you for registering as a member of {$domain}.
+        
+            To login to your new account, visit: {$link}
+        
+            Kind regards
+            The {$domain} Team';
         }
 
         $this->required = $vars['required'][$this->table];
@@ -181,8 +187,8 @@ class auth
     
             if ($email and $password and table_exists($this->table)) {
                 $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
-    				email='" . escape($email) . "'
-    			", 1);
+                    email='" . escape($email) . "'
+                ", 1);
     
                 if ($result && $password == md5($this->secret_phrase . $result['password'])) {
                     $_SESSION[$this->cookie_prefix . '_email'] = $result['email'];
@@ -249,25 +255,25 @@ class auth
             
             // find user
             $user = sql_query('SELECT * FROM ' . $this->table . " WHERE
-        		email='" . escape($email) . "'
-        		LIMIT 1
-        	", 1);
+                email='" . escape($email) . "'
+                LIMIT 1
+            ", 1);
         
             // create user if they don't exist
             if (!$user) {
                 $user['password'] = generate_password();
         
                 sql_query('INSERT INTO ' . $this->table . " SET
-        			name='" . escape($user_profile->firstName) . "',
-        			surname='" . escape($user_profile->lastName) . "',
-        			email='" . escape($email) . "',
-        			password='" . escape($user['password']) . "'
-        		");
-        		
+                    name='" . escape($user_profile->firstName) . "',
+                    surname='" . escape($user_profile->lastName) . "',
+                    email='" . escape($email) . "',
+                    password='" . escape($user['password']) . "'
+                ");
+                
                 $result = [
                     'code' => 2,
                     'message' => 'Registration success',
-                ];        		
+                ];                
             }
         
             // log in
@@ -292,10 +298,10 @@ class auth
         }
         
         $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
-			email='" . escape($_SESSION[$this->cookie_prefix . '_email']) . "' AND
-			password='" . escape($_SESSION[$this->cookie_prefix . '_password']) . "'
-			" . ($this->login_wherestr ? 'AND ' . $this->login_wherestr : '') . '
-		', 1);
+            email='" . escape($_SESSION[$this->cookie_prefix . '_email']) . "' AND
+            password='" . escape($_SESSION[$this->cookie_prefix . '_password']) . "'
+            " . ($this->login_wherestr ? 'AND ' . $this->login_wherestr : '') . '
+        ', 1);
 
         if ($result) {
             $this->user = $result;
@@ -338,9 +344,9 @@ class auth
         }
 
         sql_query("INSERT INTO cms_login_attempts SET
-			email='" . escape($email) . "',
-			ip='" . escape($_SERVER['REMOTE_ADDR']) . "'
-		");
+            email='" . escape($email) . "',
+            ip='" . escape($_SERVER['REMOTE_ADDR']) . "'
+        ");
     }
 
     public function check_login_attempts()
@@ -350,14 +356,14 @@ class auth
         }
 
         sql_query('DELETE FROM cms_login_attempts WHERE
-			`date`<DATE_SUB(NOW(),INTERVAL 10 MINUTE)
-		');
+            `date`<DATE_SUB(NOW(),INTERVAL 10 MINUTE)
+        ');
 
         $rows = sql_query("SELECT id FROM cms_login_attempts 
             WHERE
-    			ip='" . escape($_SERVER['REMOTE_ADDR']) . "' AND
-	    		`date`>DATE_SUB(NOW(),INTERVAL 10 MINUTE)
-		");
+                ip='" . escape($_SERVER['REMOTE_ADDR']) . "' AND
+                `date`>DATE_SUB(NOW(),INTERVAL 10 MINUTE)
+        ");
 
         if (count($rows) >= 5) {
             $this->show_error(['password Too many login attempts - try again in 10 minutes.']);
@@ -385,21 +391,21 @@ class auth
         if ($_GET['code']) {
             //check code
             $user = sql_query("SELECT user FROM cms_activation
-        		WHERE
-        			code = '" . escape($_GET['code']) . "' AND
-        			user = '" . escape($_GET['user']) . "' AND
-        			expiration > CURDATE()
-        		LIMIT 1
-        	", 1);
+                WHERE
+                    code = '" . escape($_GET['code']) . "' AND
+                    user = '" . escape($_GET['user']) . "' AND
+                    expiration > CURDATE()
+                LIMIT 1
+            ", 1);
         
             if ($user) {
                 // save user
                 sql_query('UPDATE ' . $this->table . " SET
-        			email_verified = 1
-        			WHERE
-        				id='" . escape($user['user']) . "'
-        			LIMIT 1
-        		");
+                    email_verified = 1
+                    WHERE
+                        id='" . escape($user['user']) . "'
+                    LIMIT 1
+                ");
                 
                 $this->load();
             }
@@ -432,22 +438,23 @@ class auth
     
             $reps = $data;
     
+            $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request;
             if ($this->email_activation) {
                 //activation code
                 $code = substr(md5(rand(0, 10000)), 0, 10);
     
                 if (table_exists('cms_activation')) {
                     sql_query("INSERT INTO cms_activation SET
-        				code = '" . escape($code) . "',
-        				expiration = DATE_ADD(CURDATE(), INTERVAL 1 HOUR),
-        				user = " . $id . "
-        				ON DUPLICATE KEY UPDATE
-        			    	code = '" . escape($code) . "',
-        			    	expiration = DATE_ADD(CURDATE(), INTERVAL 1 HOUR)
-        			");
+                        code = '" . escape($code) . "',
+                        expiration = DATE_ADD(CURDATE(), INTERVAL " . $this->activation_timeout . " HOUR),
+                        user = " . $id . "
+                        ON DUPLICATE KEY UPDATE
+                            code = '" . escape($code) . "',
+                            expiration = DATE_ADD(CURDATE(), INTERVAL " . $this->activation_timeout . " HOUR)
+                    ");
                 }
                 
-                $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request . '?user=' . $id . '&code=' . $code;
+                $reps['link'] .=  '?user=' . $id . '&code=' . $code;
             }
     
             $reps['domain'] = $_SERVER['HTTP_HOST'];
@@ -494,12 +501,12 @@ class auth
         if ($_GET['code']) {
             //check code
             $user = sql_query("SELECT user FROM cms_activation
-        		WHERE
-        			code = '" . escape($_GET['code']) . "' AND
-        			user = '" . escape($_GET['user']) . "' AND
-        			expiration > CURDATE()
-        		LIMIT 1
-        	", 1);
+                WHERE
+                    code = '" . escape($_GET['code']) . "' AND
+                    user = '" . escape($_GET['user']) . "' AND
+                    expiration > CURDATE()
+                LIMIT 1
+            ", 1);
         
             if ($user and isset($data['reset_password'])) {
                 //check fields are completed
@@ -526,19 +533,19 @@ class auth
         
                 // save user
                 sql_query("UPDATE users SET
-        			password = '" . escape($hash) . "'
-        			WHERE
-        				id='" . escape($user['user']) . "'
-        			LIMIT 1
-        		");
+                    password = '" . escape($hash) . "'
+                    WHERE
+                        id='" . escape($user['user']) . "'
+                    LIMIT 1
+                ");
                 
                 if ($this->email_activation) {
                     sql_query("UPDATE users SET
-        			    email_verified = 1
-            			WHERE
-            				id='" . escape($user['user']) . "'
-            			LIMIT 1
-            		");
+                        email_verified = 1
+                        WHERE
+                            id='" . escape($user['user']) . "'
+                        LIMIT 1
+                    ");
                 }
                 
                 $result = [
@@ -569,9 +576,9 @@ class auth
     
             // check user exists
             $user = sql_query('SELECT id FROM ' . $this->table . "
-    			WHERE
-    				email = '" . escape($email) . "'
-    		", 1);
+                WHERE
+                    email = '" . escape($email) . "'
+            ", 1);
     
             if ($user) {
                 if ($_POST['validate']) {
@@ -588,13 +595,13 @@ class auth
             $code = substr(md5(rand(0, 10000)), 0, 10);
 
             sql_query("INSERT INTO cms_activation SET
-				code = '" . escape($code) . "',
-				expiration = DATE_ADD(CURDATE(), INTERVAL 1 HOUR),
-				user = " . $user['id'] . "
-				ON DUPLICATE KEY UPDATE
-			    	code = '" . escape($code) . "',
-			    	expiration = DATE_ADD(CURDATE(), INTERVAL 1 HOUR)
-			");
+                code = '" . escape($code) . "',
+                expiration = DATE_ADD(CURDATE(), INTERVAL " . $this->activation_timeout . " HOUR),
+                user = " . $user['id'] . "
+                ON DUPLICATE KEY UPDATE
+                    code = '" . escape($code) . "',
+                    expiration = DATE_ADD(CURDATE(), INTERVAL " . $this->activation_timeout . " HOUR)
+            ");
 
             $reps['user_id'] = $user['id'];
             $reps['code'] = $code;
@@ -633,10 +640,10 @@ class auth
                 $data['password'] = $this->create_hash($data['password']);
     
                 $row = sql_query('SELECT * FROM ' . $this->table . "
-    				WHERE
-    					email='" . escape($data['email']) . "' AND
-    					password='" . escape($data['password']) . "'
-    			", 1);
+                    WHERE
+                        email='" . escape($data['email']) . "' AND
+                        password='" . escape($data['password']) . "'
+                ", 1);
     
                 if ($row) {
                     $this->user = $row;
@@ -647,11 +654,11 @@ class auth
     
                     if ($this->log_last_login) {
                         sql_query('UPDATE ' . $this->table . " SET
-    						last_login=NOW()
-    						WHERE
-    							email='" . escape($data['email']) . "'
-    						LIMIT 1
-    					");
+                            last_login=NOW()
+                            WHERE
+                                email='" . escape($data['email']) . "'
+                            LIMIT 1
+                        ");
                     }
     
                     if ($data['remember']) {
