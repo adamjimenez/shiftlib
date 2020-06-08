@@ -1376,14 +1376,14 @@ function spaced($str) // also see underscored
 
 function cache_query($query, $single = false, $expire = 3600)
 {
-    $memcache = new Memcache;
-    $memcache->connect('localhost', 11211) or trigger_error('Could not connect', E_USER_ERROR);
+    $memcache = new Memcached;
+    $memcache->addServer("localhost", 11211) or trigger_error('Could not connect', E_USER_ERROR);
     
     $result = $memcache->get(md5($query));
     
     if (!$result) {
         $result = sql_query($query);
-        $memcache->set(md5($query), $result, false, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
+        $memcache->set(md5($query), $result, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
     }
     
     return $single ? $result[0] : $result;
@@ -1585,6 +1585,30 @@ function time_elapsed($ptime): ?string
     }
 }
 
+function timer($label='')
+{
+    global $auth;
+
+    if (!$auth->user['admin']) {
+        return;
+    }
+
+    global $timer_start;
+
+    if (!$timer_start) {
+        $timer_start = microtime(true);
+        $timer_now = $timer_start;
+    } else {
+        $timer_now = microtime(true);
+    }
+
+    $diff = $timer_now - $timer_start;
+
+    $timer_start = $timer_now;
+
+    print '<p>' . $label . ': ' . round($diff, 4) . '</p>';
+}
+
 function truncate($string, $max = 50, $rep = '..'): string
 {
     $string = strip_tags($string);
@@ -1658,21 +1682,32 @@ function validate($fields, $required, $array = true)
     return implode("\n", $errors);
 }
 
-function wget($url)
+function wget($url, $cache_expiration = 0)
 {
+    if ($cache_expiration) {
+        $memcache = new Memcached;
+        $memcache->addServer("localhost", 11211) or trigger_error('Could not connect', E_USER_ERROR);
+        $result = $memcache->get(md5($url));
+        
+        if ($result) {
+            return $result;
+        }
+    }
+    
     $ch = curl_init();
     
     // set url
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    $data = curl_exec($ch);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $result = curl_exec($ch);
     curl_close($ch);
     
-    $json = json_decode($data, true);
+    if ($cache_expiration) {
+        $memcache->set(md5($url), $result, $cache_expiration) or trigger_error('Failed to save data at the server', E_USER_ERROR);
+    }
     
-    return $json ?: $data;
+    return $result;
 }
 
 function video_info($url): array
