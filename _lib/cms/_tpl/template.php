@@ -308,14 +308,14 @@
 
     <script>
         function button_handler (value, show_prompt, dt) {
-               if (show_prompt) {
+            if (show_prompt) {
                 var result = confirm('Are you sure?');
 
                 if (!result) {
                     $('.action').val('');
                     return false;
                 }
-               }
+            }
 
             $('.action').val(value);
             var form = $(dt.table().container()).closest('form');
@@ -342,16 +342,24 @@
                         .val(1)
                     );
             };
+            
+            // columns
+            $(form).append(
+                $('<input>')
+                    .attr('type', 'hidden')
+                    .attr('name', 'columns')
+                    .val(JSON.stringify(dt.columns().visible().toArray()))
+                );
 
             form.submit();
         }
     
-       // Handle form submission event
-       $('body').on('click', '.buttons button', function(e) {
-           button_handler($(this).data('value'), $(this).data('confirm'), this);
-       });
+        // Handle form submission event
+        $('body').on('click', '.buttons button', function(e) {
+            button_handler($(this).data('value'), $(this).data('confirm'), this);
+        });
        
-       // file import
+        // file import
         $('.import_file').on('change', changeFile);
         
         // fix close button

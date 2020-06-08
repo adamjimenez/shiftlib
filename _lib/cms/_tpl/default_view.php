@@ -53,7 +53,7 @@ if ($_POST['select_all_pages']) {
 
 // delete this item
 if ($_POST['delete'] and $this->id) {
-    $this->delete_items($this->section, $this->id);
+    $this->delete_items($_POST['section'], $this->id);
     redirect('?option=' . $this->section);
 }
 
@@ -130,15 +130,6 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
                     
                     <span class="holder"></span>
                     
-                    <span data-section="<?=$this->section;?>">
-                        <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
-                        
-                        <form method="post" style="display:inline;">
-                            <input type="hidden" name="delete" value="1">
-                            <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </span>
-                        
                     <div class="dropdown" style="display: inline-block;">
                         <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?=underscored($button['section']);?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                            <i class="fas fa-ellipsis-v"></i>
@@ -189,33 +180,10 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
             </ul>
             <div class="tab-content mt-3" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-summary" role="tabpanel" aria-labelledby="pills-summary-tab">
-
     <div class="box">
-        <table border="0" cellspacing="0" cellpadding="5" width="100%">
-    
         <?php
-        foreach ($vars['fields'][$this->section] as $name => $type) {
-            $label = $vars['label'][$this->section][$name];
-    
-            if (!$label) {
-                $label = ucfirst(str_replace('_', ' ', $name));
-            }
-            
-            $value = $this->get_value($name);
-            
-            if (!$value) {
-                continue;
-            } ?>
-    
-            <tr>
-                <th align="left" valign="top" width="20%"><?=$label; ?></th>
-                <td>
-                    <?=$value; ?>
-                </td>
-            </tr>
-        <?php
-        } ?>
-        </table>
+        require(__DIR__ . '/view.php');
+        ?>
     </div>
 <?php
 ?>
@@ -244,7 +212,9 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 
 <div class="tab-pane fade" id="pills-<?=$count; ?>" role="tabpanel" aria-labelledby="pills-<?=$count; ?>-tab">
     <?php
-    if (count($vars['fields'][$subsection])) {
+    if (!in_array('id', $vars['fields'][$subsection])) {
+        require(__DIR__ . '/view.php');
+    } elseif (count($vars['fields'][$subsection])) {
         require(__DIR__ . '/list.php');
     } elseif (file_exists('_tpl/admin/' . $subsection . '.php')) {
         require('_tpl/admin/' . $subsection . '.php');

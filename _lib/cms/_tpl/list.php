@@ -76,7 +76,19 @@ $(function() {
     }, {
         extend: 'colvis',
         columns: ':not(.noVis)',
-        text: '<i class="fas fa-columns"></i>'
+        text: '<i class="fas fa-columns"></i>',
+        prefixButtons: [{
+            extend: 'colvisGroup',
+            text: 'Show all',
+            show: ':hidden'
+        }, {
+            extend: 'colvisGroup',
+            text: 'Hide all',
+            hide: ':not(.noVis)'
+        }, {
+            extend: 'colvisRestore',
+            text: 'Restore'
+        }]
     }, {
         titleAttr: 'Import',
         text: '<i class="fas fa-file-import"></i>',
@@ -85,12 +97,25 @@ $(function() {
             $('#importModal').modal('show');
         }
     }, {
-        titleAttr: 'Export',
-        className: 'rowsRequired',
+        extend: 'collection',
         text: '<i class="fas fa-file-export"></i>',
-        action: function ( e, dt, node, config ) {
-            button_handler('export', false, dt);
-        }
+        buttons: [{
+            titleAttr: 'Export',
+            className: 'rowsRequired',
+            text: 'Export selected',
+            action: function ( e, dt, node, config ) {
+                button_handler('export', false, dt);
+            }
+        }, {
+            titleAttr: 'Export',
+            text: 'Export all',
+            action: function ( e, dt, node, config ) {
+                dt.rows().select();
+                $(dt.table().container()).find('.selectAllPages').click();
+                button_handler('export', false, dt);
+                $(dt.table().container()).find('.selectAllPages').click();
+            }
+        }]
     }, {
         titleAttr: 'Delete',
         text: '<i class="fas fa-trash"></i>',

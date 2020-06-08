@@ -15,11 +15,13 @@ class cms
     public $content = [];
 
     // hide these field types from the list view
-    public $hidden_columns = ['id', 'password', 'editor', 'textarea'];
+    public $hidden_columns = ['id', 'password', 'editor'];
     
     public $buttons = [];
     
     public $handlers = [];
+    
+    public $file_upload_path = 'uploads/files/';
 
     public function __construct()
     {
@@ -133,9 +135,9 @@ class cms
     }
 
     // export items to csv
-    public function export_items($section, $conditions, $select_all_pages)
+    public function export_items($section, $conditions, $select_all_pages, $columns = [])
     {
-        global $auth, $db_connection;
+        global $auth, $db_connection, $vars;
 
         set_time_limit(300);
         ob_end_clean();
@@ -154,8 +156,20 @@ class cms
 
         $table = underscored($section);
         $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+        
+        foreach($columns as $k=>$v) {
+            
+            if ($vars['fields'][$section][$v] === 'checkboxes') {
+                $columns[$k] = "S_" . underscored($v) . ".value";
+            } else {
+                $columns[$k] = "T_$table." . underscored($v);
+            }
+            
+        }
+        
+        $cols = count($columns) ? implode(',', $columns) : 'T_$table.* ' . $sql['cols'];
 
-        $query = "SELECT T_$table.* ".$sql['cols']."
+        $query = "SELECT " . $cols . "
             FROM `$table` T_$table
             " . $sql['joins'] . '
             ' . $sql['where_str'] . '
@@ -302,13 +316,13 @@ class cms
         header('Content-Disposition: attachment; filename="' . $row['name'] . '"');
 
         if (!$_GET['w'] && !$_GET['h']) {
-            print file_get_contents($vars['files']['dir'] . $row['id']);
+            print file_get_contents($this->file_upload_path . $row['id']);
         } else {
             // end configure
             $max_width = $_GET['w'] ?: 320;
             $max_height = $_GET['h'] ?: 240;
 
-            $img = imageorientationfix($vars['files']['dir'] . $row['id']);
+            $img = imageorientationfix($this->file_upload_path . $row['id']);
             $img = thumb_img($img, [$max_width, $max_height], false);
             $ext = file_ext($row['name']);
 
@@ -382,41 +396,41 @@ class cms
             $field_name = underscored($name);
             $value = $conditions[$field_name];
 
-            if (!isset($value) || '' === $value) {
-                continue;
-            }
-
-            if ($component = $this->get_component($type)) {
-                // deprecated
-                if (is_array($conditions) && $conditions['end'][$field_name]) {
-                    $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
+            if (isset($value) && $value !== '') {
+                if ($component = $this->get_component($type)) {
+                    // deprecated
+                    if (is_array($conditions) && $conditions['end'][$field_name]) {
+                        $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
+                    }
+                    $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
                 }
-                $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
             }
 
             switch ($type) {
                 case 'checkboxes':
-                    // todo: move to component
-                    if (false === is_array($value)) {
-                        $value = [$value];
+                    $joins .= ' LEFT JOIN cms_multiple_select S_' . $field_name . ' ON S_' . $field_name . '.item = T_' . $table . '.' . $field_id;
+    
+                    if (isset($value) && $value !== '') {
+                        // todo: move to component
+                        if (false === is_array($value)) {
+                            $value = [$value];
+                        }
+                    
+                        $or = [];
+                        foreach ($value as $v) {
+                            $v = is_array($v) ? $v['value'] : $v;
+                            $or[] = 'S_' . $field_name . ".value = '" . escape($v) . "' AND 
+                                S_" . $field_name . ".field = '" . escape($name) . "' AND
+                                S_" . $field_name . ".section='" . $section . "'";
+                        }
+    
+                        $or_str = implode(' OR ', $or);
+                        $where[] = '(' . $or_str . ')';
                     }
-
-                    $joins .= ' LEFT JOIN cms_multiple_select T_' . $field_name . ' ON T_' . $field_name . '.item=T_' . $table . '.' . $field_id;
-
-                    $or = [];
-                    foreach ($value as $v) {
-                        $v = is_array($v) ? $v['value'] : $v;
-                        $or[] = 'T_' . $field_name . ".value = '" . escape($v) . "' AND 
-                            T_" . $field_name . ".field = '" . escape($name) . "' AND
-                            T_" . $field_name . ".section='" . $section . "'";
-                    }
-
-                    $or_str = implode(' OR ', $or);
-                    $where[] = '(' . $or_str . ')';
                     break;
                 case 'postcode':
                     // todo: move to component and replace with ST_Distance_Sphere when supported (https://jira.mariadb.org/browse/MDEV-13467)
-                    if (calc_grids($value) && is_numeric($conditions['func'][$field_name])) {
+                    if ($value && calc_grids($value) && is_numeric($conditions['func'][$field_name])) {
                         $grids = calc_grids($value);
 
                         if ($grids) {
@@ -742,7 +756,7 @@ class cms
      * @param null $editable_fields
      * @throws Exception
      */
-    public function set_section($section, $id = null, $editable_fields = null)
+    public function set_section($section, $id = null, $editable_fields = null, $select = true)
     {
         global $vars, $auth;
 
@@ -774,10 +788,13 @@ class cms
 
         if ($id) {
             $this->id = $id;
-            $this->content = $this->get($section, ['id' => $this->id], 1);
-
-            if (!$this->content) {
-                $this->id = null;
+            
+            if ($select) {
+                $this->content = $this->get($section, ['id' => $this->id], 1);
+    
+                if (!$this->content) {
+                    $this->id = null;
+                }
             }
         } else {
             $this->content = $_GET;
@@ -1373,7 +1390,31 @@ class cms
         $conditions = $_POST['select_all_pages'] ? $_GET : $_POST['id'];
         switch ($_POST['action']) {
             case 'export':
-                $this->export_items($_POST['section'], $conditions, $_POST['select_all_pages']);
+                
+                // convert json column indexes into array of column names
+                $indexes = json_decode($_POST['columns']);
+                array_shift($indexes);
+                array_shift($indexes);
+                
+                $columns = [];
+                $i = 0;
+                foreach ($vars['fields'][$this->section] as $name => $type) {
+                    if (in_array($type, $this->hidden_columns)) {
+                        continue;
+                    }
+                    
+                    if ($indexes[$i]) {
+                        $columns[] = $name;
+                    }
+                    $i++;
+                }
+                
+                // add id column
+                if ($i) {
+                    array_unshift($columns, 'id');
+                }
+                
+                $this->export_items($_POST['section'], $conditions, $_POST['select_all_pages'], $columns);
                 break;
             case 'delete':
                 $this->delete_items($_POST['section'], $conditions, $_POST['select_all_pages']);
