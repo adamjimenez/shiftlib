@@ -753,11 +753,10 @@ function delRow(row) {
     row.parentNode.parentNode.parentNode.deleteRow(row.parentNode.parentNode.rowIndex);
 }
 
-$(document).ready(function() {
-    initForms();
-});
 
-$(document).ready(function(){
+$(function() {
+    initForms();
+    
     $('.mob-nav-icon').click(function () {
         $('.content-wrapper').toggleClass('fullwidth');
         $('.leftcol').toggleClass('nav-hdn');
