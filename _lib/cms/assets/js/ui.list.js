@@ -26,8 +26,13 @@ $.widget( "custom.list", {
 		var row = $($(this.options.template).html()).appendTo(this.element);
 		if (data) {
 			for (var key in data) {
-				row.find('.' + key).val(data[key]);
-			};
+				var field = row.find('.' + key);
+				if (field.attr('type') === 'checkbox') {
+					field.prop('checked', data[key] == '1');
+				} else {
+					field.val(data[key]);
+				}
+			}
 		}
 		row.find('[data-remove]').click(function(e) {
 			e.preventDefault();
