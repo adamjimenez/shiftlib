@@ -27,9 +27,10 @@
 	z-index: 9999 !important;
 }
 
-/* hide scrollbar*/
-.menu-inner::-webkit-scrollbar { 
-	width: 0 !important 
+/* scrollbar */
+* {
+  scrollbar-color: #aaa transparent;
+  scrollbar-width: thin;
 }
 
 /* list buttons on the same line */
@@ -44,4 +45,8 @@ div.dt-buttons {
 	z-index: 90;
 	background: #fff;
 	padding: 10px 0;
+}
+
+table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.dataTable thead .sorting {
+	background-image: none;
 }
