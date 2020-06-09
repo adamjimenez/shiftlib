@@ -159,7 +159,7 @@ $(function() {
         <?php } ?>
         
         "pageLength": 10,
-        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        "lengthMenu": [[10, 25, 50, 100, 200], [10, 25, 50, 100, 200]],
         
         "stateSave": true,
         "stateDuration": 60 * 60 * 24 * 365,
