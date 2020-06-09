@@ -532,9 +532,12 @@ switch ($_GET['cmd']) {
         $start = (int) $_POST['start'];
         $length = (int) $_POST['length'];
         
-        if (-1 != $length) {
-            $limit = $start . ', ' . $length;
+        // prevent memory leak
+        if ($length <=0) {
+            $length = 500;
         }
+        
+        $limit = $start . ', ' . $length;
         
         // gather rows
         $rows = $cms->get($_GET['section'], $_GET['fields'], $limit, $order, $asc);
