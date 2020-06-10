@@ -143,7 +143,7 @@ class Checkboxes extends Select implements ComponentInterface
                     $valueStr .= "'" . escape($v) . "',";
                 }
                 $valueStr = substr($valueStr, 0, -1);
-                $valueStr = 'AND item NOT IN (' . $valueStr . ')';
+                $valueStr = 'AND value NOT IN (' . $valueStr . ')';
             }
 
             sql_query("DELETE FROM cms_multiple_select
@@ -155,7 +155,7 @@ class Checkboxes extends Select implements ComponentInterface
             ");
 
             foreach ($value as $v) {
-                sql_query("INSERT INTO cms_multiple_select SET
+                sql_query("INSERT IGNORE INTO cms_multiple_select SET
                     section='" . escape($this->cms->section) . "',
                     field='" . escape($name) . "',
                     item='" . escape($this->cms->id) . "',
