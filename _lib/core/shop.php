@@ -221,7 +221,7 @@ class shop
         if ($auth->user) {
             $where_str = " OR B.user='" . $auth->user['id'] . "'";
         }
-        $this->basket = sql_query("SELECT *,B.* FROM basket B
+        $items = sql_query("SELECT *, B.* FROM basket B
 			LEFT JOIN products P ON B.product=P.id
 			WHERE
 				(
@@ -231,9 +231,16 @@ class shop
 			ORDER BY B.id
 		");
 
+        $this->basket = [];
         $this->item_count = 0;
         $this->subtotal = 0;
-        foreach ($this->basket as $k => $v) {
+        foreach ($items as $k => $v) {
+            if ($v['deleted'] === '1') {
+                continue;
+            }
+            
+            $this->basket[] = $v;
+            
             $variation = [];
 
             if ($v['variation']) {
