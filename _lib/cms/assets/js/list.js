@@ -159,7 +159,7 @@ function loadFile(file)
 					').appendTo($('#importForm tbody'))
 					.find('option')
 					.filter(function() {
-					    return $(this).text() === item;
+					    return $(this).text().replace(/_/g, " ") === item;
 					})
 					.attr('selected', true);
 				})
