@@ -80,7 +80,7 @@ $(function() {
         prefixButtons: [{
             extend: 'colvisGroup',
             text: 'Show all',
-            show: ':hidden'
+            show: ':not(.noVis):hidden'
         }, {
             extend: 'colvisGroup',
             text: 'Hide all',
@@ -193,7 +193,11 @@ $(function() {
         "ordering": <?=$sortable ? 'false' : 'true';?>,
         
         "autoWidth": false,
-        "responsive": true
+        "responsive": {
+            details: {
+                type: 'none'
+            }
+        }
     } );
     
     // move to toolbar
