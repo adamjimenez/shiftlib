@@ -737,7 +737,7 @@ function selectNone(field){
 function clearFile(field)
 {
     inputFile = document.createElement("input");
-    inputFile.setAttribute('name', field);
+    inputFile.setAttribute('name', field.getAttribute('name'));
     inputFile.setAttribute('type', 'file');
 
     var cell = field.parentNode;
