@@ -1,32 +1,31 @@
 <?php
-$files = [];
-function get_dir_contents($dirstr = '_tpl/')
+function get_dir_contents($files, $dirstr = '_tpl/')
 {
-    global $files;
+    if (!is_array(glob($dirstr . '*'))) {
+        return;   
+    }
+    
+    foreach (glob($dirstr . '*') as $pathname) {
+        $filename = basename($pathname);
 
-    if (is_array(glob($dirstr . '*'))) {
-        foreach (glob($dirstr . '*') as $pathname) {
-            $filename = basename($pathname);
+        if (
+            'admin' == $filename
+            or 'admin.php' == $filename
+            or 'template.php' == $filename
+            or '404.php' == $filename
+            or strstr($pathname, 'dev')
+            or strstr($pathname, 'old')
+            or strstr($pathname, 'includes')
+            or strstr($pathname, 'misc')
+        ) {
+            continue;
+        }
 
-            if (
-                'admin' == $filename
-                or 'admin.php' == $filename
-                or 'template.php' == $filename
-                or '404.php' == $filename
-                or strstr($pathname, 'dev')
-                or strstr($pathname, 'old')
-                or strstr($pathname, 'includes')
-                or strstr($pathname, 'misc')
-            ) {
-                continue;
-            }
-
-            if ('.' != $filename and '..' != $filename and $pathname != $dirstr) {
-                if (is_dir($pathname)) {
-                    get_dir_contents($pathname . '/');
-                } else {
-                    array_push($files, $pathname);
-                }
+        if ('.' != $filename and '..' != $filename and $pathname != $dirstr) {
+            if (is_dir($pathname)) {
+                $files = get_dir_contents($files, $pathname . '/');
+            } else {
+                $files[] = $pathname;
             }
         }
     }
@@ -34,7 +33,7 @@ function get_dir_contents($dirstr = '_tpl/')
     return $files;
 }
 
-get_dir_contents();
+$files = get_dir_contents([]);
 
 $pages = [];
 foreach ($files as $file) {
@@ -75,8 +74,6 @@ if ($sitemap_ignore) {
 $host = $_SERVER['HTTP_HOST'];
 
 $protocol = $_SERVER['HTTPS'] ? 'https' : 'http';
-
-//print_r($pages); exit;
 
 header('Content-Type: text/xml');
 print '<?xml version="1.0" encoding="UTF-8"?>
