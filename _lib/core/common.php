@@ -1302,10 +1302,14 @@ function options($options, $selected = '')
 /* used to flush output to the browser */
 function output($str)
 {
-    echo trim($str);
-    echo str_pad('', 4096) . "\n";
-    ob_flush();
-    flush();
+    if (php_sapi_name() == "cli") {
+        echo $str . "\n";
+    } else {
+        echo trim($str);
+        echo str_pad('', 4096) . "\n";
+        ob_flush();
+        flush();
+    }
 }
 
 function parse_links($text)
