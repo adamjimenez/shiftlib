@@ -115,7 +115,7 @@ function loadFile(file)
 
 				jQuery.ajax('/_lib/api/?cmd=csv_preview',{
 					type: 'post',
-					parameters: 'csv='+file,
+					parameters: 'csv=' + file,
                     success: function(result) {
                     	html = '\
 							<h4>Preview</h4>\
@@ -145,7 +145,7 @@ function loadFile(file)
 				});
 				
 				fields[$('#importSection').val()].forEach(function(item) {
-					$('#importForm tbody').append('\
+					$('\
 						<tr>\
 							<td width="100">' + item + '</td>\
 							<td width="100">should receive</td>\
@@ -156,7 +156,12 @@ function loadFile(file)
 								</select>\
 							</td>\
 						</tr>\
-					');
+					').appendTo($('#importForm tbody'))
+					.find('option')
+					.filter(function() {
+					    return $(this).text() === item;
+					})
+					.attr('selected', true);
 				})
 				
 				$('#csv_loaded').show();
