@@ -378,7 +378,7 @@ class auth
 
     public function register($options = []) //invoked by $_POST['register']
     {
-        global $cms, $request, $sections;
+        global $cms, $request, $sections, $vars;
         
         if (isset($options['fields'])) {
             $options['fields'] = ['email'];
@@ -439,7 +439,8 @@ class auth
             $reps = $data;
     
             $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request;
-            if ($this->email_activation) {
+            
+            if ($vars["fields"]["users"]['email_verified']) {
                 //activation code
                 $code = substr(md5(rand(0, 10000)), 0, 10);
     
@@ -493,7 +494,7 @@ class auth
      */
     public function forgot_password()
     {
-        global $request;
+        global $request, $vars;
         
         $result = [];
         $data = $_POST;
@@ -539,7 +540,7 @@ class auth
                     LIMIT 1
                 ");
                 
-                if ($this->email_activation) {
+                if ($vars["fields"]["users"]['email_verified']) {
                     sql_query("UPDATE users SET
                         email_verified = 1
                         WHERE
