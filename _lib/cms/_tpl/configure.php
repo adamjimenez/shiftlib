@@ -1015,7 +1015,7 @@ $count['options'] = 0;
             }
             
             row.find('.name').val(key);
-            
+
             // fields
             Object.entries(value).forEach(item => {
                 let name = item[0];
@@ -1029,8 +1029,8 @@ $count['options'] = 0;
                 var fieldRow = $(html).appendTo(row.find('.fields>.container'));
                 fieldRow.find('.name').val(name);
                 
-                if (vars.label) {
-                    fieldRow.find('.label').val(vars.label[name]);
+                if (vars.label[key] && vars.label[key][name]) {
+                    fieldRow.find('.label').val(vars.label[key][name]);
                 }
                 
                 if (vars.required[key].indexOf(name) != -1 ) {
