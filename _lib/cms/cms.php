@@ -590,6 +590,7 @@ class cms
             $col = "T_$table." . underscored($name);
             if ('coords' == $type) {
                 $col = 'AsText(' . $col . ')';
+                $col = 'CONCAT(X(' . $col . '), " ", Y(' . $col . '))';
             }
 
             $cols .= "\t" . $col . ' AS `' . underscored($name) . '`,' . "\n";
