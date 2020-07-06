@@ -378,6 +378,7 @@
         });
         
         // stay logged in start
+        /*
         var session_duration = '<?=ini_get("session.gc_maxlifetime");?>';
         var logInTimer;
         
@@ -404,6 +405,7 @@
                 });
             })
         })
+        */
         // stay logged in end
     </script>
 </body>
