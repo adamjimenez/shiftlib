@@ -1042,7 +1042,7 @@ class cms
     {
         // backcompat
         if ($options === true) {
-            $options = $options['notify'] = true;
+            $options = ['notify' => true];
         }
         
         $errors = $this->validate($_POST, $options['recaptcha']);
