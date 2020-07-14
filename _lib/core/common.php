@@ -708,6 +708,9 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
     if (is_array($reps)) {
         foreach ($reps as $k => $v) {
             $body = str_replace('{$' . $k . '}', $v, $body);
+            
+            // replace vars in links
+            $body = str_replace(urlencode('{$' . $k . '}'), str_replace('https://' . $_SERVER['HTTP_HOST'], '', $v), $body);
         }
     }
 
@@ -1424,6 +1427,40 @@ function send_html_email($user, $html, $reps)
     }
     
     mail($user['email'], $subject, $html, $headers);
+}
+
+function send_msg($data) {
+	global $msg_id;
+	
+	if (!$msg_id) {
+		ob_end_clean();
+		header('Content-Type: text/event-stream');
+		header('Cache-Control: no-cache');
+		
+		if (isset($_SERVER['HTTP_ORIGIN'])) {
+			header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+			header('Access-Control-Allow-Credentials: true');
+			header('Access-Control-Max-Age: 86400');
+		}
+		
+		ignore_user_abort();
+		$msg_id = time();
+	}
+	
+	if (!is_array($data)) {
+		$data = array('msg' => $data);
+	}
+	
+	echo "id: $msg_id" . PHP_EOL;
+	echo "data: {\n";
+	foreach($data as $k=>$v) {
+		echo "data: \"$k\": \"".substr(addslashes($v), 0, 100)."\", \n";
+	}
+	echo "data: \"id\": $msg_id\n";
+	echo "data: }\n";
+	echo PHP_EOL;
+	ob_flush();
+	flush();
 }
 
 function sql_affected_rows(): int
