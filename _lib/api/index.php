@@ -35,18 +35,6 @@ function get_items($value)
     }
 }
 
-function send_msg($id, $msg)
-{
-    echo "id: $id" . PHP_EOL;
-    echo "data: {\n";
-    echo "data: \"msg\": \"$msg\", \n";
-    echo "data: \"id\": $id\n";
-    echo "data: }\n";
-    echo PHP_EOL;
-    ob_flush();
-    flush();
-}
-
 // check permissions
 if (!$auth->user['admin'] and !$auth->user['privileges'][$_GET['section']]) {
     die('permission denied');
@@ -514,7 +502,7 @@ switch ($_GET['cmd']) {
     
         $sql = $cms->conditionsToSql($_GET['section'], $_GET['fields']);
         
-        $count = sql_query('SELECT COUNT(DISTINCT T_' . $table . '.' . $field_id . ') AS `count` FROM ' . $table . ' T_' . $table . '
+        $count = sql_query('SELECT COUNT(DISTINCT T_' . $table . '.' . $field_id . ') AS `count` FROM `' . $table . '` T_' . $table . '
             ' . $sql['joins'] . '
             ' . $sql['where_str'] . '
             ' . $sql['having_str']
