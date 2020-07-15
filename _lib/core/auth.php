@@ -278,6 +278,7 @@ class auth
         
             // log in
             $this->set_login($email, $user['password']);
+            $this->load();
         }
         
         if ('auth' == $_GET['action']) {
