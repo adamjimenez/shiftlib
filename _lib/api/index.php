@@ -411,9 +411,9 @@ switch ($_GET['cmd']) {
                         }
         
                         $v = trim($v);
-        
+                        $data[$field_name] = $v;
+                        
                         if ($v) {
-                            $data[$field_name] = $v;
                             $query .= "`$field_name`='" . escape($v) . "',\n";
                             $where .= "`$field_name`='" . escape($v) . "' AND\n";
                         }
