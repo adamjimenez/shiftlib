@@ -15,7 +15,7 @@ class cms
     public $content = [];
 
     // hide these field types from the list view
-    public $hidden_columns = ['id', 'password', 'editor'];
+    public $hidden_columns = ['id', 'password'];
     
     public $buttons = [];
     
