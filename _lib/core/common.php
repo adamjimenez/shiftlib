@@ -1429,7 +1429,7 @@ function send_html_email($user, $html, $reps)
     mail($user['email'], $subject, $html, $headers);
 }
 
-function send_msg($data) {
+function send_msg($msg) {
 	global $msg_id;
 	
 	if (!$msg_id) {
@@ -1438,7 +1438,7 @@ function send_msg($data) {
 		header('Cache-Control: no-cache');
 		
 		if (isset($_SERVER['HTTP_ORIGIN'])) {
-			header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+			header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
 			header('Access-Control-Allow-Credentials: true');
 			header('Access-Control-Max-Age: 86400');
 		}
@@ -1447,18 +1447,11 @@ function send_msg($data) {
 		$msg_id = time();
 	}
 	
-	if (!is_array($data)) {
-		$data = array('msg' => $data);
-	}
+	$data = is_array($msg) ? $msg  : ['msg' => $msg];
+	$data['id'] = $msg_id;
 	
-	echo "id: $msg_id" . PHP_EOL;
-	echo "data: {\n";
-	foreach($data as $k=>$v) {
-		echo "data: \"$k\": \"".substr(addslashes($v), 0, 100)."\", \n";
-	}
-	echo "data: \"id\": $msg_id\n";
-	echo "data: }\n";
-	echo PHP_EOL;
+	echo 'data: ' . json_encode($data) . "\n" . PHP_EOL;
+
 	ob_flush();
 	flush();
 }
