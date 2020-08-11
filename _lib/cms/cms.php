@@ -1004,7 +1004,7 @@ class cms
     {
         global $vars, $from_email;
 
-        if (!is_string($to)) {
+        if (!$to) {
             $to = $from_email;
         }
 
@@ -1055,14 +1055,14 @@ class cms
         if (count($errors)) {
             //validateion failed
             die(json_encode($errors));
-        } elseif ($_POST['validate']) {
+        } elseif ($_POST['validate'] && $options['validate'] !== false) {
             //validation passed
             die('1');
         }
         $this->id = $this->save();
 
         if ($options['notify']) {
-            $this->notify(null, $notify);
+            $this->notify(null, $options['notify_email']);
         }
 
         return $this->id;
