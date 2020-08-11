@@ -664,8 +664,10 @@ class auth
                     }
     
                     if ($data['remember']) {
-                        setcookie($this->cookie_prefix . '_email', $data['email'], time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
-                        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain);
+
+                        setcookie($this->cookie_prefix . '_email', $data['email'], time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, true);
+                        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, true);
+                        
                     }
                 } else {
                     $errors[] = 'password incorrect';
