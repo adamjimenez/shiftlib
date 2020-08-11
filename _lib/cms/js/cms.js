@@ -90,7 +90,7 @@ function initForms()
         }
     });
     
-    $('form.validate').bind('submit', function(evt) {
+    $('form.validate').on('submit', function(evt) {
         evt.preventDefault();
         evt.stopPropagation();
 
@@ -132,7 +132,7 @@ function initForms()
 
                 showProgress(false);
 
-                if( parseInt(returned, 10)!==returned-0 ){
+                if( parseInt(returned, 10)!==returned-0 ) {
                     if( returned.length>0 ){
 
                         //display errors
@@ -161,7 +161,7 @@ function initForms()
                                     }
 
                                     parent=this[field].parentNode;
-                                }else if( this[field][0] ){
+                                } else if( this[field][0] ){
                                     parent=this[field][0].parentNode.parentNode;
                                 }
                                 
@@ -173,7 +173,7 @@ function initForms()
                                     }
 
                                     parent=this[field+'[]'].parentNode;
-                                }else if( this[field+'[]'][0] ){
+                                } else if( this[field+'[]'][0] ){
                                     parent=this[field+'[]'][0].parentNode.parentNode;
                                 }
 
@@ -221,7 +221,12 @@ function initForms()
                         //focus field
                     //    $(this).find('[name="'+returned[0]+'"]:first').focus();
                     }
-                }else{
+                } else if ($(this).data('target')) {
+                    
+                    $(this).hide();
+                    $(this).data('target').show();
+                    
+                } else {
                     //submit form
                     window.onbeforeunload = null;
 
@@ -352,7 +357,7 @@ function initForms()
                     starwidth: starwidth,
                     starheight: starheight,
                     readonly: readonly
-                }).bind('rated', function (event, value) {
+                }).on('rated', function (event, value) {
                     var field = $(this).prev();
                     field.val(value);
 
