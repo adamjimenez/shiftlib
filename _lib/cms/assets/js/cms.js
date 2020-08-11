@@ -90,7 +90,7 @@ function initForms()
         }
     });
     
-    $('form.validate').bind('submit', function(evt) {
+    $('form.validate').on('submit', function(evt) {
         evt.preventDefault();
         evt.stopPropagation();
 
@@ -221,6 +221,11 @@ function initForms()
                         //focus field
                     //    $(this).find('[name="'+returned[0]+'"]:first').focus();
                     }
+                } else if ($(this).data('target')) {
+                    
+                    $(this).hide();
+                    $($(this).data('target')).show();
+                    
                 } else {
                     //submit form
                     window.onbeforeunload = null;
@@ -354,7 +359,7 @@ function initForms()
                     starwidth: starwidth,
                     starheight: starheight,
                     readonly: readonly
-                }).bind('rated', function (event, value) {
+                }).on('rated', function (event, value) {
                     var field = $(this).prev();
                     field.val(value);
 
