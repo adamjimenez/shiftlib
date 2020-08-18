@@ -1029,7 +1029,7 @@ $count['options'] = 0;
                 var fieldRow = $(html).appendTo(row.find('.fields>.container'));
                 fieldRow.find('.name').val(name);
                 
-                if (vars.label[key] && vars.label[key][name]) {
+                if (vars.labels && vars.label[key] && vars.label[key][name]) {
                     fieldRow.find('.label').val(vars.label[key][name]);
                 }
                 
