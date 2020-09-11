@@ -20,7 +20,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
                         if (in_array($type, $this->hidden_columns)) {
                             continue;
                         } ?>
-                        <th data-name="<?=$name; ?>"><?=ucfirst(spaced($name)); ?></th>
+                        <th data-name="<?=$name; ?>" <?php if ($type === 'editor') { ?>data-visible="false"<?php } ?>><?=ucfirst(spaced($name)); ?></th>
                     <?php
                     }
                     ?>
@@ -144,6 +144,32 @@ $(function() {
     */
     ?>
     
+    var columnDefs = [{
+        "targets": 0,
+        "render": function ( data, type, row, meta ) {
+            return '<i class="fas fa-square"></i>';
+        },
+        "visible": <?=$sortable ? 'true' : 'false';?>,
+        "width": 20,
+        "orderable": false
+    }, {
+        'targets': 1,
+        'checkboxes': {
+           'selectRow': true,
+           'stateSave': false
+        },
+        "width": 20,
+        "orderable": false
+    }];
+    
+    // hide copy columns
+    $('[data-visible=false]').each(function() {
+        columnDefs.push({
+            'targets': $(this).index(),
+            'visible': false
+        });
+    });
+    
     table = $('#dataTable-<?=underscored($this->section);?>').DataTable( {
         dom: 'Bfrtlip',
         buttons: buttons,
@@ -167,23 +193,7 @@ $(function() {
         "serverSide": true,
         "searching": false,
         
-        'columnDefs': [{
-            "targets": 0,
-            "render": function ( data, type, row, meta ) {
-                return '<i class="fas fa-square"></i>';
-            },
-            "visible": <?=$sortable ? 'true' : 'false';?>,
-            "width": 20,
-            "orderable": false
-        }, {
-            'targets': 1,
-            'checkboxes': {
-               'selectRow': true,
-               'stateSave': false
-            },
-            "width": 20,
-            "orderable": false
-         }],
+        'columnDefs': columnDefs,
         'select': {
             "style": "multi",
             "selector": "td.dt-checkboxes-cell"
