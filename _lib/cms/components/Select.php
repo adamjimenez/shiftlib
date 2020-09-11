@@ -75,7 +75,8 @@ class Select extends Component implements ComponentInterface
             $cols = '`' . underscored($field) . '`';
 
             // sort by position if available or fall back to field order
-            $order = in_array('position', $this->vars['fields'][$this->vars['options'][$name]]) ? 'position' : $field;
+            // $order = in_array('position', $this->vars['fields'][$this->vars['options'][$name]]) ? 'position' : $field;
+            $order = $field;
 
             $parent_field = array_search('parent', $this->vars['fields'][$this->vars['options'][$name]]);
 
