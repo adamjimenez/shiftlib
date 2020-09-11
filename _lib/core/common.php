@@ -1484,7 +1484,8 @@ function sql_query($query, $single = false)
     $result = mysqli_query($db_connection, $query);
 
     if (false === $result) {
-        throw new Exception($query);
+        $error = mysqli_error($db_connection);
+        throw new Exception($error . ' : ' . $query);
     } elseif (true === $result) {
         return true;
     }
