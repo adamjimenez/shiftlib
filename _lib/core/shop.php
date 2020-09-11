@@ -41,6 +41,8 @@ class shop
     public $vat_rate;
     public $vat;
     public $cc;
+    
+    public $variations_table = 'variations';
 
 
     public function __construct()
@@ -244,11 +246,11 @@ class shop
             $variation = [];
 
             if ($v['variation']) {
-                $variation = sql_query("SELECT * FROM variations WHERE id='" . escape($v['variation']) . "'");
+                $variation = sql_query("SELECT * FROM " . $this->variations_table . " WHERE id='" . escape($v['variation']) . "'", 1);
             }
 
-            if ($variation[0]['cost'] > 0) {
-                $this->basket[$k]['cost'] = $variation[0]['cost'];
+            if ($variation['cost'] > 0) {
+                $this->basket[$k]['cost'] = $variation['cost'];
             }
 
             if (table_exists('extras')) {
@@ -318,16 +320,18 @@ class shop
         }
 
         if ($variation_id) {
-            $variation = sql_query("SELECT * FROM variations WHERE
-				id='" . escape($variation_id) . "'
+            $variation = sql_query("SELECT * FROM " . $this->variations_table . " WHERE
+				id = '" . escape($variation_id) . "'
 			", 1);
 
-            if ($variation) {
-                foreach ($variation as $k => $v) {
-                    if ('id' == $k or 'product' == $k or 'quantity' == $k or 'image' == $k or 'cost' == $k or 'position' == $k or '' == $v) {
-                        continue;
+            if (!$extras) {
+                if ($variation) {
+                    foreach ($variation as $k => $v) {
+                        if ('id' == $k or 'product' == $k or 'quantity' == $k or 'image' == $k or 'cost' == $k or 'position' == $k or '' == $v) {
+                            continue;
+                        }
+                        $extras .= ucfirst(spaced($k)) . ': ' . $v . "\n";
                     }
-                    $extras .= ucfirst(spaced($k)) . ': ' . $v . "\n";
                 }
             }
 
