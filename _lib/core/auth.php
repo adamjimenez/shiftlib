@@ -1,4 +1,7 @@
 <?php
+$cookie_params = session_get_cookie_params();
+session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], true, $cookie_params['httponly']);
+
 session_start();
 
 /**
@@ -7,6 +10,11 @@ session_start();
  */
 class auth
 {
+    /**
+     * @var bool
+     */
+    public $initiated = false;
+    
     /**
      * @var bool
      */
@@ -63,11 +71,11 @@ class auth
     public $cookie_prefix = 'site';
 
     /**
-     * DEPRECATED additional params to check when logging in
+     * additional params to check when logging in
      *
      * @var string
      */
-    public $login_wherestr = '';
+    public $login_params = [];
 
     /**
      * @var string
@@ -169,26 +177,28 @@ class auth
 
     public function init()
     {
+        if (true === $this->initiated) {
+            return false;
+        }
+        
         //check for cookies or basic auth
         if (!$_SESSION[$this->cookie_prefix . '_user']) {
             $email = '';
             $password = '';
     
-            if ($_COOKIE[$this->cookie_prefix . '_email'] and $_COOKIE[$this->cookie_prefix . '_password']) {
+            if ($_COOKIE[$this->cookie_prefix . '_email'] && $_COOKIE[$this->cookie_prefix . '_password']) {
                 $email = $_COOKIE[$this->cookie_prefix . '_email'];
                 $password = $_COOKIE[$this->cookie_prefix . '_password'];
-            } elseif ($_SERVER['PHP_AUTH_USER'] and $_SERVER['PHP_AUTH_PW']) { //check for basic authentication
-                $email = $_SERVER['PHP_AUTH_USER'];
-                $password = md5($this->secret_phrase . $_SERVER['PHP_AUTH_PW']);
-            }/* elseif ($_GET['auth_user'] and $_GET['auth_pw']) {
-                $email = $_GET['auth_user'];
-                $password = md5($this->secret_phrase . $_GET['auth_pw']);
-            }*/
-    
-            if ($email and $password and table_exists($this->table)) {
-                $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
-                    email='" . escape($email) . "'
-                ", 1);
+            }
+        
+            $login_str = $this->get_login_str();
+            
+            if ($email && $password && table_exists($this->table)) {
+                $result = sql_query('SELECT * FROM ' . $this->table . " 
+                    WHERE
+                        email='" . escape($email) . "'
+                        " . $this->login_str
+                , 1);
     
                 if ($result && $password == md5($this->secret_phrase . $result['password'])) {
                     $_SESSION[$this->cookie_prefix . '_email'] = $result['email'];
@@ -207,6 +217,23 @@ class auth
         if ($_GET['u']) {
             $_SESSION['request'] = $_GET['u'];
         }
+        
+        $this->initiated = true;
+    }
+    
+    private function get_login_str() 
+    {
+        $where_str = '';
+        
+        if (count($this->login_params)) {
+            $parts = [];
+            foreach($this->login_params as $k => $v) {
+                $parts[] = escape($k) . ' = ' . escape($v);
+            }
+            $where_str = ' AND ' . implode(' AND ', $parts);
+        }
+        
+        return $where_str;
     }
     
     public function single_sign_on()
@@ -254,8 +281,12 @@ class auth
             $email = $user_profile->email or die('missing email');
             
             // find user
-            $user = sql_query('SELECT * FROM ' . $this->table . " WHERE
-                email='" . escape($email) . "'
+            $login_str = $this->get_login_str();
+            
+            $user = sql_query('SELECT * FROM ' . $this->table . "
+                WHERE
+                    email='" . escape($email) . "'
+                    " . $login_str . "
                 LIMIT 1
             ", 1);
         
@@ -298,11 +329,14 @@ class auth
             return false;
         }
         
-        $result = sql_query('SELECT * FROM ' . $this->table . " WHERE
-            email='" . escape($_SESSION[$this->cookie_prefix . '_email']) . "' AND
-            password='" . escape($_SESSION[$this->cookie_prefix . '_password']) . "'
-            " . ($this->login_wherestr ? 'AND ' . $this->login_wherestr : '') . '
-        ', 1);
+        $login_str = $this->get_login_str();
+        
+        $result = sql_query('SELECT * FROM ' . $this->table . " 
+            WHERE
+                email='" . escape($_SESSION[$this->cookie_prefix . '_email']) . "' AND
+                password='" . escape($_SESSION[$this->cookie_prefix . '_password']) . "'
+                " . $this->login_str
+        , 1);
 
         if ($result) {
             $this->user = $result;
@@ -356,8 +390,9 @@ class auth
             return false;
         }
 
-        sql_query('DELETE FROM cms_login_attempts WHERE
-            `date`<DATE_SUB(NOW(),INTERVAL 10 MINUTE)
+        sql_query('DELETE FROM cms_login_attempts 
+            WHERE
+                `date`<DATE_SUB(NOW(), INTERVAL 10 MINUTE)
         ');
 
         $rows = sql_query("SELECT id FROM cms_login_attempts 
@@ -371,9 +406,13 @@ class auth
         }
     }
 
-    public function show_error($error)
+    public function show_error($errors)
     {
-        print json_encode($error);
+        print json_encode([
+            'success' => false,
+            'error' => current($errors),
+            'errors' => $errors
+        ]);
         exit;
     }
 
@@ -620,7 +659,7 @@ class auth
         return $result;
     }
 
-    public function login()
+    public function login($data = null)
     {
         $result = $this->single_sign_on();
         
@@ -628,7 +667,10 @@ class auth
             return $result;
         }
         
-        $data = $_POST;
+        if (!$data) {
+            $data = $_POST;
+        }
+        
         $result = [];
         
         if ($this->user) {
@@ -636,16 +678,19 @@ class auth
             $result['message'] = 'User logged in';
         } elseif ($data['login']) {
             $errors = [];
-            if ($data['email'] and $data['password']) {
+            if ($data['email'] && $data['password']) {
                 $this->check_login_attempts();
     
                 $data['password'] = $this->create_hash($data['password']);
+    
+                $login_str = $this->get_login_str();
     
                 $row = sql_query('SELECT * FROM ' . $this->table . "
                     WHERE
                         email='" . escape($data['email']) . "' AND
                         password='" . escape($data['password']) . "'
-                ", 1);
+                        " . $login_str
+                , 1);
     
                 if ($row) {
                     $this->user = $row;
@@ -658,7 +703,7 @@ class auth
                         sql_query('UPDATE ' . $this->table . " SET
                             last_login=NOW()
                             WHERE
-                                email='" . escape($data['email']) . "'
+                                id='" . escape($row['id']) . "'
                             LIMIT 1
                         ");
                     }
@@ -669,6 +714,9 @@ class auth
                         setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, true);
                         
                     }
+                    
+                    $result['code'] = 1;
+                    $result['message'] = 'User logged in';
                 } else {
                     $errors[] = 'password incorrect';
                     $this->failed_login_attempt($data['email'], $data['password']);
@@ -693,7 +741,7 @@ class auth
     // force user to log in
     public function check_login(): void
     {
-        if ($this->email_activation and $this->user and !$this->user['email_verified']) {
+        if ($this->email_activation && $this->user && !$this->user['email_verified']) {
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
             redirect('/register');
         }
@@ -707,7 +755,7 @@ class auth
     /**
      * @param bool $redirect
      */
-    public function logout(bool $redirect = true): void
+    public function logout(bool $redirect = true)
     {
         // unset cookies
         setcookie($this->cookie_prefix . '_email', '', time() - (86400 * $this->cookie_duration), '/', $this->cookie_domain);
@@ -734,5 +782,7 @@ class auth
         if ($redirect) {
             redirect('/');
         }
+        
+        return true;
     }
 }

@@ -117,7 +117,7 @@ function initForms()
                 alert('Submit error, check console for details');
                 console.log(returned.responseText)
             },
-            success: $.proxy(function(returned) {
+            success: $.proxy(function(data) {
                 var errorMethod = 'inline';
                 var firstError;
 
@@ -128,104 +128,78 @@ function initForms()
                     errorMethod = $(this).attr('errorMethod');
                 }
 
-                console.log(returned);
+                console.log(data);
 
                 showProgress(false);
 
-                if( parseInt(returned, 10)!==returned-0 ){
-                    if( returned.length>0 ){
+                if( parseInt(data) !== 1 ){
 
-                        //display errors
-                        var errors='';
+                    //display errors
+                    var errors = '';
 
-                        for( i=0;i<returned.length;i++ ){
-                            var pos = returned[i].indexOf(' ');
+                    data.errors.forEach(function(item) {
+                        
+                        var pos = item.indexOf(' ');
+                        var field;
+                        var error;
 
-                            var field;
-                            var error;
-
-                            if( pos===-1 ){
-                                field = returned[i];
-                                error = 'required';
-                            }else{
-                                field = returned[i].substring(0, pos);
-                                error = returned[i].substring(pos + 1);
-                            }
-
-                            var parent='';
-
-                            if( this[field] ){
-                                if( this[field].style ){
-                                    if( !firstError ){
-                                        firstError=field;
-                                    }
-
-                                    parent=this[field].parentNode;
-                                }else if( this[field][0] ){
-                                    parent=this[field][0].parentNode.parentNode;
-                                }
-                                
-                                errors += field + ': ' + error + '\n';
-                            } else if ( this[field+'[]'] ){
-                                if( this[field+'[]'].style ){
-                                    if( !firstError ){
-                                        firstError=field;
-                                    }
-
-                                    parent=this[field+'[]'].parentNode;
-                                }else if( this[field+'[]'][0] ){
-                                    parent=this[field+'[]'][0].parentNode.parentNode;
-                                }
-
-                                errors += field + ': ' + error + '\n';
-                            } else {
-                                errors += error + '\n';
-
-                                console.log('field not found: '+field);
-                            }
-
-                            if( parent && errorMethod=='inline' ){
-                                div = document.createElement("div");
-                                div.innerHTML = error;
-                                div.style.color = 'red';
-                                div.className = 'error';
-
-                                parent.appendChild(div);
-                            }
+                        if( pos===-1 ){
+                            field = item;
+                            error = 'required';
+                        }else{
+                            field = item.substring(0, pos);
+                            error = item.substring(pos + 1);
                         }
 
-                        if( errorMethod=='alert' ){
-                            alert('Please check the required fields\n'+errors);
+                        var parent='';
+
+                        if( this[field] ){
+                            if( this[field].style ){
+                                if( !firstError ){
+                                    firstError=field;
+                                }
+
+                                parent=this[field].parentNode;
+                            }else if( this[field][0] ){
+                                parent=this[field][0].parentNode.parentNode;
+                            }
+                            
+                            errors += field + ': ' + error + '\n';
+                        } else if ( this[field+'[]'] ){
+                            if( this[field+'[]'].style ){
+                                if ( !firstError ){
+                                    firstError=field;
+                                }
+
+                                parent=this[field+'[]'].parentNode;
+                            } else if ( this[field+'[]'][0] ){
+                                parent=this[field+'[]'][0].parentNode.parentNode;
+                            }
+
+                            errors += field + ': ' + error + '\n';
+                        } else {
+                            errors += error + '\n';
+
+                            console.log('field not found: '+field);
+                        }
+
+                        if( parent && errorMethod === 'inline' ){
+                            div = document.createElement("div");
+                            div.innerHTML = error;
+                            div.style.color = 'red';
+                            div.className = 'error';
+
+                            parent.appendChild(div);
                         }
                         
-                        $('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
+                    })
 
-                        //show first error
-                        var tab, node;
-
-                        node = this[firstError];
-
-                        if( node ){
-                            while( node=node.parentNode ){
-                                if( node.style.display=='none' ){
-                                    tab=node.id;
-                                    break;
-                                }
-
-                                if( node.nodeName=='BODY' ){
-                                    break;
-                                }
-                            }
-                        }
-
-                        //focus field
-                    //    $(this).find('[name="'+returned[0]+'"]:first').focus();
+                    if( errorMethod === 'alert' ){
+                        alert('Please check the required fields\n'+errors);
                     }
-                } else if ($(this).data('target')) {
                     
-                    $(this).hide();
-                    $($(this).data('target')).show();
-                    
+                    $('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
+
                 } else {
                     //submit form
                     window.onbeforeunload = null;
