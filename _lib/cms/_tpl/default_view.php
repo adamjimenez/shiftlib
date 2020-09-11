@@ -27,7 +27,7 @@ if (
     $has_privileges = true;
 }
 
-if ($_POST['custom_button']) {
+if (isset($_POST['custom_button'])) {
     $this->buttons[$_POST['custom_button']]['handler']($_GET['id']);
 
     $content = $this->get($this->section, $_GET['id']);
