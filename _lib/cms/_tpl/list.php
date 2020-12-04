@@ -191,7 +191,7 @@ $(function() {
         "stateDuration": 60 * 60 * 24 * 365,
         
         "serverSide": true,
-        "searching": false,
+        //"searching": false,
         
         'columnDefs': columnDefs,
         'select': {
@@ -301,7 +301,8 @@ $(function() {
         var url = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
         
         if (e.ctrlKey || e.metaKey || e.which === 2) {
-            window.open(url);
+            var win = window.open(url);
+            window.focus();
         } else if (e.which == 1) {
             location.href = url;
         }
