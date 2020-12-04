@@ -292,6 +292,41 @@ function image($file, $w = null, $h = null, $attribs = true, $crop = false)
     }
 }
 
+function carousel ($images, $width=386, $height=304) {
+    if (is_string($images)) {
+        $images = explode("\n", $images);
+    }
+    
+    if (count($images)) { 
+    ?>
+    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="false" style="max-width: <?=$width;?>px;">
+        <?php if (count($images) > 1) { ?>
+        <ol class="carousel-indicators">
+            <?php foreach($images as $k=>$image) { ?>
+            <li data-target="#carouselExampleIndicators" data-slide-to="<?=$k;?>" class="<?=$k==0 ? 'active' : '';?>"></li>
+            <?php } ?>
+        </ol>
+        <?php } ?>
+        <div class="carousel-inner">
+            <?php foreach($images as $k=>$image) { ?>
+            <div class="carousel-item <?=$k==0 ? 'active' : '';?>">
+                <?=image($image, $width, $height, 'style="max-width: 100%; max-height: ' . $height . 'px;"');?>
+            </div>
+            <?php } ?>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+    <?php 
+    }
+}
+
 // calculate age from dob
 function age($dob)
 {
@@ -673,13 +708,9 @@ function send_mail($opts = []): bool
 }
 
 // send an email form the CMS - TODO move to cms class
-function email_template($email, $subject = null, $reps = null, $headers = null, $language = 'en')
+function email_template($email, $subject = null, $reps = null)
 {
     global $from_email, $email_templates, $cms;
-
-    if (!$language) {
-        $language = $cms->language;
-    }
 
     if (!$from_email) {
         $from_email = 'auto@' . $_SERVER['HTTP_HOST'];
@@ -688,10 +719,6 @@ function email_template($email, $subject = null, $reps = null, $headers = null, 
     if (table_exists('email_templates')) {
         $conditions = is_numeric($subject) ? $subject : ['subject' => $subject];
         $template = $cms->get('email templates', $conditions, 1);
-
-        if ('en' !== $language) {
-            $template = $cms->get('email templates', ['translated from' => $template['id']], 1);
-        }
     }
 
     if (!$template and $email_templates[$subject]) {
@@ -867,7 +894,6 @@ function file_size($size): string
 function number_abbr($size, $dp = 1): string
 {
     for ($si = 0; $size >= 1000; $size /= 1000, $si++);
-    
     return number_format($size, $dp) . substr(' KMBT', $si, 1);
 }
 
@@ -1475,13 +1501,25 @@ function sql_num_rows($result): ?int
 
 function sql_query($query, $single = false)
 {
-    global $db_connection;
+    global $db_connection, $auth;
     
-    if ($_GET['debug']) {
+    $debug = $_GET['debug'] && $auth->user['admin'];
+    
+    if ($debug) {
         debug($query);
+        $timer_start = microtime(true);
     }
 
     $result = mysqli_query($db_connection, $query);
+    
+    if ($debug) {
+        $timer_now = microtime(true);
+        $diff = $timer_now - $timer_start;
+        
+        if ($diff > 0.1) {
+            debug('Slow Query [ ' . $query . ' ]: ' . round($diff, 4));
+        }
+    }
 
     if (false === $result) {
         $error = mysqli_error($db_connection);
