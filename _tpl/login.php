@@ -3,15 +3,15 @@
 $result = $auth->login();
 
 // handle login
-if ($result['code']===1) {
+if ($result['code'] === 1) {
 	redirect($_SESSION['request'] ?: '/');
 // new registration via single sign on
-} elseif ($result['code']===2) {
+} elseif ($result['code'] === 2) {
 	redirect('/register/success');
 }
 ?>
 
-<div class="container-fluid">
+<div class="container">
 
 	<div class="row clearfix">
 		<div class="col-md-6">
@@ -25,15 +25,19 @@ if ($result['code']===1) {
 			<form method="post" class="validate clearfix form-horizontal">
 				<input type="hidden" name="login" value="1">
 				
-				<input type="text" placeholder="Email address" name="email"><br>
-				<input type="password" placeholder="Password" name="password"><br>
+				<div class="form-group">
+					<input type="text" placeholder="Email address" name="email">
+				</div>
+				<div class="form-group">
+					<input type="password" placeholder="Password" name="password">
+				</div>
 				
 				<p>
 					<a href="/forgot">Forgot password?</a>
 				</p>
 				
 				<p>
-					<button class="btn" type="submit">Sign in</button>
+					<button class="btn btn-primary" type="submit">Sign in</button>
 				</p>
 				
 				<p>
@@ -45,7 +49,13 @@ if ($result['code']===1) {
 			
 			<hr>
 			
+			<?php 
+			if ($auth_config["facebook_appId"] || $auth_config["google_appId"]) { 
+			?>
 			<h3>Or sign in with:</h3>
+			<?php
+			}
+			?>
 			
 			<?php 
 			if ($auth_config["facebook_appId"]) { 

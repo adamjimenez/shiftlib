@@ -107,25 +107,27 @@ function initForms()
         if( this.action ){
             url = this.action;
         }
+        
+        var form = this;
 
         //validate
         $.ajax( url, {
             dataType: 'json',
-            type: $(this).attr('method'),
-            data: serializeAll(this)+'&validate=1&nospam=1',
+            type: $(form).attr('method'),
+            data: serializeAll(form)+'&validate=1&nospam=1',
             error: function(returned){
                 alert('Submit error, check console for details');
                 console.log(returned.responseText)
             },
-            success: $.proxy(function(data) {
+            success: function(data) {
                 var errorMethod = 'inline';
                 var firstError;
 
-                if ( $(this).attr('data-errorMethod') ) {
-                    errorMethod = $(this).attr('data-errorMethod');
+                if ( $(form).attr('data-errorMethod') ) {
+                    errorMethod = $(form).attr('data-errorMethod');
                 //legacy support
-                } else if ( $(this).attr('errorMethod') ) {
-                    errorMethod = $(this).attr('errorMethod');
+                } else if ($(form).attr('errorMethod')) {
+                    errorMethod = $(form).attr('errorMethod');
                 }
 
                 console.log(data);
@@ -135,67 +137,63 @@ function initForms()
                 if( parseInt(data) !== 1 ){
 
                     //display errors
-                    var errors = '';
+                    var errors = data.errors ? data.errors : data;
 
-                    data.errors.forEach(function(item) {
+                    errors.forEach(function(item) {
                         
                         var pos = item.indexOf(' ');
                         var field;
                         var error;
 
-                        if( pos===-1 ){
+                        if(pos === -1) {
                             field = item;
                             error = 'required';
-                        }else{
+                        } else {
                             field = item.substring(0, pos);
                             error = item.substring(pos + 1);
                         }
 
                         var parent='';
-
-                        if( this[field] ){
-                            if( this[field].style ){
-                                if( !firstError ){
+                        if(form[field]) {
+                            if(form[field].style) {
+                                if(!firstError) {
                                     firstError=field;
                                 }
 
-                                parent=this[field].parentNode;
-                            }else if( this[field][0] ){
-                                parent=this[field][0].parentNode.parentNode;
+                                parent = form[field].parentNode;
+                            } else if(form[field][0]) {
+                                parent = form[field][0].parentNode.parentNode;
                             }
                             
                             errors += field + ': ' + error + '\n';
-                        } else if ( this[field+'[]'] ){
-                            if( this[field+'[]'].style ){
-                                if ( !firstError ){
+                        } else if (form[field + '[]']){
+                            if(form[field + '[]'].style) {
+                                if (!firstError) {
                                     firstError=field;
                                 }
 
-                                parent=this[field+'[]'].parentNode;
-                            } else if ( this[field+'[]'][0] ){
-                                parent=this[field+'[]'][0].parentNode.parentNode;
+                                parent = form[field + '[]'].parentNode;
+                            } else if (form[field + '[]'][0]) {
+                                parent = form[field + '[]'][0].parentNode.parentNode;
                             }
 
                             errors += field + ': ' + error + '\n';
                         } else {
                             errors += error + '\n';
-
-                            console.log('field not found: '+field);
+                            console.log('field not found: ' + field);
                         }
 
-                        if( parent && errorMethod === 'inline' ){
+                        if(parent && errorMethod === 'inline') {
                             div = document.createElement("div");
                             div.innerHTML = error;
                             div.style.color = 'red';
                             div.className = 'error';
-
                             parent.appendChild(div);
                         }
-                        
                     })
 
                     if( errorMethod === 'alert' ){
-                        alert('Please check the required fields\n'+errors);
+                        alert('Please check the required fields\n' + errors);
                     }
                     
                     $('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
@@ -205,15 +203,15 @@ function initForms()
                     window.onbeforeunload = null;
 
                     //nospam
-                    $(this).append('<input type="hidden" name="nospam" value="1">');
+                    $(form).append('<input type="hidden" name="nospam" value="1">');
 
-                    this.submit();
+                    form.submit();
                 }
-            }, this),
-            complete: $.proxy(function(returned) {
+            },
+            complete: function(returned) {
                 // re-enable submit
-                $('*[type=submit], *[type=image]', this).removeAttr('disabled');
-            }, this)
+                $('*[type=submit], *[type=image]', form).removeAttr('disabled');
+            }
         });
     });
 

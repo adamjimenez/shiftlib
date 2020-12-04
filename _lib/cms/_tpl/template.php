@@ -363,10 +363,12 @@
         $('.import_file').on('change', changeFile);
         
         // fix close button
+        /*
         $(function() {
             var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
             $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
         })
+        */
         
         // hide empty list dropdown menu
         $(function() {
