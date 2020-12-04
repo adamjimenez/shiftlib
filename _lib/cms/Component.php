@@ -64,6 +64,16 @@ abstract class Component
     }
 
     /**
+     * SQL code for column selection
+     *
+     * @return string|null
+     */
+    public function getColSql(string $fieldName, string $tablePrefix): ?string
+    {
+        return $tablePrefix . $fieldName;
+    }
+
+    /**
      * @param string $fieldName
      * @param string $value
      * @param array $options
