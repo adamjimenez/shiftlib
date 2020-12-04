@@ -587,11 +587,8 @@ class cms
                 continue;
             }
 
-            $col = "T_$table." . underscored($name);
-            if ('coords' == $type) {
-                $col = 'AsText(' . $col . ')';
-                $col = 'CONCAT(X(' . $col . '), " ", Y(' . $col . '))';
-            }
+            $component = $this->get_component($type);
+            $col = $component->getColSql(underscored($name), "T_$table.");
 
             $cols .= "\t" . $col . ' AS `' . underscored($name) . '`,' . "\n";
         }
@@ -615,7 +612,7 @@ class cms
             
             if ($field) {
                 if ($order) {
-                    $order = ', '.$order;
+                    $order = ', ' . $order;
                 }
                 
                 $order = "
@@ -1153,10 +1150,10 @@ class cms
         		if (!$data['g-recaptcha-response']) {
         			$errors[] = 'recaptcha';
         		} else {
-        			$params = array(
+        			$params = [
         				'secret' => $auth_config['recaptcha_secret'],
         				'response' => $data['g-recaptcha-response']
-        			);
+        			];
         			
         			$verify = curl_init();
         			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");

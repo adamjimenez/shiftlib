@@ -16,6 +16,17 @@ class Coords extends Component implements ComponentInterface
     }
 
     /**
+     * SQL code for column selection
+     *
+     * @return string|null
+     */
+    public function getColSql(string $fieldName, string $tablePrefix): ?string
+    {
+        $col = $tablePrefix . $fieldName;
+        return 'CONCAT(X(' . $col . '), " ", Y(' . $col . '))';
+    }
+
+    /**
      * @param string $fieldName
      * @param string $value
      * @param array $options
@@ -23,6 +34,6 @@ class Coords extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', $options = []): string
     {
-        return '<input type="text" name="' . $fieldName . '" value="' . htmlspecialchars(substr($value, 6, -1)) . '"' . ($options['readonly'] ? ' disabled' : '') . ' size="50"' . ($options['placeholder'] ? ' placeholder="' . $options['placeholder'] . '"' : '') . ' ' . $options['attribs'] . '>';
+        return '<input type="text" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '"' . ($options['readonly'] ? ' disabled' : '') . ' size="50"' . ($options['placeholder'] ? ' placeholder="' . $options['placeholder'] . '"' : '') . ' ' . $options['attribs'] . '>';
     }
 }
