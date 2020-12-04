@@ -208,3 +208,10 @@ if ($_GET['id']) {
         });
     });
 </script>
+
+<script>
+// autofocus
+$(function() {
+    $('form input:visible, form textarea:visible, form select:visible').first().focus();
+});
+</script>
