@@ -475,6 +475,9 @@ switch ($_GET['cmd']) {
             break;
         }
         
+        // datatable search
+        $_GET['fields']['s'] = $_GET['fields']['s'] ?: $_POST['search']['value'];
+        
         $table = escape(underscored($_GET['section']));
         $field_id = in_array('id', $vars['fields'][$_GET['section']]) ? array_search('id', $vars['fields'][$_GET['section']]) : 'id';
         
