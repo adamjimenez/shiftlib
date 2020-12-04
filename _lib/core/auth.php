@@ -1,6 +1,18 @@
 <?php
 $cookie_params = session_get_cookie_params();
-session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], true, $cookie_params['httponly']);
+
+if(PHP_VERSION_ID < 70300) {
+    session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], true, $cookie_params['httponly']);
+} else {
+    session_set_cookie_params([
+        'lifetime' => $cookie_params['lifetime'],
+        'path' => '/',
+        'domain' => $cookie_params['domain'],
+        'secure' => true,
+        'httponly' => $cookie_params['httponly'],
+        'samesite' => 'None'
+    ]);
+}
 
 session_start();
 
