@@ -133,7 +133,11 @@ abstract class Component
         }
         
         $value = str_replace('*', '%', $value);
-        return $tablePrefix . $fieldName . " LIKE '" . escape($value) . "'";
+        
+        if (!in_array($func, ['=', '!='])) {
+            $func = 'LIKE';
+        }
+        return $tablePrefix . $fieldName . " $func '" . escape($value) . "'";
     }
 
     /**
