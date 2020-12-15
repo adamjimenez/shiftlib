@@ -9,7 +9,11 @@ use Exception;
 class File extends Component implements ComponentInterface
 {
     public const IMAGE_TYPES = ['jpg', 'jpeg', 'gif', 'png'];
-    public $previewUrl = '/admin?option=file&f=';
+    
+    public function getPreviewUrl($value) {
+        global $auth;
+        return '/admin?option=file&f=' . $value. '&h=' . md5($auth->hash_salt . $value);
+    }
 
     /**
      * @param string $fieldName
@@ -20,15 +24,17 @@ class File extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
+        $previewUrl = $this->getPreviewUrl($value);
         $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
+        
         $parts = [];
 
         $parts[] = '<div>';
 
         if ($value) {
             $parts[] = '<input type="hidden" id="' . $fieldName . '" name="' . $fieldName . '" value="' . $value . '">';
-            $parts[] = '<a href="' . $this->previewUrl . $value . '">';
-            $parts[] = '<img src="' . $this->previewUrl . $value . '" style="max-width: 100px; max-height: 100px;"><br>';
+            $parts[] = '<a href="' . $previewUrl . '">';
+            $parts[] = '<img src="' . $previewUrl . '" style="max-width: 100px; max-height: 100px;"><br>';
             $parts[] = $file['name'];
             $parts[] = '</a>';
             $parts[] = '<a href="javascript:" onClick="clearFile(' . $fieldName . ')">clear</a>';
@@ -48,12 +54,15 @@ class File extends Component implements ComponentInterface
     public function value($value, string $name = ''): string
     {
         if ($value) {
+            
+            $previewUrl = $this->getPreviewUrl($value);
+            
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
 
             if (in_array(file_ext($file['name']), self::IMAGE_TYPES)) {
-                $value = '<img src="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
+                $value = '<img src="/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
-            $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . $this->previewUrl . $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
+            $value .= '<a href="/' . $previewUrl. '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
         }
         return $value;
     }

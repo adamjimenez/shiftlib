@@ -301,9 +301,9 @@ class cms
     
     public function file($file_id)
     {
-        global $auth, $vars;
+        global $auth, $vars, $auth;
 
-        if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads']) {
+        if ($_GET['h'] !== md5($auth->hash_salt . $file_id)) {
             die('access denied');
         }
 
@@ -396,16 +396,6 @@ class cms
             $field_name = underscored($name);
             $value = $conditions[$field_name];
 
-            if (isset($value) && $value !== '') {
-                if ($component = $this->get_component($type)) {
-                    // deprecated
-                    if (is_array($conditions) && $conditions['end'][$field_name]) {
-                        $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
-                    }
-                    $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
-                }
-            }
-
             switch ($type) {
                 case 'checkboxes':
                     $joins .= ' LEFT JOIN cms_multiple_select S_' . $field_name . ' ON S_' . $field_name . '.item = T_' . $table . '.' . $field_id;
@@ -434,19 +424,29 @@ class cms
                         $grids = calc_grids($value);
 
                         if ($grids) {
-                            $cols .= ",
+                            $cols .= ',
                             (
-                                SELECT
-                                    ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-" . $grids[1] . ",2)) * 0.000621371192)
-                                    AS distance
-                                FROM postcodes
-                                WHERE
-                                    Pcode=
-                                    REPLACE(SUBSTRING(SUBSTRING_INDEX(T_$table.$field_name, ' ', 1), LENGTH(SUBSTRING_INDEX(T_$table.$field_name, ' ', 0)) + 1), ',', '')
-
-                            ) AS distance";
+        						SELECT
+        							ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-' . $grids[1] . ",2)) * 0.000621371192)
+        							AS distance
+        						FROM postcodes
+        						WHERE
+        							Pcode=
+        							REPLACE(SUBSTRING(SUBSTRING_INDEX(T_places.postcode, ' ', 1), LENGTH(SUBSTRING_INDEX(T_places.postcode, ' ', 0)) + 1), ',', '')
+        					) AS distance";
 
                             $having[] = 'distance <= ' . escape($conditions['func'][$field_name]) . '';
+                        }
+                    }
+                    break;
+                default:
+                    if (isset($value) && ($value !== '' || $conditions['func'][$field_name])) {
+                        if ($component = $this->get_component($type)) {
+                            // deprecated
+                            if (is_array($conditions) && $conditions['end'][$field_name]) {
+                                $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
+                            }
+                            $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
                         }
                     }
                     break;
@@ -961,7 +961,7 @@ class cms
         $option = $_GET['option'] ?: 'index';
 
         // redirect if logged out
-        if ('login' != $option && !$auth->user['admin']) {
+        if (!in_array($option, ['login', 'file']) && !$auth->user['admin']) {
             // check table exists
             if (!table_exists($auth->table)) {
                 $this->check_table($auth->table, $vars['fields'][$auth->table]);

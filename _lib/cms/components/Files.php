@@ -34,12 +34,14 @@ class Files extends File implements ComponentInterface
 
         if (is_array($value)) {
             foreach ($value as $key => $val) {
+                $previewUrl = $this->getPreviewUrl($val);
+                
                 $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1);
                 $parts[] = '<li>';
                 if ($file) {
                     $parts[] = '<input type="hidden" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . '>';
-                    $parts[] = '<a href="' . $this->previewUrl . $val . '">';
-                    $parts[] = '<img src="' . $this->previewUrl . $val . '" style="max-width: 100px; max-height: 100px;"><br>';
+                    $parts[] = '<a href="' . $previewUrl . '">';
+                    $parts[] = '<img src="' . $previewUrl . '" style="max-width: 100px; max-height: 100px;"><br>';
                     $parts[] = $file['name'];
                     $parts[] = '</a>';
                     $parts[] = '<a href="javascript:" class="link" onClick="delItem(this)">delete</a>';
@@ -74,6 +76,8 @@ class Files extends File implements ComponentInterface
 
         if (is_array($files)) {
             foreach ($files as $key => $val) {
+                $previewUrl = $this->getPreviewUrl($file['id']);
+                
                 $count++;
 
                 if ($val) {
@@ -81,10 +85,10 @@ class Files extends File implements ComponentInterface
                 }
 
                 if (in_array(file_ext($file['name']), parent::IMAGE_TYPES)) {
-                    $value .= '<img src="http://' . $_SERVER['HTTP_HOST'] . '/' . $this->previewUrl . $file['id'] . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
+                    $value .= '<img src="http://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
                 }
 
-                $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $this->previewUrl . $file['id'] . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span><br><br>';
+                $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span><br><br>';
             }
         }
 
