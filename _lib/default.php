@@ -4,7 +4,24 @@ File:		default.php
 Author:		Adam Jimenez
 */
 
-require(dirname(__FILE__) . '/base.php');
+function parse_request(): string
+{
+    $request = rawurldecode($_SERVER['REQUEST_URI']);
+
+    // strip query string
+    $pos = strpos($request, '?');
+    if ($pos) {
+        $request = substr($request, 0, $pos);
+    }
+
+    // append index if directory
+    if (!$request || substr($request, -1) === '/') {
+        $request .= 'index';
+    }
+
+    // strip prepending slash
+    return ltrim($request, '/');
+}
 
 function get_tpl_catcher($request)
 {
@@ -35,25 +52,6 @@ function get_tpl_catcher($request)
 function trigger_404()
 {
     throw new Exception(404);
-}
-
-function parse_request(): string
-{
-    $request = rawurldecode($_SERVER['REQUEST_URI']);
-
-    // strip query string
-    $pos = strpos($request, '?');
-    if ($pos) {
-        $request = substr($request, 0, $pos);
-    }
-
-    // append index if directory
-    if (!$request || ends_with($request, '/')) {
-        $request .= 'index';
-    }
-
-    // strip prepending slash
-    return ltrim($request, '/');
 }
 
 function get_include($request)
@@ -125,6 +123,8 @@ function get_include($request)
 }
 
 $request = parse_request();
+
+require(dirname(__FILE__) . '/base.php');
 
 // current tab
 $sections = explode('/', $request);
