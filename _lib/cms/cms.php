@@ -303,7 +303,7 @@ class cms
     {
         global $auth, $vars, $auth;
 
-        if ($_GET['h'] !== md5($auth->hash_salt . $file_id)) {
+        if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads'] and $_GET['hash'] !== md5($auth->hash_salt . $file_id)) {
             die('access denied');
         }
 
@@ -313,7 +313,7 @@ class cms
         ", 1) or die('file not found');
 
         header('Content-type: ' . $row['type']);
-        header('Content-Disposition: attachment; filename="' . $row['name'] . '"');
+        header('Content-Disposition: inline; filename="' . $row['name'] . '"');
 
         if (!$_GET['w'] && !$_GET['h']) {
             print file_get_contents($this->file_upload_path . $row['id']);

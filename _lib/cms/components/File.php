@@ -12,7 +12,7 @@ class File extends Component implements ComponentInterface
     
     public function getPreviewUrl($value) {
         global $auth;
-        return '/admin?option=file&f=' . $value. '&h=' . md5($auth->hash_salt . $value);
+        return '/admin?option=file&f=' . $value. '&hash=' . md5($auth->hash_salt . $value);
     }
 
     /**
