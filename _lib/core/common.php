@@ -1148,12 +1148,6 @@ function is_postcode($code): bool
         return false;
     }
     
-    if (table_exists('postcodes')) {
-        if (false === calc_grids($code)) {
-            return false;
-        }
-    }
-    
     return true;
 }
 
