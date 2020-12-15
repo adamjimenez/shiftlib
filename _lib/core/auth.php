@@ -373,7 +373,7 @@ class auth
      * @param string $email
      * @param string $pass
      */
-    private function set_login(string $email, string $pass)
+    public function set_login(string $email, string $pass)
     {
         $_SESSION[$this->cookie_prefix . '_email'] = $email;
         $_SESSION[$this->cookie_prefix . '_password'] = $pass;
@@ -761,6 +761,14 @@ class auth
         if (!$this->user) {
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
             redirect('/login');
+        }
+    }
+
+    public function check_admin()
+    {
+        if (!$this->user['admin']) {
+            $_SESSION['request'] = $_SERVER['REQUEST_URI'];
+            redirect('?option=login');
         }
     }
 
