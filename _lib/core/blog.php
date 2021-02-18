@@ -44,12 +44,12 @@ class blog
     {
         global $cms, $sections, $vars, $from_email, $request;
 
-        $this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search('blog', $sections);
-
         $this->table_blog = $options['table_blog'] ?: 'blog';
+        $this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search($this->table_blog, $sections);
         $this->table_categories = $options['table_categories'] ?: 'blog categories';
 
         $this->category_field = array_search($this->table_categories, $vars['options']);
+        $this->limit = $options['limit'] ?: 10;
         
         $this->conditions = [];
 
@@ -95,8 +95,6 @@ class blog
             $this->tags = $this->subval_sort($tags, 'size', false);
         }
 
-        $limit = null;
-
         if (in_array($this->table_blog, $sections) and $sections[$this->blog_index] == $this->table_blog) {
             //archive
             if (is_numeric($sections[($this->blog_index + 1)]) and is_numeric($sections[($this->blog_index + 2)])) {
@@ -121,8 +119,9 @@ class blog
             } elseif ('tags' == $sections[($this->blog_index + 1)]) {
                 $this->conditions['tags'] = '*' . $sections[($this->blog_index + 2)] . '*';
             } elseif ($sections[($this->blog_index + 1)] and 'index' !== $sections[($this->blog_index + 1)]) {
-                $this->conditions['page_name'] = $sections[($this->blog_index + 1)];
-
+                $request_uri = $_SERVER['REQUEST_URI'];
+                $pos = strpos($request_uri, '/', $this->blog_index + 1);
+                $this->conditions['page_name'] = substr($request_uri, $pos + 1);
                 $this->article = true;
             } else {
                 $this->conditions['func']['date'] = '<';
@@ -134,14 +133,12 @@ class blog
                 if ($_GET['w']) {
                     $this->conditions['w'] = $_GET['w'];
                 }
-
-                $limit = 6;
             }
 
             $this->conditions['display'] = 1;
 
             //print_r($this->conditions);exit;
-            $this->content = $cms->get($this->table_blog, $this->conditions, $limit, 'date', false);
+            $this->content = $cms->get($this->table_blog, $this->conditions, $this->limit, 'date', false);
             $this->p = $cms->p;
 
             if ($this->article) {
@@ -239,6 +236,7 @@ class blog
             }
         }
 
+        /*
         if ($_POST['approve_all'] and $auth->user) {
             switch ($_POST['approve_all']) {
                 case 'approve':
@@ -313,6 +311,7 @@ class blog
         }
 
         $opts['approve'] = ['approve','delete','delete and block'];
+        */
     }
 
     /**
