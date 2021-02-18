@@ -275,7 +275,7 @@ function loop_fields($field_arr)
             if ('select' == $new_type) {
                 foreach ($_POST['options'] as $option) {
                     if ($option['name'] == $new_name) {
-                        $new_type = ('section' == $option['type']) ? 'integer' : 'enum';
+                        $new_type = $option['section'] ? 'integer' : 'enum';
                         
                         if ($new_type == 'enum') {                        
                             $option['list'] = strip_tags($option['list']);
@@ -301,7 +301,7 @@ function loop_fields($field_arr)
             }
 
             if (underscored($k) != underscored($new_name) || $cms->get_component_name($v) !== $cms->get_component_name($new_type)) {
-                if ($new_type === 'enum') {
+                if ($new_type === 'enum' && count($values)) {
                     $db_field = 'ENUM(' . array_to_csv($values) . ')';
                 } else {
                     $db_field = $cms->form_to_db($new_type);
@@ -311,12 +311,12 @@ function loop_fields($field_arr)
                     $query = "ALTER TABLE `$table` CHANGE `" . underscored($k) . '` `' . underscored($new_name) . '` ' . $db_field . ' ';
                 }
 
-                if ($query and 'hidden' != $new_type) {
+                if ($query && 'hidden' != $new_type) {
                     sql_query($query);
                 }
 
                 //convert select to checkboxes
-                if ('select' == $v and 'checkboxes' == $new_type) {
+                if ('select' == $v && 'checkboxes' == $new_type) {
                     $rows = sql_query("SELECT * FROM `$table`");
 
                     foreach ($rows as $row) {
