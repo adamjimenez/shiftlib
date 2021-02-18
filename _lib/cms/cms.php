@@ -177,7 +177,7 @@ class cms
             T_' . $table . '.' . $field_id . '
             ' . $sql['having_str'];
 
-        $result = mysqli_query($db_connection, $query);
+        $result = mysqli_query($db_connection, $query, MYSQLI_USE_RESULT);
 
         if (false === $result) {
             debug($query);
