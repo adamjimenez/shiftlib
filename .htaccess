@@ -3,6 +3,8 @@ Options -MultiViews +Indexes +FollowSymLinks
 RewriteEngine on
 RewriteBase /
 
+RewriteRule ^\.well-known/.+ - [END]
+
 #RewriteCond %{HTTP_HOST} !^www.domain.co.uk$ [NC]
 #RewriteRule ^(.*)$ http://www.domain.co.uk/$1 [L,R=301]
 
