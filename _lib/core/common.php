@@ -1405,12 +1405,14 @@ function cache_query($query, $single = false, $expire = 3600)
 {
     $memcache = new Memcached;
     $memcache->addServer("localhost", 11211) or trigger_error('Could not connect', E_USER_ERROR);
-    
-    $result = $memcache->get(md5($query));
+
+    $hash = md5($_SERVER['DB_NAME'] . '' . $query);
+
+    $result = $memcache->get($hash);
     
     if (!$result) {
         $result = sql_query($query);
-        $memcache->set(md5($query), $result, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
+        $memcache->set($hash, $result, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
     }
     
     return $single ? $result[0] : $result;
