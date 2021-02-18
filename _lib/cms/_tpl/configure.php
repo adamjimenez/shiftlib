@@ -170,7 +170,7 @@ function array_to_csv($array): ?string // returns null or string
     }
 
     foreach ($array as $k => $v) {
-        $array[$k] = "\t'" . addslashes($v) . "'";
+        $array[$k] = "\t'" . addslashes(trim($v)) . "'";
     }
 
     return implode(",\n", $array);
@@ -191,7 +191,24 @@ function str_to_csv($str): string
     return implode(",\n", $array);
 }
 
-function str_to_assoc($str): string
+function str_to_assoc($str): array
+{
+    if (!$str) {
+        return [];
+    }
+
+    $lines = explode("\n", $str);
+
+    $array = [];
+    foreach ($lines as $k => $v) {
+        $pos = strpos($v, '=');
+        $array[trim(substr($v, 0, $pos))] = trim(substr($v, $pos + 1));
+    }
+
+    return $array;
+}
+
+function str_to_assoc_str($str): string
 {
     if (!$str) {
         return '';
@@ -258,10 +275,13 @@ function loop_fields($field_arr)
             if ('select' == $new_type) {
                 foreach ($_POST['options'] as $option) {
                     if ($option['name'] == $new_name) {
-                        if ('section' == $option['type']) {
-                            $new_type = 'integer';
+                        $new_type = ('section' == $option['type']) ? 'integer' : 'enum';
+                        
+                        if ($new_type == 'enum') {                        
+                            $option['list'] = strip_tags($option['list']);
+                            $values = strstr($option['list'], '=') ? array_keys(str_to_assoc($option['list'])) : explode("\n", $option['list']);
                         }
-
+                        
                         break;
                     }
                 }
@@ -281,7 +301,11 @@ function loop_fields($field_arr)
             }
 
             if (underscored($k) != underscored($new_name) || $cms->get_component_name($v) !== $cms->get_component_name($new_type)) {
-                $db_field = $cms->form_to_db($new_type);
+                if ($new_type === 'enum') {
+                    $db_field = 'ENUM(' . array_to_csv($values) . ')';
+                } else {
+                    $db_field = $cms->form_to_db($new_type);
+                }
 
                 if ($db_field) {
                     $query = "ALTER TABLE `$table` CHANGE `" . underscored($k) . '` `' . underscored($new_name) . '` ' . $db_field . ' ';
@@ -346,6 +370,13 @@ if ($_POST['save']) {
         if ($table_dropped) {
             continue;
         }
+        
+        // get actual table fields
+        $rows = sql_query("SHOW fields FROM $table");
+        $table_fields = [];
+        foreach($rows as $v) {
+            $table_fields[] = spaced($v['Field']);
+        }
 
         $after = '';
         foreach ($_POST['vars']['fields'][$count['sections']] as $field_id => $field) {
@@ -357,7 +388,8 @@ if ($_POST['save']) {
                 $field_options[] = $field['name'];
             }
 
-            if (in_array($field['name'], $fields)) {
+            // check field exists in table
+            if (in_array($field['name'], $fields) && in_array($field['name'], $table_fields)) {
                 $after = underscored($field['name']);
             } else {
                 $db_field = $this->form_to_db($field['value']);
@@ -365,12 +397,12 @@ if ($_POST['save']) {
                 if (!$db_field) {
                     continue;
                 }
-
-                if ($after) {
-                    $query = "ALTER TABLE `$table` ADD `" . underscored($field['name']) . '` ' . $db_field . " NOT NULL AFTER `$after`";
-                } else {
-                    $query = "ALTER TABLE `$table` ADD `" . underscored($field['name']) . '` ' . $db_field . ' NOT NULL AFTER `id`'; //FIRST
+                
+                if (!$after) {
+                    $after = 'id';
                 }
+
+                $query = "ALTER TABLE `$table` ADD `" . underscored($field['name']) . '` ' . $db_field . " NOT NULL AFTER `$after`";
 
                 if ($query) {
                     sql_query($query);
@@ -439,7 +471,7 @@ $db_config["name"] = "' . $db_config['name'] . '" ?: $_SERVER["db_name"];
 $tpl_config["catchers"] = [' . str_to_csv($_POST['tpl_config']['catchers']) . '];
 
 // 301 redirects
-$tpl_config["redirects"] = [' . str_to_assoc($_POST['tpl_config']['redirects']) . '];
+$tpl_config["redirects"] = [' . str_to_assoc_str($_POST['tpl_config']['redirects']) . '];
 
 // enforce ssl
 $tpl_config["ssl"] = ' . str_to_bool($_POST['tpl_config']['ssl']) . ';
@@ -574,7 +606,7 @@ $vars["options"]["' . spaced($option['name']) . '"] = "' . $option['section'] . 
             if (strstr($option['list'], '=')) {
                 $config .= '
 $vars["options"]["' . spaced($option['name']) . '"] = [
-' . str_to_assoc($option['list']) . '
+' . str_to_assoc_str($option['list']) . '
 ];
 ';
             } else {
@@ -611,6 +643,7 @@ $release_url = 'https://api.github.com/repos/adamjimenez/shiftlib/releases/lates
 $release = wget($release_url);
 
 // zipball_url
+/*
 if ($release['tag_name'] != $this::VERSION) {
     ?>
 <div class="alert alert-primary mt-3" role="alert">
@@ -622,11 +655,58 @@ if ($release['tag_name'] != $this::VERSION) {
 </div>
 <?php
 }
+*/
 
 $count['sections'] = 0;
 $count['fields'] = 0;
 $count['subsections'] = 0;
 $count['options'] = 0;
+
+// detect missing tables
+$tables = sql_query("SHOW tables");
+
+foreach($tables as $v) {
+    $table = current($v);
+    $section = spaced($table);
+    if (starts_with($table, 'cms_') || in_array($table, ['files', 'login_attempts']) || is_array($vars['fields'][$section])) {
+        continue;
+    }
+    
+    $fields = sql_query("SHOW fields FROM $table");
+    
+    foreach($fields as $v) {
+        $type = 'text';
+        
+        if ($v['Field'] === 'id') {
+            $type = 'id';
+        } else if ($v['Field'] === 'file') {
+            $type = 'file';
+        } else if ($v['Field'] === 'files') {
+            $type = 'files';
+        } else if ($v['Field'] === 'dob') {
+            $type = 'dob';
+        } else if ($v['Field'] === 'postcode') {
+            $type = 'postcode';
+        } else if (starts_with($v['Type'], 'text')) {
+            $type = 'textarea';
+        } else if (starts_with($v['Type'], 'int')) {
+            $type = 'integer';
+        } else if (starts_with($v['Type'], 'decimal')) {
+            $type = 'decimal';
+        } else if (starts_with($v['Type'], 'date')) {
+            $type = 'date';
+        } else if (starts_with($v['Type'], 'tinyint(1)')) {
+            $type = 'checkbox';
+        } else if (starts_with($v['Type'], 'tinyint')) {
+            $type = 'integer';
+        } else if (starts_with($v['Type'], 'timestamp')) {
+            $type = 'timestamp';
+        }
+
+        $vars['fields'][$section][spaced($v['Field'])] = $type;
+    }
+}
+
 ?>
 
 <style>
@@ -646,16 +726,15 @@ $count['options'] = 0;
         cursor: pointer;
     }
 </style>
+    
+<div class="main-content-inner">
+    <div class="row">
+        <div class="col-lg-12 mt-1 p-0">
+            <div class="card">
+                <div class="card-body">
 
-<form method="post" id="form">
-    <input type="hidden" name="save" value="1">
-    
-    <div class="main-content-inner">
-        <div class="row">
-    
-            <div class="col-lg-12 mt-1 p-0">
-                <div class="card">
-                    <div class="card-body">
+                    <form method="post" id="form">
+                        <input type="hidden" name="save" value="1">
                 
                         <ul class="nav nav-tabs mt-3" id="pills-tab" role="tablist">
                             <li class="nav-item">
@@ -853,20 +932,18 @@ $count['options'] = 0;
                             </div>
                         </div>
                     
-                        <br>
                         <p>
                             <button class="btn btn-secondary" type="submit" onclick="return confirm('WARNING: changing settings can result in loss of data or functionality. Are you sure you want to continue?');">Save config</button>
                         </p>
-                    </div>
+
+                        <input type="hidden" name="last" value="1">
+                    </form>
                 </div>
             </div>
-
         </div>
     </div>
-
-    <input type="hidden" name="last" value="1">
-</form>
-
+</div>
+    
 <template id="sectionTemplate">
     
    <div class="row mb-3 draggableSections">
@@ -1033,7 +1110,7 @@ $count['options'] = 0;
                     fieldRow.find('.label').val(vars.label[key][name]);
                 }
                 
-                if (vars.required[key].indexOf(name) != -1 ) {
+                if (vars.required && vars.required[key] && vars.required[key].indexOf(name) != -1 ) {
                     fieldRow.find('.required').prop('checked', true);
                 }
                 
@@ -1059,15 +1136,17 @@ $count['options'] = 0;
             });
             
             // subsections
-            vars.subsections[key].forEach(function(item) {
-                count.subsections++;
-                var html = $('#subsectionTemplate').html()
-                    .split('{$count}').join(count.subsections)
-                    .split('{$section_id}').join(count.sections);
-                    
-                var subsectionRow = $(html).appendTo(row.find('.subsections>.container'));
-                subsectionRow.find('select').val(item);
-            });
+            if (vars.subsections[key]) {
+                vars.subsections[key].forEach(function(item) {
+                    count.subsections++;
+                    var html = $('#subsectionTemplate').html()
+                        .split('{$count}').join(count.subsections)
+                        .split('{$section_id}').join(count.sections);
+                        
+                    var subsectionRow = $(html).appendTo(row.find('.subsections>.container'));
+                    subsectionRow.find('select').val(item);
+                });
+            }
         });
         
         // populate dropdowns
