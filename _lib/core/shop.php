@@ -236,12 +236,14 @@ class shop
         $this->basket = [];
         $this->item_count = 0;
         $this->subtotal = 0;
+        
+        $i = 0;
         foreach ($items as $k => $v) {
             if ($v['deleted'] === '1') {
                 continue;
             }
             
-            $this->basket[] = $v;
+            $this->basket[$i] = $v;
             
             $variation = [];
 
@@ -250,7 +252,7 @@ class shop
             }
 
             if ($variation['cost'] > 0) {
-                $this->basket[$k]['cost'] = $variation['cost'];
+                $this->basket[$i]['cost'] = $variation['cost'];
             }
 
             if (table_exists('extras')) {
@@ -266,7 +268,7 @@ class shop
 					", 1);
 
                     if ($row) {
-                        $this->basket[$k]['cost'] += $row['cost'];
+                        $this->basket[$i]['cost'] += $row['cost'];
                     }
                 }
             }
@@ -276,23 +278,25 @@ class shop
                 foreach ($values as $value) {
                     $product_value = sql_query("SELECT * FROM product_values WHERE id = '" . escape($value) . "'", 1);
                     $product_option = sql_query("SELECT * FROM product_options WHERE id = '" . escape($product_value['product_option']) . "'", 1);
-                    $this->basket[$k]['cost'] += $product_value['cost'];
+                    $this->basket[$i]['cost'] += $product_value['cost'];
 
-                    if ($this->basket[$k]['extras']) {
-                        $this->basket[$k]['extras'] .= "\n";
+                    if ($this->basket[$i]['extras']) {
+                        $this->basket[$i]['extras'] .= "\n";
                     }
 
-                    $this->basket[$k]['extras'] .= $product_option['name'] . ': ' . $product_value['value'];
+                    $this->basket[$i]['extras'] .= $product_option['name'] . ': ' . $product_value['value'];
                 }
             }
 
-            $this->subtotal += $v['quantity'] * $this->basket[$k]['cost'];
+            $this->subtotal += $v['quantity'] * $this->basket[$i]['cost'];
 
             $this->item_count += $v['quantity'];
 
             if ($v['delivery']) {
                 $this->delivery += $v['delivery'];
             }
+            
+            $i++;
         }
 
         $this->vat = $this->subtotal * $this->vat_rate;
