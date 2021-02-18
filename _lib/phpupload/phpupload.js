@@ -49,7 +49,7 @@ $(function() {
 			max_file_size : max_file_size,
 			mime_types: [
 				{title : "Office files", extensions : "pdf,doc,docx,xls,xlsx"},
-				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Image files", extensions : "jpg,gif,png,svg"},
 				{title : "Video files", extensions : "mp4"},
 				{title : "Zip files", extensions : "zip"}
 			]
