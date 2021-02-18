@@ -1,17 +1,21 @@
 <?php
 $cookie_params = session_get_cookie_params();
 
-if(PHP_VERSION_ID < 70300) {
-    session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], true, $cookie_params['httponly']);
-} else {
-    session_set_cookie_params([
-        'lifetime' => $cookie_params['lifetime'],
-        'path' => '/',
-        'domain' => $cookie_params['domain'],
-        'secure' => true,
-        'httponly' => $cookie_params['httponly'],
-        'samesite' => 'None'
-    ]);
+if ($_SERVER['HTTPS'] == 'on') {
+    $cookie_secure = true;
+    
+    if(PHP_VERSION_ID < 70300) {
+        session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], $cookie_secure, $cookie_params['httponly']);
+    } else {
+        session_set_cookie_params([
+            'lifetime' => $cookie_params['lifetime'],
+            'path' => '/',
+            'domain' => $cookie_params['domain'],
+            'secure' => $cookie_secure,
+            'httponly' => $cookie_params['httponly'],
+            'samesite' => 'None'
+        ]);
+    }
 }
 
 session_start();
@@ -140,7 +144,19 @@ class auth
      * @param array $config
      * @throws Exception
      */
-    public function __construct(?array $config = [])
+    public function __construct()
+    {
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldHashPassword(): bool
+    {
+        return $this->hash_password;
+    }
+
+    public function init(?array $config = [])
     {
         global $vars, $email_templates;
 
@@ -177,18 +193,7 @@ class auth
         }
 
         $this->required = $vars['required'][$this->table];
-    }
-
-    /**
-     * @return bool
-     */
-    public function shouldHashPassword(): bool
-    {
-        return $this->hash_password;
-    }
-
-    public function init()
-    {
+        
         if (true === $this->initiated) {
             return false;
         }
@@ -250,45 +255,60 @@ class auth
     
     public function single_sign_on()
     {
-        if (false === class_exists('Hybrid_Auth')) {
+        if (false === class_exists('Hybridauth\Hybridauth')) {
             return;
         }
         
         $result = [];
         
-        // single sign on, triggerd by $_GET['provider'] = google
-        if (isset($_GET['provider'])) {
-            $config = [
-                'base_url' => 'https://' . $_SERVER['HTTP_HOST'] . '/login?action=auth',
-        
-                'providers' => [
-                    'Facebook' => [
-                        'enabled' => true,
-                        'keys' => [ 'id' => $this->facebook_appId, 'secret' => $this->facebook_secret ],
-                         'trustForwarded' => true,
-                          'scope' => 'email',
-                    ],
-                    'Google' => [
-                        'enabled' => true,
-                        'keys' => [ 'id' => $this->google_appId, 'secret' => $this->google_secret ],
-                        'scope' => 'profile email',
-                    ],
+        $config = [
+            'callback' => 'https://' . $_SERVER['HTTP_HOST'] . '/login?action=auth',
+    
+            'providers' => [
+                'Facebook' => [
+                    'enabled' => true,
+                    'keys' => [ 'id' => $this->facebook_appId, 'secret' => $this->facebook_secret ],
+                     'trustForwarded' => true,
+                      'scope' => 'email',
                 ],
-            ];
+                'Google' => [
+                    'enabled' => true,
+                    'keys' => [ 'id' => $this->google_appId, 'secret' => $this->google_secret ],
+                    'scope' => 'profile email',
+                ],
+                "Apple" => [
+                    "enabled" => true,
+                    "keys" => [
+                        "id" => $this->apple_appId,
+                        "team_id" => $this->apple_teamId,
+                        "key_id" => $this->apple_keyId,
+                        "key_content" => $this->apple_key,
+                    ],
+                    "scope" => "name email",
+                    "verifyTokenSignature" => true
+                ]
+            ]
+        ];
+            
+        // the selected provider
+        $provider_name = $_GET['provider'] ?: $_SESSION['provider'];
+    
+        // initialize Hybrid_Auth with a given file
+        $hybridauth = new Hybridauth\Hybridauth($config);
         
-            try {
-                // initialize Hybrid_Auth with a given file
-                $hybridauth = new Hybrid_Auth($config);
+        // single sign on, triggerd by $_GET['provider'] = google
+        if (isset($_GET['provider']) || $_GET['action'] === 'auth') {
+            $_SESSION['provider'] = $provider_name;
         
-                // try to authenticate with the selected provider
-                $adapter = $hybridauth->authenticate($_GET['provider']);
-        
-                // then grab the user profile
-                $user_profile = $adapter->getUserProfile();
-            } catch (Exception $e) {
-                echo 'Error: please try again!';
-                echo 'Original error message: ' . $e->getMessage();
+            if ($_GET['u']) {
+                $_SESSION['request'] = $_GET['u'];
             }
+            
+            // try to authenticate with the selected provider
+            $adapter = $hybridauth->authenticate($_SESSION['provider']);
+            
+            // then grab the user profile
+            $user_profile = $adapter->getUserProfile();
         
             $email = $user_profile->email or die('missing email');
             
@@ -322,14 +342,6 @@ class auth
             // log in
             $this->set_login($email, $user['password']);
             $this->load();
-        }
-        
-        if ('auth' == $_GET['action']) {
-            try {
-                Hybrid_Endpoint::process();
-            } catch (Exception $e) {
-                echo 'Login error';
-            }
         }
         
         return $result;

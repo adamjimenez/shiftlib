@@ -40,7 +40,7 @@ if ($db_config['user'] or $db_connection) {
         
     }
 
-    $auth = new auth($auth_config);
+    $auth = new auth();
 } elseif (false !== $db_config) {
     //prompt to configure connection
     require(__DIR__ . '/cms/_tpl/db.php');
@@ -50,7 +50,7 @@ if ($db_config['user'] or $db_connection) {
 include($root_folder . '/_inc/custom.php');
 
 if ($auth) {
-    $auth->init();
+    $auth->init($auth_config);
 }
 
 //backcompat
