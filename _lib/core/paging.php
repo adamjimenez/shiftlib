@@ -91,7 +91,7 @@ class paging
         $this->num_pages = $num_pages;
 
         $this->paging_separator = '&nbsp;'; // e.g. 1 2 3 4 5
-        $this->paging_format = '%1$s &nbsp;&nbsp;&nbsp;&nbsp; %2$s &nbsp;&nbsp;&nbsp;&nbsp; %3$s'; // e.g. previous 1 2 3 4 5 next
+        $this->paging_format = '<ul class="pagination">%1$s &nbsp;&nbsp;&nbsp;&nbsp; %2$s &nbsp;&nbsp;&nbsp;&nbsp; %3$s</ul>'; // e.g. previous 1 2 3 4 5 next
         $this->paging_hide_prev_next = true; // hide prev / next links if they don't exist
         $this->paging_previous_text = 'Previous';
         $this->paging_next_text = 'Next';
@@ -215,8 +215,8 @@ class paging
                 $array_paging['previous_link'] .= $this->prefix . 'page=' . ($this->page - $this->int_num_result);
             }
             $array_paging['previous_link'] .= $qs;
-            $array_paging['previous_tag'] = '<a class="prev" href="' . $array_paging['previous_link'] . '">';
-            $array_paging['start_tag'] = '<a class="prev" href="?' . $this->prefix . $qs . '">';
+            $array_paging['previous_tag'] = '<li class="page-item"><a class="page-link prev" href="' . $array_paging['previous_link'] . '"></li>';
+            $array_paging['start_tag'] = '<li class="page-item"><a class="page-link prev" href="?' . $this->prefix . $qs . '"></li>';
         } else {
             $array_paging['previous_tag'] = '';
             $array_paging['start_tag'] = '';
@@ -228,8 +228,8 @@ class paging
             $int_end *= 10;
 
             $array_paging['next_link'] = '?' . $this->prefix . 'page=' . $int_new_position . $qs;
-            $array_paging['next_tag'] = '<a class="next" href="' . $array_paging['next_link'] . '">';
-            $array_paging['end_tag'] = '<a class="next" href="?' . $this->prefix . 'page=' . $int_end . $qs . '">';
+            $array_paging['next_tag'] = '<li class="page-item"><a class="page-link next" href="' . $array_paging['next_link'] . '"></li>';
+            $array_paging['end_tag'] = '<li class="page-item"><a class="page-link next" href="?' . $this->prefix . 'page=' . $int_end . $qs . '"></li>';
         } else {
             $array_paging['next_tag'] = '';
             $array_paging['end_tag'] = '';
@@ -263,17 +263,16 @@ class paging
         $j = 0;
         for ($i = $start; $i < $end; $i++) {
             // if current page, do not make a link
-            if ($i == $this->getCurrentPage()) {
-                $array_all_page[$j] = '<b>' . ($i + 1) . '</b>';
-            } else {
-                $int_new_position = ($i * $this->int_num_result);
-                $link = '';
-                if ($int_new_position > 0) {
-                    $link .= $this->prefix . 'page=' . $int_new_position;
-                }
-
-                $array_all_page[$j] = '<a href="?' . $link . '&' . $this->str_ext_argv . '">' . ($i + 1) . '</a>';
+            
+            $class = $i == $this->getCurrentPage() ? ' active' : '';
+            
+            $int_new_position = ($i * $this->int_num_result);
+            $link = '';
+            if ($int_new_position > 0) {
+                $link .= $this->prefix . 'page=' . $int_new_position;
             }
+
+            $array_all_page[$j] = '<li class="page-item' . $class . '"><a class="page-link" href="?' . $link . '&' . $this->str_ext_argv . '">' . ($i + 1) . '</a></li>';
             $j++;
         }
         return $array_all_page;
@@ -336,9 +335,9 @@ class paging
 
         // Display the result as you like...
         $paging = '';
-        $paging .= '<b>' . number_format($array_paging['lower']) . '</b>';
-        $paging .= ' - <b>' . number_format($array_paging['upper']) . '</b>';
-        $paging .= ' of <b>' . number_format($array_paging['total']) . '</b>';
+        $paging .= '<strong>' . number_format($array_paging['lower']) . '</strong>';
+        $paging .= ' - <strong>' . number_format($array_paging['upper']) . '</strong>';
+        $paging .= ' of <strong>' . number_format($array_paging['total']) . '</strong>';
 
         if ($links) {
             // Load up the 2 array in order to display result
