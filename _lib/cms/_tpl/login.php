@@ -27,7 +27,6 @@ if (1 === $result['code']) {
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
-    <link rel="stylesheet" href="/_lib/cms/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/metisMenu.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/slicknav.min.css">
     <!-- others css -->
