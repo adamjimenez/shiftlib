@@ -3,7 +3,7 @@ if (1 != $auth->user['admin']) {
     die('access denied');
 }
 
-global $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields;
+global $last_modified, $db_config, $auth_config, $upload_config, $shop_config, $shop_enabled, $from_email, $tpl_config, $live_site, $vars, $table_dropped, $count, $section, $table, $fields;
 
 // internal tables
 $default_tables = [
@@ -339,6 +339,10 @@ if ($_POST['save']) {
     if (!$_POST['last']) {
         die('Error: form submission incomplete');
     }
+    
+    if ($_POST['last_modified'] != $last_modified) {
+        die('Error: changes since last modified');
+    }
 
     // check internal tables
     foreach ($default_tables as $name => $fields) {
@@ -459,6 +463,8 @@ if ($_POST['save']) {
     }
 
     $config = '<?php
+$last_modified = ' . time() . ';
+    
 # GENERAL SETTINGS
 $db_config["host"] = "' . $db_config['host'] . '" ?: $_SERVER["db_host"];
 $db_config["user"] = "' . $db_config['user'] . '" ?: $_SERVER["db_user"];
@@ -571,7 +577,7 @@ $vars["fields"]["' . $section . '"] = [
 
 $vars["required"]["' . $section . '"] = [' . $required . '];
 
-$vars["label"]["' . $section . '"]=array(' . $label . ');
+$vars["label"]["' . $section . '"] = [' . $label . '];
 
 $vars["subsections"]["' . $section . '"] = [' . $subsections . '];
 
@@ -633,10 +639,20 @@ $vars["options"]["' . $field_option . '"] = "";
     unset($_POST);
 
     $_SESSION['message'] = 'Configuration Saved';
-
-    //reload config
-    require('_inc/config.php');
-}
+    ?>
+    <div class="main-content-inner">
+        <div class="row">
+            <div class="col-lg-12 mt-1 p-0">
+                <div class="card">
+                    <div class="card-body">
+                        <a href="?option=configure">Back to configuration</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+} else {
 
 // version check
 $release_url = 'https://api.github.com/repos/adamjimenez/shiftlib/releases/latest';
@@ -735,6 +751,7 @@ foreach($tables as $v) {
 
                     <form method="post" id="form">
                         <input type="hidden" name="save" value="1">
+                        <input type="hidden" name="last_modified" value="<?=$last_modified;?>">
                 
                         <ul class="nav nav-tabs mt-3" id="pills-tab" role="tablist">
                             <li class="nav-item">
@@ -1343,3 +1360,6 @@ foreach($tables as $v) {
         return fields.length;
     };
 </script>
+
+<?php
+}
