@@ -544,7 +544,7 @@ function calc_grids($pcodeA, $lat = false)
     return false;
 }
 
-// get distance in miles between two postcods
+// return straight line distance between two postcodes in meters
 function calc_distance($postcode_a, $postcode_b)
 {
     if ($postcode_a == $postcode_b) {
@@ -554,7 +554,7 @@ function calc_distance($postcode_a, $postcode_b)
     $grid_a = calc_grids($postcode_a);
     $grid_b = calc_grids($postcode_b);
     
-    return round(sqrt(pow($grid_a[0] - $grid_b[0], 2) + pow($grid_a[1] - $grid_b[1], 2)) * 0.000621371192);
+    return (int)round(sqrt(pow($grid_a[0] - $grid_b[0], 2) + pow($grid_a[1] - $grid_b[1], 2)));
 }
 
 // add active class to the active tab
