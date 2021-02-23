@@ -1,21 +1,18 @@
 <?php
+$cookie_secure = ($_SERVER['HTTPS'] === 'on');
 $cookie_params = session_get_cookie_params();
 
-if ($_SERVER['HTTPS'] == 'on') {
-    $cookie_secure = true;
-    
-    if(PHP_VERSION_ID < 70300) {
-        session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], $cookie_secure, $cookie_params['httponly']);
-    } else {
-        session_set_cookie_params([
-            'lifetime' => $cookie_params['lifetime'],
-            'path' => '/',
-            'domain' => $cookie_params['domain'],
-            'secure' => $cookie_secure,
-            'httponly' => $cookie_params['httponly'],
-            'samesite' => 'None'
-        ]);
-    }
+if(PHP_VERSION_ID < 70300) {
+    session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=Lax', $cookie_params['domain'], $cookie_secure, $cookie_params['httponly']);
+} else {
+    session_set_cookie_params([
+        'lifetime' => $cookie_params['lifetime'],
+        'path' => '/',
+        'domain' => $cookie_params['domain'],
+        'secure' => $cookie_secure,
+        'httponly' => $cookie_params['httponly'],
+        'samesite' => 'None'
+    ]);
 }
 
 session_start();
@@ -685,6 +682,8 @@ class auth
 
     public function login($data = null)
     {
+        global $cookie_secure;
+        
         $result = $this->single_sign_on();
         
         if ($result['code']) {
@@ -734,8 +733,8 @@ class auth
     
                     if ($data['remember']) {
 
-                        setcookie($this->cookie_prefix . '_email', $data['email'], time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, true);
-                        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, true);
+                        setcookie($this->cookie_prefix . '_email', $data['email'], time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
+                        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
                         
                     }
                     
