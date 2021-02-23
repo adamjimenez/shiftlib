@@ -91,7 +91,7 @@ class paging
         $this->num_pages = $num_pages;
 
         $this->paging_separator = '&nbsp;'; // e.g. 1 2 3 4 5
-        $this->paging_format = '<ul class="pagination">%1$s &nbsp;&nbsp;&nbsp;&nbsp; %2$s &nbsp;&nbsp;&nbsp;&nbsp; %3$s</ul>'; // e.g. previous 1 2 3 4 5 next
+        $this->paging_format = '<ul class="pagination">%1$s %2$s %3$s</ul>'; // e.g. previous 1 2 3 4 5 next
         $this->paging_hide_prev_next = true; // hide prev / next links if they don't exist
         $this->paging_previous_text = 'Previous';
         $this->paging_next_text = 'Next';
@@ -215,11 +215,9 @@ class paging
                 $array_paging['previous_link'] .= $this->prefix . 'page=' . ($this->page - $this->int_num_result);
             }
             $array_paging['previous_link'] .= $qs;
-            $array_paging['previous_tag'] = '<li class="page-item"><a class="page-link prev" href="' . $array_paging['previous_link'] . '"></li>';
-            $array_paging['start_tag'] = '<li class="page-item"><a class="page-link prev" href="?' . $this->prefix . $qs . '"></li>';
+            $array_paging['previous_tag'] = '<li class="page-item"><a class="page-link prev" href="' . $array_paging['previous_link'] . '">' . $this->paging_previous_text . '</a></li>';
         } else {
             $array_paging['previous_tag'] = '';
-            $array_paging['start_tag'] = '';
         }
 
         if ($this->int_num_result and (($this->total - $this->page) > $this->int_num_result)) {
@@ -228,11 +226,9 @@ class paging
             $int_end *= 10;
 
             $array_paging['next_link'] = '?' . $this->prefix . 'page=' . $int_new_position . $qs;
-            $array_paging['next_tag'] = '<li class="page-item"><a class="page-link next" href="' . $array_paging['next_link'] . '"></li>';
-            $array_paging['end_tag'] = '<li class="page-item"><a class="page-link next" href="?' . $this->prefix . 'page=' . $int_end . $qs . '"></li>';
+            $array_paging['next_tag'] = '<li class="page-item"><a class="page-link next" href="' . $array_paging['next_link'] . '">' . $this->paging_next_text . '</a></li>';
         } else {
             $array_paging['next_tag'] = '';
-            $array_paging['end_tag'] = '';
         }
         return $array_paging;
     }
@@ -291,15 +287,12 @@ class paging
         $array_paging = $this->getPagingArray();
         $array_row_paging = $this->getPagingRowArray();
 
-        if (!$array_paging['previous_tag'] and !$this->paging_hide_prev_next) {
-            $previous = '<strong>' . $this->paging_previous_text . '</strong>';
-        } elseif ($array_paging['previous_tag']) {
-            $previous = $array_paging['previous_tag'] . '<strong>' . $this->paging_previous_text . '</strong></a>';
-        } else {
-            $previous = '';
-        }
+        $pages = '<ul class="pagination">';
 
-        $pages = '';
+        if ($array_paging['previous_tag']) {
+            $pages .= $array_paging['previous_tag'];
+        }
+        
         if (sizeof($array_row_paging) > 1) {
             for ($i = 0; $i < sizeof($array_row_paging); $i++) {
                 $pages .= $array_row_paging[$i];
@@ -310,15 +303,13 @@ class paging
             }
         }
 
-        if (!$array_paging['next_tag'] and !$this->paging_hide_prev_next) {
-            $next = '<strong>' . $this->paging_next_text . '</strong>';
-        } elseif ($array_paging['next_tag']) {
-            $next = $array_paging['next_tag'] . '<strong>' . $this->paging_next_text . '</strong></a>';
-        } else {
-            $next = '';
+        if ($array_paging['next_tag']) {
+            $pages .= $array_paging['next_tag'];
         }
-
-        return sprintf($this->paging_format, $previous, $pages, $next);
+        
+        $pages .= '</ul>';
+        
+        return $pages;
     }
 
     /**
@@ -345,11 +336,11 @@ class paging
             //$array_row_paging = $this->getPagingRowArray();
 
             if ($array_paging['previous_tag']) {
-                $paging = '&nbsp;&nbsp;&nbsp;&nbsp;' . $array_paging['previous_tag'] . '<strong style="font-size:16px;">' . $this->paging_previous_text . '</strong></a>&nbsp;&nbsp;&nbsp;&nbsp;' . $paging;
+                $paging = $array_paging['previous_tag'] . $paging;
             }
 
             if ($array_paging['next_tag']) {
-                $paging .= '&nbsp;&nbsp;&nbsp;&nbsp;' . $array_paging['next_tag'] . '<strong style="font-size:16px;">' . $this->paging_next_text . '</strong></a>';
+                $paging .= $array_paging['next_tag'];
             }
         }
 
