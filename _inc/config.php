@@ -64,7 +64,7 @@ $vars['fields']['users'] = [
     'surname' => 'text',
     'email' => 'email',
     'password' => 'password',
-    'email_verified' => 'checkbox',
+    'email verified' => 'checkbox',
     'admin' => 'select',
     'id' => 'id',
 ];
