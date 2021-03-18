@@ -150,6 +150,7 @@ class blog
             }
         }
 
+        /*
         if ($_POST['save_blog_comment'] and 1 == $_POST['nospam']) {
             if (!$_POST['name']) {
                 $errors[] = 'name';
@@ -236,7 +237,6 @@ class blog
             }
         }
 
-        /*
         if ($_POST['approve_all'] and $auth->user) {
             switch ($_POST['approve_all']) {
                 case 'approve':
