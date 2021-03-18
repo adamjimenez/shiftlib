@@ -1,5 +1,10 @@
 <?php
 $this->set_section($this->section, $_GET['id'], ['read']);
+
+if (!$this->id) {
+    $_SESSION['message'] = 'Page not found';
+    redirect('?option=' . $this->section);
+}
 ?>
 
 <table border="0" cellspacing="0" cellpadding="5" width="100%">
