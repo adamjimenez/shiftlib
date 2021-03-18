@@ -195,7 +195,7 @@ class auth
             return false;
         }
         
-        //check for cookies or basic auth
+        //check for cookies
         if (!$_SESSION[$this->cookie_prefix . '_user']) {
             $email = '';
             $password = '';
@@ -380,12 +380,15 @@ class auth
 
     /**
      * @param string $email
-     * @param string $pass
+     * @param string $pass password hash
      */
     public function set_login(string $email, string $pass)
     {
         $_SESSION[$this->cookie_prefix . '_email'] = $email;
         $_SESSION[$this->cookie_prefix . '_password'] = $pass;
+        
+        setcookie($this->cookie_prefix . '_email', $email, time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
+        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $pass), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
     }
 
     /**
@@ -718,8 +721,6 @@ class auth
                 if ($row) {
                     $this->user = $row;
                     $_SESSION[$this->cookie_prefix . '_user'] = $this->user;
-                    $_SESSION[$this->cookie_prefix . '_email'] = $data['email'];
-                    $_SESSION[$this->cookie_prefix . '_password'] = $data['password'];
                     $_SESSION[$this->cookie_prefix . '_expires'] = time() + $this->expiry;
     
                     if ($this->log_last_login) {
@@ -730,14 +731,9 @@ class auth
                             LIMIT 1
                         ");
                     }
-    
-                    if ($data['remember']) {
-
-                        setcookie($this->cookie_prefix . '_email', $data['email'], time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
-                        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $data['password']), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
-                        
-                    }
                     
+                    $this->set_login($data['email'], $data['password']);
+
                     $result['code'] = 1;
                     $result['message'] = 'User logged in';
                 } else {
