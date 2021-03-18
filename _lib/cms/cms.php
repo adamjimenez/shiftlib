@@ -424,7 +424,7 @@ class cms
                         $grids = calc_grids($value);
 
                         if ($grids) {
-                            $cols .= ',
+                            $cols[] = '
                             (
         						SELECT
         							ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-' . $grids[1] . ",2)) * 0.000621371192)
@@ -463,6 +463,7 @@ class cms
 
             foreach ($words as $word) {
                 $or = [];
+                //$having_or = [];
 
                 foreach ($vars['fields'][$section] as $name => $type) {
                     if (!in_array($type, ['text', 'textarea', 'editor', 'email', 'mobile', 'select', 'id'])) {
@@ -473,8 +474,7 @@ class cms
 
                     if ('select' == $type) {
                         if (is_string($vars['options'][$name])) {
-                            $option = $this->get_option_label($name);
-                            $or[] = 'T_' . underscored($name) . '.' . underscored($option) . " LIKE '%" . escape($value) . "%'";
+                            //$having_or[] = underscored($name) . "_label LIKE '%" . escape($value) . "%'";
                         }
                     } else {
                         if ($conditions['w']) {
@@ -490,6 +490,14 @@ class cms
                     $or_str = implode(' OR ', $or);
                     $where[] = '(' . $or_str . ')';
                 }
+
+                // add 'or' array to 'having' array
+                /*
+                if (count($having_or)) {
+                    $having_or_str = implode(' OR ', $having_or);
+                    $having[] = '(' . $having_or_str . ')';
+                }
+                */
             }
         }
 
@@ -525,21 +533,29 @@ class cms
 
             foreach ($keys as $key) {
                 if (false === is_array($vars['options'][$key])) {
-                    $option_table = underscored($vars['options'][$key]) or trigger_error('missing options array value for: ' . $key, E_ERROR);
+                    $option_table = underscored($vars['options'][$key]);
+                    
+                    if (!$option_table) {
+                        die('missing options array value for: ' . $key);
+                    }
 
                     $join_id = $this->get_id_field($key);
+                    $option = $this->get_option_label($key);
 
+                    /*
                     $joins .= "
                         LEFT JOIN $option_table T_" . underscored($key) . ' 
                         ON T_' . underscored($key) . ".$join_id = T_$table." . underscored($key) . '
                     ';
+                    */
 
-                    $option = $this->get_option_label($key);
-
-                    $cols .= ', T_' . underscored($key) . '.' . underscored($option) . " AS '" . underscored($key) . "_label'";
+                    //$cols .= ', T_' . underscored($key) . '.' . underscored($option) . " AS '" . underscored($key) . "_label'";
+                    $cols[] = "(SELECT " . $option . "  FROM ".$option_table." WHERE id = T_$table." . underscored($key) . ") AS '" . underscored($key) . "_label'";   
                 }
             }
         }
+        
+        $cols = implode(', ', $cols);
 
         return [
             'where_str' => $where_str,
@@ -581,7 +597,7 @@ class cms
 
         // select columns
         // todo move to components
-        $cols = '';
+        $cols = [];
         foreach ($vars['fields'][$section] as $name => $type) {
             if (in_array($type, ['checkboxes', 'separator'])) {
                 continue;
@@ -590,12 +606,12 @@ class cms
             $component = $this->get_component($type);
             $col = $component->getColSql(underscored($name), "T_$table.");
 
-            $cols .= "\t" . $col . ' AS `' . underscored($name) . '`,' . "\n";
+            $cols[] = "\t" . $col . ' AS `' . underscored($name) . '`' . "\n";
         }
 
         // select id column
         $field_id = $this->get_id_field($section);
-        $cols .= "\tT_$table.$field_id";
+        $cols[] = "\tT_$table.$field_id";
 
         // determine sort order
         if ($conditions['s'] || $conditions['w']) {
@@ -644,7 +660,8 @@ class cms
                 // order options by value instead of key
                 if (in_array($type, ['select', 'combo', 'radio']) && !is_array($vars['opts'][$label])) {
                     $key = $this->get_option_label($label);
-                    $order = 'T_' . underscored($label) . '.' . underscored($key);
+                    //$order = 'T_' . underscored($label) . '.' . underscored($key);
+                    $order = underscored($label) . '_label';
                 } elseif ($vars['fields'][$section][0]) {
                     $order = "T_$table." . underscored($vars['fields'][$section][0]);
                 } else {
@@ -857,6 +874,8 @@ class cms
                 return 'upload';
             case 'phpuploads':
                 return 'uploads';
+            case 'enum':
+                return 'select';
         }
 
         return $type;
