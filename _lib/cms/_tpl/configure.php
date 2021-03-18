@@ -280,6 +280,11 @@ function loop_fields($field_arr)
                         if ($new_type == 'enum') {                        
                             $option['list'] = strip_tags($option['list']);
                             $values = strstr($option['list'], '=') ? array_keys(str_to_assoc($option['list'])) : explode("\n", $option['list']);
+                            $values = array_filter($values, function($value) { return $value !== ''; });
+                            
+                            if (is_numeric($values[0])) {
+                                $new_type = 'integer';
+                            }
                         }
                         
                         break;
@@ -376,7 +381,7 @@ if ($_POST['save']) {
         }
         
         // get actual table fields
-        $rows = sql_query("SHOW fields FROM $table");
+        $rows = sql_query("SHOW fields FROM `$table`");
         $table_fields = [];
         foreach($rows as $v) {
             $table_fields[] = spaced($v['Field']);
