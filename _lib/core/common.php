@@ -1451,14 +1451,16 @@ function send_html_email($user, $html, $reps)
     mail($user['email'], $subject, $html, $headers);
 }
 
+// used with server sent events
 function send_msg($msg) {
 	global $msg_id;
 	
+	if (php_sapi_name() === 'cli') {
+	    echo $msg . "\n";
+	    return;
+	}
+	
 	if (!$msg_id) {
-		ob_end_clean();
-		header('Content-Type: text/event-stream');
-		header('Cache-Control: no-cache');
-		
 		if (isset($_SERVER['HTTP_ORIGIN'])) {
 			header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
 			header('Access-Control-Allow-Credentials: true');
@@ -1472,8 +1474,22 @@ function send_msg($msg) {
 	$data = is_array($msg) ? $msg  : ['msg' => $msg];
 	$data['id'] = $msg_id;
 	
-	echo 'data: ' . json_encode($data) . "\n" . PHP_EOL;
+	$line = 'data: ' . json_encode($data)  . "\n";
+    print_flush($line);
+}
 
+function print_flush($line) {
+    if(!headers_sent()) {
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');        
+    }
+    
+    if (ob_get_level() !== 0) {
+        ob_end_clean();
+    }
+    
+	ob_end_clean();
+    print $line . PHP_EOL;
 	ob_flush();
 	flush();
 }
@@ -1751,7 +1767,7 @@ function validate($fields, $required, $array = true)
     return implode("\n", $errors);
 }
 
-function wget($url, $cache_expiration = 0)
+function wget($url, $post_array = null, $cache_expiration = 0)
 {
     if ($cache_expiration) {
         $memcache = new Memcached;
@@ -1763,12 +1779,25 @@ function wget($url, $cache_expiration = 0)
         }
     }
     
+    global $tmp_fname;
+    
     $ch = curl_init();
+    	
+	if (!$tmp_fname) {
+        $tmp_fname = tempnam(__DIR__ . "/tmp", "COOKIE");
+	}
     
     // set url
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+    if ($post_array) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_array)); 
+    }
+    
     $result = curl_exec($ch);
     curl_close($ch);
     
