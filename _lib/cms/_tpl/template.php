@@ -1,3 +1,15 @@
+<?php
+$versions = [
+    'datatables' => [
+        'core' => '1.10.24',
+        'responsive' => '2.2.7',
+        'rowReorder' => '1.2.7',
+        'select' => '1.3.2',
+        'buttons' => '1.7.0',
+        'checkboxes' => '1.2.12',
+    ]
+];
+?>
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -17,15 +29,15 @@
     <link rel="stylesheet" href="/_lib/cms/assets/css/slicknav.min.css">
     
     <!-- Start datatable css -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/css/responsive.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/css/responsive.jqueryui.min.css">
 
-    <link type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.6/css/rowReorder.dataTables.min.css" rel="stylesheet">
-    <link type="text/css" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css" rel="stylesheet">
-    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/css/dataTables.checkboxes.css" rel="stylesheet">
-    <link type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.bootstrap4.min.css" rel="stylesheet">
+    <link type="text/css" href="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder'];?>/css/rowReorder.dataTables.min.css" rel="stylesheet">
+    <link type="text/css" href="https://cdn.datatables.net/select/<?=$versions['datatables']['select'];?>/css/select.dataTables.min.css" rel="stylesheet">
+    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes'];?>/css/dataTables.checkboxes.css" rel="stylesheet">
+    <link type="text/css" href="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/css/buttons.bootstrap4.min.css" rel="stylesheet">
 
     <!-- others css -->
     <link rel="stylesheet" href="/_lib/cms/assets/css/typography.css">
@@ -289,19 +301,19 @@
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
 
     <!-- Start datatable js -->
-    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/js/responsive.bootstrap.min.js"></script>
 
-    <script type="text/javascript" src="https://cdn.datatables.net/rowreorder/1.2.6/js/dataTables.rowReorder.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
-    <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/js/dataTables.checkboxes.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder'];?>/js/dataTables.rowReorder.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/<?=$versions['datatables']['select'];?>/js/dataTables.select.min.js"></script>
+    <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes'];?>/js/dataTables.checkboxes.min.js"></script>
     
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.bootstrap4.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.colVis.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/buttons.bootstrap4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/buttons.html5.min.js"></script>
 
     <script src="/_lib/cms/assets/js/plugins.js"></script>
     <script src="/_lib/cms/assets/js/scripts.js?v=1"></script>

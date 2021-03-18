@@ -536,7 +536,7 @@ switch ($_GET['cmd']) {
         // prepare rows
         foreach ($rows as $row) {
             // every item starts with position
-            $item = [$row['position']];
+            $item = [$row['position'], ''];
             
             // use labels when available
             foreach ($fields as $name) {
