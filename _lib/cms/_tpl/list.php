@@ -15,6 +15,7 @@ $sortable = in_array('position', $vars['fields'][$this->section]);
                 <tr>
                     <th class="noVis"><i class="fas fa-arrows-alt-v"></i>&nbsp;</th>
                     <th class="noVis">&nbsp;</th>
+                    <th class="noVis">&nbsp;</th>
                     <?php
                     foreach ($vars['fields'][$this->section] as $name => $type) {
                         if (in_array($type, $this->hidden_columns)) {
@@ -160,6 +161,11 @@ $(function() {
         },
         "width": 20,
         "orderable": false
+    }, {
+        'targets': 2,
+        className: 'control',
+        data:null,
+        defaultContent:""
     }];
     
     // hide copy columns
@@ -205,7 +211,8 @@ $(function() {
         "autoWidth": false,
         "responsive": {
             details: {
-                type: 'none'
+                type: 'column',
+                target: 2
             }
         }
     } );
@@ -283,12 +290,8 @@ $(function() {
         }
     })
     
-    $(table.table().container()).on('click', '.dt-checkboxes-cell', function (e) {
-        e.stopPropagation();
-    });
-    
-    $(table.table().container()).on('mousedown', 'tr[role]', function (e) {
-        if ($(e.target).hasClass('dt-checkboxes-cell') || $(e.target).hasClass('dt-checkboxes')) {
+    $(table.table().container()).on('mousedown', '.dataTable tbody tr', function (e) {
+        if ($(e.target).hasClass('dt-checkboxes-cell') || $(e.target).hasClass('dt-checkboxes') || $(e.target).hasClass('control')) {
             return;
         }
         
@@ -298,7 +301,7 @@ $(function() {
             return;
         }
         
-        var url = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '&<?=$qs;?>';
+        var url = '?option=<?=$params['section'];?>&view=true&id=' + data[2] + '<?=$qs ? '&' . $qs : '';?>';
         
         if (e.ctrlKey || e.metaKey || e.which === 2) {
             var win = window.open(url);
