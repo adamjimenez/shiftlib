@@ -211,11 +211,14 @@ if ($_GET['cmd']) {
                     $file['name'] = $filename;
                     $file['leaf'] = !is_dir($pathname);
                     $file['id'] = substr($pathname, strlen($root));
+                    $file['size'] = filesize($pathname);
 
                     if (!is_dir($pathname)) {
                         //$file['url'] = '/uploads/'.$file['id'];
 
-                        $thumb = image($file['id'], 50, 39, false);
+                        if ($file['size'] < 5000000) {
+                            $thumb = image($file['id'], 50, 39, false);
+                        }
                         //$thumb_medium = image($file['id'], 98 , 76, false);
 
                         if ($thumb) {
@@ -230,8 +233,6 @@ if ($_GET['cmd']) {
                         $file['thumb'] = 'images/folder_thumb.png';
                         //$file['thumb_medium'] = 'images/folder_thumb_medium.png';
                     }
-
-                    $file['size'] = filesize($pathname);
                     $file['modified'] = filemtime($pathname);
 
                     $files[] = $file;
