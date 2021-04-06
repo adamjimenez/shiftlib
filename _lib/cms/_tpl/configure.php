@@ -381,10 +381,12 @@ if ($_POST['save']) {
         }
         
         // get actual table fields
-        $rows = sql_query("SHOW fields FROM `$table`");
         $table_fields = [];
-        foreach($rows as $v) {
-            $table_fields[] = spaced($v['Field']);
+        if (table_exists($table)) {
+            $rows = sql_query("SHOW fields FROM `$table`");
+            foreach($rows as $v) {
+                $table_fields[] = spaced($v['Field']);
+            }
         }
 
         $after = '';
