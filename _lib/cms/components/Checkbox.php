@@ -12,7 +12,7 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return 'TINYINT';
+        return 'TINYINT(1)';
     }
 
     /**

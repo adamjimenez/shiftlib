@@ -301,7 +301,7 @@ $(function() {
             return;
         }
         
-        var url = '?option=<?=$params['section'];?>&view=true&id=' + data[2] + '<?=$qs ? '&' . $qs : '';?>';
+        var url = '?option=<?=$params['section'];?>&view=true&id=' + data[1] + '<?=$qs ? '&' . $qs : '';?>';
         
         if (e.ctrlKey || e.metaKey || e.which === 2) {
             var win = window.open(url);

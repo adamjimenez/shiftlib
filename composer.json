@@ -7,7 +7,6 @@
     "ext-exif": "*",
     "ext-gd": "*",
     "ext-json": "*",
-    "ext-memcache": "*",
     "ext-mysqli": "*",
     "ext-xml": "*",
     "phpmailer/phpmailer": "^6.1"

@@ -27,7 +27,7 @@ if (
     $has_privileges = true;
 }
 
-if (isset($_POST['custom_button'])) {
+if ($_POST['custom_button']) {
     $this->buttons[$_POST['custom_button']]['handler']($_GET['id'], $content);
 
     $content = $this->get($this->section, $_GET['id']);
@@ -52,9 +52,15 @@ if ($_POST['select_all_pages']) {
 }
 
 // delete this item
-if ($_POST['delete'] and $this->id) {
-    $this->delete_items($_POST['section'], $this->id);
-    redirect('?option=' . $this->section);
+if (is_numeric($_POST['delete']) and $this->id) {
+    if ((int)$_POST['delete'] === 0) {
+        $this->set_section($this->section, $this->id, ['deleted']);
+        $this->save(['deleted' => 0]);
+        reload();
+    } else {
+        $this->delete_items($_POST['section'], $this->id);
+        redirect('?option=' . $this->section);
+    }
 }
 
 //label
@@ -111,7 +117,9 @@ if ($section and in_array('id', $vars['fields'][$this->section])) {
 } else {
     $back_link = '?option=' . $this->section . '&' . http_build_query($_GET['s']);
     $back_label = ucfirst($this->section);
-} ?>
+} 
+
+?>
 
 <div class="main-content-inner">
         

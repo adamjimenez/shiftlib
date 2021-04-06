@@ -1,10 +1,7 @@
 <?php
 $this->set_section($this->section, $_GET['id'], ['read']);
 
-if (!$this->id) {
-    $_SESSION['message'] = 'Page not found';
-    redirect('?option=' . $this->section);
-}
+if ($this->id) {
 ?>
 
 <table border="0" cellspacing="0" cellpadding="5" width="100%">
@@ -32,13 +29,26 @@ foreach ($vars['fields'][$this->section] as $name => $type) {
 } ?>
 </table>
 
+<?php
+}
+?>
+
 <span data-section="<?=$this->section;?>" <?php if ($this->section !== $_GET['option']) { ?>style="display: none;"<?php } ?>>
     <button class="btn btn-secondary" type="button" onclick="location.href='?option=<?=$this->section; ?>&edit=true&id=<?=$id; ?>&<?=$qs; ?>'" style="font-weight:bold;"><i class="fas fa-pencil-alt"></i></button>
     
     <form method="post" style="display:inline;">
-        <input type="hidden" name="delete" value="1">
         <input type="hidden" name="section" value="<?=$this->section;?>">
+        <?php if ($this->content['deleted']) { ?>
+        <input type="hidden" name="delete" value="0">
+        <button class="btn btn-success" type="submit" onclick="return confirm('are you sure you want to restore?');"><i class="fas fa-trash-restore"></i></button>
+        <?php
+        } else {
+        ?>
+        <input type="hidden" name="delete" value="1">
         <button class="btn btn-danger" type="submit" onclick="return confirm('are you sure you want to delete?');"><i class="fas fa-trash"></i></button>
+        <?php
+        }
+        ?>
     </form>
 </span>
 

@@ -498,7 +498,7 @@ switch ($_GET['cmd']) {
         if (in_array('position', $vars['fields'][$_GET['section']])) {
             $order = 'position';
         } else {
-            $order = underscored($fields[($_POST['order'][0]['column'] - 1)]) ?: 'id';
+            $order = underscored($fields[($_POST['order'][0]['column'] - 2)]) ?: 'id';
         }
         $dir = ('desc' == $_POST['order'][0]['dir']) ? 'DESC' : '';
         $asc = ('desc' == $_POST['order'][0]['dir']) ? false : true;
@@ -536,7 +536,7 @@ switch ($_GET['cmd']) {
         // prepare rows
         foreach ($rows as $row) {
             // every item starts with position
-            $item = [$row['position'], ''];
+            $item = [$row['position'], $row['id']];
             
             // use labels when available
             foreach ($fields as $name) {

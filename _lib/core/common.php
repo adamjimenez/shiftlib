@@ -528,7 +528,7 @@ function calc_grids($pcodeA, $lat = false)
         $pcodeA = substr($pcodeA, 0, $pos);
     }
 
-    $row = sql_query("SELECT * FROM postcodes WHERE Pcode='$pcodeA' LIMIT 1", 1);
+    $row = cache_query("SELECT Latitude, Longitude, Grid_N, Grid_E FROM postcodes WHERE Pcode='$pcodeA' LIMIT 1", 1);
 
     if ($row) {
         if ($lat) {
@@ -679,10 +679,21 @@ function send_mail($opts = []): bool
         $mail->isHTML($is_html);
         
         if ($opts['attachments']) {
-            $attachments = explode("\n", $opts['attachments']);
-    
+            $attachments = $opts['attachments'];
+            if (is_string($opts['attachments'])) {
+                $attachments = explode("\n", $opts['attachments']);    
+            }
+
             foreach ($attachments as $attachment) {
-                $mail->AddAttachment('uploads/' . $attachment, basename($attachment));
+                if (is_array($attachment)) {
+                    $name = $attachment['name'];
+                    $path = $attachment['path'];
+                } else {
+                    $name = basename($attachment);
+                    $path = 'uploads/' . $attachment;
+                }
+
+                $mail->AddAttachment($path, $name);
             }
         }
         
@@ -779,7 +790,7 @@ function shutdown()
 // output error and email them to admin
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 {
-    global $db_connection, $auth, $admin_email, $show_errors;
+    global $db_connection, $auth, $admin_email, $show_errors, $die_quietly;
 
     switch ($errno) {
         case E_USER_NOTICE:
@@ -794,6 +805,13 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
         case E_PARSE:
         case E_CORE_ERROR:
         case E_COMPILE_ERROR:
+            
+            header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+            
+            if ($die_quietly) {
+                die();
+            }
+            
             if (mysqli_error($db_connection)) {
                 $ERRNO = mysqli_errno($db_connection);
                 $ERROR = mysqli_error($db_connection);
@@ -1361,6 +1379,10 @@ function recaptcha() {
     print '<div class="g-recaptcha" data-sitekey="' . $auth_config['recaptcha_key'] . '"></div>';
 }
 
+function reload() {
+    redirect($_SERVER['REQUEST_URI']);
+}
+
 function redirect($url, $http_response_code = null)
 {
     if (true === $http_response_code) {
@@ -1403,6 +1425,10 @@ function spaced($str) // also see underscored
 
 function cache_query($query, $single = false, $expire = 3600)
 {
+    if (!class_exists('Memcached')) {
+        return sql_query($query, $single);
+    }
+    
     $memcache = new Memcached;
     $memcache->addServer("localhost", 11211) or trigger_error('Could not connect', E_USER_ERROR);
 
@@ -1410,7 +1436,7 @@ function cache_query($query, $single = false, $expire = 3600)
 
     $result = $memcache->get($hash);
     
-    if (!$result) {
+    if ($result === false || $expire === false) {
         $result = sql_query($query);
         $memcache->set($hash, $result, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
     }
@@ -1788,7 +1814,7 @@ function wget($url, $post_array = null, $cache_expiration = 0)
 	}
     
     // set url
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0');
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -1797,6 +1823,9 @@ function wget($url, $post_array = null, $cache_expiration = 0)
     if ($post_array) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_array)); 
     }
+    // cookies
+    curl_setopt($ch, CURLOPT_COOKIEJAR, $tmp_fname);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, $tmp_fname);
     
     $result = curl_exec($ch);
     curl_close($ch);

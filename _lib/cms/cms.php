@@ -126,7 +126,7 @@ class cms
                 break;
             case 'read':
             case 'deleted':
-                return 'TINYINT';
+                return 'TINYINT(1)';
                 break;
             default:
                 return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
@@ -369,6 +369,8 @@ class cms
             $num_results = 1;
         } elseif (!in_array('id', $vars['fields'][$section])) {
             $id = 1;
+        } elseif ($conditions['id']) {
+            $id = $conditions['id'];
         }
 
         if (is_numeric($id)) {
@@ -724,8 +726,7 @@ class cms
                     $join_id = $this->get_id_field($name);
                     $key = $this->get_option_label($name);
 
-                    $rows = sql_query(
-                        'SELECT `' . underscored($key) . '`,T1.value FROM cms_multiple_select T1
+                    $rows = sql_query("SELECT `" . underscored($key) . '`,T1.value FROM cms_multiple_select T1
                         INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2 
                         ON T1.value = T2.$join_id
                         WHERE
@@ -735,6 +736,19 @@ class cms
                         GROUP BY T1.value
                         ORDER BY T2." . underscored($key)
                     );
+
+                    /*
+                    // TODO see if this is faster
+					$rows = sql_query("SELECT 
+						(SELECT `".underscored($key)."` FROM `".escape(underscored($vars['options'][$name]))."` WHERE id = T1.value) AS `$key`, 
+						T1.value FROM cms_multiple_select T1
+						WHERE
+							T1.section='".escape($section)."' AND
+							T1.field='".escape($name)."' AND
+							T1.item='".escape($v['id'])."'
+						ORDER BY ".underscored($key)."
+					");
+					*/
                 } else {
                     $key = 'value';
 
@@ -1020,7 +1034,7 @@ class cms
     {
         global $vars, $from_email;
 
-        if (!$to) {
+        if (!is_string($to)) {
             $to = $from_email;
         }
 
@@ -1033,7 +1047,27 @@ class cms
         $this->set_section($this->section, $this->id);
 
         foreach ($vars['fields'][$this->section] as $name => $type) {
-            $msg .= ucfirst(spaced($name)) . ': ' . $this->get_value($name) . "\n";
+            if (in_array($type, ['file', 'files'])) {
+                $value = $this->content[$name];
+                
+                $files = ($type === 'file') ? [$value] : explode("\n", $value);
+                
+                foreach($files as $file_id) {
+                    $row = sql_query("SELECT * FROM files 
+                        WHERE 
+                    	    id='" . escape($file_id) . "'
+                    ", 1) or die('file not found');
+    
+                    $attachments[] = [
+                        'name' => $row['name'],
+                        'path' => $this->file_upload_path . $row['id']
+                    ];
+                }
+                
+                $msg .= ucfirst(spaced($name)) . ': ' . $this->content[$name] . "\n";
+            } else {
+                $msg .= ucfirst(spaced($name)) . ': ' . $this->get_value($name) . "\n";
+            }
         }
         $msg .= "\n" . 'https://' . $_SERVER['HTTP_HOST'] . '/admin?option=' . rawurlencode($this->section) . '&edit=true&id=' . $this->id;
 
@@ -1043,6 +1077,7 @@ class cms
             'subject' => $subject,
             'content' => $msg,
             'to_email' => $to,
+            'attachments' => $attachments,
         ];
 
         // reply to

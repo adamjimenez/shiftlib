@@ -2,6 +2,7 @@
 //send errors and notifications to
 $admin_email = $_SERVER['SERVER_ADMIN'];
 $root_folder = $_SERVER['DOCUMENT_ROOT'];
+$die_quietly = false;
 chdir($root_folder);
 
 include('vendor/autoload.php');
