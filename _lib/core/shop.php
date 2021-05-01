@@ -99,7 +99,7 @@ class shop
             'variation' => 'int',
             'name' => 'text',
             'extras' => 'textarea',
-            'cost' => 'float',
+            'cost' => 'decimal',
             'quantity' => 'int',
         ];
         $cms->check_table('order_items', $order_items_fields);
