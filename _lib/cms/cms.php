@@ -1050,18 +1050,20 @@ class cms
             if (in_array($type, ['file', 'files'])) {
                 $value = $this->content[$name];
                 
-                $files = ($type === 'file') ? [$value] : explode("\n", $value);
-                
-                foreach($files as $file_id) {
-                    $row = sql_query("SELECT * FROM files 
-                        WHERE 
-                    	    id='" . escape($file_id) . "'
-                    ", 1) or die('file not found');
-    
-                    $attachments[] = [
-                        'name' => $row['name'],
-                        'path' => $this->file_upload_path . $row['id']
-                    ];
+                if ($value) {
+                    $files = ($type === 'file') ? [$value] : explode("\n", $value);
+                    
+                    foreach($files as $file_id) {
+                        $row = sql_query("SELECT * FROM files 
+                            WHERE 
+                        	    id='" . escape($file_id) . "'
+                        ", 1) or die('file not found');
+        
+                        $attachments[] = [
+                            'name' => $row['name'],
+                            'path' => $this->file_upload_path . $row['id']
+                        ];
+                    }
                 }
                 
                 $msg .= ucfirst(spaced($name)) . ': ' . $this->content[$name] . "\n";
@@ -1096,6 +1098,10 @@ class cms
             $options = ['notify' => true];
         }
         
+        if (!isset($options['save'])) {
+            $options['save'] = true;
+        }
+        
         $errors = $this->validate($_POST, $options['recaptcha']);
 
         if (is_array($other_errors)) {
@@ -1110,13 +1116,16 @@ class cms
             //validation passed
             die('1');
         }
-        $this->id = $this->save();
-
-        if ($options['notify']) {
-            $this->notify(null, $options['notify_email']);
+        
+        if ($options['save']) {
+            $this->id = $this->save();
         }
 
-        return $this->id;
+        if ($options['notify']) {
+            $this->notify(null, $options['notify']);
+        }
+
+        return $this->id ?: true;
     }
 
     // validate fields before saving
