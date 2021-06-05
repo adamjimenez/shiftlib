@@ -155,6 +155,10 @@ class Checkboxes extends Select implements ComponentInterface
             ");
 
             foreach ($value as $v) {
+				if (!strlen($v)) {
+					continue;
+				}
+                
                 sql_query("INSERT IGNORE INTO cms_multiple_select SET
                     section='" . escape($this->cms->section) . "',
                     field='" . escape($name) . "',
