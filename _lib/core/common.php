@@ -179,7 +179,7 @@ function image($file, $w = null, $h = null, $attribs = true, $crop = false)
             $img = null;
             $ext = file_ext($image_path);
 
-            $img = imagecreatefromfile($image_path);
+            $img = imageorientationfix($image_path);
             
             if (!$img) {
                 return false;
@@ -346,21 +346,19 @@ function age($dob)
 function analytics($id)
 {
     ?>
-	<script>
-	  var _gaq = _gaq || [];
-	  _gaq.push(['_setAccount', '<?=$id; ?>']);
-	  _gaq.push(['_trackPageview']);
-
-	  (function() {
-		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-	</script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?=$id; ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', '<?=$id; ?>');
+    </script>
 	<?php
 }
 
-// sort multidimensional array
+// sort multidimensional array, Pass the array, followed by the column names and sort flags
 function array_orderby()
 {
     $args = func_get_args();
@@ -1541,6 +1539,10 @@ function sql_query($query, $single = false)
 {
     global $db_connection, $auth;
     
+    if (is_null($db_connection)) {
+        die('no database connection');
+    }
+    
     $debug = $_GET['debug'] && $auth->user['admin'];
     
     if ($debug) {
@@ -1581,6 +1583,28 @@ if (!function_exists('str_contains')) {
     function str_contains(string $haystack, string $needle): bool {
         return '' === $needle || false !== strpos($haystack, $needle);
     }
+}
+
+/**
+ * Calculates the great-circle distance between two points, with
+ * the Haversine formula.
+**/
+function st_distance($coord1, $coord2, $earthRadius = 6371000)
+{
+  // convert from degrees to radians
+  $coord1 = explode(' ', $coord1);
+  $coord2 = explode(' ', $coord2);
+  
+  $latFrom = deg2rad($coord1[0]);
+  $lonFrom = deg2rad($coord1[1]);
+  $latTo = deg2rad($coord2[0]);
+  $lonTo = deg2rad($coord2[1]);
+  
+  $latDelta = $latTo - $latFrom;
+  $lonDelta = $lonTo - $lonFrom;
+
+  $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+  return $angle * $earthRadius;
 }
 
 function str_to_pagename($page_name): string
