@@ -40,7 +40,7 @@ class blog
 
     public $commented;
 
-    public function blog($options = null)
+    public function __construct($options = null)
     {
         global $cms, $sections, $vars, $from_email, $request;
 

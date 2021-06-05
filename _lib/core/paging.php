@@ -86,7 +86,7 @@ class paging
      */
     public $total;
 
-    public function paging($query, $int_num_result = null, $order = null, $asc = true, $prefix = '', $num_pages = 10)
+    public function __construct($query, $int_num_result = null, $order = null, $asc = true, $prefix = '', $num_pages = 10)
     {
         $this->num_pages = $num_pages;
 
