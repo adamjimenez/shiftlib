@@ -76,16 +76,16 @@ class Files extends File implements ComponentInterface
 
         if (is_array($files)) {
             foreach ($files as $key => $val) {
-                $previewUrl = $this->getPreviewUrl($file['id']);
-                
                 $count++;
 
                 if ($val) {
                     $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1);
                 }
 
+                $previewUrl = $this->getPreviewUrl($file['id']);
+
                 if (in_array(file_ext($file['name']), parent::IMAGE_TYPES)) {
-                    $value .= '<img src="http://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
+                    $value .= '<img src="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
                 }
 
                 $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span><br><br>';
