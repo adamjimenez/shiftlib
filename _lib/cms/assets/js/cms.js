@@ -89,26 +89,30 @@ function initForms()
             $(this).attr('enctype', 'multipart/form-data');
         }
     });
+        
+    var callback = function(form) {
+        form.submit();
+    }
     
     $('form.validate').on('submit', function(evt) {
         evt.preventDefault();
         evt.stopPropagation();
-
+        
+        var form = this;
+        
         showProgress(true);
 
         //disable buttons
-        $('*[type=submit], *[type=image]',this).attr('disabled', '');
+        $('*[type=submit], *[type=image]', form).attr('disabled', '');
 
         //remove error messages
         $('div.error').remove();
         $('.errors').hide();
 
         var url = location.href;
-        if( this.action ){
-            url = this.action;
+        if( form.action ){
+            url = form.action;
         }
-        
-        var form = this;
 
         //validate
         $.ajax( url, {
@@ -205,7 +209,24 @@ function initForms()
                     //nospam
                     $(form).append('<input type="hidden" name="nospam" value="1">');
 
-                    form.submit();
+                    var recaptchaSiteKey = $(form).data('recaptcha-v3');
+            
+                    if (recaptchaSiteKey) {
+                        grecaptcha.ready(function() {
+                            grecaptcha.execute('6LcITCgbAAAAAPL5pNN6q-5U2Z8HyQRWeAAkOYGY', {action: 'submit'}).then(function(token) {
+                                
+                                var el = $(form).find('.recaptcha');
+                                if (!el.length) {
+                                    el = $('<textarea style="display: none;" class="recaptcha" name="g-recaptcha-response"></textarea>').appendTo(form);
+                                }
+                                
+                                el.val(token);
+                                callback(form);
+                            });
+                        });
+                    } else {
+                        callback(form);
+                    }
                 }
             },
             complete: function(returned) {
@@ -213,6 +234,7 @@ function initForms()
                 $('*[type=submit], *[type=image]', form).removeAttr('disabled');
             }
         });
+        
     });
 
     //textarea

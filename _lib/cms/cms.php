@@ -1117,6 +1117,12 @@ class cms
             die('1');
         }
         
+        if ($options['recaptchav3']) {
+            if (!$this->verifyRecaptcha($_POST['g-recaptcha-response'])) {
+                return false;
+            }
+        }
+        
         if ($options['save']) {
             $this->id = $this->save();
         }
@@ -1126,6 +1132,38 @@ class cms
         }
 
         return $this->id ?: true;
+    }
+    
+    function verifyRecaptcha($token) {
+        global $auth_config;
+        
+    	if ($auth_config['recaptcha_secret']) {
+    		if (!$token) {
+    		    die('yooo');
+    	        return false;
+    		} else {
+    			$params = [
+    				'secret' => $auth_config['recaptcha_secret'],
+    				'response' => $token
+    			];
+    			
+    			$verify = curl_init();
+    			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+    			curl_setopt($verify, CURLOPT_POST, true);
+    			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($params));
+    			curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+    			$response = curl_exec($verify);
+    			$json = json_decode($response, true);
+    			
+    			$this->score = $json['score'];
+    			
+    			if ($json['success'] != 1) {
+    			    return false;
+    			}
+    			
+    			return true;
+    		}
+    	}
     }
 
     // validate fields before saving
@@ -1207,29 +1245,9 @@ class cms
         }
         
         if ($recaptcha) {
-            global $auth_config;
-            
-        	if ($auth_config['recaptcha_secret']) {
-        		if (!$data['g-recaptcha-response']) {
-        			$errors[] = 'recaptcha';
-        		} else {
-        			$params = [
-        				'secret' => $auth_config['recaptcha_secret'],
-        				'response' => $data['g-recaptcha-response']
-        			];
-        			
-        			$verify = curl_init();
-        			curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-        			curl_setopt($verify, CURLOPT_POST, true);
-        			curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($params));
-        			curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
-        			$response = curl_exec($verify);
-        			
-        			if (!$response['success']) {
-        				$errors[] = 'recaptcha';
-        			}
-        		}
-        	}
+            if (!$this->verifyRecaptcha($data['g-recaptcha-response'])) {
+				$errors[] = 'recaptcha';
+            }
         }
 
         return array_values(array_unique($errors));
@@ -1292,6 +1310,10 @@ class cms
         // default to post data
         if (null === $data) {
             $data = $_POST;
+        }
+        
+        if ($this->score) {
+            $data['score'] = $this->score;
         }
 
         // fire event
@@ -1454,6 +1476,7 @@ class cms
                 
                 // convert json column indexes into array of column names
                 $indexes = json_decode($_POST['columns']);
+                array_shift($indexes);
                 array_shift($indexes);
                 array_shift($indexes);
                 
