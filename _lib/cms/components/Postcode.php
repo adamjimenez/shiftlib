@@ -8,6 +8,14 @@ use cms\ComponentInterface;
 class Postcode extends Component implements ComponentInterface
 {
     /**
+     * @return string|null
+     */
+    public function getFieldSql(): ?string
+    {
+        return "VARCHAR( 8 ) NOT NULL DEFAULT ''";
+    }
+    
+    /**
      * @param mixed $value
      * @return bool
      */
