@@ -73,7 +73,7 @@ class Checkboxes extends Select implements ComponentInterface
 
         foreach ($this->vars['options'][$name] as $k => $v) {
             $val = $isAssoc ? $k : $v;
-            $parts[] = '<li><label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, $value) ? 'checked="checked"' : '') . '>&nbsp;' . $v . '</label></li>';
+            $parts[] = '<li><label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, $value) ? 'checked="checked"' : '') . '>&nbsp;<span>' . $v . '</span></label></li>';
         }
 
         $parts[] = '</ul>';
