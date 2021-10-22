@@ -51,6 +51,23 @@ if ($_POST['select_all_pages']) {
     }
 }
 
+$section = '';
+foreach ($vars['fields'][$this->section] as $name => $type) {
+    if ($_GET[underscored($name)] and 'id' != $name and 'select' == $type) {
+        $section = $name;
+        break;
+    }
+}
+
+// back links
+if ($section and in_array('id', $vars['fields'][$this->section])) {
+    $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section];
+    $back_label = ucfirst($vars['options'][$section]);
+} else {
+    $back_link = '?option=' . $this->section . '&' . http_build_query($_GET['s']);
+    $back_label = ucfirst($this->section);
+} 
+
 // delete this item
 if (is_numeric($_POST['delete']) and $this->id) {
     if ((int)$_POST['delete'] === 0) {
@@ -59,7 +76,7 @@ if (is_numeric($_POST['delete']) and $this->id) {
         reload();
     } else {
         $this->delete_items($_POST['section'], $this->id);
-        redirect('?option=' . $this->section);
+        redirect($back_link);
     }
 }
 
@@ -101,23 +118,6 @@ unset($qs_arr['option']);
 unset($qs_arr['view']);
 unset($qs_arr['id']);
 $qs = http_build_query($qs_arr);
-
-$section = '';
-foreach ($vars['fields'][$this->section] as $name => $type) {
-    if ($_GET[underscored($name)] and 'id' != $name and 'select' == $type) {
-        $section = $name;
-        break;
-    }
-}
-
-// back links
-if ($section and in_array('id', $vars['fields'][$this->section])) {
-    $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section];
-    $back_label = ucfirst($vars['options'][$section]);
-} else {
-    $back_link = '?option=' . $this->section . '&' . http_build_query($_GET['s']);
-    $back_label = ucfirst($this->section);
-} 
 
 ?>
 
