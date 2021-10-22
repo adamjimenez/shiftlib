@@ -138,6 +138,11 @@ class cms
     public function export_items($section, $conditions, $select_all_pages, $columns = [])
     {
         global $auth, $db_connection, $vars;
+        
+        if (1 !== (int)$auth->user['admin'] && 3 !== (int)$auth->user['privileges'][$section]) {
+            $_SESSION['message'] = 'Permission denied';
+            return false;
+        }
 
         set_time_limit(300);
         ob_end_clean();
@@ -155,16 +160,14 @@ class cms
         $sql = $this->conditionsToSql($section, $conditions);
 
         $table = underscored($section);
-        $field_id = in_array('id', $vars['fields'][$section]) ? array_search('id', $vars['fields'][$section]) : 'id';
+        $field_id = array_search('id', $vars['fields'][$section]) ?: 'id';
         
         foreach($columns as $k=>$v) {
-            
             if ($vars['fields'][$section][$v] === 'checkboxes') {
                 $columns[$k] = "S_" . underscored($v) . ".value";
             } else {
                 $columns[$k] = "T_$table." . underscored($v);
             }
-            
         }
         
         $cols = count($columns) ? implode(',', $columns) : 'T_$table.* ' . $sql['cols'];
@@ -220,7 +223,7 @@ class cms
             print($data);
         }
 
-        exit();
+        exit;
     }
 
     public function delete_items($section, $conditions, $select_all_pages = false) // used in admin system
@@ -1314,6 +1317,10 @@ class cms
         
         if ($this->score) {
             $data['score'] = $this->score;
+            
+            if ($this->score < $auth->recaptcha_threshold) {
+                return false;
+            }
         }
 
         // fire event

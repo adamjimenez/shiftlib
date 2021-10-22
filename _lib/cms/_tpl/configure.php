@@ -475,7 +475,7 @@ $last_modified = ' . time() . ';
 # GENERAL SETTINGS
 $db_config["host"] = "' . $db_config['host'] . '" ?: $_SERVER["db_host"];
 $db_config["user"] = "' . $db_config['user'] . '" ?: $_SERVER["db_user"];
-$db_config["pass"] = "' . $db_config['pass'] . '" ?: $_SERVER["db_pass"];
+$db_config["pass"] = "' . addslashes($db_config['pass']) . '" ?: $_SERVER["db_pass"];
 $db_config["name"] = "' . $db_config['name'] . '" ?: $_SERVER["db_name"];
 
 #TPL
@@ -532,6 +532,7 @@ $auth_config["google_secret"] = "' . $_POST['auth_config']['google_secret'] . '"
 
 $auth_config["recaptcha_key"] = "' . $_POST['auth_config']['recaptcha_key'] . '" ?: $_SERVER["recaptcha_key"];
 $auth_config["recaptcha_secret"] = "' . $_POST['auth_config']['recaptcha_secret'] . '" ?: $_SERVER["recaptcha_secret"];
+$auth_config["recaptcha_threshold"] = "' . $_POST['auth_config']['recaptcha_threshold'] . '" ?: "0.5";
 
 // deprecated
 $auth_config["login_wherestr"] = "' . $auth_config['login_wherestr'] . '";
@@ -933,6 +934,11 @@ foreach($tables as $v) {
                                 
                                 <label>ReCAPTHA secret</label><br>
                                 <input type="text" name="auth_config[recaptcha_secret]" value="<?=$auth_config['recaptcha_secret'];?>">
+                                <br>
+                                <br>
+                                
+                                <label>Score Threshold</label><br>
+                                <input type="text" name="auth_config[recaptcha_threshold]" value="<?=$auth_config['recaptcha_threshold'];?>">
                                 <br>
                                 <br>
                                 
