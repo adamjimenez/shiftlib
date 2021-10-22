@@ -22,9 +22,9 @@ class Integer extends Component implements ComponentInterface
      * @param string $name
      * @return string
      */
-    public function value($value, string $name = ''): string
+    public function value($value, string $name = '')
     {
-        return number_format($value);
+        return (int)$value;
     }
 
     /**
