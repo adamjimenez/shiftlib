@@ -34,10 +34,15 @@ $.widget( "custom.list", {
 				}
 			}
 		}
+		
+		var el = this.element;
 		row.find('[data-remove]').click(function(e) {
 			e.preventDefault();
 			$(e.target).closest('tr').remove();
+			$(el).trigger('removeRow');
 		});
+
+		//$(el).trigger('addRow');
 	},
 	addItems: function(data) {
 		var self = this;
