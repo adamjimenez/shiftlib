@@ -91,7 +91,7 @@ abstract class Component
      * @param string $name
      * @return string
      */
-    public function value($value, string $name = ''): string
+    public function value($value, string $name = '')
     {
         return trim($value);
     }
