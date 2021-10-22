@@ -1,4 +1,6 @@
 <?php
+global $cookie_secure;
+
 $cookie_secure = ($_SERVER['HTTPS'] === 'on');
 $cookie_params = session_get_cookie_params();
 
@@ -333,7 +335,11 @@ class auth
                 $result = [
                     'code' => 2,
                     'message' => 'Registration success',
-                ];                
+                ];
+            } else {
+                $result = [
+                    'code' => 1
+                ];               
             }
         
             // log in
@@ -384,6 +390,8 @@ class auth
      */
     public function set_login(string $email, string $pass)
     {
+        global $cookie_secure;
+        
         $_SESSION[$this->cookie_prefix . '_email'] = $email;
         $_SESSION[$this->cookie_prefix . '_password'] = $pass;
         
@@ -685,8 +693,6 @@ class auth
 
     public function login($data = null)
     {
-        global $cookie_secure;
-        
         $result = $this->single_sign_on();
         
         if ($result['code']) {
