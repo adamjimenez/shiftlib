@@ -27,7 +27,7 @@
                 <ul class="nav navbar-nav">
             		<li<?=current_tab('index'); ?>><a href="/" title="Home">Home</a></li>
         			<?php if ($auth->user) { ?>
-        			    <li><a href="/account">Account</a></li>
+        			    <li><a href="/account/">Account</a></li>
         			    <li><a href="/logout">Sign out</a></li>
         			<?php } else { ?>
         			<li><a href="/login">Sign in</a></li>
