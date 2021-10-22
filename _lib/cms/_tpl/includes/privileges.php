@@ -1,4 +1,6 @@
 <?php
+$privilege_options = [1 => 'Read', 2 => 'Write', 3 => 'Full'];
+
 //save privileges
 if (
     1 == $auth->user['admin'] &&
@@ -27,7 +29,8 @@ if (
     $rows = sql_query("SELECT * FROM cms_privileges WHERE user='" . $this->id . "'");
     foreach ($rows as $row) {
         $privileges[$row['section']] = $row;
-    } ?>
+    } 
+?>
 <form method="post">
 <table class="box" width="100%">
 <tr>
@@ -36,7 +39,8 @@ if (
 		Access<br>
 		<a href="#" id="privileges_none">None</a>,
 		<a href="#" id="privileges_read">Read</a>,
-		<a href="#" id="privileges_write">Write</a>
+		<a href="#" id="privileges_write">Write</a>,
+		<a href="#" id="privileges_full">Full Control</a>
 	</th>
 	<th>Filter</th>
 </tr>
@@ -48,7 +52,7 @@ if (
 	<td>
 		<select name="privileges[<?=$section; ?>]" class="privileges">
 			<option value=""></option>
-			<?=html_options([1 => 'Read',2 => 'Write'], $privileges[$section]['access']); ?>
+			<?=html_options($privilege_options, $privileges[$section]['access']); ?>
 		</select>
 	</td>
 	<td>
@@ -63,7 +67,7 @@ if (
 	<td>
 		<select name="privileges[email_templates]" class="privileges">
 			<option value=""></option>
-			<?=html_options([1 => 'Read',2 => 'Write'], $privileges['uploads']['access']); ?>
+			<?=html_options($privilege_options, $privileges['uploads']['access']); ?>
 		</select>
 	</td>
 </tr>
@@ -72,7 +76,7 @@ if (
 	<td>
 		<select name="privileges[uploads]" class="privileges">
 			<option value=""></option>
-			<?=html_options([1 => 'Read',2 => 'Write'], $privileges['uploads']['access']); ?>
+			<?=html_options($privilege_options, $privileges['uploads']['access']); ?>
 		</select>
 	</td>
 </tr>
@@ -89,8 +93,7 @@ if (
 ?>
 
 <script>
-    function choose_filter(field)
-    {
+    function choose_filter(field) {
     	window.open('/admin?option=choose_filter&section='+field,'Insert','width=700,height=450,screenX=100,screenY=100,left=100,top=100,status,dependent,alwaysRaised,resizable,scrollbars')
     }
     
@@ -106,6 +109,11 @@ if (
     
     $('#privileges_write').click(function(){
     	$('select.privileges').val('2');
+    	return false;
+    });
+    
+    $('#privileges_full').click(function(){
+    	$('select.privileges').val('3');
     	return false;
     });
 </script>
