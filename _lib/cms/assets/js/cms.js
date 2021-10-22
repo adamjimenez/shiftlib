@@ -201,6 +201,8 @@ function initForms()
                     }
                     
                     $('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
+                    
+                    $(this).trigger('validationError');
 
                 } else {
                     //submit form
@@ -209,11 +211,11 @@ function initForms()
                     //nospam
                     $(form).append('<input type="hidden" name="nospam" value="1">');
 
-                    var recaptchaSiteKey = $(form).data('recaptcha-v3');
+                    var recaptchaSiteKey = $('#recaptcha').data('key');
             
                     if (recaptchaSiteKey) {
                         grecaptcha.ready(function() {
-                            grecaptcha.execute('6LcITCgbAAAAAPL5pNN6q-5U2Z8HyQRWeAAkOYGY', {action: 'submit'}).then(function(token) {
+                            grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
                                 
                                 var el = $(form).find('.recaptcha');
                                 if (!el.length) {
