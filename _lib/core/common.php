@@ -1256,6 +1256,13 @@ function load_js($libs)
 		<script src='https://www.google.com/recaptcha/api.js'></script>
 	<?php
     }
+
+    if ($deps['recaptchav3']) {
+        global $auth_config;
+        ?>
+        <script id="recaptcha" data-key="<?=$auth_config['recaptcha_key'];?>" src="https://www.google.com/recaptcha/api.js?render=<?=$auth_config['recaptcha_key'];?>"></script>
+	<?php
+    }
 }
 
 function make_timestamp($string)
@@ -1836,17 +1843,19 @@ function wget($url, $post_array = null, $cache_expiration = 0)
 	if (!$tmp_fname) {
         $tmp_fname = tempnam(__DIR__ . "/tmp", "COOKIE");
 	}
-    
-    // set url
+	
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0');
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    //curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         
     if ($post_array) {
+        curl_setopt($ch, CURLOPT_POST, 1); 
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_array)); 
     }
+    
     // cookies
     curl_setopt($ch, CURLOPT_COOKIEJAR, $tmp_fname);
     curl_setopt($ch, CURLOPT_COOKIEFILE, $tmp_fname);
