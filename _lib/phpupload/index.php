@@ -49,8 +49,6 @@ if ('preview' == $_GET['func']) {
     if ($image) {
         header('Content-type: image/jpeg');
         print file_get_contents('.' . $image);
-    } else {
-        trigger_404();
     }
     exit;
 }
