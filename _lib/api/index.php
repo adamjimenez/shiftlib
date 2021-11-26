@@ -541,6 +541,12 @@ switch ($_GET['cmd']) {
             // use labels when available
             foreach ($fields as $name) {
                 $field_name = underscored($name);
+                
+                // truncate editor
+                if ($vars['fields'][$_GET['section']][$field_name] == 'editor') {
+                    $row[$field_name] = truncate($row[$field_name]);
+                }
+                
                 $item[] = $row[$field_name . '_label'] ?: $row[$field_name];
             }
             
