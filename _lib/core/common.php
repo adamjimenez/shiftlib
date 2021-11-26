@@ -379,6 +379,27 @@ function array_orderby()
     return array_pop($args);
 }
 
+function array_rorderby()
+{
+    $args = func_get_args();
+    $data = array_shift($args);
+    foreach ($args as $n => $field) {
+        if (is_string($field)) {
+            $tmp = [];
+            
+            foreach ($data as $key => $row) {
+                $tmp[$key] = $row[$field];
+            }
+                
+            $args[$n] = $tmp;
+            $args[] = SORT_DESC;
+        }
+    }
+    $args[] = &$data;
+    call_user_func_array('array_multisort', $args);
+    return array_pop($args);
+}
+
 // return all the bank holidays from a a year
 function bank_holidays($yr): array
 {
