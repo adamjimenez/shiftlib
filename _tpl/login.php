@@ -1,6 +1,11 @@
 <?php
 // redirect to home if logged in
-$result = $auth->login();
+$error = '';
+try {
+	$result = $auth->login();
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
 
 // handle login
 if ($result['code'] === 1) {
@@ -12,6 +17,11 @@ if ($result['code'] === 1) {
 ?>
 
 <div class="container">
+	<?php if ($error) { ?>
+	<div class="alert alert-danger" role="alert">
+		<?=$error;?>
+	</div>
+	<?php } ?>
 
 	<div class="row clearfix">
 		<div class="col-md-6">
