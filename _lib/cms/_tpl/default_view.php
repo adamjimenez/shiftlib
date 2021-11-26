@@ -344,7 +344,7 @@ $qs = http_build_query($qs_arr);
         
         $(window).scroll(function() {
             if($(window).scrollTop() == $(document).height() - $(window).height()) {
-                   load_logs();
+                load_logs();
             }
         });
                 

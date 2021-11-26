@@ -1172,7 +1172,7 @@ class cms
     // validate fields before saving
     public function validate($data = null, $recaptcha = false)
     {
-        global $vars;
+        global $vars, $auth;
 
         if (false === is_array($data)) {
             $data = $_POST;
@@ -1203,6 +1203,11 @@ class cms
                 ($component->preserveValue && '' == $data[$field_name] && $this->id)
             ) {
                 continue;
+            }
+            
+            // check admin field
+            if ($name === 'admin' && $data[$name] && $data[$name] < $auth->user['admin']) {
+                $errors[] = $name . ' permission denied';
             }
 
             // check fields
