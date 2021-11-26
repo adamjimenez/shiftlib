@@ -54,7 +54,6 @@ class File extends Component implements ComponentInterface
     public function value($value, string $name = ''): string
     {
         if ($value) {
-            
             $previewUrl = $this->getPreviewUrl($value);
             
             $file = sql_query("SELECT * FROM files WHERE id='" . escape($value) . "'", 1);
@@ -62,8 +61,34 @@ class File extends Component implements ComponentInterface
             if (in_array(file_ext($file['name']), self::IMAGE_TYPES)) {
                 $value = '<img src="' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
+            
             $value .= '<a href="' . $previewUrl. '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
         }
+        return $value;
+    }
+    
+    public function processUpload($status, $name, $tmp, $type) {
+        if (UPLOAD_ERR_OK !== $status) {
+            return false;
+        }
+        
+        sql_query("INSERT INTO files SET
+            date=NOW(),
+            name='" . escape($name) . "',
+            size='" . escape(filesize($tmp)) . "',
+            type='" . escape($type) . "'
+        ");
+        
+        $value = sql_insert_id();
+
+        // move file
+        $file_path = $this->vars['files']['dir'] . $value;
+        
+        // don't overwrote
+        if (!file_exists($file_path)) {
+            rename($tmp, $file_path) or trigger_error("Can't save " . $file_path, E_ERROR);
+        }
+        
         return $value;
     }
 
@@ -76,21 +101,14 @@ class File extends Component implements ComponentInterface
     public function formatValue($value, string $fieldName = null)
     {
         $fileId = (int) $this->cms->content[$fieldName];
+        
+        $file = $_FILES[$fieldName];
 
-        if (UPLOAD_ERR_OK === $_FILES[$fieldName]['error']) {
-            sql_query("INSERT INTO files SET
-                date=NOW(),
-                name='" . escape($_FILES[$fieldName]['name']) . "',
-                size='" . escape(filesize($_FILES[$fieldName]['tmp_name'])) . "',
-                type='" . escape($_FILES[$fieldName]['type']) . "'
-            ");
-            $value = sql_insert_id();
+        $upload_id = $this->processUpload($file['error'], $file['name'], $file['tmp_name'], $file['type']);
 
-            // move file
-            $file_path = $this->vars['files']['dir'] . $value;
-            rename($_FILES[$fieldName]['tmp_name'], $file_path)
-            or trigger_error("Can't save " . $file_path, E_ERROR);
-        } elseif (!$value && $fileId) {
+        if ($upload_id) {
+            $value = $upload_id;
+        } else if (!$upload_id && !$value && $fileId) {
             // delete file
             sql_query("DELETE FROM files
                 WHERE
@@ -98,6 +116,8 @@ class File extends Component implements ComponentInterface
             ");
 
             $this->delete($this->vars['files']['dir'] . $fileId);
+        } else {
+            $value = $fileId;
         }
 
         return $value;
