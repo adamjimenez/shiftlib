@@ -543,7 +543,7 @@ switch ($_GET['cmd']) {
                 $field_name = underscored($name);
                 
                 // truncate editor
-                if ($vars['fields'][$_GET['section']][$field_name] == 'editor') {
+                if (in_array($vars['fields'][$_GET['section']][$field_name], ['editor', 'textarea'])) {
                     $row[$field_name] = truncate($row[$field_name]);
                 }
                 
