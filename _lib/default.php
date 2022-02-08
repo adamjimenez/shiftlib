@@ -58,11 +58,6 @@ function get_include($request)
 {
     global $tpl_config, $root_folder, $vars, $cms, $content, $auth;
 
-    // enforce ssl
-    if (!$_SERVER['HTTPS'] && $tpl_config['ssl']) {
-        redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-    }
-
     //check for predefined pages
     switch ($request) {
         case 'admin':

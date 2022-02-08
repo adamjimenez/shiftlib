@@ -8,7 +8,7 @@ toolbar layout
 */
 
 var callback = function(files){
-	var URL = config.root+files[0];
+	var URL = upload_path + files[0];
 	top.tinymce.activeEditor.windowManager.getParams().oninsert(URL);
 	top.tinymce.activeEditor.windowManager.close();
 	return;

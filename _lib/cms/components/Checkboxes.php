@@ -14,7 +14,7 @@ class Checkboxes extends Select implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return null;
+        return 'TINYINT(1)';
     }
 
     /**

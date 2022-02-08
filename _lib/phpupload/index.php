@@ -1,6 +1,10 @@
 <?php
 require(dirname(__FILE__) . '/../../_lib/base.php');
 
+$allowed_exts = ['jpg','gif','png','svg','doc','docx','pdf'];
+$path = 'uploads/';
+$upload_path = '/' . $path;
+
 function get_all_headers()
 {
     $headers = '';
@@ -14,25 +18,11 @@ function get_all_headers()
 
 //check user permissions
 $auth->check_login();
-
 $cms->check_permissions();
 
-if ($auth->user and $upload_config['user_uploads']) {
-    $upload_config['user'] = $auth->user['id'];
-} elseif (1 != $auth->user['admin'] && 2 != $auth->user['privileges']['uploads']) {
+if (1 != $auth->user['admin'] && 2 != $auth->user['privileges']['uploads']) {
     die('Permission denied.');
 }
-
-$root = $upload_config['upload_dir'] . $upload_config['user'];
-
-//append slash
-if ('/' !== substr($root, -1)) {
-    $root .= '/';
-}
-
-$upload_config['root'] = '/' . $root;
-
-$path = $root;
 
 if ($_GET['path']) {
     $path .= $_GET['path'] . '/';
@@ -80,7 +70,7 @@ if ($_FILES) {
 
     $fileName = $_FILES['file']['name'] ?: $_POST['filename'];
     
-    if (!in_array(file_ext($fileName), $upload_config['allowed_exts'])) {
+    if (!in_array(file_ext($fileName), $allowed_exts)) {
         $result['success'] = false;
         $result['error'] = 'File type not allowed';
         print json_encode($result);
@@ -340,7 +330,7 @@ if ($_GET['cmd']) {
     <title>File browser</title>
 
     <script>
-    var config = <?=json_encode($upload_config);?>;
+    var upload_path = <?=$upload_path;?>;
     var max_file_size = '<?=ini_get('upload_max_filesize');?>b';
     </script>
 

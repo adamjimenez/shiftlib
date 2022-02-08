@@ -25,10 +25,10 @@ if ($_POST['delete_filter']) {
 }
 
 // search filters
-$filters = sql_query("SELECT * FROM cms_filters WHERE 
+$filters = sql_query("SELECT * FROM cms_filters WHERE
     user = '" . escape($auth->user['id']) . "' AND
     section = '" . escape($this->section) . "'
-");
+    ");
 
 $filter_exists = false;
 $params = $_GET;
@@ -55,12 +55,16 @@ if ($_POST['custom_button']) {
         $this->buttons[$_POST['custom_button']]['handler']($items);
     }
 } else {
-    foreach ($vars['fields'][$this->section] as $field => $type) {
+    $fields = $this->get_fields($this->section);
+    
+    foreach ($fields as $name => $field) {
+        $type = $field['type'];
+        
         if ('position' == $type) {
             continue;
         }
 
-        $fields[] = $field;
+        $fields[] = $name;
     } ?>
 
     <div class="main-content-inner">
@@ -71,31 +75,37 @@ if ($_POST['custom_button']) {
 
                 <div class="d-flex my-1">
                     <form method="get" class="flex-grow-1" style="flex: 1;">
-                        <input type="hidden" name="option" value="<?= $this->section; ?>"/>
+                        <input type="hidden" name="option" value="<?= $this->section; ?>" />
 
                         <input class="search-field form-control" type="text" name="s" id="s" value="<?= $_GET['s']; ?>"
-                               tabindex="1" placeholder="Search">
+                        tabindex="1" placeholder="Search">
                     </form>
 
                     <button type="button" class="btn btn-default" id="advancedSearch">Advanced search</button>
 
-                    <?php if (count($_GET) > 1) { ?>
-                        <?php if ($filter_exists) { ?>
+                    <?php if (count($_GET) > 1) {
+                        ?>
+                        <?php if ($filter_exists) {
+                            ?>
                             <button type="button" class="btn btn-default delete_filter" title="Delete filter"><i
-                                        class="fas fa-trash"></i></button>
-                        <?php } else { ?>
+                                class="fas fa-trash"></i></button>
+                            <?php
+                        } else {
+                            ?>
                             <button type="button" class="btn btn-default save_filter" title="Save filter"><i
-                                        class="fas fa-save"></i></button>
-                        <?php } ?>
-                    <?php } ?>
+                                class="fas fa-save"></i></button>
+                            <?php
+                        } ?>
+                        <?php
+                    } ?>
                 </div>
 
                 <!-- Modal -->
                 <div class="modal fade" id="searchModal">
                     <div class="modal-dialog">
                         <div class="modal-content">
-                            <form method="get" id="search_form" autocomplete="something-new">
-                                <input type="hidden" name="option" value="<?= $this->section; ?>"/>
+                            <form method="get" id="search_form">
+                                <input type="hidden" name="option" value="<?=$this->section; ?>" />
 
                                 <div class="modal-header">
                                     <h5 class="modal-title">Advanced search</h5>
@@ -106,20 +116,24 @@ if ($_POST['custom_button']) {
 
                                     <?php
                                     $this->set_section($this->section);
-    $this->content = $_GET;
+                                    $this->content = $_GET;
 
-    foreach ($vars['fields'][$this->section] as $name => $type) {
-        if (in_array($type, $this->hidden_columns)) {
-            continue;
-        }
+                                    $fields = $this->get_fields($this->section);
 
-        $field_name = underscored($name);
-        $component = $this->get_component($type); ?>
-                                        <div data-name="<?= $name; ?>">
-                                            <?= $component->searchField($name, $_GET[$field_name]); ?>
+                                    foreach ($fields as $name => $field) {
+                                        $type = $field['type'];
+                                        
+                                        if (in_array($type, $this->hidden_columns)) {
+                                            continue;
+                                        }
+
+                                        $field_name = underscored($name);
+                                        $component = $this->get_component($type); ?>
+                                        <div data-name="<?=$name; ?>">
+                                            <?=$component->searchField($name, $_GET[$field_name]); ?>
                                         </div>
                                         <?php
-    } ?>
+                                    } ?>
 
                                 </div>
                                 <div class="modal-footer">
@@ -130,50 +144,6 @@ if ($_POST['custom_button']) {
                     </div>
                 </div>
 
-                <?php
-                /*
-                <table width="100%">
-                <tr>
-                    <td>
-
-                        <?php if ($parent_field) { ?>
-                        <h3>
-                            <a href="?option=<?=$this->section;?>">Root</a>
-                            <?php
-                            if ($_GET[$parent_field]) {
-                                $parent_id = $_GET[$parent_field];
-
-                                reset($vars['fields'][$this->section]);
-                                $label = key($vars['fields'][$this->section]);
-
-                                $parents = [];
-                                while ('0' !== $parent[$parent_field]) {
-                                    if (!$parent) {
-                                        break;
-                                    }
-
-                                    $parent_id = $parent[$parent_field];
-
-                                    $parents[$parent['id']] = $parent[$label];
-                                }
-
-                                $parents = array_reverse($parents, true);
-
-                                foreach ($parents as $k => $v) {
-                                    ?>
-                                &raquo; <a href="?option=<?=$this->section; ?>&parent=<?=$k; ?>"><?=$v; ?></a>
-                            <?php
-                                }
-                            }
-                            ?>
-                        </h3>
-                        <?php } ?>
-                    </td>
-                </tr>
-                </table>
-                */
-                ?>
-
                 <div class="col-12 p-0">
                     <div class="card">
                         <div class="card-body">
@@ -183,12 +153,12 @@ if ($_POST['custom_button']) {
 
                                 <div class="dropdown" style="display: inline-block;">
                                     <button class="btn btn-secondary" type="button"
-                                            id="dropdownMenuButton<?= underscored($button['section']); ?>"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        id="dropdownMenuButton<?= underscored($button['section']); ?>"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="dropdown-menu"
-                                         aria-labelledby="dropdownMenuButton<?= underscored($button['section']); ?>">
+                                        aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
                                         <?php
                                         foreach ($this->buttons as $k => $button) {
                                             if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
@@ -200,14 +170,14 @@ if ($_POST['custom_button']) {
 
                             </div>
 
-                            <h1 class="header-title"><?= ucwords($this->section); ?></h1>
+                            <h1 class="header-title"><?=ucwords($this->section); ?></h1>
 
                             <?php
                             $conditions = $_GET;
-    unset($conditions['option']);
+                            unset($conditions['option']);
 
-    $qs = http_build_query(['s' => $conditions]);
-    require(__DIR__ . '/list.php'); ?>
+                            $qs = http_build_query(['s' => $conditions]);
+                            require(__DIR__ . '/list.php'); ?>
 
                         </div>
                     </div>
@@ -268,4 +238,3 @@ if ($_POST['custom_button']) {
     </script>
     <?php
 }
-?>

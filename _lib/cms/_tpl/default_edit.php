@@ -7,21 +7,23 @@ if (1 != $auth->user['admin'] and !$auth->user['privileges'][$this->section]) {
 $this->set_section($this->section, $_GET['id']);
 $this->trigger_event('beforeEdit', [$this->id]);
 
+$fields = $this->get_fields($this->section);
+
 //return url
 $section = '';
-foreach ($vars['fields'][$this->section] as $name => $type) {
+foreach ($fields as $name => $field) {
+    $type = $field['type'];
+    
     if ($_GET[underscored($name)] and 'id' != $name) {
         $section = $name;
         break;
     }
 }
 
-if ($this->id and $section and in_array('id', $vars['fields'][$this->section])) {
+if ($this->id and $section) {
     $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id . '&' . $section . '=' . $this->content[$section];
-} elseif ($section and in_array('id', $vars['fields'][$this->section])) {
+} elseif ($section) {
     $cancel_url = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[underscored($section)];
-} elseif ($this->id) {
-    $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id;
 } else {
     $cancel_url = '?option=' . $this->section;
 }
@@ -52,11 +54,11 @@ if (isset($_POST['save'])) {
 
             redirect('?' . $qs . '&add_another=1');
         } else {
-            if ($section and in_array('id', $vars['fields'][$this->section])) {
+            if ($section) {
                 $return_url = '?option=' . $this->section . '&view=true&id=' . $id . '&' . $section . '=' . $this->content[$section];
             } elseif ($this->id) {
                 $return_url = '?option=' . $this->section . '&view=true&id=' . $id;
-            } elseif (in_array('id', $vars['fields'][$this->section])) {
+            } else {
                 $return_url = '?option=' . $this->section;
             }
 
@@ -90,7 +92,6 @@ if ($_GET['id']) {
         <div class="card-body">
 
 <form id="form" method="post" enctype="multipart/form-data" class="validate">
-<!--<input type="hidden" name="UPLOAD_IDENTIFIER" value="<?=$uniq;?>"/>-->
 <input type="hidden" name="save" value="1">
 
 <div class="toolbar top-row mt-1 mb-3 sticky">
@@ -103,7 +104,9 @@ if ($_GET['id']) {
     <div class="box">
 
         <?php
-        foreach ($vars['fields'][$this->section] as $name => $type) {
+        foreach ($fields as $name => $field) {
+            $type = $field['type'];
+            
             if (in_array($type, ['id','ip','position','timestamp','deleted'])) {
                 continue;
             }
@@ -113,7 +116,7 @@ if ($_GET['id']) {
                 continue;
             }
 
-            $label = $vars['label'][$this->section][$name];
+            $label = $field['label'];
 
             if (!$label) {
                 $label = ucfirst(spaced($name));
@@ -159,7 +162,7 @@ if ($_GET['id']) {
 
     </div>
 
-<?php if (!$_GET['id'] and in_array('id', $vars['fields'][$this->section])) { ?>
+<?php if (!$_GET['id']) { ?>
 <p><label><input type="checkbox" name="add_another" value="1" <?php if ($_GET['add_another']) { ?>checked="checked"<?php } ?> /> add another?</label></p>
 <br />
 <?php } ?>

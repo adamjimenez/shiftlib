@@ -48,7 +48,11 @@ if (1 === $result['code']) {
     </div>
     <!-- preloader area end -->
     <!-- login area start -->
-    <div class="login-area">
+    <div class="login-area">   
+        <div class="alert alert-danger ssl-warning" role="alert" style="display: none;">
+            Cookies are required, check browser settings or enable SSL for secure cookies.
+        </div>
+        
         <div class="container">
             <div class="login-box ptb--100">
                 <form action="/admin?option=login" method="post" class="validate">
@@ -120,10 +124,15 @@ if (1 === $result['code']) {
     <!-- others plugins -->
     <script src="/_lib/cms/assets/js/plugins.js"></script>
     <script src="/_lib/cms/assets/js/scripts.js"></script>
+    
+    <script>
+        // check login cookie
+        if (!document.cookie) {
+            $('.ssl-warning').show();
+        }
+    </script>
 </body>
 
 </html>
-
 <?php
 exit;
-?>

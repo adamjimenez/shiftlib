@@ -69,21 +69,22 @@ class Select extends Component implements ComponentInterface
             $table = underscored($this->vars['options'][$name]);
 
             // get first field from section as we will use this for the option labels
-            reset($this->vars['fields'][$this->vars['options'][$name]]);
-            $field = key($this->vars['fields'][$this->vars['options'][$name]]);
-        
-            $cols = '`' . underscored($field) . '`';
+            $field = $this->cms->get_label_field($this->vars['options'][$name]);
+            
+            $cols = '`' . $field['column'] . '`';
 
             // sort by position if available or fall back to field order
             // $order = in_array('position', $this->vars['fields'][$this->vars['options'][$name]]) ? 'position' : $field;
-            $order = $field;
+            $order = $field['column'];
 
+            /*
             $parent_field = array_search('parent', $this->vars['fields'][$this->vars['options'][$name]]);
-
+            
             if (false !== $parent_field) {
                 // if we have a parent field than get an indented list of options
                 $options = $this->get_children($this->vars['options'][$name], $parent_field);
             } else {
+            */
                 $whereStr = '';
                 if ($where) {
                     $whereStr = 'WHERE ' . $where;
@@ -97,9 +98,9 @@ class Select extends Component implements ComponentInterface
 
                 $options = [];
                 foreach ($rows as $row) {
-                    $options[$row['id']] = $row[underscored($field)];
+                    $options[$row['id']] = $row[$field['column']];
                 }
-            }
+            //}
 
             $this->vars['options'][$name] = $options;
         }
@@ -210,8 +211,9 @@ class Select extends Component implements ComponentInterface
             foreach ($this->auth->user['filters'][$this->vars['options'][$name]] as $k => $v) {
                 $conditions[$k] = $v;
             }
-
-            $field = key($this->vars['fields'][$this->vars['options'][$name]]);
+            
+            $field = $this->cms->get_option_label($this->vars['options'][$name]);
+            
             $table = underscored($this->vars['options'][$name]);
             $cols = '`' . underscored($field) . '` AS `' . underscored($field) . '`' . "\n";
             $rows = sql_query("SELECT $cols, id FROM $table ORDER BY `" . underscored($field) . '`');

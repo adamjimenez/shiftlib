@@ -809,7 +809,7 @@ function shutdown()
 // output error and email them to admin
 function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 {
-    global $db_connection, $auth, $admin_email, $show_errors, $die_quietly;
+    global $db_connection, $auth, $admin_email, $die_quietly;
 
     switch ($errno) {
         case E_USER_NOTICE:
@@ -883,7 +883,7 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
 			</div>
 			';
 
-            if ($show_errors or $auth->user['admin']) {
+            if ($auth->user['admin']) {
                 echo "<p>The following has been reported to the administrator:</p>\n";
                 echo "<strong><pre>$errorstring\n</pre></strong>";
             }

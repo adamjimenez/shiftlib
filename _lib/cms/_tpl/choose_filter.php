@@ -37,7 +37,11 @@ window.close();
         <legend>Create filter</legend>
         <table class="box" border="0" cellspacing="0" cellpadding="3">
         <?php
-        foreach ($vars['fields'][$this->section] as $name => $type) {
+        $fields = $this->get_fields($this->section);
+        
+        foreach ($fields as $name => $field) {
+            $type = $field['type'];
+            
             if (in_array($name, $vars['non_searchable'][$this->section])) {
                 continue;
             }
@@ -57,10 +61,10 @@ window.close();
                 $options = $vars['options'][$name];
                 if (false === is_array($vars['options'][$name])) {
                     $table = underscored($vars['options'][$name]);
+                    
+                    $option_fields = $this->get_fields($vars['options'][$name]);
 
-                    reset($vars['fields'][$vars['options'][$name]]);
-
-                    foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
+                    foreach ($option_fields as $k => $v) {
                         if ('separator' != $v) {
                             $field = $k;
                             break;
@@ -89,62 +93,13 @@ window.close();
             </tr>
             <?php
             } elseif ('select-multiple' == $type) {
-                $value = [];
-                if (false === is_array($vars['options'][$name]) and $vars['options'][$name]) {
-                    $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
-                        INNER JOIN `' . escape($vars['options'][$name]) . "` T2 ON T1.value=T2.$field_id
-                        WHERE
-                            field='" . escape($name) . "' AND
-                            item='" . $id . "'
-                    ");
-
-                    $vars['options'][$name] = get_options($vars['options'][$name], key($vars['fields'][$vars['options'][$name]]));
-                } else {
-                    $rows = sql_query("SELECT value FROM cms_multiple_select
-                        WHERE
-                            field='" . escape($name) . "' AND
-                            item='" . $id . "'
-                    ");
-                } ?>
+                ?>
             <tr>
                 <th align="left" valign="top"><?=$label; ?></th>
                 <td>
                     <select name="<?=$field_name; ?>[]" multiple="multiple" size="10" style="width:100%">
                     <?=html_options($vars['options'][$name], $_GET[$field_name]); ?>
                     </select>
-                </td>
-            </tr>
-            <?php
-            } elseif ('checkboxes' == $type) {
-                $value = [];
-                if (false === is_array($vars['options'][$name]) and $vars['options'][$name]) {
-                    $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
-                        INNER JOIN `' . escape($vars['options'][$name]) . "` T2 ON T1.value=T2.$field_id
-                        WHERE
-                            field='" . escape($name) . "' AND
-                            item='" . $id . "'
-                    ");
-
-                    $vars['options'][$name] = get_options($vars['options'][$name], key($vars['fields'][$vars['options'][$name]]));
-                } else {
-                    $rows = sql_query("SELECT value FROM cms_multiple_select
-                        WHERE
-                            field='" . escape($name) . "' AND
-                            item='" . $id . "'
-                    ");
-                } ?>
-            <tr>
-                <th align="left" valign="top"><?=$label; ?></th>
-                <td>
-                    <?php if (is_assoc_array($vars['options'][$name])) { ?>
-                        <?php foreach ($vars['options'][$name] as  $k => $v) { ?>
-                        <label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$k;?>" <?php if (in_array($k, $_GET[$field_name])) { ?>checked="checked"<?php } ?> /> <?=$v;?></label><br />
-                        <?php } ?>
-                    <?php } else { ?>
-                        <?php foreach ($vars['options'][$name] as  $k => $v) { ?>
-                        <label><input type="checkbox" name="<?=$field_name;?>[]" value="<?=$v;?>" <?php if (in_array($v, $_GET[$field_name])) { ?>checked="checked"<?php } ?> /> <?=$v;?></label><br />
-                        <?php } ?>
-                    <?php } ?>
                 </td>
             </tr>
             <?php

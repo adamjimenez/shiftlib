@@ -72,29 +72,22 @@ switch ($_GET['cmd']) {
         
         $table = underscored($vars['options'][$name]);
         
-        foreach ($vars['fields'][$vars['options'][$name]] as $k => $v) {
-            if ('separator' != $v) {
+        $fields = $cms->get_fields($vars['options'][$name]);
+        
+        foreach ($fields as $k => $v) {
+            $type = $v['type'];
+            if ('separator' != $type) {
                 $field = $k;
                 break;
             }
         }
         
-        $raw_option = $vars['fields'][$vars['options'][$name]][$field];
+        $cols .= '`' . underscored($field) . '`';
         
-        $cols = '';
-        if (is_array($raw_option)) {
-            $db_field_name = $this->db_field_name($vars['options'][$name], $field);
-            $cols .= '' . underscored($db_field_name) . ' AS `' . underscored($field) . '`' . "\n";
+        if ($fields['parent']) {
+            $options = $this->get_children($vars['options'][$name], $fields['parent']);
         } else {
-            $cols .= '`' . underscored($field) . '`';
-        }
-        
-        $parent_field = array_search('parent', $vars['fields'][$vars['options'][$name]]);
-    
-        if (false !== $parent_field) {
-            $options = $this->get_children($vars['options'][$name], $parent_field);
-        } else {
-            $rows = sql_query("SELECT id,$cols FROM
+            $rows = sql_query("SELECT id, $cols FROM
                 $table
                 WHERE
                     `$field` LIKE '" . escape($_GET['term']) . "%'
@@ -130,10 +123,13 @@ switch ($_GET['cmd']) {
             die('missing fields');
         }
         
+        $fields = $cms->get_fields($section);
+        
         // get field
         $field = '';
-        foreach ($vars['fields'][$section] as $k => $v) {
-            if ('separator' != $v) {
+        foreach ($fields as $k => $v) {
+            $type = $v['type'];
+            if ('separator' != $type) {
                 $field = $k;
                 break;
             }
@@ -334,7 +330,7 @@ switch ($_GET['cmd']) {
             header('Content-Type: text/event-stream');
             header('Cache-Control: no-cache');
             
-            $fields = $_GET['fields'];
+            $cols = $_GET['fields'];
             $startedAt = time();
         
             $i = 0;
@@ -346,10 +342,13 @@ switch ($_GET['cmd']) {
             if (false === $handle) {
                 die('error opening ' . basename($csv_path));
             }
+            
+            $fields = $cms->get_fields($_GET['section']);
+            
             while (false !== ($data = fgetcsv($handle, 0, ','))) {
                 if (0 != $i) {
                     $row = [];
-                    foreach ($fields as $k => $v) {
+                    foreach ($cols as $k => $v) {
                         $row[$k] = $data[$v];
                     }
         
@@ -365,32 +364,10 @@ switch ($_GET['cmd']) {
         
                         if ('related' == $k or 'position' == $k) {
                             continue;
-                        } elseif ('select' == $vars['fields'][$_GET['section']][$k]) {
+                        } elseif ('select' === $fields[$k]['type']) {
                             if (false === is_array($vars['options'][$k])) {
                                 if (!$v) {
                                     $v = '';
-                                } elseif (!is_numeric($v)) {
-                                    reset($vars['fields'][$vars['options'][$k]]);
-        
-                                    $option_id = sql_query('SELECT id FROM `' . escape(underscored($vars['options'][$k])) . '` WHERE `' . underscored(key($vars['fields'][$vars['options'][$k]])) . "`='" . escape(trim($v)) . "'", true);
-        
-                                    if (count($option_id)) {
-                                        $v = $option_id['id'];
-                                    } else {
-                                        //CMS SAVE
-                                        $cms->set_section($vars['options'][$k]);
-        
-                                        $option_data = [
-                                            key($vars['fields'][$vars['options'][$k]]) => trim($v),
-                                        ];
-        
-                                        if (count($cms->validate($option_data))) {
-                                            continue;
-                                        }
-                                        $v = $cms->save($option_data);
-                                    }
-                                } else {
-                                    $v = $v;
                                 }
                             } else {
                                 if (is_assoc_array($vars['options'][$k])) {
@@ -399,15 +376,6 @@ switch ($_GET['cmd']) {
                                     $v = $v;
                                 }
                             }
-                        } elseif ('select-multiple' == $vars['fields'][$_GET['section']][$k] || 'checkboxes' == $vars['fields'][$_GET['section']][$k]) {
-                            $data[$field_name] = explode("\n", $v);
-        
-                            //trim data
-                            foreach ($data[$field_name] as $key => $val) {
-                                $data[$field_name][$key] = trim($val);
-                            }
-        
-                            continue;
                         }
         
                         $v = trim($v);
@@ -478,27 +446,33 @@ switch ($_GET['cmd']) {
         // datatable search
         $_GET['fields']['s'] = $_GET['fields']['s'] ?: $_POST['search']['value'];
         
+        $fields = $cms->get_fields($_GET['section']);
+        
         $table = escape(underscored($_GET['section']));
-        $field_id = in_array('id', $vars['fields'][$_GET['section']]) ? array_search('id', $vars['fields'][$_GET['section']]) : 'id';
+        $field_id = 'id';
+        
+        if (!$fields['id']) {
+            break;
+        }
         
         // get field names
-        $fields = [];
-        foreach ($vars['fields'][$_GET['section']] as $name => $type) {
-            if (in_array($type, $cms->hidden_columns)) {
+        $cols = [];
+        foreach ($fields as $name => $field) {
+            if (in_array($field['type'], $cms->hidden_columns)) {
                 continue;
             }
             
-            $fields[] = $name;
+            $cols[] = $name;
         }
         
         // add extra fields for checkbox and actions
-        array_unshift($fields, 'id');
+        array_unshift($cols, 'id');
         
         // sort order
-        if (in_array('position', $vars['fields'][$_GET['section']])) {
+        if ($fields['position']) {
             $order = 'position';
         } else {
-            $order = underscored($fields[($_POST['order'][0]['column'] - 2)]) ?: 'id';
+            $order = underscored($cols[($_POST['order'][0]['column'] - 2)]) ?: 'id';
         }
         $dir = ('desc' == $_POST['order'][0]['dir']) ? 'DESC' : '';
         $asc = ('desc' == $_POST['order'][0]['dir']) ? false : true;
@@ -532,6 +506,7 @@ switch ($_GET['cmd']) {
         
         // gather rows
         $rows = $cms->get($_GET['section'], $_GET['fields'], $limit, $order, $asc);
+        //var_dump($rows);
         
         // prepare rows
         foreach ($rows as $row) {
@@ -539,11 +514,11 @@ switch ($_GET['cmd']) {
             $item = [$row['position'], $row['id']];
             
             // use labels when available
-            foreach ($fields as $name) {
+            foreach ($cols as $name) {
                 $field_name = underscored($name);
                 
                 // truncate editor
-                if (in_array($vars['fields'][$_GET['section']][$field_name], ['editor', 'textarea'])) {
+                if (in_array($fields[$name]['type'], ['editor', 'textarea'])) {
                     $row[$field_name] = truncate($row[$field_name]);
                 }
                 

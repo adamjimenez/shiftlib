@@ -13,7 +13,7 @@ if(PHP_VERSION_ID < 70300) {
         'domain' => $cookie_params['domain'],
         'secure' => $cookie_secure,
         'httponly' => $cookie_params['httponly'],
-        'samesite' => 'None'
+        //'samesite' => 'None'
     ]);
 }
 
@@ -395,8 +395,8 @@ class auth
         $_SESSION[$this->cookie_prefix . '_email'] = $email;
         $_SESSION[$this->cookie_prefix . '_password'] = $pass;
         
-        setcookie($this->cookie_prefix . '_email', $email, time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
-        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $pass), time() + (86400 * $this->cookie_duration), '/; SameSite=None', $this->cookie_domain, $cookie_secure);
+        setcookie($this->cookie_prefix . '_email', $email, time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain, true);
+        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $pass), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain, true);
     }
 
     /**

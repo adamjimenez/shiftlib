@@ -24,10 +24,8 @@ class SelectParent extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
-        reset($this->vars['fields'][$this->cms->section]);
-
-        $label = key($this->vars['fields'][$this->cms->section]);
-
+        $label = $this->cms->get_option_label($this->cms->section);
+        
         $rows = sql_query("SELECT id,`$label` FROM `" . $this->cms->table . "` ORDER BY `$label`");
 
         $parents = [];
@@ -54,9 +52,7 @@ class SelectParent extends Component implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        reset($this->vars['fields'][$this->cms->section]);
-
-        $field = key($this->vars['fields'][$this->cms->section]);
+        $field = $this->cms->get_option_label($this->cms->section);
 
         $row = sql_query("SELECT id,`$field` FROM `" . $this->cms->table . "` WHERE id='" . escape($value) . "' ORDER BY `$field`", 1);
 

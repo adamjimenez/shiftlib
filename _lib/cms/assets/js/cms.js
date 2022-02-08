@@ -404,6 +404,7 @@ function initForms()
                 ],
                 */
 
+				convert_urls: false,
                 relative_urls : false,
                 remove_script_host : false, //needed for shiftmail
 
@@ -505,11 +506,13 @@ function initForms()
                 }
             }
         }
-            
+        
+        /*
         $("body").on('change', 'ul.files input', function() {
             $(this).parent().clone().appendTo( $(this).closest('ul') ).find('input').val('');
             readURL(this);
         });
+        */
             
         $("body").on('click', 'img.file-preview', function() {
             $(this).parent().remove();

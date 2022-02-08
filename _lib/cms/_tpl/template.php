@@ -18,7 +18,7 @@ $versions = [
     <meta http-equiv="x-ua-compatible" content="ie=edge">
 
     <title>Admin Area | <?=$title ?: 'Main'; ?></title>
-    
+
     <?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome', 'lightbox']); ?>
     <script type="text/javascript" src="/_lib/cms/assets/js/list.js?v=6"></script>
     <script type="text/javascript" src="/_lib/cms/assets/js/ui.list.js"></script>
@@ -27,17 +27,17 @@ $versions = [
     <link rel="shortcut icon" type="image/png" href="/_lib/cms/assets/images/icon/favicon.ico">
     <link rel="stylesheet" href="/_lib/cms/assets/css/metisMenu.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/slicknav.min.css">
-    
-    <!-- Start datatable css -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/css/responsive.jqueryui.min.css">
 
-    <link type="text/css" href="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder'];?>/css/rowReorder.dataTables.min.css" rel="stylesheet">
-    <link type="text/css" href="https://cdn.datatables.net/select/<?=$versions['datatables']['select'];?>/css/select.dataTables.min.css" rel="stylesheet">
-    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes'];?>/css/dataTables.checkboxes.css" rel="stylesheet">
-    <link type="text/css" href="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/css/buttons.bootstrap4.min.css" rel="stylesheet">
+    <!-- Start datatable css -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/<?=$versions['datatables']['core']; ?>/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/<?=$versions['datatables']['core']; ?>/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive']; ?>/css/responsive.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive']; ?>/css/responsive.jqueryui.min.css">
+
+    <link type="text/css" href="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder']; ?>/css/rowReorder.dataTables.min.css" rel="stylesheet">
+    <link type="text/css" href="https://cdn.datatables.net/select/<?=$versions['datatables']['select']; ?>/css/select.dataTables.min.css" rel="stylesheet">
+    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes']; ?>/css/dataTables.checkboxes.css" rel="stylesheet">
+    <link type="text/css" href="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/css/buttons.bootstrap4.min.css" rel="stylesheet">
 
     <!-- others css -->
     <link rel="stylesheet" href="/_lib/cms/assets/css/typography.css">
@@ -48,7 +48,7 @@ $versions = [
     <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 
     <link rel="stylesheet" href="/_lib/cms/assets/css/cms.css">
-    
+
     <script>
         // used for imports
         var fields = [];
@@ -57,8 +57,8 @@ $versions = [
 
 <body>
     <!--[if lt IE 8]>
-            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
+                <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+            <![endif]-->
     <!-- preloader area start -->
     <div id="preloader">
         <div class="loader"></div>
@@ -71,76 +71,84 @@ $versions = [
         <?php
         if ($auth->user['admin']) {
             ?>
-        <div class="sidebar-menu">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <?php
-                    $website = explode('.', ucfirst(str_replace('www.', '', $_SERVER['HTTP_HOST']))); ?>
-                    <a href="/admin">
-                        <?=$website[0]; ?>
-                    </a>
+            <div class="sidebar-menu">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <?php
+                        $website = explode('.', ucfirst(str_replace('www.', '', $_SERVER['HTTP_HOST']))); ?>
+                        <a href="/admin">
+                            <?=$website[0]; ?>
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <div class="main-menu">
-                <div class="menu-inner">
-                    <nav>
-                        <ul class="metismenu" id="menu">
+                <div class="main-menu">
+                    <div class="menu-inner">
+                        <nav>
+                            <ul class="metismenu" id="menu">
 
-                            <?php
-                            foreach ($vars['sections'] as $section) {
-                                preg_match('/([a-zA-Z0-9\-\s]+)/', $section, $matches);
-                                $option = trim($matches[1]);
+                                <?php
+                                foreach ($vars['sections'] as $section) {
+                                    preg_match('/([a-zA-Z0-9\-\s]+)/', $section, $matches);
+                                    $option = trim($matches[1]);
 
-                                if ('-' == $section) {
-                                    ?>
-                                    <li><hr></li>
-                            <?php
-                                } elseif (1 == $auth->user['admin'] or $auth->user['privileges'][$option]) {
-                                    ?>
-                                <li <?php if ($option == $_GET['option']) { ?>class="active"<?php } ?>>
-                                    <a href="?option=<?=$option; ?>" title="<?=ucfirst($section); ?>">
-                                        <span>
-                                            <?=ucfirst($section); ?>
-                                            <?php
-                                            if (in_array('read', $vars['fields'][$section])) {
-                                                $unread = $this->get($section, ['read' => 0], true);
+                                    if ('-' == $section) {
+                                        ?>
+                                        <li><hr></li>
+                                        <?php
+                                    } elseif (1 == $auth->user['admin'] or $auth->user['privileges'][$option]) {
+                                        ?>
+                                        <li <?php if ($option == $_GET['option']) { ?>class="active"<?php } ?>>
+                                            <a href="?option=<?=$option; ?>" title="<?=ucfirst($section); ?>">
+                                                <span>
+                                                    <?=ucfirst($section); ?>
+                                                    <?php
 
-                                                if ($unread) {
+                                                    if (table_exists(underscored($section))) {
+                                                        $fields = $this->get_fields($section);
+
+                                                        if ($fields['read']) {
+                                                            $unread = $this->get($section, ['read' => 0], true);
+
+                                                            if ($unread) {
+                                                                ?>
+                                                                (<?=$unread; ?>)
+                                                                <?php
+                                                            }
+                                                        }
+                                                    }
                                                     ?>
-                                                (<?=$unread; ?>)
+                                                </span>
+                                            </a>
+                                        </li>
+
+                                        <?php
+                                        foreach ($this->filters as $v) {
+                                            if ($v['section'] != $option) {
+                                                continue;
+                                            }
+
+                                            parse_str($v['filter'], $conditions);
+                                            $result = $this->get($v['section'], $conditions, true); ?>
+                                            <li <?php if ($v['filter'] == http_build_query($_GET)) { ?>id="current"<?php } ?>>
+                                                <a href="?<?=$v['filter']; ?>" title="<?=ucfirst($v['name']); ?>">
+                                                    <span>
+                                                        - <?=ucfirst($v['name']); ?> <?php if ($result) {
+                                                            ?>(<?=$result; ?>)<?php
+                                                        } ?>
+                                                    </span>
+                                                </a>
+                                            </li>
                                             <?php
-                                                }
-                                            } ?>
-                                        </span>
-                                    </a>
-                                </li>
-
-                                <?php
-                                foreach ($this->filters as $v) {
-                                    if ($v['section'] != $option) {
-                                        continue;
+                                        } ?>
+                                        <?php
                                     }
-
-                                    parse_str($v['filter'], $conditions);
-                                    $result = $this->get($v['section'], $conditions, true); ?>
-                                    <li <?php if ($v['filter'] == http_build_query($_GET)) { ?>id="current"<?php } ?>>
-                                        <a href="?<?=$v['filter']; ?>" title="<?=ucfirst($v['name']); ?>">
-                                            <span>
-                                                - <?=ucfirst($v['name']); ?> <?php if ($result) { ?>(<?=$result;?>)<?php } ?>
-                                            </span>
-                                        </a>
-                                    </li>
-                                <?php
                                 } ?>
-                            <?php
-                                }
-                            } ?>
-                        </ul>
-                    </nav>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
-        </div>
-        <?php
+            <?php
         }
         ?>
 
@@ -160,30 +168,38 @@ $versions = [
                     <div class="col-9 clearfix">
                         <ul class="notification-area pull-right">
                             <li><a href="/" title="Website"><i class="fas fa-home"></i></a></li>
-                            
 
-                            <?php 
-                            if (1 == $auth->user['admin'] || $auth->user['privileges']['uploads']) { ?>
-                            <li>
-                                <a href="#" class="upload">
-                                    <i class="fas fa-file-upload"></i>
-                                </a>
-                            </li>
-                            <?php } ?>
 
-                            <?php if (1 == $auth->user['admin']) { ?>
-                            <li>
-                                <a href="/admin?option=configure">
-                                    <i class="fas fa-cog"></i>
-                                </a>
-                            </li>
-                            <?php } ?>
+                            <?php
+                            if (1 == $auth->user['admin'] || $auth->user['privileges']['uploads']) {
+                                ?>
+                                <li>
+                                    <a href="#" class="upload">
+                                        <i class="fas fa-file-upload"></i>
+                                    </a>
+                                </li>
+                                <?php
+                            } ?>
 
-                             <?php if ($auth->user['admin']) { ?>
+                            <?php if (1 == $auth->user['admin']) {
+                                ?>
+                                <li>
+                                    <a href="/admin?option=configure">
+                                        <i class="fas fa-cog"></i>
+                                    </a>
+                                </li>
+                                <?php
+                            } ?>
+
+                            <?php if ($auth->user['admin']) {
+                                ?>
                                 <li><a href="/logout" title="Sign out"><i class="fas fa-sign-out-alt"></i></a></li>
-                            <?php } else { ?>
+                                <?php
+                            } else {
+                                ?>
                                 <li><a href="/admin?option=login" title="Sign in"><i class="fas fa-sign-in-alt"></i></a></li>
-                            <?php } ?>
+                                <?php
+                            } ?>
 
                         </ul>
                     </div>
@@ -201,11 +217,11 @@ $versions = [
                             <?=nl2br($_SESSION['message']); ?>
                         </div>
                     </div>
-                <?php
+                    <?php
                     unset($_SESSION['message']);
                 }
                 ?>
-                <?=$include_content;?>
+                <?=$include_content; ?>
 
             </div>
         </div>
@@ -213,13 +229,15 @@ $versions = [
         <!-- footer area start-->
         <footer>
             <div class="footer-area">
-                <p>Version <?=$this::VERSION;?></p>
+                <p>
+                    Version <?=$this::VERSION; ?>
+                </p>
             </div>
         </footer>
         <!-- footer area end-->
     </div>
     <!-- page container area end -->
-    
+
     <!-- import modal start -->
     <form method="post" id="importForm" enctype="multipart/form-data" onSubmit="checkForm(); return false;">
         <div class="modal fade" id="importModal">
@@ -234,18 +252,20 @@ $versions = [
                         <input type="hidden" id="importSection" name="section" value="" />
                         Upload a <strong>comma delimited csv</strong> file.<br>
                         <br>
-                    
+
                         <div>
                             File: <span id="file_field"><input type="file" class="import_file" name="file"></span>
                         </div>
-                    
+
                         <div id="csv_loaded" style="display:none; width:auto;">
                             <div id="csv_preview" style="margin:1em; border: 1px solid #000; overflow: scroll;"></div>
-                    
-                            <p>Match up the columns with the spreadsheet columns below.</p>
-                    
+
+                            <p>
+                                Match up the columns with the spreadsheet columns below.
+                            </p>
+
                             <table width="310" class="box">
-                               <thead>
+                                <thead>
                                     <tr>
                                         <th>List column</th>
                                         <th>&nbsp;</th>
@@ -273,25 +293,25 @@ $versions = [
         </div>
     </form>
     <!-- import modal end -->
-    
+
     <!-- stay logged in modal start -->
     <div class="modal fade stayLoggedInModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Notice</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            You are about to be logged out.
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary stayLoggedInBtn">Stay logged in</button>
-          </div>
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Notice</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    You are about to be logged out.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary stayLoggedInBtn">Stay logged in</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
     <!-- stay logged in modal end -->
 
@@ -301,19 +321,19 @@ $versions = [
     <script src="/_lib/cms/assets/js/jquery.slicknav.min.js"></script>
 
     <!-- Start datatable js -->
-    <script src="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/<?=$versions['datatables']['core'];?>/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive'];?>/js/responsive.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/<?=$versions['datatables']['core']; ?>/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/<?=$versions['datatables']['core']; ?>/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive']; ?>/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/<?=$versions['datatables']['responsive']; ?>/js/responsive.bootstrap.min.js"></script>
 
-    <script type="text/javascript" src="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder'];?>/js/dataTables.rowReorder.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/select/<?=$versions['datatables']['select'];?>/js/dataTables.select.min.js"></script>
-    <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes'];?>/js/dataTables.checkboxes.min.js"></script>
-    
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/buttons.bootstrap4.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/buttons.colVis.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons'];?>/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder']; ?>/js/dataTables.rowReorder.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/<?=$versions['datatables']['select']; ?>/js/dataTables.select.min.js"></script>
+    <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes']; ?>/js/dataTables.checkboxes.min.js"></script>
+
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/js/buttons.bootstrap4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/js/buttons.html5.min.js"></script>
 
     <script src="/_lib/cms/assets/js/plugins.js"></script>
     <script src="/_lib/cms/assets/js/scripts.js?v=1"></script>
@@ -335,45 +355,45 @@ $versions = [
             var rows_selected = table.column(1).checkboxes.selected();
 
             // Iterate over all selected checkboxes
-            $.each(rows_selected, function(index, rowId){
+            $.each(rows_selected, function(index, rowId) {
                 // Create a hidden element
                 $(form).append(
                     $('<input>')
-                        .attr('type', 'hidden')
-                        .attr('name', 'id[]')
-                        .val(rowId)
-                    );
+                    .attr('type', 'hidden')
+                    .attr('name', 'id[]')
+                    .val(rowId)
+                );
             });
 
             // check if all selected
             if ($(table.table().container()).find('.selectAllPages').data('selected')) {
                 $(form).append(
                     $('<input>')
-                        .attr('type', 'hidden')
-                        .attr('name', 'select_all_pages')
-                        .val(1)
-                    );
+                    .attr('type', 'hidden')
+                    .attr('name', 'select_all_pages')
+                    .val(1)
+                );
             };
-            
+
             // columns
             $(form).append(
                 $('<input>')
-                    .attr('type', 'hidden')
-                    .attr('name', 'columns')
-                    .val(JSON.stringify(dt.columns().visible().toArray()))
-                );
+                .attr('type', 'hidden')
+                .attr('name', 'columns')
+                .val(JSON.stringify(dt.columns().visible().toArray()))
+            );
 
             form.submit();
         }
-    
+
         // Handle form submission event
         $('body').on('click', '.buttons button', function(e) {
             button_handler($(this).data('value'), $(this).data('confirm'), this);
         });
-       
+
         // file import
         $('.import_file').on('change', changeFile);
-        
+
         // fix close button
         /*
         $(function() {
@@ -381,7 +401,7 @@ $versions = [
             $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
         })
         */
-        
+
         // hide empty list dropdown menu
         $(function() {
             $('.dropdown-menu').each(function() {
@@ -390,28 +410,24 @@ $versions = [
                 }
             });
         });
-        
+
         // stay logged in start
         /*
-        var session_duration = '<?=ini_get("session.gc_maxlifetime");?>';
+        var session_duration = '<?=ini_get("session.gc_maxlifetime"); ?>';
         var logInTimer;
-        
         function setLogInTimer() {
             logInTimer = setTimeout(function() {
                 $('.stayLoggedInModal').modal('show');
             }, (session_duration - 60) * 1000);
         }
-        
         $(function() {
             setLogInTimer();
-        
             $('.stayLoggedInBtn').click(function() {
                 $.ajax( '/_lib/api/?cmd=ping', {
                     dataType: 'json',
                     success: function(data) {
                         $('.stayLoggedInModal').modal('hide');
                         setLogInTimer();
-                        
                         if (data.error) {
                             alert(data.error);
                         }

@@ -130,7 +130,7 @@ class Files extends File implements ComponentInterface
                             id='" . $fileId . "'
                     ");
 
-                    $this->delete($this->vars['files']['dir'] . $fileId);
+                    $this->delete($this->upload_dir . $fileId);
                 }
             }
         }

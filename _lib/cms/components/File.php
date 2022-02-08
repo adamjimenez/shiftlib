@@ -10,6 +10,12 @@ class File extends Component implements ComponentInterface
 {
     public const IMAGE_TYPES = ['jpg', 'jpeg', 'gif', 'png'];
     
+    public function __construct(\cms $cms, \auth $auth, array $vars)
+    {
+        parent::__construct($cms, $auth, $vars);
+        $this->upload_dir = 'uploads/files/';
+    }
+    
     public function getPreviewUrl($value) {
         global $auth;
         return '/admin?option=file&f=' . $value. '&hash=' . md5($auth->hash_salt . $value);
@@ -82,7 +88,7 @@ class File extends Component implements ComponentInterface
         $value = sql_insert_id();
 
         // move file
-        $file_path = $this->vars['files']['dir'] . $value;
+        $file_path = $this->upload_dir . $value;
         
         // don't overwrote
         if (!file_exists($file_path)) {
@@ -115,7 +121,7 @@ class File extends Component implements ComponentInterface
                     id='" . $fileId . "'
             ");
 
-            $this->delete($this->vars['files']['dir'] . $fileId);
+            $this->delete($this->upload_dir . $fileId);
         } else {
             $value = $fileId;
         }
