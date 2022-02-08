@@ -525,10 +525,10 @@ if ($_POST['save']) {
     $config = '<?php
 $last_modified = ' . time() . ';
 # GENERAL SETTINGS
-$db_config["host"] = "' . ($_SERVER["DB_HOST"] ? '$_SERVER["DB_HOST"]' : $db_config['host']) . '";
-$db_config["user"] = "' . ($_SERVER["DB_USER"] ? '$_SERVER["DB_USER"]' : $db_config['user']) . '";
-$db_config["pass"] = "' . ($_SERVER["DB_PASS"] ? '$_SERVER["DB_PASS"]' : $db_config['pass']) . '";
-$db_config["name"] = "' . ($_SERVER["DB_NAME"] ? '$_SERVER["DB_NAME"]' : $db_config['name']) . '";
+$db_config["host"] = ' . ($_SERVER["DB_HOST"] ? '$_SERVER["DB_HOST"]' : '"' . $db_config['host'] . '"') . ';
+$db_config["user"] = ' . ($_SERVER["DB_USER"] ? '$_SERVER["DB_USER"]' : '"' . $db_config['user'] . '"') . ';
+$db_config["pass"] = ' . ($_SERVER["DB_PASS"] ? '$_SERVER["DB_PASS"]' : '"' . $db_config['pass'] . '"') . ';
+$db_config["name"] = ' . ($_SERVER["DB_NAME"] ? '$_SERVER["DB_NAME"]' : '"' . $db_config['name'] . '"') . ';
 
 #TPL
 
