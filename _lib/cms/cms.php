@@ -23,6 +23,20 @@ class cms
     public $handlers = [];
 
     public $file_upload_path = 'uploads/files/';
+    
+    private $default_users_table =    
+        [
+            'email' => 'email',
+            'password' => 'password',
+            'admin' => 'select',
+            'date' => 'timestamp',
+            'id' => 'id',
+            'indexes' => [[
+                'name' => 'email',
+                'type' => 'unique',
+                'fields' => ['email'],
+            ]]
+        ];
 
     public function __construct() {}
 
@@ -990,10 +1004,7 @@ class cms
                 if (!in_array($option, ['login', 'file']) && !$auth->user['admin']) {
                     // check table exists
                     if (!table_exists($auth->table)) {
-                        $fields = $this->get_fields($auth->table);
-
-                        $this->check_table($auth->table, $fields);
-                        sql_query('ALTER TABLE `' . $auth->table . '` ADD UNIQUE `email` ( `email` )');
+                        $this->check_table($auth->table, $this->default_users_table);
                     }
 
                     // check admin user exists
