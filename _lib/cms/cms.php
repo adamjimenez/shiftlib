@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = 'v2.0.1';
+    const VERSION = '3.0.0';
 
     /**
     * @var string
@@ -710,7 +710,9 @@ class cms
                 $type = $field['type'];
 
                 if ('select_multiple' === $type) {
-                    $content[$k][underscored($name)] = json_decode($v[$name], true);
+                    foreach ($content as $k => $v) {
+                        $content[$k][underscored($name)] = json_decode($v[$name], true);
+                    }
                     continue;
                 }
 
