@@ -652,6 +652,9 @@ $vars["options"]["' . $field_option . '"] = "";
 
     //die($config);
     file_put_contents($config_file, $config);
+    
+    // clear config.php cache
+    opcache_reset();
 
     unset($_POST);
 
