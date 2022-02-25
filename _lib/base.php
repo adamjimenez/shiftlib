@@ -10,41 +10,26 @@ require(__DIR__ . '/autoload.php');
 require_once(__DIR__ . '/core/common.php');
 require($root_folder . '/_inc/config.php');
 
-if ($db_config['user'] or $db_connection) {
+if (!$db_config['user'] && $_SERVER['DB_HOST']) {
+    $db_config = [
+        'host' => $_SERVER['DB_HOST'],
+        'user' => $_SERVER['DB_USER'],
+        'pass' => $_SERVER['DB_PASS'],
+        'name' => $_SERVER['DB_NAME'],
+    ];
+}
+
+if ($db_config) {
+    $db_connection = mysqli_connect($db_config['host'], $db_config['user'], $db_config['pass'], $db_config['name']) or trigger_error(mysqli_connect_error(), E_USER_ERROR);
+    mysqli_set_charset($db_connection, 'utf8mb4');
+}
+
+if ($db_connection) {
     $cms = new cms;
-
-    if (!$db_connection) {
-        
-        $db_host = $db_config['host'];
-        $db_user = $db_config['user'];
-        $db_pass = $db_config['pass'];
-        $db_name = $db_config['name'];
-        
-        if ($_SERVER['DB_HOST']) {
-            
-            $db_host = $_SERVER['DB_HOST'];
-            $db_user = $_SERVER['DB_USER'];
-            $db_pass = $_SERVER['DB_PASS'];
-            $db_name = $_SERVER['DB_NAME'];
-            
-        } else if ('stage' == $_SERVER['LIB_ENV']) {
-            
-            $db_host = $db_config['dev_host'];
-            $db_user = $db_config['dev_user'];
-            $db_pass = $db_config['dev_pass'];
-            $db_name = $db_config['dev_name'];
-            
-        }
-        
-        $db_connection = mysqli_connect($db_host, $db_user, $db_pass, $db_name) or trigger_error(mysqli_connect_error(), E_USER_ERROR);
-        mysqli_set_charset($db_connection, 'utf8mb4');
-        
-    }
-
     $auth = new auth();
 } elseif (false !== $db_config) {
     //prompt to configure connection
-    require(__DIR__ . '/cms/_tpl/db.php');
+    require($root_folder . '/_lib/cms/_tpl/db.php');
     exit;
 }
 
@@ -58,6 +43,7 @@ if ($auth) {
 if ($cms_buttons) {
     $cms->addButton($cms_buttons);
 }
+
 if ($cms_handlers) {
     $cms->bind($cms_handlers);
 }
