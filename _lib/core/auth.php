@@ -395,8 +395,8 @@ class auth
         $_SESSION[$this->cookie_prefix . '_email'] = $email;
         $_SESSION[$this->cookie_prefix . '_password'] = $pass;
         
-        setcookie($this->cookie_prefix . '_email', $email, time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain, true);
-        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $pass), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain, true);
+        setcookie($this->cookie_prefix . '_email', $email, time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain, $cookie_secure);
+        setcookie($this->cookie_prefix . '_password', md5($this->secret_phrase . $pass), time() + (86400 * $this->cookie_duration), '/', $this->cookie_domain, $cookie_secure);
     }
 
     /**
