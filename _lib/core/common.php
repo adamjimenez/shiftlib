@@ -1449,6 +1449,18 @@ function spaced($str) // also see underscored
     return str_replace('_', ' ', $str);
 }
 
+function cache($key, $value = null, $expire = 3600)
+{
+    $memcache = new Memcached;
+    $memcache->addServer("localhost", 11211) or trigger_error('Could not connect', E_USER_ERROR);
+    
+    if ($value === null) {
+        return $memcache->get($key);
+    }
+    
+    $memcache->set($key, $value, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
+}
+
 function cache_query($query, $single = false, $expire = 3600)
 {
     if (!class_exists('Memcached')) {
