@@ -162,7 +162,9 @@ if ($_GET['cmd']) {
         case 'get':
             $files = [];
             
-            $paths = glob($path . '*');
+            $paths = glob($path . '*', GLOB_NOSORT);
+            
+            /*
             usort($paths, function ($a, $b): int {
                 $a = strtolower($a);
                 $b = strtolower($b);
@@ -178,6 +180,7 @@ if ($_GET['cmd']) {
                     return 1;
                 } // $b is dir, should be before $a
             });
+            */
 
             $start = $_GET['current'] ?: 0;
             $max_files = 2000;
