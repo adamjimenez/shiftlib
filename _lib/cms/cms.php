@@ -730,6 +730,13 @@ class cms
                     continue;
                 }
 
+                if ('files' === $type) {
+                    foreach ($content as $k => $v) {
+                        $content[$k][underscored($name)] = explode("\n", $v[$name]);
+                    }
+                    continue;
+                }
+
                 if ('checkboxes' !== $type) {
                     continue;
                 }
@@ -1414,18 +1421,18 @@ class cms
 
                     // remember old state
                     $row = sql_query('SELECT * FROM `' . $this->table . "`
-                    $whereStr
-            ", 1);
+                            $whereStr
+                    ", 1);
 
                     sql_query('UPDATE `' . $this->table . '` SET
-                ' . $this->query . "
-                $whereStr
-            ");
+                        ' . $this->query . "
+                        $whereStr
+                    ");
 
                     // find changes
                     $updated_row = sql_query('SELECT * FROM `' . $this->table . "`
-                    $whereStr
-            ", 1);
+                            $whereStr
+                    ", 1);
 
                     foreach ($updated_row as $k => $v) {
                         if ($row[$k] != $v) {
@@ -1436,8 +1443,8 @@ class cms
                     $task = 'edit';
                 } else {
                     sql_query('INSERT IGNORE INTO `' . $this->table . '` SET
-                ' . $this->query . '
-            ');
+                        ' . $this->query . '
+                    ');
                     $this->id = sql_insert_id();
 
                     // update fields that require an id
@@ -1478,12 +1485,12 @@ class cms
                 }
 
                 sql_query("INSERT INTO cms_logs SET
-            user = '" . $auth->user['id'] . "',
-            section = '" . escape($section) . "',
-            item = '" . escape($id) . "',
-            task = '" . $task . "',
-            details = '" . escape($details) . "'
-        ");
+                    user = '" . $auth->user['id'] . "',
+                    section = '" . escape($section) . "',
+                    item = '" . escape($id) . "',
+                    task = '" . $task . "',
+                    details = '" . escape($details) . "'
+                ");
             }
 
             public function trigger_event($event, $args) {

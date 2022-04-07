@@ -24,9 +24,11 @@ class Files extends File implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
+        /*
         if ($value) {
             $value = explode("\n", $value);
         }
+        */
 
         $parts = [];
 
@@ -66,16 +68,19 @@ class Files extends File implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
+        /*
         if ($value) {
             $files = explode("\n", $value);
         }
+        */
+        //debug($value);
 
-        $value = '<ul id="' . $name . '_files" class="files">';
+        $html = '<ul id="' . $name . '_files" class="files">';
 
         $count = 0;
 
-        if (is_array($files)) {
-            foreach ($files as $key => $val) {
+        if (is_array($value)) {
+            foreach ($value as $key => $val) {
                 $count++;
 
                 if ($val) {
@@ -85,16 +90,16 @@ class Files extends File implements ComponentInterface
                 $previewUrl = $this->getPreviewUrl($file['id']);
 
                 if (in_array(file_ext($file['name']), parent::IMAGE_TYPES)) {
-                    $value .= '<img src="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
+                    $html .= '<img src="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
                 }
 
-                $value .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span><br><br>';
+                $html .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span><br><br>';
             }
         }
 
-        $value .= '</ul>';
+        $html .= '</ul>';
 
-        return $value;
+        return $html;
     }
 
     /**
@@ -118,7 +123,7 @@ class Files extends File implements ComponentInterface
         }
 
         if ($this->cms->id) {
-            $oldFiles = explode("\n", $this->cms->content[$fieldName]);
+            $oldFiles = $this->cms->content[$fieldName];
 
             //clean up old files
             foreach ($oldFiles as $old_file) {
