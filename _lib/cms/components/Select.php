@@ -85,6 +85,16 @@ class Select extends Component implements ComponentInterface
                 $options = $this->get_children($this->vars['options'][$name], $parent_field);
             } else {
             */
+                // filter deleted rows
+                $fields = $this->cms->get_fields($this->vars['options'][$name]);
+                if ($fields['deleted']) {
+                    if ($where) {
+                        $where .= ' AND ';
+                    }
+                    
+                    $where .= 'deleted = 0';
+                }
+                
                 $whereStr = '';
                 if ($where) {
                     $whereStr = 'WHERE ' . $where;
