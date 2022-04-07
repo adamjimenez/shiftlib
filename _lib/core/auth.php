@@ -291,6 +291,7 @@ class auth
             
         // the selected provider
         $provider_name = $_GET['provider'] ?: $_SESSION['provider'];
+        $provider_name = $_GET['hauth_start'] ?: $provider_name;
     
         // initialize Hybrid_Auth with a given file
         $hybridauth = new Hybridauth\Hybridauth($config);
@@ -304,7 +305,7 @@ class auth
             }
             
             // try to authenticate with the selected provider
-            $adapter = $hybridauth->authenticate($_SESSION['provider']);
+            $adapter = $hybridauth->authenticate($provider_name);
             
             // then grab the user profile
             $user_profile = $adapter->getUserProfile();
