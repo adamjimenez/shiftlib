@@ -30,7 +30,11 @@ if (
 }
 
 if ($_POST['custom_button']) {
-    $this->buttons[$_POST['custom_button']]['handler']($_GET['id'], $content);
+    try {
+        $this->buttons[$_POST['custom_button']]['handler']($_GET['id'], $content);
+    } catch (Exception $e) {
+    	$_SESSION['message'] = $e->getMessage();
+    }
 
     $content = $this->get($this->section, $_GET['id']);
 }
@@ -215,7 +219,7 @@ $qs = http_build_query($qs_arr);
                         <?php
                         foreach ($vars['subsections'][$this->section] as $count => $subsection) {
                             $this->section = $subsection;
-                            
+
                             $fields = $this->get_fields($this->section);
 
                             $conditions = [];
@@ -241,7 +245,7 @@ $qs = http_build_query($qs_arr);
                                 <?php
                                 if (file_exists('_tpl/admin/' . $subsection . '.php')) {
                                     require('_tpl/admin/' . $subsection . '.php');
-                                } else  if($fields['id']){
+                                } else if ($fields['id']) {
                                     require(__DIR__ . '/list.php');
                                 } else {
                                     require(__DIR__ . '/view.php');

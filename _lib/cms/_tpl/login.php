@@ -40,26 +40,28 @@ if (1 === $result['code']) {
 
 <body>
     <!--[if lt IE 8]>
-            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
+                <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+            <![endif]-->
     <!-- preloader area start -->
     <div id="preloader">
         <div class="loader"></div>
     </div>
     <!-- preloader area end -->
     <!-- login area start -->
-    <div class="login-area">   
+    <div class="login-area">
         <div class="alert alert-danger ssl-warning" role="alert" style="display: none;">
             Cookies are required, check browser settings or enable SSL for secure cookies.
         </div>
-        
+
         <div class="container">
             <div class="login-box ptb--100">
                 <form action="/admin?option=login" method="post" class="validate">
-                <input type="hidden" name="login" value="1">
+                    <input type="hidden" name="login" value="1">
                     <div class="login-form-head">
                         <h4>Sign In</h4>
-                        <p>Hello there, Sign in and start managing your Admin</p>
+                        <p>
+                            Hello there, Sign in and start managing your Admin
+                        </p>
                     </div>
                     <div class="login-form-body">
                         <div class="form-gp">
@@ -124,7 +126,7 @@ if (1 === $result['code']) {
     <!-- others plugins -->
     <script src="/_lib/cms/assets/js/plugins.js"></script>
     <script src="/_lib/cms/assets/js/scripts.js"></script>
-    
+
     <script>
         // check login cookie
         if (!document.cookie) {

@@ -3,8 +3,7 @@ if (1 != $auth->user['admin']) {
     die('permission denied');
 }
 
-function rrmdir($dir)
-{
+function rrmdir($dir) {
     if (is_dir($dir)) {
         $objects = scandir($dir);
         foreach ($objects as $object) {

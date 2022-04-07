@@ -56,10 +56,10 @@ if ($_POST['custom_button']) {
     }
 } else {
     $fields = $this->get_fields($this->section);
-    
+
     foreach ($fields as $name => $field) {
         $type = $field['type'];
-        
+
         if ('position' == $type) {
             continue;
         }
@@ -75,10 +75,9 @@ if ($_POST['custom_button']) {
 
                 <div class="d-flex my-1">
                     <form method="get" class="flex-grow-1" style="flex: 1;">
-                        <input type="hidden" name="option" value="<?= $this->section; ?>" />
+                        <input type="hidden" name="option" value="<?= $this->section; ?>">
 
-                        <input class="search-field form-control" type="text" name="s" id="s" value="<?= $_GET['s']; ?>"
-                        tabindex="1" placeholder="Search">
+                        <input class="search-field form-control" type="text" name="s" id="s" value="<?= $_GET['s']; ?>" tabindex="1" placeholder="Search">
                     </form>
 
                     <button type="button" class="btn btn-default" id="advancedSearch">Advanced search</button>
@@ -107,134 +106,134 @@ if ($_POST['custom_button']) {
                             <form method="get" id="search_form">
                                 <input type="hidden" name="option" value="<?=$this->section; ?>" />
 
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Advanced search</h5>
-                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Advanced search</h5>
+                                <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
 
-                                    <?php
-                                    $this->set_section($this->section);
-                                    $this->content = $_GET;
+                                <?php
+                                $this->set_section($this->section);
+                                $this->content = $_GET;
 
-                                    $fields = $this->get_fields($this->section);
+                                $fields = $this->get_fields($this->section);
 
-                                    foreach ($fields as $name => $field) {
-                                        $type = $field['type'];
-                                        
-                                        if (in_array($type, $this->hidden_columns)) {
-                                            continue;
-                                        }
+                                foreach ($fields as $name => $field) {
+                                    $type = $field['type'];
 
-                                        $field_name = underscored($name);
-                                        $component = $this->get_component($type); ?>
-                                        <div data-name="<?=$name; ?>">
-                                            <?=$component->searchField($name, $_GET[$field_name]); ?>
-                                        </div>
-                                        <?php
-                                    } ?>
+                                    if (in_array($type, $this->hidden_columns)) {
+                                        continue;
+                                    }
 
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-primary">Search</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 p-0">
-                    <div class="card">
-                        <div class="card-body">
-
-                            <div class="top-row mt-1 mb-3 toolbar">
-                                <span class="holder"></span>
-
-                                <div class="dropdown" style="display: inline-block;">
-                                    <button class="btn btn-secondary" type="button"
-                                        id="dropdownMenuButton<?= underscored($button['section']); ?>"
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div class="dropdown-menu"
-                                        aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
-                                        <?php
-                                        foreach ($this->buttons as $k => $button) {
-                                            if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
-                                                require('includes/button.php');
-                                            }
-                                        } ?>
+                                    $field_name = underscored($name);
+                                    $component = $this->get_component($type); ?>
+                                    <div data-name="<?=$name; ?>">
+                                        <?=$component->searchField($name, $_GET[$field_name]); ?>
                                     </div>
-                                </div>
+                                    <?php
+                                } ?>
 
                             </div>
-
-                            <h1 class="header-title"><?=ucwords($this->section); ?></h1>
-
-                            <?php
-                            $conditions = $_GET;
-                            unset($conditions['option']);
-
-                            $qs = http_build_query(['s' => $conditions]);
-                            require(__DIR__ . '/list.php'); ?>
-
-                        </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
 
+            <div class="col-12 p-0">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="top-row mt-1 mb-3 toolbar">
+                            <span class="holder"></span>
+
+                            <div class="dropdown" style="display: inline-block;">
+                                <button class="btn btn-secondary" type="button"
+                                    id="dropdownMenuButton<?= underscored($button['section']); ?>"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu"
+                                    aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
+                                    <?php
+                                    foreach ($this->buttons as $k => $button) {
+                                        if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
+                                            require('includes/button.php');
+                                        }
+                                    } ?>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <h1 class="header-title"><?=ucwords($this->section); ?></h1>
+
+                        <?php
+                        $conditions = $_GET;
+                        unset($conditions['option']);
+
+                        $qs = http_build_query(['s' => $conditions]);
+                        require(__DIR__ . '/list.php'); ?>
+
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
+</div>
 
-    <script>
-        $(function () {
+<script>
+    $(function () {
 
-            $('.save_filter').click(function () {
-                var filter = prompt('Save filter', 'New filter');
+        $('.save_filter').click(function () {
+            var filter = prompt('Save filter', 'New filter');
 
-                if (filter != null) {
-                    $('<form method="post"><input type="hidden" name="save_filter" value="' + filter + '"></form>').appendTo('body').submit();
+            if (filter != null) {
+                $('<form method="post"><input type="hidden" name="save_filter" value="' + filter + '"></form>').appendTo('body').submit();
+            }
+        });
+
+        $('.delete_filter').click(function () {
+            if (window.confirm("Delete this filter?")) {
+                $('<form method="post"><input type="hidden" name="delete_filter" value="1"></form>').appendTo('body').submit();
+            }
+        });
+
+        //omit empty fields on search
+        $("#search_form").submit(function () {
+            $(this).find(":input").filter(function () {
+                return !$(this).val();
+            }).prop("disabled", true);
+            return true; // ensure form still submits
+        });
+
+        $('#advancedSearch').click(function () {
+            var table = $('.dataTable').DataTable();
+
+            // hide fields
+            table.columns().every(function (index) {
+
+                var data = this.data();
+                var name = $(table.column(index).header()).data('name');
+
+                if (!name) {
+                    return;
                 }
-            });
 
-            $('.delete_filter').click(function () {
-                if (window.confirm("Delete this filter?")) {
-                    $('<form method="post"><input type="hidden" name="delete_filter" value="1"></form>').appendTo('body').submit();
-                }
-            });
-
-            //omit empty fields on search
-            $("#search_form").submit(function () {
-                $(this).find(":input").filter(function () {
-                    return !$(this).val();
-                }).prop("disabled", true);
-                return true; // ensure form still submits
-            });
-
-            $('#advancedSearch').click(function () {
-                var table = $('.dataTable').DataTable();
-
-                // hide fields
-                table.columns().every(function (index) {
-
-                    var data = this.data();
-                    var name = $(table.column(index).header()).data('name');
-
-                    if (!name) {
-                        return;
-                    }
-
-                    $('#search_form div[data-name="' + name + '"]').toggle(table.column(index).visible());
-
-                });
-
-
-                $('#searchModal').modal('show')
+                $('#search_form div[data-name="' + name + '"]').toggle(table.column(index).visible());
 
             });
+
+
+            $('#searchModal').modal('show')
 
         });
-    </script>
-    <?php
+
+    });
+</script>
+<?php
 }
