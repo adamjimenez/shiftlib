@@ -1476,7 +1476,7 @@ function cache_query($query, $single = false, $expire = 3600)
     
     if ($result === false || $expire === false) {
         $result = sql_query($query);
-        $memcache->set($hash, $result, $expire) or trigger_error('Failed to save data at the server', E_USER_ERROR);
+        $memcache->set($hash, $result, $expire ?: 1) or trigger_error('Failed to save data at the server', E_USER_ERROR);
     }
     
     return $single ? $result[0] : $result;
