@@ -701,7 +701,18 @@ class shop
             $details .= $item['name'] . ' x ' . $item['quantity'] . ' £' . $item['cost'];
 
             if ($item['extras']) {
-                $details .= ' (' . $item['extras'] . ')';
+                $json = json_decode($item['extras']);
+                
+                if ($json) {
+                    $extras = '';
+                    foreach($json as $k => $v) {
+                        $extras .= $k . ': ' . $v . "\n";
+                    }
+                    
+                    $details .= ' (' . $extras . ')';
+                } else {
+                    $details .= ' (' . $item['extras'] . ')';
+                }
             }
 
             $details .= "\n";
@@ -785,11 +796,6 @@ class shop
 
             $msg .= 'Total: ';
             $msg .= '£' . number_format($order['total'], 2) . "\n\n";
-
-            if ($order['event_date']) {
-                $msg .= 'Event date:' . "\n";
-                $msg .= dateformat('d-m-Y', $order['event_date']) . "\n\n";
-            }
 
             //confirmation email
             mail($admin_email, 'Order Placed', $msg, $this->headers);
