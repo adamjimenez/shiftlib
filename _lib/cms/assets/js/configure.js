@@ -44,7 +44,7 @@ function populate_sections() {
 
 		count.sections++;
 		var html = $('#sectionTemplate').html()
-		.split('{$count}').join(count.sections);
+		.split('{$count}').join('[]');
 
 		var row = $(html).appendTo($('#sections>.items'));
 
@@ -54,9 +54,8 @@ function populate_sections() {
 		if (vars.subsections && vars.subsections[value]) {
 			vars.subsections[value].forEach(function(item) {
 				count.subsections++;
-				var html = $('#subsectionTemplate').html()
-				.split('{$count}').join(count.subsections)
-				.split('{$section_id}').join(count.sections);
+				var html = $('#sectionTemplate').html()
+				.split('{$count}').join('[' + value + '][]');
 
 				var subsectionRow = $(html).appendTo(row.find('.subsections>.items'));
 				subsectionRow.find('input').val(item);
@@ -296,7 +295,9 @@ $(function () {
 		// add options
 		$('.addSubsectionModal [name="subsection"] option').remove();
 
-		$('.addSubsectionModal [name="section"]').val(el.attr('data-section_id'));
+		//$('.addSubsectionModal [name="section"]').val(el.attr('data-section_id'));
+		
+		$('.addSubsectionModal').data('parent', el.closest('.subsections').children('.items'));
 
 		Object.entries(tables).forEach(entry => {
 			let table = entry[0];
@@ -309,13 +310,13 @@ $(function () {
 		var el = $(this);
 
 		var val = el.closest('form').find('[name="subsection"]').val();
-		var section = el.closest('form').find('[name="section"]').val();
-		var parent = $('.addSubsection[data-section_id="' + section + '"]').parent().find('.items');
+		//var parent = $('.addSubsection[data-section_id="' + section + '"]').parent().find('.items');
+		var parent = $('.addSubsectionModal').data('parent');
+		var section = parent.closest('.section').find('.name').val();
 
 		count.subsections++;
-		var html = $('#subsectionTemplate').html()
-		.split('{$count}').join(count.subsections)
-		.split('{$section_id}').join(section);
+		var html = $('#sectionTemplate').html()
+		.split('{$count}').join('[' + section + '][]');
 
 		var row = $(html).appendTo(parent);
 		row.find('input').val(val).first().focus();
