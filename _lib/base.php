@@ -29,7 +29,7 @@ if ($db_connection) {
     $auth = new auth();
 } elseif (false !== $db_config) {
     //prompt to configure connection
-    require($root_folder . '/_lib/cms/_tpl/db.php');
+    require(__DIR__ . '/cms/_tpl/db.php');
     exit;
 }
 
