@@ -437,21 +437,27 @@ if ($_POST['save']) {
         
                 // convert checkboxes to select multiple
                 $convert = false;
+                $db_field = null;
                 if ($type === 'checkboxes') {
                     $type = 'select_multiple';
                     $convert = true;
                     $db_field = $this->form_to_db($type);
                     $action = 'ADD';
                 } else {
-                    $fields = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
+                    $cols = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
 
-                    foreach ($fields as $field) {
+                    foreach ($cols as $field) {
                         if ($field['Field'] == underscored($name)) {
                             $db_field = $field['Type'];
                             $null = !$field['Null'] ? 'NOT NULL' : '';
                             break;
                         }
                     }
+                    
+                	// skip if field does not exist
+	                if (!$db_field) {
+	                	continue;
+	                }
                     
                     $action = 'MODIFY';
                 }
@@ -504,6 +510,10 @@ if ($_POST['save']) {
 
     $display = [];
     foreach ($_POST['sections'] as $section_id => $section) {
+        if (is_array($section)) {
+            continue;
+        }
+        
         $display[] = $section;
     }
 
@@ -589,22 +599,23 @@ $vars["sections"] = [
 ';
 
     // fields in each section
-    foreach ($_POST['sections'] as $section_id => $section) {
+    foreach ($_POST['sections'] as $section => $v) {
+        if (!is_string($section)) {
+            continue;
+        }
+        
         $subsections = '';
-
-        foreach ($_POST['vars']['subsections'][$section_id] as $subsection) {
+        
+        foreach ($_POST['sections'][$section] as $subsection) {
             $subsections .= '"' . $subsection . '",';
         }
 
         $config .= '
-
 $vars["subsections"]["' . $section . '"] = [' . $subsections . '];
-
 ';
     }
 
     $config .= '
-
 # SHOP
 $shop_enabled = ' . str_to_bool($_POST['shop_enabled']) . ';
 $shop_config["paypal_email"] = "' . $_POST['shop_config']['paypal_email'] . '";
@@ -991,7 +1002,7 @@ if ($release['tag_name'] != $this::VERSION) {
             </div>
             <div class="flex">
                 <p>
-                    <input class="name" type="text" name="sections[{$count}]" value="" placeholder="Section name">
+                    <input class="name" type="text" name="sections{$count}" value="" placeholder="Section name">
                     <span class="del_row p-1"><i class="fas fa-trash"></i></span>
                 </p>
 
@@ -1006,9 +1017,10 @@ if ($release['tag_name'] != $this::VERSION) {
 
     </template>
 
+    <?php /*
     <template id="subsectionTemplate">
 
-        <div class="hbox draggable p-2">
+        <div class="hbox draggable p-2 item">
             <div class="handle p-2">
                 <i class="fas fa-square"></i>
             </div>
@@ -1021,6 +1033,7 @@ if ($release['tag_name'] != $this::VERSION) {
         </div>
 
     </template>
+    */ ?>
 
     <template id="dropdownTemplate">
 
