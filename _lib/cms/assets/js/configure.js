@@ -277,7 +277,7 @@ $(function () {
 
 		count.sections++;
 		var html = $('#sectionTemplate').html()
-		.split('{$count}').join(count.sections);
+		.split('{$count}').join('[' + count.sections + ']');
 
 		var row = $(html).appendTo($('#sections>.items'));
 
