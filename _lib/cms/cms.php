@@ -365,16 +365,15 @@ class cms
             $id = null;
             if (is_numeric($conditions)) {
                 $id = $conditions;
-                $num_results = 1;
+                $conditions = ['id' => $id];
             } elseif (is_string($conditions) && $fields['page name']) {
                 $conditions = ['page name' => $conditions];
                 $num_results = 1;
             } elseif ($conditions['id']) {
                 $id = $conditions['id'];
             }
-
+            
             if (is_numeric($id)) {
-                $conditions = ['id' => $id];
                 $num_results = 1;
             }
 
@@ -455,6 +454,8 @@ class cms
                                 if (is_array($conditions) && $conditions['end'][$field_name]) {
                                     $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
                                 }
+                                
+                                
                                 $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
                             }
                         }
