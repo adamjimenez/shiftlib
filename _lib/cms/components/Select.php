@@ -215,6 +215,11 @@ class Select extends Component implements ComponentInterface
         $fieldName = underscored($name);
         $options = $this->vars['options'][$name];
         if (false === is_array($this->vars['options'][$name])) {
+            
+            if (is_null($this->vars['options'][$name])) {
+                throw new Exception('missing options for '. $name);
+            }
+            
             reset($this->vars['fields'][$this->vars['options'][$name]]);
 
             $conditions = [];
