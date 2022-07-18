@@ -511,7 +511,7 @@ class auth
     
             $reps = $data;
     
-            $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request;
+            $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/';
             
             if ($vars["fields"]["users"]['email_verified']) {
                 //activation code
