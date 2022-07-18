@@ -443,6 +443,8 @@ if ($_POST['save']) {
                     $convert = true;
                     $db_field = $this->form_to_db($type);
                     $action = 'ADD';
+                    
+                    // todo check/ remove old checkboxes field if it exists
                 } else {
                     $cols = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
 
