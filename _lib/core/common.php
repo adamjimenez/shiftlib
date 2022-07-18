@@ -934,30 +934,25 @@ function number_abbr($size, $dp = 1): string
     return number_format($size, $dp) . substr(' KMBT', $si, 1);
 }
 
-// format mobile number
-function format_mobile($mobile)
+// format tel number
+function format_tel($tel)
 {
-    $mobile = preg_replace('%[^0-9]%', '', $mobile);
+    $tel = preg_replace('%[^0-9]%', '', $tel);
 
-    if ('0' === substr($mobile, 0, 1)) {
-        $mobile = '44' . substr($mobile, 1);
+    if ('0' === substr($tel, 0, 1)) {
+        $tel = '44' . substr($tel, 1);
     }
+    
+    $tel = '+' . $tel;
 
-    if ('7' === substr($mobile, 0, 1)) {
-        $mobile = '44' . $mobile;
-    }
-
-    if (strlen($mobile) <= 10) {
-        return false;
-    }
-    return $mobile;
+    return $tel;
 }
 
 // format postcode e.g. sg64lz -> SG6 4LZ
 function format_postcode($postcode)
 {
     // force uppercase
-    $postcode = strtoupper($postcode);
+    $postcode = strtoupper(trim($postcode));
     
     // replace spaces with single space
     $postcode = preg_replace('!\s+!', ' ', $postcode);

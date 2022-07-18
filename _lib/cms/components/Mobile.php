@@ -13,7 +13,7 @@ class Mobile extends Component implements ComponentInterface
      */
     public function isValid($value): bool
     {
-        return false !== format_mobile($value);
+        return false !== format_tel($value);
     }
 
     /**
@@ -23,6 +23,6 @@ class Mobile extends Component implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        return format_mobile($value);
+        return format_tel($value);
     }
 }
