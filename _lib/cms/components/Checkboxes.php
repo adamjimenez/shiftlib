@@ -208,7 +208,7 @@ class Checkboxes extends Select implements ComponentInterface
         $isAssoc = is_assoc_array($this->vars['options'][$name]);
         foreach ($this->vars['options'][$name] as $k => $v) {
             $val = $isAssoc ? $k : $v;
-            $html[] = '<label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . (in_array($val, $_GET[$fieldName]) ? 'checked' : '') . '>&nbsp;' . $v . '</label><br>';
+            $html[] = '<label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . (is_array($_GET[$fieldName]) && in_array($val, $_GET[$fieldName]) ? 'checked' : '') . '>&nbsp;' . $v . '</label><br>';
         }
         $html[] = '</div>';
         return implode(' ', $html);

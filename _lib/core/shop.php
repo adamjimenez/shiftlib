@@ -276,6 +276,10 @@ class shop
             if ($v['options']) {
                 $values = json_decode($v['options']);
                 foreach ($values as $value) {
+                    if (!is_string($value)) {
+                        continue;
+                    }
+                    
                     $product_value = sql_query("SELECT * FROM product_values WHERE id = '" . escape($value) . "'", 1);
                     $product_option = sql_query("SELECT * FROM product_options WHERE id = '" . escape($product_value['product_option']) . "'", 1);
                     $this->basket[$i]['cost'] += $product_value['cost'];

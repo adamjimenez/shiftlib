@@ -15,8 +15,7 @@ class cms
     public $content = [];
 
     // hide these field types from the list view
-    public $hidden_columns = ['id',
-        'password'];
+    public $hidden_columns = ['password'];
 
     public $buttons = [];
 
@@ -522,13 +521,13 @@ class cms
 
             // create where string
             $where_str = '';
-            if (count($where)) {
+            if (is_array($where) && count($where)) {
                 $where_str = "WHERE \n" . implode(" AND \n", array_filter($where));
             }
 
             // create having string
             $having_str = '';
-            if (count($having)) {
+            if (is_array($having) && count($having)) {
                 $having_str = "HAVING \n" . implode(" AND \n", array_filter($having));
             }
 
@@ -556,7 +555,7 @@ class cms
                 }
             }
 
-            $cols = implode(', ', $cols);
+            $cols = implode(', ', (array)$cols);
 
             return [
                 'where_str' => $where_str,
@@ -609,7 +608,7 @@ class cms
             }
 
             // backcompat
-            $no_id = count($vars['fields'][$section]) && !$vars['fields'][$section]['id'];
+            $no_id = is_array($vars['fields'][$section]) && count($vars['fields'][$section]) && !$vars['fields'][$section]['id'];
 
             // select id column
             if ($fields['id'] && false === $no_id) {
@@ -619,7 +618,7 @@ class cms
             }
 
             // determine sort order
-            if ($conditions['s'] || $conditions['w']) {
+            if (is_array($conditions) && ($conditions['s'] || $conditions['w'])) {
                 $word = $conditions['w'] ?: $conditions['s'];
 
                 // find first text field
@@ -1207,7 +1206,7 @@ class cms
                         $label = $parts[2];
                     } else {
                         $type = $vars["fields"][$section][$name];
-                        $required = in_array($name, $vars["required"][$section]);
+                        $required = in_array($name, (array)$vars["required"][$section]);
                         $label = $vars["label"][$section][$name];
                     }
 

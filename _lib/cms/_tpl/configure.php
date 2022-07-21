@@ -362,6 +362,7 @@ if ($_POST['cmd']) {
                     sql_query($query);
                     break;
                 case 'get':
+                    
                     // get tables
                     $tables = [];
                     $rows = sql_query("SHOW TABLES FROM `" . escape($db_config['name']) . "`");
@@ -384,7 +385,7 @@ if ($_POST['cmd']) {
                                 $label = $parts[2];
                             } else {
                                 $type = $vars["fields"][$section][$name];
-                                $required = in_array($name, $vars["required"][$section]);
+                                $required = is_array($vars["required"][$section]) && in_array($name, $vars["required"][$section]);
                                 $label = $vars["label"][$section][$name];
                             }
 
@@ -438,13 +439,17 @@ if ($_POST['save']) {
                 // convert checkboxes to select multiple
                 $convert = false;
                 $db_field = null;
+                $old_field = [];
+                
                 if ($type === 'checkboxes') {
                     $type = 'select_multiple';
                     $convert = true;
                     $db_field = $this->form_to_db($type);
                     $action = 'ADD';
                     
-                    // todo check/ remove old checkboxes field if it exists
+                    // remove old checkboxes field if it exists
+                    sql_query("ALTER TABLE `" . escape($table) . "` DROP IF EXISTS `" . underscored($name) . "`");
+                    
                 } else {
                     $cols = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
 
@@ -452,6 +457,7 @@ if ($_POST['save']) {
                         if ($field['Field'] == underscored($name)) {
                             $db_field = $field['Type'];
                             $null = !$field['Null'] ? 'NOT NULL' : '';
+                            $old_field = $field;
                             break;
                         }
                     }
@@ -466,9 +472,39 @@ if ($_POST['save']) {
                 
                 $comment = $type . '|' . (in_array($name, $vars["required"][$section]) ? 1 : 0) . '|' . $vars['label'][$section][$name];
                 
+                if ($comment === $old_field['Comment']) {
+                    continue;
+                }
+                
                 $extra = ($name === 'id') ? 'AUTO_INCREMENT' : '';
                 
-                $query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
+                if ($old_field['Extra'] === 'VIRTUAL GENERATED') {
+                    $action = 'CHANGE';
+                    
+                    
+                    // get generated column definition
+                    $schema = sql_query("SELECT table_schema, column_name, generation_expression
+                        FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE 
+                            TABLE_NAME = 'orders' AND
+                            COLUMN_NAME = 'delivery_duration' AND
+                            TABLE_SCHEMA = '" . $db_config['name'] . "'
+                    ", 1);
+                    
+                    //var_dump($schema); exit;
+                    
+                    // ALTER TABLE `orders` CHANGE `delivery_duration` `delivery_duration` INT(11) AS (timestampdiff(MINUTE,`wanted_date`,`complete_date`)) VIRTUAL COMMENT 'int|0|';
+                    
+                    $extra = 'AS (' . $schema['generation_expression'] . ') VIRTUAL';
+                    
+                    $query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
+                    
+                } else {
+                    $query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
+                }
+                
+                //print_r($old_field);
+                //die($query);
                 
                 sql_query($query);
                 
@@ -627,7 +663,7 @@ $shop_config["include_vat"] = ' . str_to_bool($_POST['shop_config']['include_vat
     ';
 
     foreach ($_POST['options'] as $option) {
-        while (in_array($option['name'], $field_options)) {
+        while (in_array($option['name'], (array)$field_options)) {
             $index = array_search($option['name'], $field_options);
             unset($field_options[$index]);
         }
@@ -1183,7 +1219,7 @@ if ($release['tag_name'] != $this::VERSION) {
         var max_input_vars = '<?=ini_get('max_input_vars'); ?>';
     </script>
 
-    <script src="/_lib/cms/assets/js/configure.js"></script>
+    <script src="/_lib/cms/assets/js/configure.js?t=<?=time();?>"></script>
 
     <?php
 }

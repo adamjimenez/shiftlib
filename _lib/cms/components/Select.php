@@ -220,7 +220,9 @@ class Select extends Component implements ComponentInterface
                 throw new Exception('missing options for '. $name);
             }
             
-            reset($this->vars['fields'][$this->vars['options'][$name]]);
+            if (is_array($this->vars['fields'][$this->vars['options'][$name]])) {
+                reset($this->vars['fields'][$this->vars['options'][$name]]);
+            }
 
             $conditions = [];
             foreach ($this->auth->user['filters'][$this->vars['options'][$name]] as $k => $v) {

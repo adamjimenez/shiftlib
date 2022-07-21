@@ -50,7 +50,7 @@ class Radio extends Select implements ComponentInterface
         }
 
         if (is_assoc_array($this->vars['options'][$name])) {
-            return $this->vars['options'][$name][$value];
+            return $this->vars['options'][$name][$value] ?: '';
         }
 
         return '';

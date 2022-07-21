@@ -54,8 +54,7 @@ function populate_sections() {
 		if (vars.subsections && vars.subsections[value]) {
 			vars.subsections[value].forEach(function(item) {
 				count.subsections++;
-				var html = $('#sectionTemplate').html()
-				.split('{$count}').join('[' + value + '][]');
+				var html = $('#sectionTemplate').html().split('{$count}').join('[' + value + '][]');
 
 				var subsectionRow = $(html).appendTo(row.find('.subsections>.items'));
 				subsectionRow.find('input').val(item);
@@ -130,6 +129,7 @@ function load_tables(cb) {
 		'cmd': 'get'
 	},
 		function(data) {
+
 			$('.table').remove();
 
 			tables = data.tables;

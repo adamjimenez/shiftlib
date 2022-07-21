@@ -159,7 +159,7 @@ $qs = http_build_query($qs_arr);
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
                                     <?php
                                     foreach ($this->buttons as $k => $button) {
-                                        if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'view' == $button['page']) {
+                                        if (($this->section == $button['section'] || is_array($button['section']) && in_array($this->section, $button['section'])) && 'view' == $button['page']) {
                                             require('includes/button.php');
                                         }
                                     } ?>

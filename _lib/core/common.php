@@ -10,8 +10,9 @@ register_shutdown_function('shutdown');
 function camelCaseToSnakeCase(string $string): string
 {
     // Replace uppercase letters with underscore and lowercase
-    $func = create_function('$c', 'return "_" . strtolower($c[1]);');
-    $converted = preg_replace_callback('/([A-Z])/', $func, $string);
+    $converted = preg_replace_callback('/([A-Z])/', function ($c) {
+        return "_" . strtolower($c[1]);
+    }, $string);
 
     // Remove _ prefix and lowercase
     return ltrim(strtolower($converted), '_');
@@ -896,6 +897,9 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
             $body .= '<pre>' . $var_dump . '</pre>';
 
             if ($admin_email) {
+                // remove null character
+                $body = str_replace("\0", "", $body);
+                
                 mail($admin_email, 'PHP Error ' . $_SERVER['HTTP_HOST'], $body, $headers);
             }
 
@@ -1753,6 +1757,8 @@ function time_elapsed($ptime): ?string
             return $r . $str . (abs($r) > 1 ? '' : '');
         }
     }
+    
+    return '';
 }
 
 function timer($label='')
@@ -1881,7 +1887,7 @@ function wget($url, $post_array = null, $cache_expiration = 0)
         
     if ($post_array) {
         curl_setopt($ch, CURLOPT_POST, 1); 
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_array)); 
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query((array)$post_array)); 
     }
     
     // cookies
