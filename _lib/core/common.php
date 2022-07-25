@@ -1204,6 +1204,9 @@ function load_js($libs)
             case 'cms':
                 $deps['jquery'] = true;
             break;
+            case 'vuetify':
+                $deps['vue'] = true;
+            break;
         }
 
         $deps[$lib] = true;
@@ -1213,6 +1216,19 @@ function load_js($libs)
     if ($deps['google']) {
         ?>
 	<script src="//www.google.com/jsapi"></script>
+	<?php
+    }
+
+    if ($deps['vue']) {
+        ?>
+        <script src="https://unpkg.com/vue@3.2.37"></script>
+	<?php
+    }
+
+    if ($deps['vuetify']) {
+        ?>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/3.0.0-beta.5/vuetify.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/3.0.0-beta.5/vuetify.min.js"></script>
 	<?php
     }
 

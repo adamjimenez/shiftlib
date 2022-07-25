@@ -708,19 +708,8 @@ $vars["options"]["' . $field_option . '"] = "";
     unset($_POST);
 
     $_SESSION['message'] = 'Configuration Saved';
-    ?>
-    <div class="main-content-inner">
-        <div class="item">
-            <div class="col-lg-12 mt-1 p-0">
-                <div class="card">
-                    <div class="card-body">
-                        <a href="?option=configure">Back to configuration</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php
+    
+    reload();
 } else {
 
     // version check
@@ -749,22 +738,12 @@ if ($release['tag_name'] != $this::VERSION) {
     ?>
 
     <style>
-        #dropdowns .list select {
-            display: none;
-        }
-        #dropdowns .list textarea {
-            display: block;
-        }
-        #dropdowns select {
-            display: block;
-        }
-        #dropdowns textarea {
-            display: none;
-        }
         .toggle_section {
             cursor: pointer;
         }
     </style>
+
+    <div id="app">
 
     <div class="main-content-inner">
         <div class="item">
@@ -821,28 +800,131 @@ if ($release['tag_name'] != $this::VERSION) {
 
                                 <div class="tab-pane fade show active" id="tables" role="tabpanel" aria-labelledby="pills-tables-tab">
 
-                                    <div class="items m-0"></div>
+                                    <div class="items m-0">
+                                        
+                                        <div class="table item mb-3 hbox px-3" v-for="(fields, table) in tables" :index="table">
+                                            <div>
+                                                <span class="toggle_section px-1"><i class="fas fa-chevron-right"></i></span>
+                                            </div>
+                                            <div>
+                                                <div>
+                                                    <div class="table_name" style="display: inline-block; width: 200px;" @click="renameTable(table)">
+                                                        {{ table }}
+                                                    </div>
+                                                    <span class="delTable" @click="deleteTable(table)"><i class="fas fa-trash"></i></span>
+                                                </div>
+                                
+                                                <div class="settings" style="display:none;">
+                                                    <div class="fields">
+                                                        <div class="items">
+                                                            
+                                                            <div class="field item my-3 draggable hbox" v-for="field in fields">
+                                                                <div class="handle mx-2">
+                                                                    <i class="fas fa-square"></i>
+                                                                </div>
+                                                                <div class="flex">
+                                                                    <label class="field_name" @click="editField(field, table)">{{field.name}}</label>
+                                                                </div>
+                                                                <div>
+                                                                    <label class="label">{{field.label}}</label>
+                                                                </div>
+                                                                <div>
+                                                                    <label class="type px-3">{{field.type}}</label>
+                                                                </div>
+                                                                <div>
+                                                                    <label class="required">{{field.required > 0 ? 'required' : ''}}</label>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="delField ml-2" @click="delField(field.name, table)"><i class="fas fa-trash"></i></span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                        </div>
+                                                        <span class="addField" @click="addField(table)"><i class="fas fa-plus"></i></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
 
                                     <p class="mt-3">
-                                        <button class="btn btn-secondary addTable" type="button"><i class="fas fa-plus"></i></button>
+                                        <button class="btn btn-secondary addTable" type="button" @click="addTable"><i class="fas fa-plus"></i></button>
                                     </p>
 
                                 </div>
 
                                 <div class="tab-pane fade show" id="sections" role="tabpanel" aria-labelledby="pills-sections-tab">
 
-                                    <div class="items m-0"></div>
+                                    <div class="items m-0">
+
+                                        <div class="section item mb-3 draggableSections hbox" v-for="section in sections">
+                                            <div class="p-2">
+                                                <div class="handle" style="height:100%;">
+                                                    <i class="fas fa-square"></i>
+                                                </div>
+                                                <span class="toggle_section px-1"><i class="fas fa-chevron-right"></i></span>
+                                            </div>
+                                            <div class="flex">
+                                                <p>
+                                                    <input class="name" type="text" name="sections[]" :value="section" placeholder="Section name">
+                                                    <span class="p-1" @click="deleteSection(section)"><i class="fas fa-trash"></i></span>
+                                                </p>
+                                
+                                                <div class="settings" style="display:none;">
+                                                    <div class="subsections">
+                                                        <div class="items">
+                                                            <div class="hbox draggable p-2 item" v-for="subsection in subsections[section]"> 
+                                                                <div class="handle p-2">
+                                                                    <i class="fas fa-square"></i>
+                                                                </div>
+                                                                <div class="p-2">
+                                                                    <input class="subsection" :name="'sections[' + section + '][]'" :value="subsection">
+                                                                </div>
+                                                                <div class="p-2">
+                                                                    <span @click="deleteSubsection(subsection, section)"><i class="fas fa-trash"></i></span>
+                                                                </div>
+                                                            </div>                                                            
+                                                        </div>
+                                                        <span class="btn" @click="addSubsection(section)"><i class="fas fa-plus"></i></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
 
                                     <p class="mt-3">
-                                        <button class="btn btn-secondary addSection" type="button"><i class="fas fa-plus"></i></button>
+                                        <button class="btn btn-secondary addSection" type="button" @click="addSection"><i class="fas fa-plus"></i></button>
                                     </p>
 
                                 </div>
 
                                 <div class="tab-pane fade" id="dropdowns" role="tabpanel" aria-labelledby="pills-dropdowns-tab">
 
-                                    <div class="items m-0"></div>
-                                    <span class="btn btn-secondary addDropdown"><i class="fas fa-plus"></i></span>
+                                    <div class="items m-0" v-for="option in options" :index="option">
+                                        
+                                        <div class="item mb-3 list hbox" style="max-width: 600px;">
+                                            <div>
+                                                <input class="name" type="text" :name="'options[' + option.name + '][name]'" v-model="option.name">
+                                            </div>
+                                            <div class="px-3 flex">
+                                                <textarea v-if="option.list" cols="30" type="text" :name="'options[' + option.name + '][list]'" class="autosize" v-model="option.value"></textarea>
+                                                
+                                                <select v-else class="section" :name="'options[' + option.name + '][section]'" v-model="option.value">
+                                                    <template v-for="(fields, table) in tables" :index="table">
+                                                        <option :value="table">{{table}}</option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <button class="btn" type="button" @click="toggleOption(option)"> <i class="fas fa-list"></i></button>
+                                                <button class="btn" type="button" @click="deleteOption(option)"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </div>                                        
+                                        
+                                    </div>
+                                    <span class="btn btn-secondary" @click="addOption"><i class="fas fa-plus"></i></span>
 
                                 </div>
 
@@ -981,116 +1063,6 @@ if ($release['tag_name'] != $this::VERSION) {
         </div>
     </div>
 
-    <template id="tableTemplate">
-
-        <div class="table item mb-3 hbox px-3">
-            <div>
-                <span class="toggle_section px-1"><i class="fas fa-chevron-right"></i></span>
-            </div>
-            <div>
-                <div>
-                    <div class="table_name" style="display: inline-block; width: 200px;"></div>
-                    <span class="delTable"><i class="fas fa-trash"></i></span>
-                </div>
-
-                <div class="settings" style="display:none;">
-                    <div class="fields">
-                        <div class="items"></div>
-                        <span class="addField"><i class="fas fa-plus"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </template>
-
-    <template id="fieldTemplate">
-
-        <div class="field item my-3 draggable hbox">
-            <div class="handle mx-2">
-                <i class="fas fa-square"></i>
-            </div>
-            <div class="flex">
-                <label class="field_name"></label>
-            </div>
-            <div>
-                <label class="label"></label>
-            </div>
-            <div>
-                <label class="type"></label>
-            </div>
-            <div>
-                <label class="required"></label>
-            </div>
-            <div>
-                <span class="delField ml-2"><i class="fas fa-trash"></i></span>
-            </div>
-        </div>
-
-    </template>
-
-    <template id="sectionTemplate">
-
-        <div class="section item mb-3 draggableSections hbox">
-            <div class="p-2">
-                <div class="handle" style="height:100%;">
-                    <i class="fas fa-square"></i>
-                </div>
-                <span class="toggle_section px-1"><i class="fas fa-chevron-right"></i></span>
-            </div>
-            <div class="flex">
-                <p>
-                    <input class="name" type="text" name="sections{$count}" value="" placeholder="Section name">
-                    <span class="del_row p-1"><i class="fas fa-trash"></i></span>
-                </p>
-
-                <div class="settings" style="display:none;">
-                    <div class="subsections">
-                        <div class="items"></div>
-                        <span class="addSubsection" data-section_id="{$count}"><span class="btn addDropdown"><i class="fas fa-plus"></i></span></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </template>
-
-    <?php /*
-    <template id="subsectionTemplate">
-
-        <div class="hbox draggable p-2 item">
-            <div class="handle p-2">
-                <i class="fas fa-square"></i>
-            </div>
-            <div class="p-2">
-                <input class="subsection" name="vars[subsections][{$section_id}][]">
-            </div>
-            <div class="p-2">
-                <span class="del_row"><i class="fas fa-trash"></i></span>
-            </div>
-        </div>
-
-    </template>
-    */ ?>
-
-    <template id="dropdownTemplate">
-
-        <div class="item mb-3 list">
-            <div class="col-sm-5">
-                <input class="name" type="text" name="options[{$count}][name]">
-            </div>
-            <div class="col-sm-5">
-                <textarea cols="30" type="text" name="options[{$count}][list]" class="autosize"></textarea>
-                <select class="section" name="options[{$count}][section]" style="display: none;" disabled></select>
-            </div>
-            <div class="col-sm-1">
-                <span class="toggle_list_type"> <i class="fas fa-list"></i></span>
-                <span class="del_row"><i class="fas fa-trash"></i></span>
-            </div>
-        </div>
-
-    </template>
-
     <div class="modal renameTable" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -1109,7 +1081,7 @@ if ($release['tag_name'] != $this::VERSION) {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary save">Save</button>
+                        <button type="button" class="btn btn-primary save" @click="saveTable()">Save</button>
                     </div>
                 </form>
 
@@ -1149,7 +1121,7 @@ if ($release['tag_name'] != $this::VERSION) {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary save">Save</button>
+                        <button type="button" class="btn btn-primary save" @click="saveField()">Save</button>
                     </div>
                 </form>
 
@@ -1170,12 +1142,16 @@ if ($release['tag_name'] != $this::VERSION) {
                 <form>
                     <div class="modal-body">
                         <div class="form-group">
-                            <select name="section"></select>
+                            <select name="section">
+                                <template v-for="(fields, table) in tables" :index="table">
+                                    <option :value="table">{{table}}</option>
+                                </template>
+                            </select>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary save">Save</button>
+                        <button type="button" class="btn btn-primary save" @click="saveSection()">Save</button>
                     </div>
                 </form>
 
@@ -1198,24 +1174,29 @@ if ($release['tag_name'] != $this::VERSION) {
                     
                     <div class="modal-body">
                         <div class="form-group">
-                            <select name="subsection"></select>
+                            <select name="subsection">
+                                <template v-for="(fields, table) in tables" :index="table">
+                                    <option :value="table">{{table}}</option>
+                                </template>
+                            </select>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary save">Save</button>
+                        <button type="button" class="btn btn-primary save" @click="saveSubsection()">Save</button>
                     </div>
                 </form>
 
             </div>
         </div>
     </div>
+    
+    </div>
 
     <script>
         var section_templates = <?=json_encode($section_templates); ?>;
         var count = <?=json_encode($count); ?>;
         var vars = <?=json_encode($vars); ?>;
-        var tables = <?=json_encode($tables); ?>;
         var max_input_vars = '<?=ini_get('max_input_vars'); ?>';
     </script>
 

@@ -129,15 +129,15 @@ class cms
 
         switch ($type) {
             case 'id':
-                case 'separator':
-                    break;
-                case 'read':
-                    case 'deleted':
-                        return 'TINYINT(1)';
-                        break;
-                    default:
-                        return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
-                        break;
+            case 'separator':
+                break;
+            case 'read':
+            case 'deleted':
+                return 'TINYINT(1)';
+                break;
+            default:
+                return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
+                break;
             }
         }
 
