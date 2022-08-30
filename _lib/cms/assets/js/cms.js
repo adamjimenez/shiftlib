@@ -201,8 +201,7 @@ function initForms()
                     }
                     
                     $('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
-                    
-                    $(this).trigger('validationError');
+                    $(form).trigger('validationError');
 
                 } else {
                     //submit form
@@ -484,6 +483,7 @@ function initForms()
         $('ul.files').sortable();
         
         $('.checkboxes').sortable({
+            handle: ".handle",
             axis: 'y',
         });
     }

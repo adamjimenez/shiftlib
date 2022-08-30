@@ -127,7 +127,7 @@ class Files extends File implements ComponentInterface
 
             //clean up old files
             foreach ($oldFiles as $old_file) {
-                $fileId = (int) $old_file['id'];
+                $fileId = (int)$old_file['id'];
 
                 if (!in_array($fileId, $files)) {
                     sql_query("DELETE FROM files

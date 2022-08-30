@@ -26,7 +26,7 @@ class SelectParent extends Component implements ComponentInterface
     {
         $label = $this->cms->get_option_label($this->cms->section);
         
-        $rows = sql_query("SELECT id,`$label` FROM `" . $this->cms->table . "` ORDER BY `$label`");
+        $rows = sql_query("SELECT id, `" . underscored($fieldName) . "` FROM `" . $this->cms->table . "` ORDER BY `$fieldName`");
 
         $parents = [];
         foreach ($rows as $row) {
@@ -54,7 +54,7 @@ class SelectParent extends Component implements ComponentInterface
     {
         $field = $this->cms->get_option_label($this->cms->section);
 
-        $row = sql_query("SELECT id,`$field` FROM `" . $this->cms->table . "` WHERE id='" . escape($value) . "' ORDER BY `$field`", 1);
+        $row = sql_query("SELECT id, `" . underscored($field) . "` FROM `" . $this->cms->table . "` WHERE id='" . escape($value) . "' ORDER BY `" . underscored($field) . "`", 1);
 
         return '<a href="?option=' . escape($this->cms->section) . '&view=true&id=' . $value . '">' . ($row[$field]) . '</a>';
     }

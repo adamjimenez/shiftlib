@@ -96,26 +96,28 @@ const app = Vue.createApp({
 	},
 	methods: {
 		cmd: async function(data, cb) {
-			try {
-				let formData;
-				
-				if (data.get) {
-					formData = data;
-				} else {
-					formData = new FormData();
-					
-					for (const [key, value] of Object.entries(data)) {
-						formData.append(key, value);	
-					};
-				}
+			let formData;
 			
-				const response = await fetch(
-					location.href, {
-						method: "post",
-						body: formData,
-					}
-				);
-				const result = await response.json();
+			if (data.get) {
+				formData = data;
+			} else {
+				formData = new FormData();
+				
+				for (const [key, value] of Object.entries(data)) {
+					formData.append(key, value);	
+				};
+			}
+		
+			const response = await fetch(
+				location.href, {
+					method: "post",
+					body: formData,
+				}
+			);
+			const text = await response.text();
+				
+			try {
+				const result = JSON.parse(text);
 				
 				if (false === result.success) {
 					alert(result.error);
@@ -125,7 +127,8 @@ const app = Vue.createApp({
 					cb(result);
 				}
 			} catch (error) {
-				console.log("error", error);
+				console.log("error", text);
+				alert(text);
 			}
 		},
 		fetchData: async function() {
@@ -311,10 +314,10 @@ const app = Vue.createApp({
 				list = true;
 				
 				for (let [k, v] of Object.entries(value)) {
-					val += k + '=' + v + "\n";
+					val += k.replace('#', '') + '=' + v + "\n";
 				}
 			} else {
-				val = value;
+				val = value.replaceAll(' ', '_');
 			}
 				
 			val = val.trim();

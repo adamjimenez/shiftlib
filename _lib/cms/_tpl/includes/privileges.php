@@ -3,10 +3,9 @@ $privilege_options = [1 => 'Read', 2 => 'Write', 3 => 'Full'];
 
 //save privileges
 if (
-    1 == $auth->user['admin'] &&
-    underscored($_GET['option']) == $auth->table &&
-    (2 == $content['admin'] || 3 == $content['admin']) &&
-    is_array($_POST['privileges'])
+	isset($_POST['privileges']) &&
+    isset($has_privileges) &&
+    $has_privileges
 ) {
     sql_query("DELETE FROM cms_privileges WHERE user='" . $this->id . "'");
 
@@ -22,14 +21,14 @@ if (
 
 //privileges
 if (
-    1 == $auth->user['admin'] &&
-    underscored($_GET['option']) == $auth->table &&
-    1 < $content['admin']
+    isset($has_privileges) &&
+    $has_privileges
  ) {
     $rows = sql_query("SELECT * FROM cms_privileges WHERE user='" . $this->id . "'");
     foreach ($rows as $row) {
         $privileges[$row['section']] = $row;
-    } 
+    }
+    
 ?>
 <form method="post">
 <table class="box" width="100%">
@@ -45,7 +44,26 @@ if (
 	<th>Filter</th>
 </tr>
 <?php
-    foreach ($vars['fields'] as $section => $fields) {
+	global $db_config;
+	
+	$tables = [];
+	if ($vars['fields']) {
+		$tables = $vars['fields'];
+	} else {
+		$rows = sql_query("SHOW TABLES FROM `" . escape($db_config['name']) . "`");
+		
+		$tables = $vars['sections'];
+		
+		foreach($rows as $row) {
+			$tables[] = spaced(current($row));
+		}
+		
+		$tables = array_unique($tables);
+		sort($tables);
+	}
+	
+    foreach ($tables as $table) {
+    	$section = spaced($table);
         ?>
 <tr>
 	<td><?=$section; ?></td>

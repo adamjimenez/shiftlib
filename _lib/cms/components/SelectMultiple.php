@@ -29,8 +29,6 @@ class SelectMultiple extends Select implements ComponentInterface
         /** @var string $name */
         $name = spaced($fieldName);
 
-        $value = json_decode($value, true);
-
         // get options from a section
         if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             $this->vars['options'][$name] = $this->get_options($name, false);
@@ -43,7 +41,7 @@ class SelectMultiple extends Select implements ComponentInterface
 
         foreach ($this->vars['options'][$name] as $k => $v) {
             $val = $isAssoc ? $k : $v;
-            $parts[] = '<li><label><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, $value) ? 'checked="checked"' : '') . '>&nbsp;<span>' . $v . '</span></label></li>';
+            $parts[] = '<li><label><div class="handle">&nbsp;</div><input type="checkbox" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . ' ' . (in_array($val, (array)$value) ? 'checked="checked"' : '') . '>&nbsp;<span>' . $v . '</span></label></li>';
         }
 
         $parts[] = '</ul>';
@@ -58,10 +56,8 @@ class SelectMultiple extends Select implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-    	$value = json_decode($value, true);
-    	
         $items = [];
-        if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
+        if (false === is_array($this->vars['options'][$name]) && $this->vars['options'][$name]) {
            	$table = underscored($this->vars['options'][$name]);
 			$fields = $this->cms->get_fields($this->vars['options'][$name]);
 			
@@ -73,7 +69,7 @@ class SelectMultiple extends Select implements ComponentInterface
 					break;
 				}
 			}
-
+			
             foreach ($value as $key) {
             	$row = sql_query("SELECT `$col` FROM $table WHERE id = '" . (int)$key . "'", 1);
             	
@@ -82,6 +78,9 @@ class SelectMultiple extends Select implements ComponentInterface
         } else {
             $isAssoc = is_assoc_array($this->vars['options'][$name]);
             foreach ($value as $key) {
+                //var_dump($key);
+                //var_dump($value);
+                
                 $items[] = $isAssoc ? $this->vars['options'][$name][$key] : $key;
             }
         }
@@ -113,10 +112,14 @@ class SelectMultiple extends Select implements ComponentInterface
     {
         $conditions = [];
         
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+        
         foreach($value as $val) {
         	$conditions[] = 'JSON_SEARCH(' . $tablePrefix . $fieldName . ", 'all', '" . escape($val) . "') IS NOT NULL";
         }
-        
+
         return '(
         	' . implode(" AND\n", $conditions) . '
         )';

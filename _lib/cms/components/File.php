@@ -70,7 +70,7 @@ class File extends Component implements ComponentInterface
             
             $value .= '<a href="' . $previewUrl. '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
         }
-        return $value;
+        return $value ?: '';
     }
     
     public function processUpload($status, $name, $tmp, $type) {

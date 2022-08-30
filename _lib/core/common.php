@@ -768,7 +768,7 @@ function email_template($email, $subject = null, $reps = null)
             $body = str_replace('{$' . $k . '}', $v, $body);
             
             // replace vars in links
-            $body = str_replace(urlencode('{$' . $k . '}'), str_replace('https://' . $_SERVER['HTTP_HOST'], '', $v), $body);
+            $body = str_replace(urlencode('{$' . $k . '}'), $v, $body);
         }
     }
 
@@ -1269,7 +1269,7 @@ function load_js($libs)
     if ($deps['bootstrap']) {
         $version = '4.4.1'; ?>
 	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
-		<script src="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js" async></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js"></script>
 	<?php
     }
 
@@ -1284,6 +1284,12 @@ function load_js($libs)
     if ($deps['fontawesome']) {
         ?>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
+	<?php
+    }
+
+    if ($deps['fontawesome6']) {
+        ?>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 	<?php
     }
 
@@ -1876,11 +1882,12 @@ function validate($fields, $required, $array = true)
 
 function wget($url, $post_array = null, $cache_expiration = 0)
 {
+    $cache_name = md5($url.json_encode($post_array));
+    
     if ($cache_expiration) {
         $memcache = new Memcached;
         $memcache->addServer("localhost", 11211) or trigger_error('Could not connect', E_USER_ERROR);
-        $result = $memcache->get(md5($url));
-        
+        $result = $memcache->get($cache_name);
         if ($result) {
             return $result;
         }
@@ -1914,7 +1921,7 @@ function wget($url, $post_array = null, $cache_expiration = 0)
     curl_close($ch);
     
     if ($cache_expiration) {
-        $memcache->set(md5($url), $result, $cache_expiration) or trigger_error('Failed to save data at the server', E_USER_ERROR);
+        $memcache->set($cache_name, $result, $cache_expiration) or trigger_error('Failed to save data at the server', E_USER_ERROR);
     }
     
     return $result;
@@ -1958,4 +1965,31 @@ function video_info($url): array
     }
 
     return $data;
+}
+
+function finish_request() {
+    // Buffer all upcoming output...
+    if (ob_get_level() !== 0) {
+        ob_end_clean();
+    }
+    ob_start();
+
+    // Get the size of the output.
+    $size = ob_get_length();
+
+    // Disable compression (in case content length is compressed).
+    header("Content-Encoding: none");
+
+    // Set the content length of the response.
+    header("Content-Length: {$size}");
+
+    // Close the connection.
+    header("Connection: close");
+
+    // Flush all output.
+    ob_end_flush();
+    ob_flush();
+    flush();
+    
+    if(session_id()) session_write_close();
 }

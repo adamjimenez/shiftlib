@@ -46,7 +46,8 @@ if (isset($_POST['save'])) {
         print 1;
         exit;
     }
-    if (1 == $auth->user['admin'] or 2 == $auth->user['privileges'][$this->section]) {
+    
+    if (1 == $auth->user['admin'] or $auth->user['privileges'][$this->section] >= 2) {
         $id = $this->save();
 
         if ($_POST['add_another']) {

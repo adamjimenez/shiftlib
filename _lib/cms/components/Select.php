@@ -28,7 +28,7 @@ class Select extends Component implements ComponentInterface
         $name = spaced($fieldName);
 
         $parts = [];
-        if (false === is_array($this->vars['options'][$name]) and in_array('parent', $this->vars['fields'][$this->vars['options'][$name]])) {
+        if (false === is_array($this->vars['options'][$name]) and in_array('parent', (array)$this->vars['fields'][$this->vars['options'][$name]])) {
             $parts[] = '<div class="chained" data-name="' . $fieldName . '" data-section="' . $this->vars['options'][$name] . '" data-value="' . $value . '"></div>';
         } else {
             if (false === is_array($this->vars['options'][$name])) {
@@ -171,7 +171,7 @@ class Select extends Component implements ComponentInterface
             if ('0' == $value) {
                 $value = '';
             } else {
-                $value = '<a href="?option=' . escape($this->vars['options'][$name]) . '&view=true&id=' . $value . '">' . $this->cms->content[underscored($name) . '_label'] . '</a>';
+                $value = '<a href="?option=' . escape(spaced($this->vars['options'][$name])) . '&view=true&id=' . $value . '">' . $this->cms->content[underscored($name) . '_label'] ?: '[blank]' . '</a>';
             }
         } else {
             if (is_assoc_array($this->vars['options'][$name])) {

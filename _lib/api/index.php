@@ -50,12 +50,18 @@ switch ($_GET['cmd']) {
         $offset = (int)$_GET['offset'] ?: 0;
         $length = (int)$_GET['length'] ?: 20;
         
-        if ($_GET['section'] && $_GET['section']) {
-            $response['data'] = sql_query("SELECT *,L.date FROM cms_logs L
+        if ($_GET['section']) {
+            if ($_GET['section'] === 'users') {
+                $where_str = "user='" . escape($_GET['id']) . "'";
+            } else {
+                $where_str = $_GET['id'] ? "item='" . escape($_GET['id']) . "' AND " : '';
+                $where_str .= "section='" . escape($_GET['section']) . "'";
+            }
+            
+            $response['data'] = sql_query("SELECT *, L.date FROM cms_logs L
             	LEFT JOIN users U ON L.user=U.id
             	WHERE
-            		section='" . escape($_GET['section']) . "' AND
-            		item='" . escape($_GET['id']) . "'
+            	    $where_str
             	ORDER BY L.id DESC
             	LIMIT " . $offset . ", " . $length . "
             ");
@@ -469,7 +475,7 @@ switch ($_GET['cmd']) {
         array_unshift($cols, 'id');
         
         // sort order
-        if ($fields['position']) {
+        if ($fields['position'] && $fields['position']['type'] === 'position') {
             $order = 'position';
         } else {
             $order = underscored($cols[($_POST['order'][0]['column'] - 2)]) ?: 'id';

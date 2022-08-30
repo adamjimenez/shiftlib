@@ -1,7 +1,7 @@
 <?php
 $fields = $this->get_fields($this->section);
 
-$sortable = isset($fields['position']);
+$sortable = isset($fields['position']) && $fields['position']['type'] === 'position';
 ?>
 
 <!-- table start -->
@@ -58,14 +58,20 @@ $order = 2;
         font-weight: bold;
         cursor: pointer;
     }
+    
+    .bold {
+        font-weight: bold;
+    }
 </style>
-
 
 <script>
     // used for import
-    fields['<?=$this->section; ?>'] = <?=json_encode(array_keys($fields)); ?>;
+    table_config['<?=$this->section; ?>'] = {
+        fields: <?=json_encode(array_keys($fields)); ?>,
+        add_link: '?option=<?=$this->section; ?>&edit=1<?=$qs ? '&' . $qs : ''; ?>',
+        read_field: '<?=array_search('read', array_keys($fields));?>'
+    }
 </script>
-
 
 <script>
 
@@ -76,7 +82,8 @@ $order = 2;
             text: '<i class="fas fa-plus"></i> Add',
             className: 'btn-primary',
             action: function (e, dt, node, config) {
-                location.href = '?option=<?=$this->section; ?>&edit=1<?=$qs ? '&' . $qs : ''; ?>';
+                var section = $(this.table().container()).closest('form').children('[name="section"]').val()
+                location.href = table_config[section].add_link;
             }
         }, {
             extend: 'colvis',
@@ -98,7 +105,8 @@ $order = 2;
             titleAttr: 'Import',
             text: '<i class="fas fa-file-import"></i>',
             action: function (e, dt, node, config) {
-                $('#importSection').val('<?=$this->section; ?>');
+                var section = $(this.table().container()).closest('form').children('[name="section"]').val()
+                $('#importSection').val(section);
                 $('#importModal').modal('show');
             }
         }, {
@@ -210,6 +218,11 @@ $order = 2;
 
             "stateSave": true,
             "stateDuration": 60 * 60 * 24 * 365,
+            "stateLoaded": function (settings, data) {
+                var table = $(this).DataTable();
+                table.page(1).draw(false);
+                table.search('').draw();
+            },
 
             "serverSide": true,
             //"searching": false,
@@ -230,6 +243,16 @@ $order = 2;
                     type: 'column',
                     target: 2
                 }
+            },
+            fnRowCallback: function(nRow, aData, iDisplayIndex) {
+                var section = $(this[0]).closest('form').children('[name="section"]').val();
+
+                if (table_config[section].read_field && aData[parseInt(table_config[section].read_field) + 3] == '0') {
+                    $('td', nRow).each(function(){
+                        $(this).addClass('bold');
+                    });
+                }
+                return nRow;
             }
         });
 

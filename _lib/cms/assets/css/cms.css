@@ -1,6 +1,11 @@
-.handle {
+.handle{
+    display: inline-block;
 	cursor: move;
-	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 1px solid #000000;
+	background:#ccc;
+	margin-right: 10px;
 }
 
 .logo a {

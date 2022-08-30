@@ -239,6 +239,23 @@ function str_to_bool($str): string
     return 'false';
 }
 
+function get_db_field($table, $field_name) {
+    $old_field = [];
+    
+    $cols = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
+
+    foreach ($cols as $field) {
+        if ($field['Field'] == underscored($field_name)) {
+            $db_field = $field['Type'];
+            $null = $field['Null'] === 'NO' ? 'NOT NULL' : '';
+            $old_field = $field;
+            break;
+        }
+    }
+    
+    return $old_field;
+}
+
 // generate field list from the components dir
 $field_opts = [];
 foreach (glob(__DIR__ . '/../components/*.php') as $filename) {
@@ -249,14 +266,6 @@ foreach (glob(__DIR__ . '/../components/*.php') as $filename) {
 //check config file
 global $root_folder;
 $config_file = $root_folder . '/_inc/config.php';
-
-if (false === file_exists($config_file)) {
-    die('Error: config file does not exist: ' . $config_file);
-}
-
-if (!is_writable($config_file)) {
-    die('Error: config file is not writable: ' . $config_file);
-}
 
 if ($_POST['cmd']) {
 
@@ -305,14 +314,16 @@ if ($_POST['cmd']) {
                     if (!$_POST['table']) {
                         throw new Exception('Missing field');
                     }
+                    
+                    $old_field = get_db_field($_POST['table'], $_POST['field']);
 
-                    $db_field = $this->form_to_db($_POST['type']);
-
+                    $db_field = $old_field['Type'] ?: $this->form_to_db($_POST['type']);
                     $comment = $_POST['type'] . '|' . ($_POST['required'] ? 1 : 0) . '|' . $_POST['label'];
-
+                    $null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
                     $action = $_POST['cmd'] == 'add_field' ? 'ADD' : 'CHANGE `' . underscored($_POST['field']) . '`';
+                    $collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' :  '';
 
-                    $query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($_POST['name']) . '` ' . $db_field . " NOT NULL COMMENT '" . $comment . "'";
+                    $query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($_POST['name']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " COMMENT '" . $comment . "' ";
 
                     sql_query($query);
                     break;
@@ -325,22 +336,16 @@ if ($_POST['cmd']) {
                         throw new Exception('Missing field');
                     }
 
-                    $table = $_POST['table'];
+                    $old_field = get_db_field($_POST['table'], $_POST['field']);
+                    
+                    $db_field = $old_field['Type'];
+                    $comment = $old_field['Comment'];
+                    $null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
+                    $action = 'MODIFY';
+                    $collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' :  '';
+                    $default = $old_field['Default'] ? 'DEFAULT ' . $old_field['Default'] : '';
 
-                    $fields = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
-
-                    //print_r($fields);
-
-                    foreach ($fields as $field) {
-                        if ($field['Field'] == $_POST['field']) {
-                            $db_field = $field['Type'];
-                            $comment = $field['Comment'];
-                            $null = !$field['Null'] ? 'NOT NULL' : '';
-                            break;
-                        }
-                    }
-
-                    $query = "ALTER TABLE `" . escape($_POST['table']) . '` MODIFY `' . underscored($_POST['field']) . '` ' . $db_field . " " . $null . " COMMENT '" . $comment . "' " . ($_POST['after'] ? ' AFTER `' . $_POST['after'] . '`' : 'FIRST');
+                    $query = "ALTER TABLE `" . escape($_POST['table']) . '` ' . $action . ' `' . underscored($_POST['field']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $default . " COMMENT '" . $comment . "' " . ($_POST['after'] ? ' AFTER `' . $_POST['after'] . '`' : 'FIRST');
 
                     sql_query($query);
                     break;
@@ -412,6 +417,14 @@ if ($_POST['cmd']) {
 }
 
 if ($_POST['save']) {
+    if (false === file_exists($config_file)) {
+        die('Error: config file does not exist: ' . $config_file);
+    }
+    
+    if (!is_writable($config_file)) {
+        die('Error: config file is not writable: ' . $config_file);
+    }
+    
     if (!$_POST['last']) {
         die('Error: form submission incomplete');
     }
@@ -420,6 +433,7 @@ if ($_POST['save']) {
         die('Error: changes since last modified');
     }
     
+    // DATABASE UPGRADE
     if ($vars['fields']) {
         // go through fields and update field comments
         foreach($vars['fields'] as $section => $fields) {
@@ -438,7 +452,9 @@ if ($_POST['save']) {
         
                 // convert checkboxes to select multiple
                 $convert = false;
-                $db_field = null;
+                $db_field = '';
+                $null = '';
+                $collation = '';
                 $old_field = [];
                 
                 if ($type === 'checkboxes') {
@@ -449,18 +465,10 @@ if ($_POST['save']) {
                     
                     // remove old checkboxes field if it exists
                     sql_query("ALTER TABLE `" . escape($table) . "` DROP IF EXISTS `" . underscored($name) . "`");
-                    
                 } else {
-                    $cols = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
-
-                    foreach ($cols as $field) {
-                        if ($field['Field'] == underscored($name)) {
-                            $db_field = $field['Type'];
-                            $null = !$field['Null'] ? 'NOT NULL' : '';
-                            $old_field = $field;
-                            break;
-                        }
-                    }
+                    $old_field = get_db_field($table, $name);
+                    $db_field = $old_field['Type'];
+                    $null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
                     
                 	// skip if field does not exist
 	                if (!$db_field) {
@@ -481,7 +489,6 @@ if ($_POST['save']) {
                 if ($old_field['Extra'] === 'VIRTUAL GENERATED') {
                     $action = 'CHANGE';
                     
-                    
                     // get generated column definition
                     $schema = sql_query("SELECT table_schema, column_name, generation_expression
                         FROM INFORMATION_SCHEMA.COLUMNS
@@ -500,11 +507,14 @@ if ($_POST['save']) {
                     $query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
                     
                 } else {
-                    $query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
+                    
+                    $collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' :  '';
+                    
+                    $query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $extra . " COMMENT '" . $comment . "'";
                 }
                 
                 //print_r($old_field);
-                //die($query);
+                //print($query);
                 
                 sql_query($query);
                 
@@ -514,18 +524,18 @@ if ($_POST['save']) {
                         $vals = sql_query("SELECT value FROM cms_multiple_select WHERE
                             section = '" . $section . "' AND
                             field = '" . $name . "' AND
-                            item = '" . $rpw['id'] . "'
+                            item = '" . $row['id'] . "'
                         ");
                         
                         $data = [];
                         foreach($vals as $val) {
-                            $data[] = $val;
+                            $data[] = $val['value'];
                         }
                         
                         sql_query("UPDATE `" . escape($table) . "` SET
                             `" . underscored($name) . "` = '".escape(json_encode($data))."'
                             WHERE
-                                id = '". $rpw['id'] ."'
+                                id = '". $row['id'] ."'
                         ");
                     }
                 }
@@ -703,7 +713,9 @@ $vars["options"]["' . $field_option . '"] = "";
     file_put_contents($config_file, $config);
     
     // clear config.php cache
-    opcache_reset();
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+    }
 
     unset($_POST);
 
@@ -734,6 +746,20 @@ if ($release['tag_name'] != $this::VERSION) {
     $count['sections'] = 0;
     $count['subsections'] = 0;
     $count['options'] = 0;
+
+$vars2 = $vars;
+
+// preserve key order
+foreach($vars2['options'] as $k => $v) {
+    if (is_assoc_array($v)) {
+        $arr = [];
+        foreach ($v as $k2 => $v2) {
+            $arr[$k2 . '#'] = $v2;
+        }
+        
+        $vars2['options'][$k] = $arr;
+    }
+}
 
     ?>
 
@@ -1196,7 +1222,7 @@ if ($release['tag_name'] != $this::VERSION) {
     <script>
         var section_templates = <?=json_encode($section_templates); ?>;
         var count = <?=json_encode($count); ?>;
-        var vars = <?=json_encode($vars); ?>;
+        var vars = <?=json_encode($vars2); ?>;
         var max_input_vars = '<?=ini_get('max_input_vars'); ?>';
     </script>
 

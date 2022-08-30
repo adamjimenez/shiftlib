@@ -235,6 +235,10 @@ class auth
         }
         
         $this->initiated = true;
+        
+        if ($config['callback']) {
+            $config['callback']($this);
+        }
     }
     
     private function get_login_str() 
@@ -288,10 +292,11 @@ class auth
                 ]
             ]
         ];
-            
+
         // the selected provider
         $provider_name = $_GET['provider'] ?: $_SESSION['provider'];
         $provider_name = $_GET['hauth_start'] ?: $provider_name;
+        $provider_name = $_GET['hauth_done'] ?: $provider_name;
     
         // initialize Hybrid_Auth with a given file
         $hybridauth = new Hybridauth\Hybridauth($config);
@@ -304,12 +309,23 @@ class auth
                 $_SESSION['request'] = $_GET['u'];
             }
             
-            // try to authenticate with the selected provider
-            $adapter = $hybridauth->authenticate($provider_name);
+            $adapter = $hybridauth->getAdapter($provider_name);
+
+            // check if we have the token from native app
+            if ($_GET['idToken']) {
+                $user_profile = json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $_GET['idToken'])[1]))));
+            } else {
+                if ($_GET['accessToken']) {
+                    $adapter->setAccessToken(['access_token' => $_GET['accessToken']]);
+                } else {
+                    // try to authenticate with the selected provider
+                    $adapter = $hybridauth->authenticate($provider_name);
+                }
+                
+                // then grab the user profile
+                $user_profile = $adapter->getUserProfile();
+            }
             
-            // then grab the user profile
-            $user_profile = $adapter->getUserProfile();
-        
             $email = $user_profile->email or die('missing email');
             
             // find user
@@ -513,7 +529,9 @@ class auth
     
             $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/';
             
-            if ($vars["fields"]["users"]['email_verified']) {
+            $fields = $cms->get_fields('users');
+            
+            if ($fields['email_verified']) {
                 //activation code
                 $code = substr(md5(rand(0, 10000)), 0, 10);
     
@@ -567,14 +585,14 @@ class auth
      */
     public function forgot_password()
     {
-        global $request, $vars;
+        global $request, $vars, $cms;
         
         $result = [];
         $data = $_POST;
         
         if ($_GET['code']) {
             //check code
-            $user = sql_query("SELECT user FROM cms_activation
+            $cms_activation = sql_query("SELECT id, user FROM cms_activation
                 WHERE
                     code = '" . escape($_GET['code']) . "' AND
                     user = '" . escape($_GET['user']) . "' AND
@@ -582,7 +600,7 @@ class auth
                 LIMIT 1
             ", 1);
         
-            if ($user and isset($data['reset_password'])) {
+            if ($cms_activation and isset($data['reset_password'])) {
                 //check fields are completed
                 $errors = [];
         
@@ -609,24 +627,28 @@ class auth
                 sql_query("UPDATE users SET
                     password = '" . escape($hash) . "'
                     WHERE
-                        id='" . escape($user['user']) . "'
+                        id='" . escape($cms_activation['user']) . "'
                     LIMIT 1
                 ");
                 
-                if ($vars["fields"]["users"]['email_verified']) {
+                $fields = $cms->get_fields('users');
+                if ($fields['email_verified']) {
+                    // fix me
                     sql_query("UPDATE users SET
                         email_verified = 1
                         WHERE
-                            id='" . escape($user['user']) . "'
+                            id='" . escape($cms_activation['user']) . "'
                         LIMIT 1
                     ");
                 }
+                
+                sql_query("DELETE FROM cms_activation WHERE id = '" . (int)$cms_activation['id'] . "'");
                 
                 $result = [
                     'code' => 3,
                     'message' => 'New password has been set, <a href="/login">log in</a>',
                 ];
-            } elseif ($user) {
+            } elseif ($cms_activation) {
                 $result = [
                     'code' => 2,
                     'message' => 'Enter your new password',

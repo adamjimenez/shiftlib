@@ -144,7 +144,7 @@ function loadFile(file)
 					optionsHTML += '<option value="' + index +  '">' + item +  '</option>';
 				});
 				
-				fields[$('#importSection').val()].forEach(function(item) {
+				table_config[$('#importSection').val()].fields.forEach(function(item) {
 					$('\
 						<tr>\
 							<td width="100">' + item + '</td>\

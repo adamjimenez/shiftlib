@@ -22,9 +22,12 @@ $has_logs = table_exists('cms_logs');
 
 $has_privileges = false;
 if (
-    1 == $auth->user['admin'] and
+    (
+    	$auth->user['admin'] == 1 or
+    	$auth->user['privileges']['cms privileges'] > 1
+    ) and
     underscored($this->section) == $auth->table and
-    1 < $this->content['admin']
+    $this->content['admin'] !== 1
 ) {
     $has_privileges = true;
 }
@@ -229,7 +232,7 @@ $qs = http_build_query($qs_arr);
                             foreach ($subsection_fields as $k => $field) {
                                 $v = $field['type'];
 
-                                if (('select' == $v or 'combo' == $v or 'radio' == $v) and $vars['options'][$k] == $_GET['option']) {
+                                if (('select' == $v or 'combo' == $v or 'radio' == $v) and $vars['options'][$k] == underscored($_GET['option'])) {
                                     $conditions[$k] = escape($this->id);
                                     $qs[$k] = $this->id;
                                     break;
@@ -294,16 +297,12 @@ $qs = http_build_query($qs_arr);
     $(function() {
         $('.dt-buttons').hide();
 
-        var hash = window.location.hash;
-        hash && $('ul.nav a[href="' + hash + '"]').tab('show');
-
         $('.nav-tabs a').click(function (e) {
             $(this).tab('show');
             var scrollmem = $('body').scrollTop() || $('html').scrollTop();
             window.location.hash = this.hash;
             $('html,body').scrollTop(scrollmem);
         });
-
 
         $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
             // resize datatables
@@ -348,9 +347,15 @@ $qs = http_build_query($qs_arr);
                 cache: false,
                 success: function(result) {
                     result.data.forEach(function(item) {
+                        var task = item.task;
+                        
+                        if (item.user > 0) {
+                            task += ' by <a href="?option=users&view=true&id= ' + item.user + '"> ' + item.name + '</a>';
+                        }
+                        
                         var html = '\
                         	<div>\
-                        		<strong>' + item.task + ' by <a href="?option=users&view=true&id= ' + item.user + '"> ' + item.name + '</a> on ' + item.date + '</strong><br>\
+                        		<strong>' + task + ' in <a href="?option=' + item.section + '&view=true&id=' + item.id + '">' + item.section + '</a> on ' + item.date + '</strong><br>\
                         		<pre>' + item.details + '</pre>\
                         	</div>\
                         ';
@@ -371,7 +376,7 @@ $qs = http_build_query($qs_arr);
         }
 
         $(window).scroll(function() {
-            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (Math.ceil($(window).scrollTop()) >= $(document).height() - $(window).height()) {
                 load_logs();
             }
         });

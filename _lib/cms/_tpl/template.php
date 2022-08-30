@@ -1,12 +1,12 @@
 <?php
 $versions = [
     'datatables' => [
-        'core' => '1.10.24',
-        'responsive' => '2.2.7',
-        'rowReorder' => '1.2.7',
-        'select' => '1.3.2',
-        'buttons' => '1.7.0',
-        'checkboxes' => '1.2.12',
+        'core' => '1.12.1',
+        'responsive' => '2.3.0',
+        'rowReorder' => '1.2.8',
+        'select' => '1.4.0',
+        'buttons' => '2.2.3',
+        'checkboxes' => '1.2.13',
     ]
 ];
 ?>
@@ -36,7 +36,7 @@ $versions = [
 
     <link type="text/css" href="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder']; ?>/css/rowReorder.dataTables.min.css" rel="stylesheet">
     <link type="text/css" href="https://cdn.datatables.net/select/<?=$versions['datatables']['select']; ?>/css/select.dataTables.min.css" rel="stylesheet">
-    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes']; ?>/css/dataTables.checkboxes.css" rel="stylesheet">
+    <link type="text/css" href="/_lib/cms/assets/css/dataTables.checkboxes.css" rel="stylesheet">
     <link type="text/css" href="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/css/buttons.bootstrap4.min.css" rel="stylesheet">
 
     <!-- others css -->
@@ -48,10 +48,18 @@ $versions = [
     <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 
     <link rel="stylesheet" href="/_lib/cms/assets/css/cms.css">
+    
+    <?php
+    if ($this->custom_css) {
+    ?>
+    <link rel="stylesheet" href="<?=$this->custom_css;?>">
+    <?php
+    }
+    ?>
 
     <script>
         // used for imports
-        var fields = [];
+        var table_config = [];
     </script>
 </head>
 
@@ -77,7 +85,16 @@ $versions = [
                         <?php
                         $website = explode('.', ucfirst(str_replace('www.', '', $_SERVER['HTTP_HOST']))); ?>
                         <a href="/admin">
-                            <?=$website[0]; ?>
+                            
+                            <?php
+                            if ($this->logo) {
+                            ?>
+					        <img src="/assets/img/gg-logo-white.svg" alt="Admin home" align="middle" class="py-3">
+					        <?php
+                            } else {
+                                print $website[0];
+                            }
+                            ?>
                         </a>
                     </div>
                 </div>
@@ -328,7 +345,7 @@ $versions = [
 
     <script type="text/javascript" src="https://cdn.datatables.net/rowreorder/<?=$versions['datatables']['rowReorder']; ?>/js/dataTables.rowReorder.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/select/<?=$versions['datatables']['select']; ?>/js/dataTables.select.min.js"></script>
-    <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/<?=$versions['datatables']['checkboxes']; ?>/js/dataTables.checkboxes.min.js"></script>
+    <script type="text/javascript" src="/_lib/cms/assets/js/dataTables.checkboxes.min.js"></script>
 
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/js/dataTables.buttons.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/<?=$versions['datatables']['buttons']; ?>/js/buttons.bootstrap4.min.js"></script>

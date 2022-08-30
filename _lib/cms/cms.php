@@ -86,6 +86,7 @@ class cms
     */
     public function check_table(string $table, $fields = []) {
         $select = sql_query("SHOW TABLES LIKE '$table'");
+
         if (!$select) {
             //build table query
             $query = '';
@@ -99,14 +100,15 @@ class cms
 
                 $name = underscored(trim($name));
                 $db_field = $this->form_to_db($type);
+                
+                $auto_increment = $type === 'id' ? 'AUTO_INCREMENT' : '';
 
                 if ($db_field) {
-                    $query .= '`' . $name . '` ' . $db_field . ' NOT NULL,';
+                    $query .= '`' . $name . '` ' . $db_field . ' ' . $auto_increment . ' NOT NULL,';
                 }
             }
 
             sql_query("CREATE TABLE `$table` (
-                   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
                    $query
                    PRIMARY KEY ( `id` )
                 )
@@ -117,7 +119,6 @@ class cms
             }
         }
     }
-
     /**
     * @param string $type
     * @return string|null
@@ -129,15 +130,15 @@ class cms
 
         switch ($type) {
             case 'id':
-            case 'separator':
-                break;
-            case 'read':
-            case 'deleted':
-                return 'TINYINT(1)';
-                break;
-            default:
-                return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
-                break;
+                case 'separator':
+                    break;
+                case 'read':
+                    case 'deleted':
+                        return 'TINYINT(1)';
+                        break;
+                    default:
+                        return "VARCHAR(140)";
+                        break;
             }
         }
 
@@ -234,7 +235,7 @@ class cms
         {
             global $auth;
 
-            if (1 == $auth->user['admin'] || 2 == $auth->user['privileges'][$section]) {
+            if (1 == $auth->user['admin'] || $auth->user['privileges'][$section] > 1) {
                 if ($select_all_pages) {
                     $rows = $this->get($section, $conditions);
 
@@ -365,6 +366,7 @@ class cms
             if (is_numeric($conditions)) {
                 $id = $conditions;
                 $conditions = ['id' => $id];
+                $num_results = 1;
             } elseif (is_string($conditions) && $fields['page name']) {
                 $conditions = ['page name' => $conditions];
                 $num_results = 1;
@@ -372,10 +374,6 @@ class cms
                 $id = $conditions['id'];
             }
             
-            if (is_numeric($id)) {
-                $num_results = 1;
-            }
-
             // restrict results to staff perms
             foreach ($auth->user['filters'][$this->section] as $k => $v) {
                 $conditions[$k] = $v;
@@ -731,8 +729,10 @@ class cms
                 }
 
                 if ('files' === $type) {
-                    foreach ($content as $k => $v) {
-                        $content[$k][underscored($name)] = explode("\n", $v[$name]);
+                    if ($v[$name]) {
+                        foreach ($content as $k => $v) {
+                            $content[$k][underscored($name)] = explode("\n", $v[$name]);
+                        }
                     }
                     continue;
                 }
@@ -781,7 +781,7 @@ class cms
                     $content[$k][underscored($name) . '_label'] = $label;
                 }
             }
-
+            
             // return first array item if one result requested
             return (1 == $sql['num_results']) ? $content[0] : $content;
         }
@@ -811,7 +811,7 @@ class cms
             $this->editable_fields = array_unique($this->editable_fields);
 
             // only admin can edit admin perms
-            if (1 != $auth->user['admin'] && in_array('admin', $this->editable_fields)) {
+            if (1 != $auth->user['admin'] && in_array('admin', $this->editable_fields) && $auth->user['privileges']['cms privileges'] < 2) {
                 unset($this->editable_fields[array_search('admin', $this->editable_fields)]);
             }
 
@@ -911,7 +911,7 @@ class cms
                             $fields = $this->get_fields($field);
 
                             foreach ($fields as $name => $field) {
-                                if ($field['type'] === 'text') {
+                                if (in_array($field['type'], ['text', 'email', 'id'])) {
                                     return $name;
                                 }
                             }
@@ -983,10 +983,10 @@ class cms
 
                 // check permissions
                 if ($auth->user['admin'] > 1 && table_exists('cms_privileges')) {
-                    $rows = sql_query("SELECT * FROM cms_privileges
-                WHERE
-                    user='" . escape($auth->user['id']) . "'
-            ");
+	            	$rows = sql_query("SELECT * FROM cms_privileges
+		                WHERE
+		                    user='" . escape($auth->user['id']) . "'
+		            ");
 
                     foreach ($rows as $row) {
                         $auth->user['privileges'][$row['section']] = $row['access'];
@@ -1279,7 +1279,7 @@ class cms
                     // check fields
                     if (
                         ('' != $data[$field_name] && $component && !$component->isValid($data[$field_name])) ||
-                        ($field['required'] && '' == $data[$field_name] && !count($_FILES[$field_name]))
+                        ($field['required'] && '' == $data[$field_name] && !count((array)$_FILES[$field_name]))
                     ) {
                         $errors[] = $field_name;
                         continue;
@@ -1416,13 +1416,23 @@ class cms
                 $this->query = $this->build_query($fields, $data);
 
                 $details = '';
-                if ($this->id || !$fields['id']) {
+                $do_update = $this->id ? true : false;
+                $row = null;
+                
+                if (!$fields['id']) {
+                    $row = sql_query('SELECT * FROM `' . $this->table . "`", 1);
+                    $do_update = $row ? true : false;
+                }
+                
+                if ($do_update) {
                     $whereStr = $fields['id'] ? "WHERE id = '" . (int)$this->id . "'" : '';
 
                     // remember old state
-                    $row = sql_query('SELECT * FROM `' . $this->table . "`
+                    if (!$row) {
+                        $row = sql_query('SELECT * FROM `' . $this->table . "`
                             $whereStr
-                    ", 1);
+                        ", 1);
+                    }
 
                     sql_query('UPDATE `' . $this->table . '` SET
                         ' . $this->query . "
