@@ -50,7 +50,7 @@ if ($_POST['select_all_pages']) {
 
     foreach ($fields as $name => $type) {
         $type = $field['type'];
-        if (('select' == $type or 'combo' == $type or 'radio' == $type) and $vars['options'][$name] == $_GET['option']) {
+        if (in_array($type, ['select', 'combo', 'radio']) and $vars['options'][$name] == $_GET['option']) {
             $conditions[$name] = escape($this->id);
             break;
         }
@@ -70,7 +70,7 @@ $section = '';
 foreach ($fields as $name => $field) {
     $type = $field['type'];
 
-    if ($_GET[underscored($name)] and 'id' != $name and 'select' == $type) {
+    if ($_GET[underscored($name)] and 'id' != $name and in_array($type, ['select', 'combo'])) {
         $section = $name;
         break;
     }
@@ -78,7 +78,7 @@ foreach ($fields as $name => $field) {
 
 // back links
 if ($section) {
-    $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section];
+    $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section] . '#pills-' . underscored($this->section);
     $back_label = ucfirst($vars['options'][$section]);
 } else {
     $back_link = '?option=' . $this->section;
@@ -182,8 +182,8 @@ $qs = http_build_query($qs_arr);
                         foreach ($vars['subsections'][$this->section] as $count => $subsection) {
                             ?>
                             <li class="nav-item">
-                                <a class="nav-link" id="pills-<?=$count; ?>-tab" data-toggle="pill" href="#pills-<?=$count; ?>" role="tab" aria-controls="pills-tab_<?=$count; ?>" aria-selected="true" data-section="<?=$subsection; ?>">
-                                    <?=ucfirst($subsection); ?>
+                                <a class="nav-link" id="pills-<?=underscored($subsection); ?>-tab" data-toggle="pill" href="#pills-<?=underscored($subsection); ?>" role="tab" aria-controls="pills-tab_<?=$subsection; ?>" aria-selected="true" data-section="<?=spaced($subsection); ?>">
+                                    <?=ucfirst(spaced($subsection)); ?>
                                 </a>
                             </li>
                             <?php
@@ -214,14 +214,11 @@ $qs = http_build_query($qs_arr);
                                 require(__DIR__ . '/view.php');
                                 ?>
                             </div>
-                            <?php
-                            ?>
-
                         </div>
 
                         <?php
                         foreach ($vars['subsections'][$this->section] as $count => $subsection) {
-                            $this->section = $subsection;
+                            $this->section = spaced($subsection);
 
                             $fields = $this->get_fields($this->section);
 
@@ -244,7 +241,7 @@ $qs = http_build_query($qs_arr);
                             $p = $this->p;
                             ?>
 
-                            <div class="tab-pane fade" id="pills-<?=$count; ?>" role="tabpanel" aria-labelledby="pills-<?=$count; ?>-tab">
+                            <div class="tab-pane fade" id="pills-<?=underscored($subsection); ?>" role="tabpanel" aria-labelledby="pills-<?=$count; ?>-tab">
                                 <?php
                                 if (file_exists('_tpl/admin/' . $subsection . '.php')) {
                                     require('_tpl/admin/' . $subsection . '.php');
