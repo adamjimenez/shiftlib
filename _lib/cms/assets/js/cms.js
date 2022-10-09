@@ -126,6 +126,7 @@ function initForms()
             success: function(data) {
                 var errorMethod = 'inline';
                 var firstError;
+                var errorText = '';
 
                 if ( $(form).attr('data-errorMethod') ) {
                     errorMethod = $(form).attr('data-errorMethod');
@@ -147,7 +148,6 @@ function initForms()
                         
                         var pos = item.indexOf(' ');
                         var field;
-                        var error;
 
                         if(pos === -1) {
                             field = item;
@@ -169,7 +169,7 @@ function initForms()
                                 parent = form[field][0].parentNode.parentNode;
                             }
                             
-                            errors += field + ': ' + error + '\n';
+                            errorText += field + ': ' + error + '\n';
                         } else if (form[field + '[]']){
                             if(form[field + '[]'].style) {
                                 if (!firstError) {
@@ -181,9 +181,9 @@ function initForms()
                                 parent = form[field + '[]'][0].parentNode.parentNode;
                             }
 
-                            errors += field + ': ' + error + '\n';
+                            errorText += field + ': ' + error + '\n';
                         } else {
-                            errors += error + '\n';
+                            errorText += error + '\n';
                             console.log('field not found: ' + field);
                         }
 
@@ -197,10 +197,10 @@ function initForms()
                     })
 
                     if( errorMethod === 'alert' ){
-                        alert('Please check the required fields\n' + errors);
+                        alert('Please check the required fields\n' + errorText);
                     }
-                    
-                    $('.errors').html('Please check the following:<br>' + errors.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
+
+                    $('.errors').html('Please check the following:<br>' + errorText.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
                     $(form).trigger('validationError');
 
                 } else {
@@ -477,6 +477,77 @@ function initForms()
             });
         });
     }
+    
+	// coords
+	if ($("input[data-type='coords']").length) {
+	    var maps = [];
+	    var inputs = $("input[data-type='coords']");
+	    var key = $("input[data-type='coords']").data('key');
+	    
+	    if (key) {
+    		google.load("maps", "3", {other_params: "sensor=false&key=" + key, "callback" : function(){
+    			jQuery.each(inputs, function() {
+    				var field = this;
+    
+                    var el = $('\
+                    <div>\
+                        <div class="modal" id="info" tabindex="-1" role="dialog">\
+                          <div class="modal-dialog" role="document">\
+                            <div class="modal-content">\
+                              <div class="modal-header">\
+                                <input type="text" style="width: 100%;">\
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
+                                  <span aria-hidden="true">&times;</span>\
+                                </button>\
+                              </div>\
+                              <div class="modal-body">\
+                                <div class="map" style="width: 100%; height: 400px;"></div>\
+                              </div>\
+                            </div>\
+                          </div>\
+                        </div>\
+                    </div>\
+                    ').appendTo(this.parentNode);
+                    
+                    // load map
+    				var coords = this.value ? this.value.split(', ') : [51.8100844,-0.02911359999995966];
+    				var latlng = new google.maps.LatLng(coords[0], coords[1]);
+    				var myOptions = {
+    					zoom: 18,
+    					center: latlng,
+    					mapTypeId: google.maps.MapTypeId.ROADMAP,
+    					fullscreenControl: false
+    				};
+    				maps[this.name] = new google.maps.Map(el.find('.map').get(0), myOptions);
+    
+    				// update coordinates after dragging
+                    var modalInput = el.find('.modal-header input');
+                    google.maps.event.addListener(maps[this.name], 'dragend', function() {
+                        var latlng = maps[field.name].getCenter();
+					    field.value = latlng.lat() + ', ' + latlng.lng();
+					    modalInput.val(field.value);
+                    });
+                    modalInput.val(field.value);
+                    
+                    // handle manual input
+                    modalInput.change(function () {
+                        field.value = this.value
+                        
+                        // update map
+                        var coords = this.value.split(', ');
+                        var latLng = new google.maps.LatLng(coords[0], coords[1]);
+                        maps[field.name].setCenter(latLng);
+                    });
+                    
+                    // open modal on focus
+                    $(field).focus(function() {
+                        el.find('.modal').modal('show');
+                        modalInput.focus();
+                    });
+    			});
+    		}});
+	    }
+	}
     
     if ($.ui && $.ui.sortable) {
         //files

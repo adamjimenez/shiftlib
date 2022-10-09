@@ -97,3 +97,20 @@ table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc, table.d
 .flex{
 	flex: 2;
 }
+
+.map {
+    position: relative;
+}
+
+.map:after {
+    width: 22px;
+    height: 40px;
+    display: block;
+    content: ' ';
+    position: absolute;
+    top: 50%; left: 50%;
+    margin: -40px 0 0 -11px;
+    background: url('https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi_hdpi.png');
+    background-size: 22px 40px; /* Since I used the HiDPI marker version this compensates for the 2x size */
+    pointer-events: none; /* This disables clicks on the marker. Not fully supported by all major browsers, though */
+}

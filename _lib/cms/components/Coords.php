@@ -23,7 +23,7 @@ class Coords extends Component implements ComponentInterface
     public function getColSql(string $fieldName, string $tablePrefix): ?string
     {
         $col = $tablePrefix . $fieldName;
-        return 'CONCAT(X(' . $col . '), " ", Y(' . $col . '))';
+        return 'CONCAT(X(' . $col . '), ", ", Y(' . $col . '))';
     }
 
     /**
@@ -34,6 +34,8 @@ class Coords extends Component implements ComponentInterface
      */
     public function field(string $fieldName, $value = '', $options = []): string
     {
-        return '<input type="text" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '"' . ($options['readonly'] ? ' disabled' : '') . ' size="50"' . ($options['placeholder'] ? ' placeholder="' . $options['placeholder'] . '"' : '') . ' ' . $options['attribs'] . '>';
+        global $public_maps_api_key;
+        
+        return '<input type="text" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '"' . ($options['readonly'] ? ' disabled' : '') . ' size="50"' . ($options['placeholder'] ? ' placeholder="' . $options['placeholder'] . '"' : '') . ' ' . $options['attribs'] . ' data-type="coords" data-key="' . $public_maps_api_key . '">';
     }
 }
