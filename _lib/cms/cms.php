@@ -1305,9 +1305,9 @@ class cms
                         $where_str = "WHERE \n" . implode(" AND \n", array_filter($where));
 
                         $row = sql_query('SELECT * FROM `' . $this->table . "`
-                    $where_str
-                    LIMIT 1
-                ", 1);
+                            $where_str
+                            LIMIT 1
+                        ", 1);
 
                         if ($row) {
                             foreach ($fields as $field) {
@@ -1360,6 +1360,10 @@ class cms
                     ) {
                         continue;
                     }
+                    
+                    if ('coords' == $type && !preg_match('/^[\-\.0-9]+[,]?\s[\-\.0-9]+$/', $data[$field_name])) {
+                        continue;
+                    }
 
                     // handle null fields
                     $query .= "`$field_name`=";
@@ -1367,7 +1371,7 @@ class cms
                         $query .= 'NULL';
                     } elseif ('coords' == $type) {
                         // todo: move to components
-                        $query .= "GeomFromText('POINT(" . escape($data[$field_name]) . ")')";
+                        $query .= "GeomFromText('POINT(" . escape(str_replace(',', '', $data[$field_name])) . ")')";
                     } else {
                         $query .= "'" . escape($data[$field_name]) . "'";
                     }
@@ -1480,7 +1484,7 @@ class cms
                 // log it
                 $this->save_log($this->section, $this->id, $task, $details);
 
-                $this->trigger_event('save', [$this->id, $data]);
+                $this->trigger_event('save', [$this->id, $data, $row]);
                 $this->saved = true;
 
                 return $this->id;
@@ -1567,6 +1571,7 @@ class cms
                 $conditions = $_POST['select_all_pages'] ? $_GET : $_POST['id'];
                 switch ($_POST['action']) {
                     case 'export':
+                        $fields = $this->get_fields($_POST['section']);
 
                         // convert json column indexes into array of column names
                         $indexes = json_decode($_POST['columns']);
