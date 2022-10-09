@@ -4,7 +4,7 @@ namespace cms\components;
 
 use cms\ComponentInterface;
 
-class Timestamp extends Date implements ComponentInterface
+class Timestamp extends Datetime implements ComponentInterface
 {
     public $fieldType = 'hidden';
 
