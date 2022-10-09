@@ -110,18 +110,30 @@ class SelectMultiple extends Select implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        $conditions = [];
+        $ands = [];
         
         if (!is_array($value)) {
             $value = [$value];
         }
         
         foreach($value as $val) {
-        	$conditions[] = 'JSON_SEARCH(' . $tablePrefix . $fieldName . ", 'all', '" . escape($val) . "') IS NOT NULL";
+            $ors = [];
+            
+            if (!is_array($val)) {
+                $val = [$val];   
+            }
+            
+            foreach ($val as $v) {
+        	    $ors[] = 'JSON_SEARCH(' . $tablePrefix . $fieldName . ", 'all', '" . escape($v) . "') IS NOT NULL";
+            }
+        	
+        	$ands[] = '(
+            	' . implode(" OR\n", $ors) . '
+            )';
         }
-
+        
         return '(
-        	' . implode(" AND\n", $conditions) . '
+        	' . implode(" AND\n", $ands) . '
         )';
     }
 
