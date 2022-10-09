@@ -162,15 +162,14 @@ class paging
         if (is_string($query)) {
             $this->query = trim($this->query);
 
-            $pos = stripos($this->query, 'select');
-
-            $this->query = substr($this->query, $pos + 6);
-            $this->query = 'SELECT SQL_CALC_FOUND_ROWS ' . $this->query;
+            //$pos = stripos($this->query, 'select');
+            //$this->query = substr($this->query, $pos + 6);
+            //$this->query = 'SELECT SQL_CALC_FOUND_ROWS ' . $this->query;
 
             $this->rows = sql_query($this->query);
 
-            $count = sql_query('SELECT FOUND_ROWS()', 1);
-            $this->total = current($count);
+            //$count = sql_query('SELECT FOUND_ROWS()', 1);
+            //$this->total = current($count);
         } else {
             $this->total = count($query);
         }
