@@ -1,1 +1,3 @@
+<IfModule mod_php7.c>
 php_value max_input_vars 5000
+</IfModule>
