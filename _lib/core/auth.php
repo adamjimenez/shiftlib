@@ -583,7 +583,7 @@ class auth
      * @throws Exception
      * @return array
      */
-    public function forgot_password()
+    public function forgot_password($options = [])
     {
         global $request, $vars, $cms;
         
@@ -600,7 +600,7 @@ class auth
                 LIMIT 1
             ", 1);
         
-            if ($cms_activation and isset($data['reset_password'])) {
+            if ( isset($data['reset_password'])) {
                 //check fields are completed
                 $errors = [];
         
@@ -633,7 +633,6 @@ class auth
                 
                 $fields = $cms->get_fields('users');
                 if ($fields['email_verified']) {
-                    // fix me
                     sql_query("UPDATE users SET
                         email_verified = 1
                         WHERE
@@ -641,12 +640,24 @@ class auth
                         LIMIT 1
                     ");
                 }
+                    
+                // send email confirmation
+                $user = sql_query('SELECT email FROM ' . $this->table . "
+                    WHERE
+                        id='" . escape($cms_activation['user']) . "'
+                ", 1);
+                
+                // auto login
+                $this->set_login($user['email'], $hash);
+                
+                $email_template = $options['password_changed_email'] ?: 'Password Changed';
+                email_template($user['email'], $email_template);
                 
                 sql_query("DELETE FROM cms_activation WHERE id = '" . (int)$cms_activation['id'] . "'");
                 
                 $result = [
                     'code' => 3,
-                    'message' => 'New password has been set, <a href="/login">log in</a>',
+                    'message' => 'New password has been set, <a href="/login">continue</a>',
                 ];
             } elseif ($cms_activation) {
                 $result = [
@@ -655,7 +666,7 @@ class auth
                 ];
             } else {
                 $result = [
-                    'code' => 4,
+                    'code' => 2,
                     'message' => 'Code is invalid or expired',
                 ];
             }
@@ -702,8 +713,10 @@ class auth
             $reps['user_id'] = $user['id'];
             $reps['code'] = $code;
             $reps['link'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $request . '?user=' . $user['id'] . '&code=' . $code;
+            
+            $email_template = $options['password_reminder_email'] ?: 'Password Reminder';
 
-            email_template($email, 'Password Reminder', $reps);
+            email_template($email, $email_template, $reps);
     
             $result = [
                 'code' => 1,
