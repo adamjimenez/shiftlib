@@ -14,6 +14,11 @@ class Coords extends Component implements ComponentInterface
     {
         return 'POINT';
     }
+    
+    public function value($value, string $name = ''): string
+    {
+        return '<a href="https://www.google.com/maps/search/?api=1&query=' . $value . '" target="_blank">' . $value . '</a>';
+    }
 
     /**
      * SQL code for column selection

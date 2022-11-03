@@ -51,12 +51,8 @@ switch ($_GET['cmd']) {
         $length = (int)$_GET['length'] ?: 20;
         
         if ($_GET['section']) {
-            if ($_GET['section'] === 'users') {
-                $where_str = "user='" . escape($_GET['id']) . "'";
-            } else {
-                $where_str = $_GET['id'] ? "item='" . escape($_GET['id']) . "' AND " : '';
-                $where_str .= "section='" . escape($_GET['section']) . "'";
-            }
+            $where_str = $_GET['id'] ? "item='" . escape($_GET['id']) . "' AND " : '';
+            $where_str .= "section='" . escape($_GET['section']) . "'";
             
             $response['data'] = sql_query("SELECT *, L.date FROM cms_logs L
             	LEFT JOIN users U ON L.user=U.id
@@ -482,8 +478,16 @@ switch ($_GET['cmd']) {
         }
         $dir = ('desc' == $_POST['order'][0]['dir']) ? 'DESC' : '';
         $asc = ('desc' == $_POST['order'][0]['dir']) ? false : true;
+        
+        $conditions = (array)$_GET['fields'];
+
+        // restrict results to staff perms
+        $cms->check_permissions();
+        foreach ($auth->user['filters'][$_GET['section']] as $k => $v) {
+            $conditions[$k] = $v;
+        }
     
-        $sql = $cms->conditionsToSql($_GET['section'], $_GET['fields']);
+        $sql = $cms->conditionsToSql($_GET['section'], $conditions);
         
         $count = sql_query('SELECT COUNT(DISTINCT T_' . $table . '.' . $field_id . ') AS `count` FROM `' . $table . '` T_' . $table . '
             ' . $sql['joins'] . '
@@ -511,7 +515,7 @@ switch ($_GET['cmd']) {
         $limit = $start . ', ' . $length;
         
         // gather rows
-        $rows = $cms->get($_GET['section'], $_GET['fields'], $limit, $order, $asc);
+        $rows = $cms->get($_GET['section'], $conditions, $limit, $order, $asc);
         //var_dump($rows);
         
         // prepare rows

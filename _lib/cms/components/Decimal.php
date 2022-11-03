@@ -22,10 +22,10 @@ class Decimal extends Integer implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        if ($value <= 0) {
+        if ($value == 0) {
             $value = '';
         } else {
-            $value = number_format($value, 2);
+            $value = number_format((float)$value, 2);
         }
         
         return $value ?: '';

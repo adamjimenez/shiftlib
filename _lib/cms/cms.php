@@ -466,7 +466,7 @@ class cms
                     $conditions['s'] = $conditions['w'];
                 }
 
-                $words = explode(' ', $conditions['s']);
+                $words = explode(' ', (string)$conditions['s']);
 
                 foreach ($words as $word) {
                     $or = [];
@@ -617,7 +617,7 @@ class cms
 
             // determine sort order
             if (is_array($conditions) && ($conditions['s'] || $conditions['w'])) {
-                $word = $conditions['w'] ?: $conditions['s'];
+                $word = (string)$conditions['w'] ?: (string)$conditions['s'];
 
                 // find first text field
                 $col = null;
@@ -1249,7 +1249,7 @@ class cms
                 $keys = [];
                 foreach ($table_keys as $v) {
                     if (0 == $v['Non_unique']) {
-                        $keys[$v['Key_name']][] = $v['column'];
+                        $keys[$v['Key_name']][] = $v['Column_name'] ?: $v['column'];
                     }
                 }
 

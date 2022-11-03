@@ -78,13 +78,22 @@ foreach ($fields as $name => $field) {
 
 // back links
 if ($section) {
-    $back_link = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[$section] . '#pills-' . underscored($this->section);
-    $back_label = ucfirst($vars['options'][$section]);
+    $back_link = '?option=' . spaced($vars['options'][$section]) . '&view=true&id=' . $this->content[$section] . '#pills-' . underscored($section);
+    $back_label = ucfirst($vars['options'][$this->section]);
 } else {
     $back_link = '?option=' . $this->section;
     $back_label = ucfirst($this->section);
 }
 
+$qs_arr = $_GET;
+unset($qs_arr['option']);
+unset($qs_arr['view']);
+unset($qs_arr['edit']);
+unset($qs_arr['id']);
+$qs = http_build_query($qs_arr);
+if ($qs) {
+    $back_link .= '&' . $qs;
+}
 // delete this item
 if (is_numeric($_POST['delete']) and $this->id) {
     if ((int)$_POST['delete'] === 0) {
@@ -352,7 +361,7 @@ $qs = http_build_query($qs_arr);
                         
                         var html = '\
                         	<div>\
-                        		<strong>' + task + ' in <a href="?option=' + item.section + '&view=true&id=' + item.id + '">' + item.section + '</a> on ' + item.date + '</strong><br>\
+                        		<strong>' + task + ' on ' + item.date + '</strong><br>\
                         		<pre>' + item.details + '</pre>\
                         	</div>\
                         ';

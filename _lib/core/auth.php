@@ -817,7 +817,7 @@ class auth
     {
         if (!$this->user['admin']) {
             $_SESSION['request'] = $_SERVER['REQUEST_URI'];
-            redirect('?option=login');
+            redirect('/admin?option=login');
         }
     }
 

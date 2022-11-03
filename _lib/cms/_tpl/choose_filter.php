@@ -42,7 +42,7 @@ if ($_GET['choose_filter']) {
                     foreach ($fields as $name => $field) {
                         $type = $field['type'];
 
-                        if (in_array($name, $vars['non_searchable'][$this->section])) {
+                        if (in_array($name, (array)$vars['non_searchable'][$this->section])) {
                             continue;
                         }
 
@@ -62,26 +62,10 @@ if ($_GET['choose_filter']) {
                         $options = $vars['options'][$name];
                         if (false === is_array($vars['options'][$name])) {
                             $table = underscored($vars['options'][$name]);
+                            
+                            $component = $this->get_component('select');
 
-                            $option_fields = $this->get_fields($vars['options'][$name]);
-
-                            foreach ($option_fields as $k => $v) {
-                                if ('separator' != $v) {
-                                    $field = $k;
-                                    break;
-                                }
-                            }
-
-                            $db_field_name = $this->db_field_name($vars['options'][$name], $field);
-
-                            $cols = '' . $db_field_name . ' AS `' . underscored($field) . '`' . "\n";
-
-                            $rows = sql_query("SELECT id,$cols FROM $table ORDER BY `$db_field_name`");
-
-                            $options = [];
-                            foreach ($rows as $row) {
-                                $options[$row['id']] = $row[$field];
-                            }
+                            $options = $component->get_options($name);
                         } ?>
                         <tr>
                             <th align="left" valign="top"><?=$label; ?></th>

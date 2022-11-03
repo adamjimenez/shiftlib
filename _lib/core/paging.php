@@ -126,6 +126,7 @@ class paging
         }
 
         $this->query = $query;
+        $this->original_query = $query;
 
         if (
             $_GET[$this->prefix . 'order'] and
@@ -278,6 +279,14 @@ class paging
      */
     public function get_paging()
     {
+        // get number of results
+        $pos = stripos($this->original_query, 'select');
+        $query = substr($this->original_query, $pos + 6);
+        $query = 'SELECT SQL_CALC_FOUND_ROWS ' . $query;
+        sql_query($query);
+        $count = sql_query('SELECT FOUND_ROWS()', 1);
+        $this->total = current($count);
+        
         if (($this->total < $this->int_num_result) or !$this->int_num_result) {
             return false;
         }

@@ -20,9 +20,9 @@ foreach ($fields as $name => $field) {
     }
 }
 
-if ($this->id and $section) {
-    $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id . '&' . $section . '=' . $this->content[$section];
-} elseif ($section) {
+if ($this->id and $this->section) {
+    $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id . '&' . $this->section . '=' . $this->content[$section];
+} elseif ($this->section) {
     $cancel_url = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[underscored($section)];
 } else {
     $cancel_url = '?option=' . $this->section;
@@ -48,7 +48,7 @@ if (isset($_POST['save'])) {
     }
     
     if (1 == $auth->user['admin'] or $auth->user['privileges'][$this->section] >= 2) {
-        $id = $this->save();
+        $id = $this->save() ?: $_GET['id'];
 
         if ($_POST['add_another']) {
             $qs = http_build_query($_GET);

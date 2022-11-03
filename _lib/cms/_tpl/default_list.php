@@ -175,7 +175,7 @@ if ($_POST['custom_button']) {
                         $conditions = $_GET;
                         unset($conditions['option']);
 
-                        $qs = http_build_query(['s' => $conditions]);
+                        $qs = http_build_query($conditions);
                         require(__DIR__ . '/list.php'); ?>
 
                     </div>

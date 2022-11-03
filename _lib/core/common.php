@@ -1167,6 +1167,11 @@ function is_email($email)
     return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
+function is_tel($mobile)
+{
+    return preg_match('/^\+[0-9]{10,12}+$/', $mobile) ? true : false;
+}
+
 // is valid national insurance number
 function is_nino($code)
 {
@@ -1205,7 +1210,8 @@ function load_js($libs)
                 $deps['jquery'] = true;
             break;
             case 'vuetify':
-                $deps['vue'] = true;
+            case 'vuetify2':
+                $deps['vue2'] = true;
             break;
         }
 
@@ -1225,10 +1231,29 @@ function load_js($libs)
 	<?php
     }
 
+    if ($deps['vue2']) {
+        ?>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+	<?php
+    }
+
     if ($deps['vuetify']) {
         ?>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/3.0.0-beta.5/vuetify.css" rel="stylesheet">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/3.0.0-beta.5/vuetify.min.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet"> 
+        <link href="https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet"> 
+
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.0.0-beta.14/dist/vuetify.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.0.0-beta.14/dist/vuetify.min.js"></script>
+	<?php
+    }
+
+    if ($deps['vuetify2']) {
+        ?>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 	<?php
     }
 
