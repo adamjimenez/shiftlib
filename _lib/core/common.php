@@ -120,7 +120,7 @@ function imagefile($img, $path): bool
 }
 
 // create a thumbnail from an uploaded file
-function image($file, $w = null, $h = null, $attribs = true, $crop = false)
+function image($file, $w = null, $h = null, $attribs = '', $crop = false)
 {
     $file = trim($file);
 
@@ -625,9 +625,11 @@ function debug($var, $die = false)
     global $auth;
 
     if ($auth->user['admin']) {
-        print '<hr><pre>';
-        print_r($var);
-        print '</pre>';
+        
+        $bt = debug_backtrace();
+        $caller = array_shift($bt);
+        
+        print '<script>console.log("PHP DEBUG '.$caller['file'].': '.$caller['line'].'"); console.log(' . json_encode($var) . ');</script>';
 
         if ($die) {
             exit;
@@ -1629,10 +1631,34 @@ function sql_query($query, $single = false)
         die('no database connection');
     }
     
-    $debug = $_GET['debug'] && $auth->user['admin'];
+    $debug = $_GET['debug'] && $auth->user['admin'] == 1;
     
     if ($debug) {
-        debug($query);
+    	if (!$GLOBALS['debug_init']) {
+    		register_shutdown_function(function() {
+    			print '<script>
+    					var queries = ' . json_encode($GLOBALS['debug']['queries']) . ';
+						    					
+						function compare( a, b ) {
+						  if ( a.duration > b.duration ){
+						    return -1;
+						  }
+						  if ( a.duration < b.duration ){
+						    return 1;
+						  }
+						  return 0;
+						}
+						
+						queries.sort( compare );
+						
+						console.log(queries);
+    				</script>';
+    		});
+    		
+    		$GLOBALS['debug']['queries'] = [];
+    		$GLOBALS['debug_init'] = true;
+    	}
+    	
         $timer_start = microtime(true);
     }
 
@@ -1642,9 +1668,15 @@ function sql_query($query, $single = false)
         $timer_now = microtime(true);
         $diff = $timer_now - $timer_start;
         
-        if ($diff > 0.1) {
-            debug('Slow Query [ ' . $query . ' ]: ' . round($diff, 4));
-        }
+        $bt = debug_backtrace();
+        $caller = array_shift($bt);
+        
+        $GLOBALS['debug']['queries'][] = [
+        	'query' => $query,
+        	'duration' => $diff,
+        	'file' => $caller['file'],
+        	'line' => $caller['line'],
+        ];
     }
 
     if (false === $result) {
@@ -1681,10 +1713,10 @@ function st_distance($coord1, $coord2, $earthRadius = 6371000)
   $coord1 = explode(' ', $coord1);
   $coord2 = explode(' ', $coord2);
   
-  $latFrom = deg2rad($coord1[0]);
-  $lonFrom = deg2rad($coord1[1]);
-  $latTo = deg2rad($coord2[0]);
-  $lonTo = deg2rad($coord2[1]);
+  $latFrom = deg2rad((float)$coord1[0]);
+  $lonFrom = deg2rad((float)$coord1[1]);
+  $latTo = deg2rad((float)$coord2[0]);
+  $lonTo = deg2rad((float)$coord2[1]);
   
   $latDelta = $latTo - $latFrom;
   $lonDelta = $lonTo - $lonFrom;
@@ -1992,12 +2024,16 @@ function video_info($url): array
     return $data;
 }
 
-function finish_request() {
+function finish_request($content = '') {
     // Buffer all upcoming output...
     if (ob_get_level() !== 0) {
         ob_end_clean();
     }
     ob_start();
+    
+    if ($content) {
+        print $content;
+    }
 
     // Get the size of the output.
     $size = ob_get_length();

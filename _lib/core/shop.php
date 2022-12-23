@@ -551,7 +551,7 @@ class shop
 				`order`='" . escape($this->oid) . "',
 				product='" . escape($item['product']) . "',
 				variation='" . escape($item['variation']) . "',
-				name='" . escape($item['name']) . "',
+				name='" . escape($item['name'] ?: $item['title']) . "',
 				extras='" . escape($item['extras']) . "',
 				cost='" . escape($item['cost']) . "',
 				quantity='" . escape($item['quantity']) . "'

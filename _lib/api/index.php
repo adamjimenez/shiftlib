@@ -66,7 +66,7 @@ switch ($_GET['cmd']) {
     
     case 'autocomplete':
 
-        $name = $_GET['field'];
+        $name = spaced($_GET['field']);
         
         if (!isset($vars['options'][$name])) {
             die('no options');

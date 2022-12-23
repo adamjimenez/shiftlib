@@ -125,10 +125,10 @@ require(dirname(__FILE__) . '/base.php');
 $sections = explode('/', $request);
 
 // templates
+$time_start = microtime(true);
 $include_file = get_include($request);
 
 // get include content
-$time_start = microtime(true);
 if (!$include_file || 'template' == end($sections)) {
     $trigger_404 = true;
 } elseif ($include_file) {

@@ -119,8 +119,9 @@ $versions = [
                                                 <span>
                                                     <?=ucfirst($section); ?>
                                                     <?php
-
-                                                    if (table_exists(underscored($section))) {
+                                                    $unread = 0;
+                                                    
+                                                    try {
                                                         $fields = $this->get_fields($section);
 
                                                         if ($fields['read']) {
@@ -132,6 +133,7 @@ $versions = [
                                                                 <?php
                                                             }
                                                         }
+                                                    } catch (Exception $e) {
                                                     }
                                                     ?>
                                                 </span>
@@ -455,6 +457,15 @@ $versions = [
         */
         // stay logged in end
     </script>
+
+    <?php    
+    // debug page speed
+    global $auth, $time_start;
+    if ($auth->user['admin'] && $_GET['debug']) {
+        $time_end = microtime(true);
+        echo '<span style="color:yellow; background: red; position:absolute; top:0; left:0; z-index: 100;">Loaded in ' . number_format($time_end - $time_start, 3) . 's</span>';
+    }
+    ?>
 </body>
 
 </html>

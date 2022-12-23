@@ -22,13 +22,7 @@ class Decimal extends Integer implements ComponentInterface
      */
     public function value($value, string $name = ''): string
     {
-        if ($value == 0) {
-            $value = '';
-        } else {
-            $value = number_format((float)$value, 2);
-        }
-        
-        return $value ?: '';
+        return is_numeric($value) ? number_format((float)$value, 2) : '';
     }
 
     /**
@@ -38,6 +32,6 @@ class Decimal extends Integer implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        return Component::formatValue($value, $fieldName);
+        return Component::formatValue((float)$value, $fieldName);
     }
 }

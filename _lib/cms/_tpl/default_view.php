@@ -77,7 +77,7 @@ foreach ($fields as $name => $field) {
 }
 
 // back links
-if ($section) {
+if ($section && is_string($vars['options'][$section])) {
     $back_link = '?option=' . spaced($vars['options'][$section]) . '&view=true&id=' . $this->content[$section] . '#pills-' . underscored($section);
     $back_label = ucfirst($vars['options'][$this->section]);
 } else {
@@ -356,7 +356,7 @@ $qs = http_build_query($qs_arr);
                         var task = item.task;
                         
                         if (item.user > 0) {
-                            task += ' by <a href="?option=users&view=true&id= ' + item.user + '"> ' + item.name + '</a>';
+                            task += ' by <a href="?option=users&view=true&id= ' + item.user + '"> ' + (item.name ? item.name : item.user) + '</a>';
                         }
                         
                         var html = '\

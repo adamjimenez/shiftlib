@@ -14,6 +14,12 @@ class cms
     */
     public $content = [];
 
+    /**
+    * @var array
+    * cached array of fields 
+    */
+    public $sections = [];
+
     // hide these field types from the list view
     public $hidden_columns = ['password'];
 
@@ -1191,6 +1197,10 @@ class cms
                 if (!$section) {
                     return false;
                 }
+                
+                if ($this->sections[$section]) {
+                	return $this->sections[$section];
+                }
 
                 $rows = sql_query("SHOW FULL COLUMNS FROM `" . escape(underscored($section)) . "`");
 
@@ -1226,7 +1236,8 @@ class cms
                     }
                 }
 
-                return $fields;
+                $this->sections[$section] = $fields;
+                return $this->sections[$section];
             }
 
             // validate fields before saving
@@ -1547,8 +1558,9 @@ class cms
                 }
 
                 // user privileges
-                if (table_exists('cms_filters')) {
+                try {
                     $this->filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
+                } catch (Exception $e) {
                 }
 
                 require(__DIR__ . '/_tpl/template.php');
