@@ -46,7 +46,7 @@ class Integer extends Component implements ComponentInterface
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         // check for range
-        $pos = strrpos($value, '-');
+        $pos = is_string($value) ? strrpos($value, '-') : null;
 
         if ($pos > 0) {
             $min = substr($value, 0, $pos);

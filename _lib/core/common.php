@@ -599,8 +599,8 @@ function datediff($endDate, $beginDate): int
 {
     $date_parts1 = explode('-', $beginDate);
     $date_parts2 = explode('-', $endDate);
-    $start_date = gregoriantojd($date_parts1[1], $date_parts1[2], $date_parts1[0]);
-    $end_date = gregoriantojd($date_parts2[1], $date_parts2[2], $date_parts2[0]);
+    $start_date = gregoriantojd($date_parts1[1], (int)$date_parts1[2], $date_parts1[0]);
+    $end_date = gregoriantojd($date_parts2[1], (int)$date_parts2[2], $date_parts2[0]);
     return $end_date - $start_date;
 }
 
@@ -827,9 +827,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
         case E_PARSE:
         case E_CORE_ERROR:
         case E_COMPILE_ERROR:
-            
-            header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-            
             if ($die_quietly) {
                 die();
             }
@@ -848,65 +845,44 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
                 $url .= '?' . $_SERVER['QUERY_STRING'];
             }
 
-            $errorstring .= "<p>Fatal Error: $errstr (# $errno).</p>\n";
+            $errorstring = $errstr . "\n";
 
             if ($query) {
-                $errorstring .= "<p>SQL query: $query</p>\n";
+                $errorstring .= "SQL query: $query\n";
             }
 
-            $errorstring .= "<p>Error in line $errline of file '$errfile'.</p>\n";
-            $errorstring .= "<p>Script: '{$_SERVER['PHP_SELF']}'.</p>\n";
-            $errorstring .= '<p><a href="' . $url . '">' . $url . '</a></p>' . "\n";
+            if (isset($errcontext['this'])) {
+                if (is_object($errcontext['this'])) {
+                    $classname = get_class($errcontext['this']);
+                    $parentclass = get_parent_class($errcontext['this']);
+                    $errorstring .= "Object/Class: '$classname', Parent Class: '$parentclass'.\n";
+                }
+            }
+
+            echo '<script>console.error(`' . ($auth->user['admin'] ? $errorstring : 'Server error') . '`);</script>';
+            
+            if (!$admin_email) {
+                return;
+            }
+
+            $headers = 'MIME-Version: 1.0' . "\n";
+            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
+            $headers .= 'From: auto@shiftcreate.com' . "\n";
+            
+            $errorstring .= "Script: '{$_SERVER['PHP_SELF']}'.\n";
+            $errorstring .= $url . "\n";
 
             $var_dump = print_r($_GET, true);
             $var_dump .= print_r($_POST, true);
             $var_dump .= print_r($_SESSION, true);
             $var_dump .= print_r($_SERVER, true);
 
-            if (isset($errcontext['this'])) {
-                if (is_object($errcontext['this'])) {
-                    $classname = get_class($errcontext['this']);
-                    $parentclass = get_parent_class($errcontext['this']);
-                    $errorstring .= "<p>Object/Class: '$classname', Parent Class: '$parentclass'.</p>\n";
-                }
-            }
-
-            $images = [
-                'http://i.huffpost.com/gen/1735626/thumbs/o-GRUMPY-PHARRELL-facebook.jpg',
-            ];
-            shuffle($images);
-
-            //$image = date('m')==12 ? 'http://my.churpchurp.com/images/stories/thumbnails/204423.jpg' : current($images);
-
-            echo '
-			<div style="text-align: center;">
-			<h2>Something went wrong</h2>
-			<p>The webmaster has been notified.</p>
-			<p><img src="' . $image . '"></p>
-			</div>
-			';
-
-            if ($auth->user['admin']) {
-                echo "<p>The following has been reported to the administrator:</p>\n";
-                echo "<strong><pre>$errorstring\n</pre></strong>";
-            }
-
-            $headers = 'MIME-Version: 1.0' . "\n";
-            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
-            $headers .= 'From: auto@shiftcreate.com' . "\n";
-
             $body = $errorstring;
             $body .= '<pre>' . $var_dump . '</pre>';
-
-            if ($admin_email) {
-                // remove null character
-                $body = str_replace("\0", "", $body);
-                
-                mail($admin_email, 'PHP Error ' . $_SERVER['HTTP_HOST'], $body, $headers);
-            }
-
-            //error_log($errorstring, 1, $_SERVER['SERVER_ADMIN']);
-            die();
+            
+            // remove null character
+            $body = str_replace("\0", "", $body);
+            mail($admin_email, 'PHP Error ' . $_SERVER['HTTP_HOST'], $body, $headers);
 
         default:
             break;

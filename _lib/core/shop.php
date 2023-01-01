@@ -143,7 +143,7 @@ class shop
         if (is_numeric($_POST['add_to_basket'])) {
             $quantity = is_numeric($_POST['quantity']) ? $_POST['quantity'] : 1;
 
-            $this->add_to_basket($_POST['add_to_basket'], $quantity, $_POST['buy_now'], $_POST['variation'], $_POST['extras']);
+            $this->add_to_basket((int)$_POST['add_to_basket'], (int)$quantity, $_POST['buy_now'], $_POST['variation'], $_POST['extras']);
         }
 
         if (is_array($_POST['add_to_basket'])) {
@@ -152,7 +152,7 @@ class shop
             }
 
             foreach ($_POST['add_to_basket'] as $k => $v) {
-                $this->add_to_basket($k, $v, null, $_POST['variation'][$k], $_POST['extras'][$k]);
+                $this->add_to_basket((int)$k, (int)$v, null, $_POST['variation'][$k], $_POST['extras'][$k]);
             }
 
             if ($_POST['buy_now']) {
@@ -354,8 +354,8 @@ class shop
             }
         }
 
-        $options = [];
-        if (count($_POST['options'])) {
+        $options = '';
+        if (count((array)$_POST['options'])) {
             $options = json_encode($_POST['options']);
         }
 
@@ -727,9 +727,9 @@ class shop
                 'oid' => $order['id'],
                 'order_id' => $order['id'],
                 'details' => $details,
-                'delivery' => '£' . number_format($order['delivery'], 2),
-                'vat' => '£' . number_format($order['vat'], 2),
-                'total' => '£' . number_format($order['total'], 2),
+                'delivery' => '£' . number_format((float)$order['delivery'], 2),
+                'vat' => '£' . number_format((float)$order['vat'], 2),
+                'total' => '£' . number_format((float)$order['total'], 2),
                 'event_date' => dateformat('d-m-Y', $order['event_date']),
                 'note' => $order['note'],
             ]);

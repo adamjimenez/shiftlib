@@ -373,7 +373,7 @@ class cms
                 $id = $conditions;
                 $conditions = ['id' => $id];
                 $num_results = 1;
-            } elseif (is_string($conditions) && $fields['page name']) {
+            } elseif (is_string($conditions)) {
                 $conditions = ['page name' => $conditions];
                 $num_results = 1;
             } elseif ($conditions['id']) {
@@ -666,10 +666,10 @@ class cms
                     $type = $label['type'];
 
                     // order options by value instead of key
-                    if (in_array($type, ['select', 'combo', 'radio']) && !is_array($vars['opts'][$label])) {
-                        $key = $this->get_option_label($label);
+                    if (in_array($type, ['select', 'combo', 'radio']) && !is_array($vars['options'][$label['column']])) {
+                        $key = $this->get_option_label($vars['options'][$label['column']]);
                         //$order = 'T_' . underscored($label) . '.' . underscored($key);
-                        $order = underscored($label) . '_label';
+                        $order = underscored($label['column']) . '_label';
                     } elseif ($label) {
                         $order = "T_$table." . $label['column'];
                     } else {

@@ -5,7 +5,7 @@ $cookie_secure = ($_SERVER['HTTPS'] === 'on');
 $cookie_params = session_get_cookie_params();
 
 if(PHP_VERSION_ID < 70300) {
-    session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=Lax', $cookie_params['domain'], $cookie_secure, $cookie_params['httponly']);
+    session_set_cookie_params($cookie_params['lifetime'], '/; SameSite=None', $cookie_params['domain'], $cookie_secure, $cookie_params['httponly']);
 } else {
     session_set_cookie_params([
         'lifetime' => $cookie_params['lifetime'],
@@ -13,7 +13,7 @@ if(PHP_VERSION_ID < 70300) {
         'domain' => $cookie_params['domain'],
         'secure' => $cookie_secure,
         'httponly' => $cookie_params['httponly'],
-        //'samesite' => 'None'
+        'samesite' => 'None'
     ]);
 }
 

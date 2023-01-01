@@ -84,7 +84,7 @@ function get_include($request)
     if (strstr($request, '.php')) {
         redirect('http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '', $_SERVER['REQUEST_URI']));
     // redirect if a folder and missing trailing /
-    } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, $tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php')) {
+    } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, (array)$tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php')) {
         redirect('/' . $request . '/');
     // check if template exists
     } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {

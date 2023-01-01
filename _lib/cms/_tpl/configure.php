@@ -493,8 +493,8 @@ if ($_POST['save']) {
                     $schema = sql_query("SELECT table_schema, column_name, generation_expression
                         FROM INFORMATION_SCHEMA.COLUMNS
                         WHERE 
-                            TABLE_NAME = 'orders' AND
-                            COLUMN_NAME = 'delivery_duration' AND
+                            TABLE_NAME = '" . escape($table) . "' AND
+                            COLUMN_NAME = '" . underscored($name) . "' AND
                             TABLE_SCHEMA = '" . $db_config['name'] . "'
                     ", 1);
                     

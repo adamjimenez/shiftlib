@@ -54,7 +54,7 @@ class blog
         $this->conditions = [];
 
         //categories
-        if (count($vars['fields'][$this->table_categories])) {
+        if (count((array)$vars['fields'][$this->table_categories])) {
             $this->categories = sql_query('SELECT * FROM ' . underscored($this->table_categories) . '
 				ORDER BY category
 			');
@@ -194,7 +194,7 @@ class blog
                 }
             }
 
-            if (count($errors)) {
+            if (count((array)$errors)) {
                 print json_encode($errors);
                 exit;
             } elseif ($_POST['validate']) {
@@ -327,7 +327,7 @@ class blog
         }
         if ($asc) {
             asort($b);
-        } else {
+        } else if ($b) {
             arsort($b);
         }
         foreach ($b as $key => $val) {
