@@ -12,10 +12,7 @@
     "phpmailer/phpmailer": "^6.1"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.16",
-    "rector/rector": "^0.6.1",
-    "phpstan/phpstan": "^0.12.3",
-    "phpunit/phpunit": "^8"
+    "friendsofphp/php-cs-fixer": "^2.16"
   },
   "suggest": {
     "sendgrid/sendgrid": "Allows sending of email via sendGrid"
