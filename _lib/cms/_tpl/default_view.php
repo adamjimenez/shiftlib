@@ -4,6 +4,7 @@ if (1 != $auth->user['admin'] and !$auth->user['privileges'][$this->section]) {
     die('access denied');
 }
 
+$section = $this->section;
 $this->set_section($this->section, $_GET['id'], ['read']);
 $content = $this->content;
 
@@ -33,12 +34,28 @@ if (
 }
 
 if ($_POST['custom_button']) {
-    try {
-        $this->buttons[$_POST['custom_button']]['handler']($_GET['id'], $content);
-    } catch (Exception $e) {
-    	$_SESSION['message'] = $e->getMessage();
+    if ($this->section == $_POST['section']) {
+        $items = $_GET['id'];
+    } else {
+        $items = [];
+        if ($_POST['select_all_pages'] || !$_POST['id']) {
+            $items = $this->get($_POST['section'], $_POST);
+        } elseif ($_POST['id']) {
+            foreach ($_POST['id'] as $v) {
+                $items[] = $this->get($_POST['section'], $v);
+            }
+        }
     }
 
+    try {
+        if (is_callable($this->buttons[$_POST['custom_button']]['handler'])) {
+            $this->buttons[$_POST['custom_button']]['handler']($items, $content);
+        }
+    } catch (Exception $e) {
+        $_SESSION['message'] = $e->getMessage();
+    }
+
+    $this->section = $section;
     $content = $this->get($this->section, $_GET['id']);
 }
 
@@ -164,7 +181,7 @@ $qs = http_build_query($qs_arr);
 
                             <span class="holder"></span>
 
-                            <div class="dropdown" style="display: inline-block;">
+                            <div class="dropdown" style="display: inline-block;" data-section="<?=$this->section; ?>">
                                 <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?=underscored($button['section']); ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
@@ -260,6 +277,20 @@ $qs = http_build_query($qs_arr);
                                     require(__DIR__ . '/view.php');
                                 }
                                 ?>
+                            </div>
+                            
+                            <div class="dropdown" style="display: inline-block;" data-section="<?=$this->section; ?>">
+                                <button class="btn btn-secondary" type="button" id="dropdownMenuButton<?=underscored($button['section']); ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
+                                    <?php
+                                    foreach ($this->buttons as $k => $button) {
+                                        if (($this->section == $button['section'] || is_array($button['section']) && in_array($this->section, $button['section'])) && 'list' == $button['page']) {
+                                            require('includes/button.php');
+                                        }
+                                    } ?>
+                                </div>
                             </div>
 
                             <?php

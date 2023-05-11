@@ -68,13 +68,14 @@ class File extends Component implements ComponentInterface
                 $value = '<img src="' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
             }
             
-            $value .= '<a href="' . $previewUrl. '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span>';
+            $value .= '<a href="' . $previewUrl. '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size((int)$file['size']) . '</span>';
         }
         return $value ?: '';
     }
     
     public function processUpload($status, $name, $tmp, $type) {
         if (UPLOAD_ERR_OK !== $status) {
+            //trigger_error("Can't save " . $file_path . '(' . $status . ')', E_USER_ERROR);
             return false;
         }
         
@@ -92,7 +93,9 @@ class File extends Component implements ComponentInterface
         
         // don't overwrote
         if (!file_exists($file_path)) {
-            rename($tmp, $file_path) or trigger_error("Can't save " . $file_path, E_ERROR);
+            rename($tmp, $file_path) or trigger_error("Can't save " . $file_path, E_USER_ERROR);
+        } else {
+            trigger_error("File already exists " . $file_path, E_USER_ERROR);
         }
         
         return $value;

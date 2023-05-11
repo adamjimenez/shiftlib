@@ -89,13 +89,12 @@ function get_include($request)
     // check if template exists
     } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {
         return $root_folder . '/_tpl/' . $request . '.php';
-    // check domain redirects
-    } elseif ($tpl_config['redirects']['http://' . $_SERVER['HTTP_HOST'] . '/']) {
-        $redirect = $tpl_config['redirects']['http://' . $_SERVER['HTTP_HOST'] . '/'];
-        redirect($redirect, 301);
     // check redirects list
     } elseif ($tpl_config['redirects'][$request]) {
         $redirect = $tpl_config['redirects'][$request];
+        if (!starts_with('/', $redirect)) {
+            $redirect = '/' . $redirect;
+        }
         redirect($redirect, 301);
     // check catchers
     } elseif ($catcher = get_tpl_catcher($request)) {

@@ -50,7 +50,7 @@ foreach ($files as $file) {
         $file = substr($file, 5);
     }
 
-    if (in_array($file, $tpl_config['catchers'])) {
+    if (in_array($file, (array)$tpl_config['catchers'])) {
         continue;
     }
 

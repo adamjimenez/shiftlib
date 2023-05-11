@@ -71,9 +71,13 @@ class SelectMultiple extends Select implements ComponentInterface
 			}
 			
             foreach ($value as $key) {
-            	$row = sql_query("SELECT `$col` FROM $table WHERE id = '" . (int)$key . "'", 1);
+        	    $row = sql_query("SELECT `$col` FROM $table WHERE id = '" . (int)$key . "'", 1);
             	
-                $items[] = '<a href="?option=' . escape($this->vars['options'][$name]) . '&view=true&id=' . $key . '">' . current($row) . '</a>';
+            	if ($row) {
+            	    if (is_array($row)) {
+                        $items[] = '<a href="?option=' . escape($this->vars['options'][$name]) . '&view=true&id=' . $key . '">' . current($row) . '</a>';
+            	    }
+            	}
             }
         } else {
             $isAssoc = is_assoc_array($this->vars['options'][$name]);

@@ -138,25 +138,6 @@ $order = 2;
             }
         }];
 
-        <?php
-        /*
-    foreach ($cms_buttons as $k => $button) {
-        if (($this->section == $button['section'] || in_array($this->section, $button['section'])) && 'list' == $button['page']) {
-        ?>
-            buttons.push({
-                text: '<?=is_string($button['label']) ? $button['label'] : $button['label']();?>',
-                action: function ( e, dt, node, config ) {
-                    var form = $(node).closest('form');
-                    form.find('.custom_button').val(<?=$k;?>);
-                    form.submit();
-                }
-            });
-        <?php
-        }
-    }
-    */
-        ?>
-
         var columnDefs = [{
             "targets": 0,
             "render": function (data, type, row, meta) {
@@ -257,9 +238,9 @@ $order = 2;
         });
 
         // move to toolbar
-        table.buttons().container()
-        .appendTo($('.toolbar .holder')).attr('data-section',
-            '<?=$this->section; ?>');
+        table.buttons().container().appendTo($('.toolbar .holder')).attr('data-section','<?=$this->section; ?>');
+        
+        $('.dropdown[data-section="<?=$this->section; ?>"]').appendTo($('.toolbar .holder').parent()).attr('data-section','<?=$this->section; ?>').hide();
 
         // disable buttons that need require a row to be selected
         table.buttons('.rowsRequired').disable()

@@ -358,7 +358,7 @@ $versions = [
     <script src="/_lib/cms/assets/js/scripts.js?v=1"></script>
 
     <script>
-        function button_handler (value, show_prompt, dt) {
+        function button_handler (value, show_prompt, dt, custom_id) {
             if (show_prompt) {
                 var result = confirm('Are you sure?');
 
@@ -401,6 +401,9 @@ $versions = [
                 .attr('name', 'columns')
                 .val(JSON.stringify(dt.columns().visible().toArray()))
             );
+
+            // columns
+            $('.custom_button').val(parseInt(custom_id));
 
             form.submit();
         }

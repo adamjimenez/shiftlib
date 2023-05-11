@@ -45,18 +45,7 @@ class Integer extends Component implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        // check for range
-        $pos = is_string($value) ? strrpos($value, '-') : null;
-
-        if ($pos > 0) {
-            $min = substr($value, 0, $pos);
-            $max = substr($value, $pos + 1);
-
-            $where = '(' .
-                $tablePrefix . $fieldName . " >= '" . escape($min) . "' AND " .
-                $tablePrefix . $fieldName . " <= '" . escape($max) . "'
-            )";
-        } elseif (is_array($value)) {
+        if (is_array($value)) {
             $valueStr = '';
             foreach ($value as $v) {
                 $valueStr .= (int) ($v) . ',';
@@ -65,11 +54,25 @@ class Integer extends Component implements ComponentInterface
 
             $where = $tablePrefix . $fieldName . ' IN (' . escape($valueStr) . ')';
         } else {
-            if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
-                $func = '=';
+            // check for range
+            $pos = strrpos($value, '-');
+            
+            if ($pos > 0) {
+                $min = substr($value, 0, $pos);
+                $max = substr($value, $pos + 1);
+    
+                $where = '(' .
+                    $tablePrefix . $fieldName . " >= '" . escape($min) . "' AND " .
+                    $tablePrefix . $fieldName . " <= '" . escape($max) . "'
+                )";
+            } else {
+        
+                if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
+                    $func = '=';
+                }
+    
+                $where = $tablePrefix . $fieldName . ' ' . $func . " '" . escape($value) . "'";
             }
-
-            $where = $tablePrefix . $fieldName . ' ' . $func . " '" . escape($value) . "'";
         }
 
         return $where;

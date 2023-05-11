@@ -80,7 +80,7 @@ class cms
     /**
     * @return array
     */
-    public function getContent(): array
+    public function getContent(): ?array
     {
         return $this->content;
     }
@@ -321,9 +321,9 @@ class cms
             }
 
             $row = sql_query("SELECT * FROM files
-            WHERE
-        	    id='" . escape($file_id) . "'
-        ", 1) or die('file not found');
+                WHERE
+            	    id='" . escape($file_id) . "'
+            ", 1);
 
             header('Content-type: ' . $row['type']);
             header('Content-Disposition: inline; filename="' . $row['name'] . '"');
@@ -336,6 +336,10 @@ class cms
                 $max_height = $_GET['h'] ?: 240;
 
                 $img = imageorientationfix($this->file_upload_path . $row['id']);
+                if (!$img) {
+                    return false;
+                }
+                
                 $img = thumb_img($img, [$max_width, $max_height], false);
                 $ext = file_ext($row['name']);
 
@@ -454,10 +458,9 @@ class cms
                         if (isset($value) && ($value !== '' || $conditions['func'][$field_name])) {
                             if ($component = $this->get_component($type)) {
                                 // deprecated
-                                if (is_array($conditions) && $conditions['end'][$field_name]) {
+                                if (is_array($conditions) && is_array($conditions['func']) && is_array($conditions['end']) && $conditions['end'][$field_name]) {
                                     $conditions['func'][$field_name] = ['end' => $conditions['end'][$field_name]];
                                 }
-                                
                                 
                                 $where[] = $component->conditionsToSql($field_name, $value, $conditions['func'][$field_name], "T_$table.");
                             }
@@ -480,8 +483,8 @@ class cms
 
                     foreach ($fields as $name => $field) {
                         $type = $field['type'];
-
-                        if (!in_array($type, ['text', 'textarea', 'editor', 'email', 'mobile', 'select', 'id'])) {
+                        
+                        if (!in_array($type, ['text', 'textarea', 'editor', 'email', 'mobile', 'select', 'postcode', 'id'])) {
                             continue;
                         }
 
@@ -516,12 +519,14 @@ class cms
                 }
             }
 
-            // additional custom conditions
+            // additional custom conditions // disabled for security
+            /*
             foreach ($conditions as $k => $v) {
                 if (is_int($k)) {
                     $where[] = $v;
                 }
             }
+            */
 
             // create where string
             $where_str = '';
@@ -1077,14 +1082,14 @@ class cms
                     if (in_array($type, ['file', 'files'])) {
                         $value = $this->content[$name];
 
-                        if ($value) {
+                        if (is_string($value)) {
                             $files = ($type === 'file') ? [$value] : explode("\n", $value);
 
                             foreach ($files as $file_id) {
                                 $row = sql_query("SELECT * FROM files
-                            WHERE
-                        	    id='" . escape($file_id) . "'
-                        ", 1) or die('file not found');
+                                    WHERE
+                                	    id='" . escape($file_id) . "'
+                                ", 1);
 
                                 $attachments[] = [
                                     'name' => $row['name'],
@@ -1223,6 +1228,12 @@ class cms
                     if (!$type) {
                         if ($name == 'id') {
                             $type = 'id';
+                        } else if(strstr($row['Type'], 'int')) {
+                        	$type = 'int';
+                        } else if(strstr($row['Type'], 'datetime')) {
+                        	$type = 'datetime';
+                        } else {
+                        	$type = 'text';
                         }
                     }
 
@@ -1249,7 +1260,7 @@ class cms
                     $data = $_POST;
                 }
 
-                $errors = $this->trigger_event('beforeValidate', ['data' => $data]);
+                $errors = $this->trigger_event('beforeValidate', [$data]);
 
                 if (false === is_array($errors)) {
                     $errors = [];
@@ -1411,7 +1422,7 @@ class cms
                 }
 
                 // fire event
-                $result = $this->trigger_event('beforeSave', ['data' => $data]);
+                $result = $this->trigger_event('beforeSave', [$data]);
 
                 if ($result === false) {
                     return false;

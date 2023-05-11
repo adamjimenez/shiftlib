@@ -93,7 +93,7 @@ class Files extends File implements ComponentInterface
                     $html .= '<img src="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '&w=320&h=240" id="' . $name . '_thumb" /><br />';
                 }
 
-                $html .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size($file['size']) . '</span><br><br>';
+                $html .= '<a href="https://' . $_SERVER['HTTP_HOST'] . '/' . $previewUrl . '">' . $file['name'] . '</a> <span style="font-size:9px;">' . file_size((int)$file['size']) . '</span><br><br>';
             }
         }
 
@@ -124,10 +124,14 @@ class Files extends File implements ComponentInterface
 
         if ($this->cms->id) {
             $oldFiles = $this->cms->content[$fieldName];
+            
+            if (!is_array($oldFiles)) {
+                $oldFiles = [$oldFiles];
+            }
 
             //clean up old files
             foreach ($oldFiles as $old_file) {
-                $fileId = (int)$old_file['id'];
+                $fileId = (int)$old_file;
 
                 if (!in_array($fileId, $files)) {
                     sql_query("DELETE FROM files

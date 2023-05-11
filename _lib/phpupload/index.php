@@ -20,7 +20,7 @@ function get_all_headers()
 $auth->check_login();
 $cms->check_permissions();
 
-if (1 != $auth->user['admin'] && 2 != $auth->user['privileges']['uploads']) {
+if (1 != $auth->user['admin'] && $auth->user['privileges']['uploads'] < 2) {
     die('Permission denied.');
 }
 
@@ -305,6 +305,10 @@ if ($_GET['cmd']) {
                 $angle = ('rotateLeft' == $_GET['cmd']) ? 90 : -90;
                 
                 $img = imagecreatefromfile($path . $_GET['name']);
+                
+                if (!$img) {
+                    break;
+                }
                 
                 // rotate the image by $angle degrees
                 $rotated = imagerotate($img, $angle, 0);

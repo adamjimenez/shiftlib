@@ -68,7 +68,7 @@ class shop
             'extras' => 'textarea',
             'quantity' => 'int',
         ];
-        $cms->check_table('basket', $basket_fields);
+        //$cms->check_table('basket', $basket_fields);
 
         $orders_fields = [
             'date' => 'datetime',
@@ -91,7 +91,7 @@ class shop
             'dispatched_date' => 'datetime',
             'refund_date' => 'datetime',
         ];
-        $cms->check_table('orders', $orders_fields);
+        //$cms->check_table('orders', $orders_fields);
 
         $order_items_fields = [
             'order' => 'int',
@@ -102,7 +102,7 @@ class shop
             'cost' => 'decimal',
             'quantity' => 'int',
         ];
-        $cms->check_table('order_items', $order_items_fields);
+        //$cms->check_table('order_items', $order_items_fields);
 
         if ($_SESSION['guest']) {
             $this->guest = $_SESSION['guest'];
@@ -171,11 +171,21 @@ class shop
 					)
 			");
 
-            if ($select_code) {
-                $_SESSION['code'] = $_POST['code'];
-            } else {
-                $_SESSION['error'] = 'Invalid promo code.';
+            $errors = [];
+            if (!$select_code) {
+                $errors[] = 'code Invalid promo code';
             }
+			
+            //handle validation
+            if (count($errors)) {
+                //validateion failed
+                die(json_encode($errors));
+            } elseif ($_POST['validate']) {
+                //validation passed
+                die('1');
+            }
+            
+            $_SESSION['code'] = $_POST['code'];
         }
 
         if ($_POST['update_basket']) {
@@ -185,17 +195,15 @@ class shop
         $this->delivery = 0;
         $this->get_basket();
 
-        if ($_SESSION['code'] and table_exists('promo_codes')) {
+        if ($_SESSION['code'] && table_exists('promo_codes')) {
             //lookup discount
             $promo = sql_query("SELECT * FROM promo_codes WHERE code='" . escape($_SESSION['code']) . "'", 1);
 
-            if ($promo) {
-                if ($promo['discount']) {
-                    $this->promo = $promo;
+            if ($promo && $promo['discount']) {
+                $this->promo = $promo;
 
-                    if (!$promo['min_spend'] or $promo['min_spend'] < $this->subtotal) {
-                        $this->set_discount($promo['discount']);
-                    }
+                if (!$promo['min_spend'] || $promo['min_spend'] < $this->subtotal) {
+                    $this->set_discount($promo['discount']);
                 }
             }
         }
@@ -467,6 +475,7 @@ class shop
 
     public function set_discount($discount)
     {
+        $discount = preg_replace("/[^0-9%]/", "", $discount);
         if ('%' == substr($discount, -1)) {
             $this->discount = ($discount / 100) * ($this->subtotal);
         } else {

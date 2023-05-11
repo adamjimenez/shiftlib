@@ -82,9 +82,9 @@ if ($_POST['custom_button']) {
 
                     <button type="button" class="btn btn-default" id="advancedSearch">Advanced search</button>
 
-                    <?php if (count($_GET) > 1) {
-                        ?>
-                        <?php if ($filter_exists) {
+                    <?php 
+                    if (count($_GET) > 1) {
+                        if ($filter_exists) {
                             ?>
                             <button type="button" class="btn btn-default delete_filter" title="Delete filter"><i
                                 class="fas fa-trash"></i></button>
@@ -94,9 +94,9 @@ if ($_POST['custom_button']) {
                             <button type="button" class="btn btn-default save_filter" title="Save filter"><i
                                 class="fas fa-save"></i></button>
                             <?php
-                        } ?>
-                        <?php
-                    } ?>
+                        }
+                    } 
+                    ?>
                 </div>
 
                 <!-- Modal -->
@@ -152,12 +152,11 @@ if ($_POST['custom_button']) {
 
                             <div class="dropdown" style="display: inline-block;">
                                 <button class="btn btn-secondary" type="button"
-                                    id="dropdownMenuButton<?= underscored($button['section']); ?>"
+                                    id="dropdownMenuButton<?=underscored($button['section']); ?>"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
-                                <div class="dropdown-menu"
-                                    aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<?=underscored($button['section']); ?>">
                                     <?php
                                     foreach ($this->buttons as $k => $button) {
                                         if (($this->section == $button['section'] || is_array($button['section']) && in_array($this->section, $button['section'])) && 'list' == $button['page']) {

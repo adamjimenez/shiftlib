@@ -620,21 +620,25 @@ function dateformat($format, $date = null, $uk = true)
 }
 
 // show debug message to admin
-function debug($var, $die = false)
+function debug($log = '')
 {
-    global $auth;
-
-    if ($auth->user['admin']) {
-        
-        $bt = debug_backtrace();
-        $caller = array_shift($bt);
-        
-        print '<script>console.log("PHP DEBUG '.$caller['file'].': '.$caller['line'].'"); console.log(' . json_encode($var) . ');</script>';
-
-        if ($die) {
-            exit;
-        }
-    }
+    $bt = debug_backtrace();
+    $caller = array_shift($bt);
+    
+    $log = [
+        'log' => $log,
+        'backtrace' => $bt,
+        /*
+        'vars' => [
+            '$_SESSION' => $_SESSION,
+            '$_POST' => $_POST,
+            '$_GET' => $_GET,
+            '$_SERVER' => $_SERVER,
+        ],
+        */
+    ];
+    
+    print '<script>console.log("PHP DEBUG '.$caller['file'].': '.$caller['line'].'"); console.log(' . json_encode($log) . ');</script>';
 }
 
 // send an email
@@ -1435,6 +1439,11 @@ function reload() {
 
 function redirect($url, $http_response_code = null)
 {
+    if (php_sapi_name() == 'cli') {
+        print 'redirect to ' . $url . PHP_EOL;
+        return false;   
+    }
+    
     if (true === $http_response_code) {
         $http_response_code = 301;
     }
@@ -1562,7 +1571,7 @@ function send_msg($msg) {
 	$data = is_array($msg) ? $msg  : ['msg' => $msg];
 	$data['id'] = $msg_id;
 	
-	$line = 'data: ' . json_encode($data)  . "\n";
+	$line = 'data: ' . json_encode($data) . PHP_EOL;
     print_flush($line);
 }
 
@@ -1685,20 +1694,24 @@ if (!function_exists('str_contains')) {
 **/
 function st_distance($coord1, $coord2, $earthRadius = 6371000)
 {
-  // convert from degrees to radians
-  $coord1 = explode(' ', $coord1);
-  $coord2 = explode(' ', $coord2);
-  
-  $latFrom = deg2rad((float)$coord1[0]);
-  $lonFrom = deg2rad((float)$coord1[1]);
-  $latTo = deg2rad((float)$coord2[0]);
-  $lonTo = deg2rad((float)$coord2[1]);
-  
-  $latDelta = $latTo - $latFrom;
-  $lonDelta = $lonTo - $lonFrom;
-
-  $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
-  return $angle * $earthRadius;
+    // convert from degrees to radians
+    if (is_string($coord1)) {
+        $coord1 = explode(' ', $coord1);
+    }
+    if (is_string($coord2)) {
+        $coord2 = explode(' ', $coord2);
+    }
+    
+    $latFrom = deg2rad((float)$coord1[0]);
+    $lonFrom = deg2rad((float)$coord1[1]);
+    $latTo = deg2rad((float)$coord2[0]);
+    $lonTo = deg2rad((float)$coord2[1]);
+    
+    $latDelta = $latTo - $latFrom;
+    $lonDelta = $lonTo - $lonFrom;
+    
+    $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+    return $angle * $earthRadius;
 }
 
 function str_to_pagename($page_name): string

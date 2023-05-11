@@ -19,8 +19,16 @@ if (false !== $label) {
     } else {
         ?>
 	<form method="post" <?php if ($button['target']) { ?>target="<?=$button['target'];?>"<?php } ?> style="display:inline" <?php if ($button['confirm']) { ?>onsubmit="return confirm('<?=escape($button['confirm']);?>');"<?php } ?>>
-	<input type="hidden" name="custom_button" value="<?=$k; ?>">
-	    <button class="dropdown-item" href="#" <?=$disabled; ?>><?=$label?></button>
+	    <input type="hidden" name="section" value="<?=$this->section; ?>">
+	    <input type="hidden" name="custom_button" value="<?=$k; ?>">
+	    
+	    <?php 
+	    if ($button['page'] === 'view') {
+	    ?>
+	    <button type="submit" class="dropdown-item" href="#" <?=$disabled; ?>><?=$label?></button>
+	    <?php } else { ?> 
+	    <button type="button" class="dropdown-item" href="#" <?=$disabled; ?> onclick="var table = $('#dataTable-<?=underscored($button['section']);?>').DataTable(); button_handler('custom', false, table, '<?=$k; ?>');"><?=$label?></button>
+	    <?php } ?>
 	</form>
 	<?php
     }

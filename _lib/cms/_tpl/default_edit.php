@@ -21,11 +21,11 @@ foreach ($fields as $name => $field) {
 }
 
 if ($this->id and $this->section) {
-    $cancel_url = '?option=' . $this->section . '&view=true&id=' . $this->id . '&' . $this->section . '=' . $this->content[$section];
+    $cancel_url = '?option=' . spaced($this->section) . '&view=true&id=' . $this->id . '&' . $this->section . '=' . $this->content[$section];
 } elseif ($this->section) {
-    $cancel_url = '?option=' . $vars['options'][$section] . '&view=true&id=' . $this->content[underscored($section)];
+    $cancel_url = '?option=' . spaced($vars['options'][$section]) . '&view=true&id=' . $this->content[underscored($section)];
 } else {
-    $cancel_url = '?option=' . $this->section;
+    $cancel_url = '?option=' . spaced($this->section);
 }
 
 $qs_arr = $_GET;
