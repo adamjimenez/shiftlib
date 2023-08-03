@@ -19,7 +19,7 @@ $versions = [
 
     <title>Admin Area | <?=$title ?: 'Main'; ?></title>
 
-    <?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome', 'lightbox', 'vue', 'google']); ?>
+    <?php load_js(['jqueryui', 'bootstrap', 'cms', 'fontawesome', 'lightbox', 'vue3', 'google']); ?>
     <script type="text/javascript" src="/_lib/cms/assets/js/list.js?v=6"></script>
     <script type="text/javascript" src="/_lib/cms/assets/js/ui.list.js"></script>
 

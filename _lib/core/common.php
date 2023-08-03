@@ -162,7 +162,7 @@ function image($file, $w = null, $h = null, $attribs = '', $crop = false)
 
         $cache_name = preg_replace("/[^A-Za-z0-9\-\.]/", '', urldecode($file));
 
-        $cached .= $w . 'x' . $h . ($crop ? '(1)': '') . '-' . $cache_name;
+        $cached .= $w . 'x' . $h . ($crop ? '_1': '') . '-' . $cache_name;
 
         if (!file_exists($cached) or filemtime($cached) < filemtime('uploads/' . $file)) {
             ini_set('gd.jpeg_ignore_warning', 1); // fixes an issue when previewing corrupt jpegs
@@ -189,25 +189,34 @@ function image($file, $w = null, $h = null, $attribs = '', $crop = false)
             // If an image was successfully loaded, test the image for size
             if ($img) {
                 // Get image size and scale ratio
-                $width = imagesx($img);
-                $height = imagesy($img);
+                $src_width = imagesx($img);
+                $src_height = imagesy($img);
 
                 if (!$w and !$h) {
                     $scale = 1;
                 } elseif ($crop) {
-                    $scale = max($max_width / $width, $max_height / $height);
+                    $scale = max($max_width / $src_width, $max_height / $src_height);
                 } else {
-                    $scale = min($max_width / $width, $max_height / $height);
+                    $scale = min($max_width / $src_width, $max_height / $src_height);
                 }
 
                 // If the image is larger than the max shrink it
                 if ($scale < 1) {
-                    $new_width = floor($scale * $width) - 1;
-                    $new_height = floor($scale * $height) - 1;
+                    $new_width = floor($scale * $src_width) - 1;
+                    $new_height = floor($scale * $src_height) - 1;
 
                     // Create a new temporary image
+                    
+                    $offset_y = 0;
+                    $offset_x = 0;
                     if ($crop) {
                         $tmp_img = imagecreatetruecolor($w, $h);
+                        
+                        if (($max_width / $src_width) > ($max_height / $src_height)) {
+                            $offset_y = ($src_height - ($max_height / $scale)) / 2;
+                        } else {
+                            $offset_x = ($src_width - ($max_width / $scale)) / 2;
+                        }
                     } else {
                         $tmp_img = imagecreatetruecolor($new_width, $new_height);
                     }
@@ -218,7 +227,7 @@ function image($file, $w = null, $h = null, $attribs = '', $crop = false)
                     imagefill($tmp_img, 0, 0, $white);
 
                     // Copy and resize old image into new image
-                    imagecopyresampled($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+                    imagecopyresampled($tmp_img, $img, 0, 0, $offset_x, $offset_y, $new_width, $new_height, $src_width, $src_height);
 
                     if ('gif' == $ext) {
                         $transparencyIndex = imagecolortransparent($img);
@@ -730,7 +739,7 @@ function send_mail($opts = []): bool
         
     if ($is_html) {
         $headers = 'MIME-Version: 1.0' . "\n";
-        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\n";
+        $headers .= 'Content-type: text/html; charset=utf-8' . "\n";
     }
         
     if ($opts['from_email']) {
@@ -1195,6 +1204,9 @@ function load_js($libs)
             case 'vuetify2':
                 $deps['vue2'] = true;
             break;
+            case 'vuetify3':
+                $deps['vue3'] = true;
+            break;
         }
 
         $deps[$lib] = true;
@@ -1207,35 +1219,31 @@ function load_js($libs)
 	<?php
     }
 
-    if ($deps['vue']) {
-        ?>
-        <script src="https://unpkg.com/vue@3.2.37"></script>
-	<?php
-    }
-
     if ($deps['vue2']) {
         ?>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 	<?php
     }
 
-    if ($deps['vuetify']) {
+    if ($deps['vue3']) {
         ?>
-        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet"> 
-        <link href="https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet"> 
-        <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet"> 
-
-        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.0.0-beta.14/dist/vuetify.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.0.0-beta.14/dist/vuetify.min.js"></script>
+        <script src="https://unpkg.com/vue@3.2.37"></script>
 	<?php
     }
 
     if ($deps['vuetify2']) {
         ?>
-        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+	<?php
+    }
+
+    if ($deps['vuetify3']) {
+        ?>
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.2/dist/vuetify.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.2/dist/vuetify.min.js"></script>
 	<?php
     }
 
