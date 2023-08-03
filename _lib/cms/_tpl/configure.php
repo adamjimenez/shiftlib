@@ -322,8 +322,9 @@ if ($_POST['cmd']) {
                     $null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
                     $action = $_POST['cmd'] == 'add_field' ? 'ADD' : 'CHANGE `' . underscored($_POST['field']) . '`';
                     $collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' :  '';
+                    $extra = ($_POST['name'] === 'id') ? 'AUTO_INCREMENT' : '';
 
-                    $query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($_POST['name']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " COMMENT '" . $comment . "' ";
+                    $query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($_POST['name']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $extra . " COMMENT '" . $comment . "' ";
 
                     sql_query($query);
                     break;
@@ -542,7 +543,11 @@ if ($_POST['save']) {
             }
             
             if (!$has_id) {
-                sql_query("ALTER TABLE `" . $table . "` DROP IF EXISTS `id`");
+                $col = sql_query("SHOW COLUMNS FROM `" . $table . "` LIKE 'id'", 1);
+                
+                if ($col) {
+                    sql_query("ALTER TABLE `" . $table . "` DROP COLUMN `id`");
+                }
             }
         }
     }
