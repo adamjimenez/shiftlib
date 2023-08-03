@@ -941,7 +941,7 @@ class cms
                 }
 
                 // get field widget
-                public function get_field(string $name, $attribs = '', $placeholder = '', $separator = null, $where = false): string
+                public function get_field(string $name, $attribs = '', $placeholder = '', $separator = null): string
                 {
                     global $vars;
 
@@ -1197,7 +1197,7 @@ class cms
             }
 
             public function get_fields($section) {
-                global $vars;
+                global $vars, $db_config;
 
                 if (!$section) {
                     return false;
@@ -1207,7 +1207,22 @@ class cms
                 	return $this->sections[$section];
                 }
 
-                $rows = sql_query("SHOW FULL COLUMNS FROM `" . escape(underscored($section)) . "`");
+                //$rows = sql_query("SHOW FULL COLUMNS FROM `" . escape(underscored($section)) . "`");
+
+                $rows = sql_query("SELECT 
+                	COLUMN_NAME AS `Field`,
+                	COLUMN_TYPE AS `Type`,
+                	COLLATION_NAME AS `Collation`,
+                	IS_NULLABLE AS `Null`,
+                	COLUMN_KEY AS `Key`,
+                	COLUMN_DEFAULT AS `Default`,
+                	EXTRA AS `Extra`,
+                	PRIVILEGES AS `Privileges`,
+                	COLUMN_COMMENT AS `Comment`
+                FROM information_schema.columns WHERE 
+                	TABLE_NAME = '" . escape(underscored($section)) . "' AND
+                	TABLE_SCHEMA = '" . $db_config['name'] . "'
+                ");
 
                 $fields = [];
                 foreach ($rows as $row) {

@@ -119,6 +119,8 @@ class SelectMultiple extends Select implements ComponentInterface
         if (!is_array($value)) {
             $value = [$value];
         }
+
+        $operator_str = is_array($func) && $func['operator'] == 'not in' ? 'IS NULL' : 'IS NOT NULL';
         
         foreach($value as $val) {
             $ors = [];
@@ -128,7 +130,7 @@ class SelectMultiple extends Select implements ComponentInterface
             }
             
             foreach ($val as $v) {
-        	    $ors[] = 'JSON_SEARCH(' . $tablePrefix . $fieldName . ", 'all', '" . escape($v) . "') IS NOT NULL";
+        	    $ors[] = 'JSON_SEARCH(' . $tablePrefix . $fieldName . ", 'all', '" . escape($v) . "') " . $operator_str;
             }
         	
         	$ands[] = '(
@@ -154,11 +156,16 @@ class SelectMultiple extends Select implements ComponentInterface
         if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             $this->vars['options'][$name] = $this->get_options($name);
         }
+        
+        $options = [
+            'in' => 'In',
+            'not in' => 'Not in',
+        ];
 
         $html = [];
-
         $html[] = '<div>';
         $html[] = '     <label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '     <select name="func[' . $fieldName . '][operator]">' . html_options($options, $_GET['func'][$fieldName]['operator']) . '</select>';
         $html[] = '</div>';
         $html[] = '<div style="max-height: 200px; width: 200px; overflow: scroll">';
         $isAssoc = is_assoc_array($this->vars['options'][$name]);

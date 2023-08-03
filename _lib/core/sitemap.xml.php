@@ -13,14 +13,23 @@ function get_dir_contents($files, $dirstr = '_tpl/')
             or 'admin.php' == $filename
             or 'template.php' == $filename
             or '404.php' == $filename
-            or strstr($pathname, 'dev')
-            or strstr($pathname, 'old')
-            or strstr($pathname, 'includes')
-            or strstr($pathname, 'misc')
         ) {
             continue;
         }
-
+        
+        $exclude_dirs = ['dev', 'old', 'inc', 'includes', 'misc', 'webhooks', 'api', 'cron'];
+        
+        $found = false;
+        foreach ($exclude_dirs as $dir) {
+            if (starts_with($pathname, '_tpl/' . $dir . '/')) {
+                $found = true;
+            }
+        }
+        
+        if ($found) {
+            continue;
+        }
+        
         if ('.' != $filename and '..' != $filename and $pathname != $dirstr) {
             if (is_dir($pathname)) {
                 $files = get_dir_contents($files, $pathname . '/');

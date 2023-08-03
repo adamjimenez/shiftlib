@@ -1945,8 +1945,7 @@ label {
     font-weight: 500;
     color: #666;
     display: inline-block;
-    margin-bottom: 8px;
-    margin-bottom: .5rem;
+    margin: 0;
 }
 
 .font-14 {

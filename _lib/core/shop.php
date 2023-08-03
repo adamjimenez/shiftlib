@@ -160,7 +160,8 @@ class shop
             }
         }
 
-        if ($_POST['code'] && table_exists('promo_codes')) {
+        global $request;
+        if ($request !== 'admin' && $_POST['code'] && table_exists('promo_codes')) {
             //lookup discount
             $select_code = sql_query("SELECT * FROM promo_codes
 				WHERE

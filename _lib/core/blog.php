@@ -119,9 +119,7 @@ class blog
             } elseif ('tags' == $sections[($this->blog_index + 1)]) {
                 $this->conditions['tags'] = '*' . $sections[($this->blog_index + 2)] . '*';
             } elseif ($sections[($this->blog_index + 1)] and 'index' !== $sections[($this->blog_index + 1)]) {
-                $request_uri = $_SERVER['REQUEST_URI'];
-                $pos = strpos($request_uri, '/', $this->blog_index + 1);
-                $this->conditions['page_name'] = substr($request_uri, $pos + 1);
+                $this->conditions['page_name'] = $sections[($this->blog_index + 1)];
                 $this->article = true;
             } else {
                 $this->conditions['func']['date'] = '<';
