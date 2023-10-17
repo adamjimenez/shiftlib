@@ -293,7 +293,7 @@ if ($_POST['cmd']) {
             case 'delete_table':
                 if (in_array($v, ['id'])) {
                     //don't drop id!
-                    continue;
+                    break;
                 }
 
                 if (!$_POST['table']) {
@@ -353,7 +353,7 @@ if ($_POST['cmd']) {
                 case 'delete_field':
                     if (in_array($v, ['id'])) {
                         //don't drop id!
-                        continue;
+                        break;
                     }
 
                     if (!$_POST['table']) {
