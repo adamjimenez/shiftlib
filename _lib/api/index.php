@@ -86,21 +86,17 @@ switch ($_GET['cmd']) {
         
         $cols .= '`' . underscored($field) . '`';
         
-        if ($fields['parent']) {
-            $options = $this->get_children($vars['options'][$name], $fields['parent']);
-        } else {
-            $rows = sql_query("SELECT id, $cols FROM
-                $table
-                WHERE
-                    `$field` LIKE '" . escape($_GET['term']) . "%'
-                ORDER BY `" . underscored($field) . '`
-                LIMIT 10
-            ');
-    
-            $options = [];
-            foreach ($rows as $row) {
-                $options[$row['id']] = $row[underscored($field)];
-            }
+        $rows = sql_query("SELECT id, $cols FROM
+            $table
+            WHERE
+                `$field` LIKE '" . escape($_GET['term']) . "%'
+            ORDER BY `" . underscored($field) . '`
+            LIMIT 10
+        ');
+
+        $options = [];
+        foreach ($rows as $row) {
+            $options[$row['id']] = $row[underscored($field)];
         }
         
         $results = [];
