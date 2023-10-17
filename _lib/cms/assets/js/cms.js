@@ -491,7 +491,7 @@ function initForms()
     
                     var el = $('\
                     <div>\
-                        <div class="modal" id="info" tabindex="-1" role="dialog">\
+                        <div class="coordsModal modal" id="info" tabindex="-1" role="dialog">\
                           <div class="modal-dialog" role="document">\
                             <div class="modal-content">\
                               <div class="modal-header">\
@@ -533,6 +533,10 @@ function initForms()
                     modalInput.change(function () {
                         field.value = this.value
                         
+                        if (!this.value) {
+                            return;
+                        }
+                        
                         // update map
                         var coords = this.value.split(', ');
                         var latLng = new google.maps.LatLng(coords[0], coords[1]);
@@ -541,7 +545,169 @@ function initForms()
                     
                     // open modal on focus
                     $(field).focus(function() {
-                        el.find('.modal').modal('show');
+                        el.find('.coordsModal').modal('show');
+                        modalInput.focus();
+                    });
+    			});
+    		}});
+	    }
+	}
+    
+	// polygon
+	if ($("input[data-type='polygon']").length) {
+	    var maps = [];
+	    var polygonInputs = $("input[data-type='polygon']");
+	    var key = $("input[data-type='polygon']").data('key');
+	    
+	    if (key) {
+    		google.load("maps", "3", {other_params: "sensor=false&key=" + key, "callback" : function(){
+    			jQuery.each(polygonInputs, function() {
+    				var field = this;
+    
+                    var el = $('\
+                    <div>\
+                        <div class="modal polygonModal" tabindex="-1" role="dialog">\
+                          <div class="modal-dialog" role="document" style="max-width: 95%;">\
+                            <div class="modal-content">\
+                              <div class="modal-header">\
+                                <input type="text" style="width: 100%;">\
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
+                                  <span aria-hidden="true">&times;</span>\
+                                </button>\
+                              </div>\
+                              <div class="modal-body">\
+                                <div class="polygon-map" style="width: 100%; height: 85vh;"></div>\
+                              </div>\
+                            </div>\
+                          </div>\
+                        </div>\
+                    </div>\
+                    ').appendTo(this.parentNode);
+                    
+                    // load map
+                    var points = [];
+                    if (this.value) {
+                        points = this.value.split(',');
+                    }
+                    
+    				var coords = points[0] ? points[0].split(' ') : [51.8100844,-0.02911359999995966];
+    				var latlng = new google.maps.LatLng(coords[0], coords[1]);
+    				
+                    var mapStyles = [
+                        {
+                            featureType: "poi",
+                            elementType: "labels",
+                            stylers: [
+                                  { visibility: "off" }
+                            ]
+                        }
+                    ];
+    				
+    				var myOptions = {
+    					zoom: 18,
+    					center: latlng,
+    					mapTypeId: google.maps.MapTypeId.ROADMAP,
+    					fullscreenControl: false,
+                        styles: mapStyles
+    				};
+    				maps[this.name] = new google.maps.Map(el.find('.polygon-map').get(0), myOptions);
+    				
+    				// polygon drawing
+    				var map = maps[this.name];
+                    
+                    var addPoint = function (clickEvent) {
+                        if (isClosed)
+                            return;
+                        var markerIndex = poly.getPath().length;
+                        var isFirstMarker = markerIndex === 0;
+                        var marker = new google.maps.Marker({ map: map, position: clickEvent.latLng, draggable: true });
+                        if (isFirstMarker) {
+                            google.maps.event.addListener(marker, 'click', addPolygon);
+                        }
+                        google.maps.event.addListener(marker, 'drag', function (dragEvent) {
+                            poly.getPath().setAt(markerIndex, dragEvent.latLng);
+                            
+                            updateInput();
+                        });
+                        poly.getPath().push(clickEvent.latLng);
+                    }
+                    
+                    var addPolygon = function () {
+                        if (isClosed)
+                            return;
+                        var path = poly.getPath();
+                        
+                        if (!path.length) {
+                            return;
+                        }
+                        
+                        poly.setMap(null);
+                        poly = new google.maps.Polygon({ map: map, path: path, strokeColor: "#FF0000", strokeOpacity: 0.8, strokeWeight: 2, fillColor: "#FF0000", fillOpacity: 0.35 });
+                        isClosed = true;
+                        
+                        updateInput();
+                    }
+                    
+                    var updateInput = function() {
+                        var value = '';
+                        if (isClosed) {
+                            const vertices = poly.getPath();
+                            
+                            // Iterate over the vertices.
+                            for (let i = 0; i < vertices.getLength(); i++) {
+                                const xy = vertices.getAt(i);
+                            
+                                value += xy.lat() + ' ' + xy.lng() + ',';
+                            }
+                        }
+                        
+					    field.value = value;
+					    modalInput.val(field.value);
+                    }
+
+                    var isClosed = false;
+                    var poly = new google.maps.Polyline({ map: map, path: [], strokeColor: "#FF0000", strokeOpacity: 1.0, strokeWeight: 2 });
+                    google.maps.event.addListener(map, 'click', addPoint);
+    
+    				// update coordinates after dragging
+                    var modalInput = el.find('.modal-header input');
+                    modalInput.val(field.value);
+                    
+                    // add initial points
+				    var bounds = new google.maps.LatLngBounds();
+                    points.forEach(function (coords) {
+                        var coords = coords.split(' ');
+                        var latLng = new google.maps.LatLng(coords[0], coords[1]);
+                        
+                        addPoint({
+                            latLng: latLng
+                        });
+                        
+    					bounds.extend(latLng);
+                    })
+                    addPolygon();
+                    if (points.length) {
+                        map.fitBounds(bounds);
+                    }
+                    
+                    // handle manual input
+                    modalInput.change(function () {
+                        field.value = this.value
+                        
+                        if (!this.value) {
+                            return;
+                        }
+                        
+                        // update map
+                        var point = this.value.split(',')[0];
+                        var coords = point.split(' ');
+                        var latLng = new google.maps.LatLng(coords[0], coords[1]);
+                        maps[field.name].setCenter(latLng);
+                    });
+                    
+                    // open modal on focus
+                    $(field).focus(function() {
+                        el.find('.polygonModal').modal('show');
                         modalInput.focus();
                     });
     			});

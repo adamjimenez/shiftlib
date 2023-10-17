@@ -1356,7 +1356,9 @@ class cms
                 }
 
                 if ($recaptcha) {
-                    if (!$this->verifyRecaptcha($data['g-recaptcha-response'])) {
+                    if ($data['validate'] && !$data['g-recaptcha-response']) {
+                        $errors[] = 'recaptcha';
+                    } else if (!$data['validate'] && !$this->verifyRecaptcha($data['g-recaptcha-response'])) {
                         $errors[] = 'recaptcha';
                     }
                 }
@@ -1409,6 +1411,14 @@ class cms
                     } elseif ('coords' == $type) {
                         // todo: move to components
                         $query .= "GeomFromText('POINT(" . escape(str_replace(',', '', $data[$field_name])) . ")')";
+                    } elseif ('polygon' == $type) {
+                        // copy start coord to end
+                        $val = $data[$field_name];
+                        $pos = strpos($val, ',');
+                        $val .= substr($val, 0, $pos);
+                        
+                        // todo: move to components
+                        $query .= "ST_GeomFromText('POLYGON((" . escape($val) . "))')";
                     } else {
                         $query .= "'" . escape($data[$field_name]) . "'";
                     }
