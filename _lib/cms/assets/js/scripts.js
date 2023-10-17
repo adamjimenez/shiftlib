@@ -15,8 +15,18 @@
     sidebar collapsing
     ==================================*/
     $('.nav-btn').on('click', function() {
+        localStorage.shiftlib_sidebar = $('.page-container').hasClass('sbar_collapsed');
         $('.page-container').toggleClass('sbar_collapsed');
     });
+    
+    // initial state
+    if (localStorage.shiftlib_sidebar == 'false') {
+        $('.page-container').addClass('sbar_collapsed');
+    }
+    
+    setTimeout(function() {
+        $('.notransition').removeClass('notransition');
+    }, 1);
 
     /*================================
     Start Footer resizer

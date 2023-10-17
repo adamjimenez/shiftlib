@@ -43,7 +43,6 @@ $versions = [
     <link rel="stylesheet" href="/_lib/cms/assets/css/typography.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/default-css.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css?v=1">
-    <link rel="stylesheet" href="/_lib/cms/assets/css/responsive.css">
     <!-- modernizr css -->
     <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 
@@ -73,13 +72,13 @@ $versions = [
     </div>
     <!-- preloader area end -->
     <!-- page container area start -->
-    <div class="page-container">
+    <div class="page-container notransition">
         <!-- sidebar menu area start -->
 
         <?php
         if ($auth->user['admin']) {
             ?>
-            <div class="sidebar-menu">
+            <div class="sidebar-menu notransition">
                 <div class="sidebar-header">
                     <div class="logo">
                         <?php
