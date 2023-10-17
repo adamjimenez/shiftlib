@@ -476,7 +476,7 @@ class shop
 
     public function set_discount($discount)
     {
-        $discount = preg_replace("/[^0-9%]/", "", $discount);
+        $discount = preg_replace("/[^0-9%]\./", "", $discount);
         if ('%' == substr($discount, -1)) {
             $this->discount = ($discount / 100) * ($this->subtotal);
         } else {
@@ -498,7 +498,7 @@ class shop
 
         $this->vat = $this->subtotal * $this->vat_rate;
 
-        $this->total = $this->subtotal - $this->discount;
+        $this->total = $this->subtotal - (float)$this->discount;
 
         if ($this->total < 0) {
             $this->total = 0;
