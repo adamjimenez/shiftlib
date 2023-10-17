@@ -326,41 +326,47 @@ class auth
             
             $email = $user_profile->email or die('missing email');
             
-            // find user
-            $login_str = $this->get_login_str();
-            
-            $user = sql_query('SELECT * FROM ' . $this->table . "
-                WHERE
-                    email='" . escape($email) . "'
-                    " . $login_str . "
-                LIMIT 1
-            ", 1);
-        
-            // create user if they don't exist
-            if (!$user) {
-                $user['password'] = generate_password();
-        
-                sql_query('INSERT INTO ' . $this->table . " SET
-                    name='" . escape($user_profile->firstName) . "',
-                    surname='" . escape($user_profile->lastName) . "',
-                    email='" . escape($email) . "',
-                    password='" . escape($user['password']) . "'
-                ");
-                
-                $result = [
-                    'code' => 2,
-                    'message' => 'Registration success',
-                ];
-            } else {
-                $result = [
-                    'code' => 1
-                ];               
-            }
-        
-            // log in
-            $this->set_login($email, $user['password']);
-            $this->load();
+            $result = $this->verified_login($email, $user_profile->firstName, $user_profile->lastName);
         }
+        
+        return $result;
+    }
+    
+    public function verified_login($email, $name, $surname) {
+        // find user
+        $login_str = $this->get_login_str();
+        
+        $user = sql_query('SELECT * FROM ' . $this->table . "
+            WHERE
+                email='" . escape($email) . "'
+                " . $login_str . "
+            LIMIT 1
+        ", 1);
+    
+        // create user if they don't exist
+        if (!$user) {
+            $user['password'] = generate_password();
+    
+            sql_query('INSERT INTO ' . $this->table . " SET
+                name='" . escape($name) . "',
+                surname='" . escape($surname) . "',
+                email='" . escape($email) . "',
+                password='" . escape($user['password']) . "'
+            ");
+            
+            $result = [
+                'code' => 2,
+                'message' => 'Registration success',
+            ];
+        } else {
+            $result = [
+                'code' => 1
+            ];               
+        }
+    
+        // log in
+        $this->set_login($email, $user['password']);
+        $this->load();
         
         return $result;
     }
@@ -628,7 +634,7 @@ class auth
                 $hash = $this->create_hash($data['password']);
         
                 // save user
-                sql_query("UPDATE users SET
+                sql_query("UPDATE " . $this->table . " SET
                     password = '" . escape($hash) . "'
                     WHERE
                         id='" . escape($cms_activation['user']) . "'
@@ -637,7 +643,7 @@ class auth
                 
                 $fields = $cms->get_fields('users');
                 if ($fields['email_verified']) {
-                    sql_query("UPDATE users SET
+                    sql_query("UPDATE " . $this->table . " SET
                         email_verified = 1
                         WHERE
                             id='" . escape($cms_activation['user']) . "'
@@ -864,4 +870,29 @@ class auth
         
         return true;
     }
+	
+	function get_formkey()
+	{
+		$token = dechex($this->user['id']).'.'.dechex(mt_rand());
+		$hash = sha1($this->form_secret.'-'.$token);
+		return htmlspecialchars($token.'-'.$hash);
+	}
+	
+	function check_formkey($formkey)
+	{
+		$parts = explode('-', $formkey);
+		
+		if (count($parts)==2) {
+			list($token, $hash) = $parts;
+			
+			$arr=explode('.', $token);
+			$userid = hexdec($arr[0]);
+			
+			if($userid==$this->user['id'] and $hash==sha1($this->form_secret.'-'.$token)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }
