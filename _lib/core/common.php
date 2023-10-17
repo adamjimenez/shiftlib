@@ -233,9 +233,13 @@ function image($file, $w = null, $h = null, $attribs = '', $crop = false)
                         $transparencyIndex = imagecolortransparent($img);
 
                         if ($transparencyIndex >= 0) {
-                            $transparencyColor = imagecolorsforindex($img, $transparencyIndex);
-                            $transparencyIndex = imagecolorallocate($tmp_img, $transparencyColor['red'], $transparencyColor['green'], $transparencyColor['blue']);
-                            imagecolortransparent($tmp_img, $transparencyIndex);
+                            $palletsize = imagecolorstotal($img);
+                            
+                            if ($transparencyIndex >= 0 && $transparencyIndex < $palletsize) {
+                                $transparencyColor = imagecolorsforindex($img, $transparencyIndex);
+                                $transparencyIndex = imagecolorallocate($tmp_img, $transparencyColor['red'], $transparencyColor['green'], $transparencyColor['blue']);
+                                imagecolortransparent($tmp_img, $transparencyIndex);
+                            }
                         }
                     }
 
