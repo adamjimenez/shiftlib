@@ -85,7 +85,7 @@ function file_ext( filename ){
             document.getElementById('uploadFrame').contentWindow.callback = function(files){
                 console.log(files)
                 if(field){
-                    if( field.prop("tagName")==='INPUT' ){
+                    if( field.prop("tagName") === 'INPUT' ){
                         $(field).next().find('ul li').remove();
                     }
 
@@ -93,6 +93,14 @@ function file_ext( filename ){
 
                     //set value
                     updateValue(field);
+                } else {
+                    var text = window.location.origin + '/uploads/' + encodeURIComponent(files[0]);
+                    
+                    navigator.clipboard.writeText(text).then(function() {
+                        alert("Copied the text: " + text);
+                    }, function(err) {
+                        console.error('Async: Could not copy text: ', err);
+                    });
                 }
 
                 //close upload window
