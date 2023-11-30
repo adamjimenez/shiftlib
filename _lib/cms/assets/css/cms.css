@@ -14,7 +14,7 @@
 	font-size: 20px;
 }
 
-.mce-notification {
+.tox-statusbar__branding, .tox-promotion, .mce-notification {
 	display: none;
 }
 

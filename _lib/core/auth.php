@@ -295,6 +295,7 @@ class auth
         $provider_name = $_GET['provider'] ?: $_SESSION['provider'];
         $provider_name = $_GET['hauth_start'] ?: $provider_name;
         $provider_name = $_GET['hauth_done'] ?: $provider_name;
+        $provider_name = (string)$provider_name;
     
         // initialize Hybrid_Auth with a given file
         $hybridauth = new Hybridauth\Hybridauth($config);
@@ -763,6 +764,9 @@ class auth
             $result['code'] = 1;
             $result['message'] = 'User logged in';
         } elseif ($data['login']) {
+            $data['email'] = (string)$data['email'];
+            $data['password'] = (string)$data['password'];
+            
             $errors = [];
             if ($data['email'] && $data['password']) {
                 $this->check_login_attempts();

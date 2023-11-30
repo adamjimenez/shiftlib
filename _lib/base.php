@@ -1,7 +1,7 @@
 <?php
 //send errors and notifications to
-$admin_email = $_SERVER['SERVER_ADMIN'];
-$root_folder = $_SERVER['DOCUMENT_ROOT'];
+$admin_email = $_SERVER['SERVER_ADMIN'] ?? null;
+$root_folder = $_SERVER['DOCUMENT_ROOT'] ?? null;
 $die_quietly = false;
 chdir($root_folder);
 

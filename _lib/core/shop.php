@@ -509,6 +509,8 @@ class shop
         }
 
         $this->total += $this->delivery;
+        
+        $this->total = round($this->total, 2);
     }
 
     public function prepare()

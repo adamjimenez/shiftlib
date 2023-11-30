@@ -300,36 +300,38 @@ const app = Vue.createApp({
 		this.subsections = vars.subsections ? vars.subsections : {};
 		
 		// populate options
-		for (let [key, value] of Object.entries(vars.options)) {
-			let list = false;
-			let val = '';
-
-			if (Array.isArray(value)) {
-				list = true;
-				
-				value.forEach(function(item) {
-					val += item + "\n";
-				})
-			} else if (typeof value === 'object') {
-				list = true;
-				
-				for (let [k, v] of Object.entries(value)) {
-					val += k.replace('#', '') + '=' + v + "\n";
+		if (vars.options) {
+			for (let [key, value] of Object.entries(vars.options)) {
+				let list = false;
+				let val = '';
+	
+				if (Array.isArray(value)) {
+					list = true;
+					
+					value.forEach(function(item) {
+						val += item + "\n";
+					})
+				} else if (typeof value === 'object') {
+					list = true;
+					
+					for (let [k, v] of Object.entries(value)) {
+						val += k.replace('#', '') + '=' + v + "\n";
+					}
+				} else {
+					val = value.replaceAll(' ', '_');
 				}
-			} else {
-				val = value.replaceAll(' ', '_');
-			}
+					
+				val = val.trim();
 				
-			val = val.trim();
+				this.options.push({
+					name: key,
+					value: val,
+					list: list,
+				});
+			}
 			
-			this.options.push({
-				name: key,
-				value: val,
-				list: list,
-			});
+			console.log(this.options);
 		}
-		
-		console.log(this.options);
 		
 		// initiate bootstrap tabs
 		$("#tabs").tabs();

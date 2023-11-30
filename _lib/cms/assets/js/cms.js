@@ -376,105 +376,98 @@ function initForms()
     }
 
     // tinymce4
-    var tinymce_url = '//cloud.tinymce.com/dev/'; // changed to dev from stable for bugfix in 4.7
+    var tinymce_url = '/_lib/modules/tinymce/'; // changed to dev from stable for bugfix in 4.7
     if( $("[data-type='tinymce']").length ){
-        $.getScript(tinymce_url+"jquery.tinymce.min.js").done(function(){
-            $("[data-type='tinymce']").tinymce({
-                script_url: tinymce_url+'tinymce.min.js',
-                plugins: [
-                    "importcss advlist autolink lists link image charmap print preview anchor",
-                    "searchreplace visualblocks code fullscreen",
-                    "insertdatetime media table contextmenu paste textcolor colorpicker hr",
-                    //"autoresize"
-                ],
-                toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
+        tinymce.init({
+            selector: "[data-type='tinymce']",
+            script_url: tinymce_url + 'tinymce.min.js',
+            toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
-                //content_css: "css/style.css",
+            //content_css: "css/style.css",
 
-                /*
-                style_formats: [
-                    {title: 'Bold text', inline: 'b'},
-                    {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
-                    {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
-                    {title: 'Example 1', inline: 'span', classes: 'example1'},
-                    {title: 'Example 2', inline: 'span', classes: 'example2'},
-                    {title: 'Table styles'},
-                    {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
-                ],
-                */
+            /*
+            style_formats: [
+                {title: 'Bold text', inline: 'b'},
+                {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
+                {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
+                {title: 'Example 1', inline: 'span', classes: 'example1'},
+                {title: 'Example 2', inline: 'span', classes: 'example2'},
+                {title: 'Table styles'},
+                {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
+            ],
+            */
 
-				convert_urls: false,
-                relative_urls : false,
-                remove_script_host : false, //needed for shiftmail
+			convert_urls: false,
+            relative_urls : false,
+            remove_script_host : false, //needed for shiftmail
 
-                content_css : "/css/style.css?" + new Date().getTime(),
+            content_css : "/css/style.css?" + new Date().getTime(),
 
-                // Drop lists for link/image/media/template dialogs
-                template_external_list_url : "lists/template_list.js",
-                external_link_list_url : "/_lib/js/tinymce.lists/links.php",
-                external_image_list_url : "/_lib/js/tinymce.lists/images.php",
-                media_external_list_url : "lists/media_list.js",
+            // Drop lists for link/image/media/template dialogs
+            template_external_list_url : "lists/template_list.js",
+            external_link_list_url : "/_lib/js/tinymce.lists/links.php",
+            external_image_list_url : "/_lib/js/tinymce.lists/images.php",
+            media_external_list_url : "lists/media_list.js",
 
-                file_picker_callback  :  function(callback, value, meta) {
-                    tinymce.activeEditor.windowManager.open({
-                        title: "File browser",
-                        url: "/_lib/phpupload/index.php?field=field_name&file=url",
-                        width: 800,
-                        height: 600
-                    }, {
-                        oninsert: function(url) {
-                            callback(url, {text: url});
-                        }
-                    });
+            file_picker_callback  :  function(callback, value, meta) {
+                tinymce.activeEditor.windowManager.open({
+                    title: "File browser",
+                    url: "/_lib/phpupload/index.php?field=field_name&file=url",
+                    width: 800,
+                    height: 600
+                }, {
+                    oninsert: function(url) {
+                        callback(url, {text: url});
+                    }
+                });
 
-                },
-                accessibility_warnings: false,
-                popup_css: false,
+            },
+            accessibility_warnings: false,
+            popup_css: false,
 
-                theme_advanced_styles: 'Link to Image=lightbox',
+            theme_advanced_styles: 'Link to Image=lightbox',
 
-                extended_valid_elements: '[span[itemprop|itemtype|itemscope|class|style]',
+            extended_valid_elements: '[span[itemprop|itemtype|itemscope|class|style]',
 
-                //valid_elements : "a[href|target=_blank],strong/b,div,br,table,tr,th,td,img,span[itemprop|itemtype|itemscope|class|style],i[class],hr,iframe[width|height|src|frameborder|allowfullscreen],ul[id],li",
+            //valid_elements : "a[href|target=_blank],strong/b,div,br,table,tr,th,td,img,span[itemprop|itemtype|itemscope|class|style],i[class],hr,iframe[width|height|src|frameborder|allowfullscreen],ul[id],li",
 
-                valid_elements: "*[*]",
+            valid_elements: "*[*]",
 
-                invalid_elements: 'script',
+            invalid_elements: 'script',
 
-                setup : function(editor) {
-                    editor.addShortcut('Ctrl+219', '', 'outdent');
-                    editor.addShortcut('Ctrl+221', '', 'indent');
+            setup : function(editor) {
+                editor.addShortcut('Ctrl+219', '', 'outdent');
+                editor.addShortcut('Ctrl+221', '', 'indent');
 
-                    var componentMenu = [];
+                var componentMenu = [];
 
-                    if (typeof components != 'undefined') {
-                           for(var i in components){
-                            if (components.hasOwnProperty(i)) {
-                                componentMenu.push({
-                                    text: components[i],
-                                    value: '{$'+components[i]+'}',
-                                    onclick: function(val, val2) {
-                                        editor.insertContent(this._value);
-                                    }
-                                });
-                            }
-                        }
-
-                        if (components.length) {
-                            var result = editor.addButton('components', {
-                                type: 'menubutton',
-                                text: 'Components',
-                                icon: false,
-                                menu: componentMenu
+                if (typeof components != 'undefined') {
+                       for(var i in components){
+                        if (components.hasOwnProperty(i)) {
+                            componentMenu.push({
+                                text: components[i],
+                                value: '{$'+components[i]+'}',
+                                onclick: function(val, val2) {
+                                    editor.insertContent(this._value);
+                                }
                             });
                         }
                     }
 
-                    //console.log(result);
-                },
+                    if (components.length) {
+                        var result = editor.addButton('components', {
+                            type: 'menubutton',
+                            text: 'Components',
+                            icon: false,
+                            menu: componentMenu
+                        });
+                    }
+                }
 
-                paste_data_images: true
-            });
+                //console.log(result);
+            },
+
+            paste_data_images: true
         });
     }
     

@@ -267,8 +267,12 @@ class paging
             if ($int_new_position > 0) {
                 $link .= $this->prefix . 'page=' . $int_new_position;
             }
+            
+            if ($this->str_ext_argv) {
+                $link .= '&' . $this->str_ext_argv;
+            }
 
-            $array_all_page[$j] = '<li class="page-item' . $class . '"><a class="page-link" href="?' . $link . '&' . $this->str_ext_argv . '">' . ($i + 1) . '</a></li>';
+            $array_all_page[$j] = '<li class="page-item' . $class . '"><a class="page-link" href="?' . $link . '">' . ($i + 1) . '</a></li>';
             $j++;
         }
         return $array_all_page;

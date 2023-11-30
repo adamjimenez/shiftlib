@@ -957,7 +957,7 @@ class cms
                     $value = $this->content[$field_name];
 
                     if ($component = $this->get_component($type)) {
-                        $readonly = !in_array($name, $this->editable_fields);
+                        $readonly = !in_array(spaced($name), $this->editable_fields);
                         return $component->field($field_name, $value, ['readonly' => $readonly, 'attribs' => $attribs, 'placeholder' => $placeholder, 'separator' => $separator]);
                     }
 
@@ -982,7 +982,7 @@ class cms
                 $value = $this->content[$field_name];
 
                 if ($component = $this->get_component($type)) {
-                    $readonly = !in_array($name, $this->editable_fields);
+                    $readonly = !in_array(spaced($name), $this->editable_fields);
                     $value = $component->value($value, $name);
                 }
 
@@ -1184,6 +1184,7 @@ class cms
                         curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
                         $response = curl_exec($verify);
                         $json = json_decode($response, true);
+                        //var_dump($json);exit;
 
                         $this->score = $json['score'];
 
@@ -1302,7 +1303,7 @@ class cms
 
                     // skip readonly and blank passwords
                     if (
-                        !in_array($name, $this->editable_fields) ||
+                        !in_array(spaced($name), $this->editable_fields) ||
                         ($component->preserveValue && '' == $data[$field_name] && $this->id)
                     ) {
                         continue;
@@ -1382,7 +1383,7 @@ class cms
                 foreach ($fields as $name => $field) {
                     $type = $field['type'];
 
-                    if (false === in_array($name, $this->editable_fields)) {
+                    if (false === in_array(spaced($name), $this->editable_fields)) {
                         continue;
                     }
 
@@ -1512,7 +1513,7 @@ class cms
                     $fields = $this->get_fields($this->section);
 
                     foreach ($fields as $name => $field) {
-                        if (false === in_array($name, $this->editable_fields)) {
+                        if (false === in_array(spaced($name), $this->editable_fields)) {
                             continue;
                         }
 
@@ -1650,7 +1651,10 @@ class cms
                         $this->export_items($_POST['section'], $conditions, $_POST['select_all_pages'], $columns);
                         break;
                     case 'delete':
+                        $section = $this->section;
+                        $this->section = $_POST['section'];
                         $this->delete_items($_POST['section'], $conditions, $_POST['select_all_pages']);
+                        $this->section = $section;
                         break;
                 }
 

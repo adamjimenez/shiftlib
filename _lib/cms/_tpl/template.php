@@ -48,6 +48,8 @@ $versions = [
 
     <link rel="stylesheet" href="/_lib/cms/assets/css/cms.css">
     
+    <script src="/_lib/modules/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+    
     <?php
     if ($this->custom_css) {
     ?>

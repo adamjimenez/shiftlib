@@ -1231,7 +1231,7 @@ function load_js($libs)
 
     if ($deps['vue3']) {
         ?>
-        <script src="https://unpkg.com/vue@3.2.37"></script>
+        <script src="https://unpkg.com/vue@3.3.7"></script>
 	<?php
     }
 
@@ -1245,9 +1245,9 @@ function load_js($libs)
 
     if ($deps['vuetify3']) {
         ?>
-        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.2/dist/vuetify.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.2/dist/vuetify.min.js"></script>
+        <link href="https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet"> 
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify-labs.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify-labs.min.js"></script>
 	<?php
     }
 
@@ -1354,6 +1354,15 @@ function make_timestamp($string)
         }
     }
     return $time;
+}
+
+function num2alpha($n) {
+    $r = '';
+    for ($i = 1; $n >= 0 && $i < 10; $i++) {
+        $r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
+        $n -= pow(26, $i);
+    }
+    return $r;
 }
 
 function array_to_csv_file($rows, $filename = 'data', $add_header = true)
