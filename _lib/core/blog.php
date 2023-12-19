@@ -54,7 +54,7 @@ class blog
         $this->conditions = [];
 
         //categories
-        if (count((array)$vars['fields'][$this->table_categories])) {
+        if (table_exists(underscored($this->table_categories))) {
             $this->categories = sql_query('SELECT * FROM ' . underscored($this->table_categories) . '
 				ORDER BY category
 			');
