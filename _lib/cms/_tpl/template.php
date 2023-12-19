@@ -43,6 +43,7 @@ $versions = [
     <link rel="stylesheet" href="/_lib/cms/assets/css/typography.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/default-css.css">
     <link rel="stylesheet" href="/_lib/cms/assets/css/styles.css?v=1">
+    <link rel="stylesheet" href="/_lib/cms/assets/css/responsive.css">
     <!-- modernizr css -->
     <script src="/_lib/cms/assets/js/modernizr-2.8.3.min.js"></script>
 
