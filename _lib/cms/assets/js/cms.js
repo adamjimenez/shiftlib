@@ -380,6 +380,7 @@ function initForms()
     if( $("[data-type='tinymce']").length ){
         tinymce.init({
             selector: "[data-type='tinymce']",
+            plugins: 'code link',
             script_url: tinymce_url + 'tinymce.min.js',
             toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
