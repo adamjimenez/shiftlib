@@ -114,7 +114,9 @@ function initForms()
             url = form.action;
         }
         
-        tinyMCE.triggerSave();
+        if (tinyMCE) {
+            tinyMCE.triggerSave();
+        }
 
         //validate
         $.ajax( url, {
