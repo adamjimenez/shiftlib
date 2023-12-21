@@ -8,9 +8,13 @@ toolbar layout
 */
 
 var callback = function(files){
-	var URL = upload_path + files[0];
-	top.tinymce.activeEditor.windowManager.getParams().oninsert(URL);
-	top.tinymce.activeEditor.windowManager.close();
+	var url = upload_path + files[0];
+	
+    window.parent.postMessage({
+        mceAction: 'customAction',
+        url: url
+    }, '*');
+	
 	return;
 };
 

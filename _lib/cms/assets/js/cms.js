@@ -113,6 +113,8 @@ function initForms()
         if( form.action ){
             url = form.action;
         }
+        
+        tinyMCE.triggerSave();
 
         //validate
         $.ajax( url, {
@@ -375,12 +377,12 @@ function initForms()
         });
     }
 
-    // tinymce4
-    var tinymce_url = '/_lib/modules/tinymce/'; // changed to dev from stable for bugfix in 4.7
+    // tinymce
+    var tinymce_url = '/_lib/modules/tinymce/';
     if( $("[data-type='tinymce']").length ){
         tinymce.init({
             selector: "[data-type='tinymce']",
-            plugins: 'code link',
+            plugins: 'code link lists media image',
             script_url: tinymce_url + 'tinymce.min.js',
             toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
 
@@ -411,14 +413,15 @@ function initForms()
             media_external_list_url : "lists/media_list.js",
 
             file_picker_callback  :  function(callback, value, meta) {
-                tinymce.activeEditor.windowManager.open({
+                tinymce.activeEditor.windowManager.openUrl({
                     title: "File browser",
                     url: "/_lib/phpupload/index.php?field=field_name&file=url",
-                    width: 800,
-                    height: 600
-                }, {
-                    oninsert: function(url) {
-                        callback(url, {text: url});
+                    onMessage: function (api, data) {
+                        console.log(data)
+                        if (data.mceAction === 'customAction') {
+                            callback(data.url, {text: data.url});
+                            api.close();
+                        }
                     }
                 });
 
