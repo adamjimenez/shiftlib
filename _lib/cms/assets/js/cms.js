@@ -114,7 +114,7 @@ function initForms()
             url = form.action;
         }
         
-        if (tinyMCE) {
+        if (typeof tinyMCE !== 'undefined') {
             tinyMCE.triggerSave();
         }
 

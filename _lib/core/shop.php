@@ -162,31 +162,7 @@ class shop
 
         global $request;
         if ($request !== 'admin' && $_POST['code'] && table_exists('promo_codes')) {
-            //lookup discount
-            $select_code = sql_query("SELECT * FROM promo_codes
-				WHERE
-					code='" . escape($_POST['code']) . "' AND
-					(
-						expiry>CURDATE() OR
-						expiry='0000-00-00'
-					)
-			");
-
-            $errors = [];
-            if (!$select_code) {
-                $errors[] = 'code Invalid promo code';
-            }
-			
-            //handle validation
-            if (count($errors)) {
-                //validateion failed
-                die(json_encode($errors));
-            } elseif ($_POST['validate']) {
-                //validation passed
-                die('1');
-            }
-            
-            $_SESSION['code'] = $_POST['code'];
+            $this->set_promo($_POST['code']);
         }
 
         if ($_POST['update_basket']) {
@@ -208,6 +184,7 @@ class shop
                 }
             }
         }
+        
         $this->update_total();
     }
 
@@ -472,6 +449,31 @@ class shop
         $this->delivery = $price;
 
         $this->update_total();
+    }
+    
+    public function set_promo($code) {
+        //lookup discount
+        $promo = sql_query("SELECT * FROM promo_codes
+			WHERE
+				code='" . escape($code) . "'
+		", 1);
+
+        $errors = [];
+        if (!$promo) {
+            return 'Invalid promo code';
+        }
+        
+        if ($promo['expiry'] && strtotime($promo['expiry']) < time()) {
+            return 'promo has expired';
+        }
+        
+        if ($promo['min_spend'] && strtotime($promo['expiry']) < time()) {
+            return 'min spend for this promo is £' . $promo['min_spend'];
+        }
+        
+        $_SESSION['code'] = $code;
+        
+        return true;
     }
 
     public function set_discount($discount)
