@@ -1,9 +1,9 @@
 <?php
 # GENERAL SETTINGS
-$db_config['host'] = 'localhost';
-$db_config['user'] = '';
-$db_config['pass'] = '';
-$db_config['name'] = '';
+$db_config['host'] = $_SERVER["DB_HOST"];
+$db_config["user"] = $_SERVER["DB_USER"];
+$db_config["pass"] = $_SERVER["DB_PASS"];
+$db_config["name"] = $_SERVER["DB_NAME"];
 
 # TPL
 $tpl_config['catchers'] = [];
