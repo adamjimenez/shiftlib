@@ -124,8 +124,8 @@ function initForms()
             type: $(form).attr('method'),
             data: serializeAll(form)+'&validate=1&nospam=1',
             error: function(returned){
-                alert('Submit error, check console for details');
-                console.log(returned.responseText)
+                //alert('Submit error, check console for details');
+                alert(returned.responseText)
             },
             success: function(data) {
                 var errorMethod = 'inline';
@@ -386,7 +386,7 @@ function initForms()
             selector: "[data-type='tinymce']",
             plugins: 'code link lists media image',
             script_url: tinymce_url + 'tinymce.min.js',
-            toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor | components",
+            toolbar: "insertfile undo redo | styleselect | formatselect  | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | hr link image forecolor backcolor",
 
             //content_css: "css/style.css",
 
@@ -444,32 +444,6 @@ function initForms()
             setup : function(editor) {
                 editor.addShortcut('Ctrl+219', '', 'outdent');
                 editor.addShortcut('Ctrl+221', '', 'indent');
-
-                var componentMenu = [];
-
-                if (typeof components != 'undefined') {
-                       for(var i in components){
-                        if (components.hasOwnProperty(i)) {
-                            componentMenu.push({
-                                text: components[i],
-                                value: '{$'+components[i]+'}',
-                                onclick: function(val, val2) {
-                                    editor.insertContent(this._value);
-                                }
-                            });
-                        }
-                    }
-
-                    if (components.length) {
-                        var result = editor.addButton('components', {
-                            type: 'menubutton',
-                            text: 'Components',
-                            icon: false,
-                            menu: componentMenu
-                        });
-                    }
-                }
-
                 //console.log(result);
             },
 
@@ -477,11 +451,17 @@ function initForms()
         });
     }
     
-	// coords
-	if ($("input[data-type='coords']").length) {
+	// coords and polygon
+	if ($("input[data-type='coords']").length || $("input[data-type='polygon']").length) {
 	    var maps = [];
-	    var inputs = $("input[data-type='coords']");
 	    var key = $("input[data-type='coords']").data('key');
+	    
+	    if (!key) {
+	        key = $("input[data-type='polygon']").data('key');
+	    }
+	    
+	    var inputs = $("input[data-type='coords']");
+	    var polygonInputs = $("input[data-type='polygon']");
 	    
 	    if (key) {
     		google.load("maps", "3", {other_params: "sensor=false&key=" + key, "callback" : function(){
@@ -548,18 +528,6 @@ function initForms()
                         modalInput.focus();
                     });
     			});
-    		}});
-	    }
-	}
-    
-	// polygon
-	if ($("input[data-type='polygon']").length) {
-	    var maps = [];
-	    var polygonInputs = $("input[data-type='polygon']");
-	    var key = $("input[data-type='polygon']").data('key');
-	    
-	    if (key) {
-    		google.load("maps", "3", {other_params: "sensor=false&key=" + key, "callback" : function(){
     			jQuery.each(polygonInputs, function() {
     				var field = this;
     

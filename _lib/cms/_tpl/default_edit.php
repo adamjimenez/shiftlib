@@ -187,16 +187,6 @@ if ($_GET['id']) {
 </style>
 
 <script>
-    <?php
-    if ($this->components) {
-        ?>
-        var components = <?=json_encode($this->components); ?>;
-        <?php
-    }
-    ?>
-</script>
-
-<script>
     var formChanged = false;
 
     $(function() {

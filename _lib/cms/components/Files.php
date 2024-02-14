@@ -110,7 +110,9 @@ class Files extends File implements ComponentInterface
      */
     public function formatValue($files, string $fieldName = null)
     {
-        if (false === is_array($files)) {
+        if (is_string($files)) {
+            $files = explode("\n", $files);
+        } else if (!is_array($files)) {
             $files = [];
         }
         

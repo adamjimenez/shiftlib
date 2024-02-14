@@ -22,10 +22,12 @@ class Timestamp extends Datetime implements ComponentInterface
      * @param mixed $value
      * @return bool
      */
+     /*
     public function isValid($value): bool
     {
         return ((string) (int) $value === $value) && ($value <= PHP_INT_MAX) && ($value >= ~PHP_INT_MAX);
     }
+    */
 
     /**
      * @param mixed $value

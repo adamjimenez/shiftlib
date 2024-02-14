@@ -16,6 +16,16 @@ class Checkbox extends Integer implements ComponentInterface
     }
 
     /**
+     * @param mixed $value
+     * @param string|null $fieldName
+     * @return bool|mixed|string
+     */
+    public function formatValue($value, string $fieldName = null)
+    {
+        return $value ? 1 : 0;
+    }
+
+    /**
      * @param string $fieldName
      * @param string $value
      * @param array $options
@@ -39,6 +49,15 @@ class Checkbox extends Integer implements ComponentInterface
     }
 
     /**
+     * @param mixed $value
+     * @return bool
+     */
+    public function isValid($value): bool
+    {
+        return is_numeric($value) or is_bool($value) or in_array($value, ['true', 'false']);
+    }
+
+    /**
      * @param string $fieldName
      * @param mixed $value
      * @param string $func
@@ -47,6 +66,7 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
+        $value = $value ? 1 : 0;
         return Component::conditionsToSql($fieldName, $value, $func, $tablePrefix);
     }
 

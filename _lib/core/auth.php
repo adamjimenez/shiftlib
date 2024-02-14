@@ -764,10 +764,7 @@ class auth
             $result['code'] = 1;
             $result['message'] = 'User logged in';
         } elseif ($data['login']) {
-            $data['email'] = (string)$data['email'];
-            $data['password'] = (string)$data['password'];
-            
-            $errors = [];
+            $error = '';
             if ($data['email'] && $data['password']) {
                 $this->check_login_attempts();
     
@@ -786,7 +783,7 @@ class auth
                         $this->user = $row;
                         $_SESSION[$this->cookie_prefix . '_user'] = $this->user;
                         $_SESSION[$this->cookie_prefix . '_expires'] = time() + $this->expiry;
-                        
+        
                         $this->set_login($data['email'], $data['password']);
     
                         $result['code'] = 1;
@@ -794,22 +791,23 @@ class auth
                         
                         $cms->save_log('users', $row['id'], 'login', 'Successful login from ' . $_SERVER['REMOTE_ADDR']);
                     } else {
-                        $errors[] = 'password incorrect';
+                        $error = 'password incorrect';
                         $this->failed_login_attempt($data['email'], $data['password']);
                         
                         $cms->save_log('users', $row['id'], 'login', 'Failed login from ' . $_SERVER['REMOTE_ADDR']);
                     }
                 } else {
-                    $errors[] = 'password incorrect';
+                    $error = 'password incorrect';
                 }
             } elseif (!$data['email']) {
-                $errors[] = 'email required';
+                $error = 'email required';
             } elseif (!$data['password']) {
-                $errors[] = 'password required';
+                $error = 'password required';
             }
     
-            if (count($errors)) {
-                $this->show_error($errors);
+            if ($error) {
+                //$this->show_error($errors);
+                $result['error'] = $error;
             } elseif ($data['validate']) {
                 print 1;
                 exit;

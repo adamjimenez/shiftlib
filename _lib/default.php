@@ -14,6 +14,11 @@ function parse_request(): string
         $request = substr($request, 0, $pos);
     }
 
+    // check trailing index
+    if (str_ends_with($request, 'index')) {
+        header('location:' . substr($request, 0, -5), true, 301);
+    }
+
     // append index if directory
     if (!$request || substr($request, -1) === '/') {
         $request .= 'index';

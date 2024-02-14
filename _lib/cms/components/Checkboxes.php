@@ -1,4 +1,5 @@
 <?php
+// DEPRECATED - use select-multiple instead
 
 namespace cms\components;
 

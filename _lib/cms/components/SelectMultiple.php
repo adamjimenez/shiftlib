@@ -119,8 +119,8 @@ class SelectMultiple extends Select implements ComponentInterface
         if (!is_array($value)) {
             $value = [$value];
         }
-
-        $operator_str = is_array($func) && $func['operator'] == 'not in' ? 'IS NULL' : 'IS NOT NULL';
+        
+        $operator_str = is_array($func) && $func['operator'] == 'not in' || $func === 'not in' ? 'IS NULL' : 'IS NOT NULL';
         
         foreach($value as $val) {
             $ors = [];

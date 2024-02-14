@@ -768,10 +768,10 @@ class shop
             $msg .= 'Thank you for your order. Please find details of your order below:' . "\n\n";
 
             $msg .= 'Payment method: ';
-            $msg .= '' . $method . '' . "\n\n";
+            $msg .= '' . $order['method'] . '' . "\n\n";
 
             $msg .= 'Payment status: ';
-            $msg .= $status . "\n\n";
+            $msg .= $order['status'] . "\n\n";
 
             $msg .= 'Order ref: ';
             $msg .= $order['id'] . "\n\n";
@@ -780,10 +780,12 @@ class shop
             $msg .= '=====' . "\n";
             $msg .= $order['name'] . "\n\n";
 
-            $msg .= 'Address' . "\n";
-            $msg .= '========' . "\n";
-            $msg .= $order['address'] . "\n";
-            $msg .= $order['postcode'] . "\n\n";
+            if ($order['address']) {
+                $msg .= 'Address' . "\n";
+                $msg .= '========' . "\n";
+                $msg .= $order['address'] . "\n";
+                $msg .= $order['postcode'] . "\n\n";
+            }
 
             if ($order['comments']) {
                 $msg .= 'Comments' . "\n";
@@ -795,14 +797,16 @@ class shop
             $msg .= '======' . "\n";
             $msg .= $details . "\n";
 
-            $msg .= 'Delivery:' . "\n";
-            $msg .= '£' . $order['delivery'] . "\n\n";
+            if ($order['delivery']) {
+                $msg .= 'Delivery:' . "\n";
+                $msg .= '£' . $order['delivery'] . "\n\n";
+            }
 
             if ($order['offer']) {
                 $msg .= 'Offer:' . "\n";
                 $msg .= $order['offer'] . "\n\n";
             }
-            if ($order['discount']) {
+            if ($order['discount'] > 0) {
                 $msg .= 'Discount:' . "\n";
                 $msg .= '£' . number_format($order['discount'], 2) . "\n\n";
             }

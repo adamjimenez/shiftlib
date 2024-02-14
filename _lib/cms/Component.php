@@ -116,7 +116,7 @@ abstract class Component
      */
     public function formatValue($value, string $fieldName = null)
     {
-        return trim(strip_tags($value));
+        return is_array($value) ? json_encode($value) : trim(strip_tags($value));
     }
 
     /**

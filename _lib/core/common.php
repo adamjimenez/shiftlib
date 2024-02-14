@@ -122,6 +122,10 @@ function imagefile($img, $path): bool
 // create a thumbnail from an uploaded file
 function image($file, $w = null, $h = null, $attribs = '', $crop = false)
 {
+    if (is_array($file)) {
+        $file = current($file);
+    }
+    
     $file = trim($file);
 
     if (!$file) {
@@ -784,6 +788,10 @@ function email_template($email, $subject = null, $reps = null)
 
     if (is_array($reps)) {
         foreach ($reps as $k => $v) {
+            if (!is_string($v)) {
+                continue;
+            }
+            
             $body = str_replace('{$' . $k . '}', $v, $body);
             
             // replace vars in links
@@ -1246,8 +1254,8 @@ function load_js($libs)
     if ($deps['vuetify3']) {
         ?>
         <link href="https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet"> 
-        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify-labs.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify-labs.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.5.3/dist/vuetify-labs.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@3.5.3/dist/vuetify-labs.min.js"></script>
 	<?php
     }
 

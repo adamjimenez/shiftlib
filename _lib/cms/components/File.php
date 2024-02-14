@@ -93,7 +93,7 @@ class File extends Component implements ComponentInterface
         
         // don't overwrote
         if (!file_exists($file_path)) {
-            rename($tmp, $file_path) or trigger_error("Can't save " . $file_path, E_USER_ERROR);
+            rename($tmp, $file_path) or throw new Exception("Can't rename " . $tmp . ' to ' . $file_path);
         } else {
             trigger_error("File already exists " . $file_path, E_USER_ERROR);
         }
@@ -154,7 +154,8 @@ class File extends Component implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        return $tablePrefix . $fieldName . ' > 0';
+        $operator = $value == 0 ? '=' : '>';
+        return $tablePrefix . $fieldName . ' ' . $operator . ' 0';
     }
 
     /**
@@ -168,8 +169,11 @@ class File extends Component implements ComponentInterface
 
         $html = [];
         $html[] = '<div>';
-        $html[] = '<input type="checkbox" name="' . $fieldName . '" value="1" ' . ($_GET[$fieldName] ? 'checked' : '') . '>';
-        $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label>';
+        $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label><br>';
+        $html[] = '<select name="' . $fieldName . '" class="form-control">';
+        $html[] = '<option value=""></option>';
+        $html[] = html_options([1 => 'Yes', 0 => 'No'], $_GET[$fieldName]);
+        $html[] = '</select>';
         $html[] = '</div>';
 
         return implode(' ', $html);

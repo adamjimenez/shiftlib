@@ -181,7 +181,7 @@ class cms
                 $columns[$k] = "T_$table." . underscored($v);
             }
 
-            $cols = count($columns) ? implode(',', $columns) : 'T_$table.* ' . $sql['cols'];
+            $cols = count($columns) ? implode(',', $columns) : "T_$table.* " . $sql['cols'];
 
             $query = "SELECT " . $cols . "
             FROM `$table` T_$table
@@ -312,34 +312,38 @@ class cms
         }
 
         public function file($file_id) {
-            global $auth,
-            $vars,
-            $auth;
+            global $auth, $vars, $auth;
 
             if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads'] and $_GET['hash'] !== md5($auth->hash_salt . $file_id)) {
                 die('access denied');
             }
+            
+            if (is_numeric($file_id)) {
+                $row = sql_query("SELECT * FROM files
+                    WHERE
+                	    id='" . escape($file_id) . "'
+                ", 1) or die('file not found');
+                
+                $name = $row['name'];
+                $type = $row['type'];
+                $path = $this->file_upload_path . $row['id'];
+            } else {
+                $name = $file_id;
+                $type = 'image/jpeg';
+                $path = 'uploads/' . $file_id;
+            }
 
-            $row = sql_query("SELECT * FROM files
-                WHERE
-            	    id='" . escape($file_id) . "'
-            ", 1);
-
-            header('Content-type: ' . $row['type']);
-            header('Content-Disposition: inline; filename="' . $row['name'] . '"');
+            header('Content-type: ' . $type);
+            header('Content-Disposition: inline; filename="' . $name . '"');
 
             if (!$_GET['w'] && !$_GET['h']) {
-                print file_get_contents($this->file_upload_path . $row['id']);
+                print file_get_contents($path);
             } else {
                 // end configure
                 $max_width = $_GET['w'] ?: 320;
                 $max_height = $_GET['h'] ?: 240;
 
-                $img = imageorientationfix($this->file_upload_path . $row['id']);
-                if (!$img) {
-                    return false;
-                }
-                
+                $img = imageorientationfix($path);
                 $img = thumb_img($img, [$max_width, $max_height], false);
                 $ext = file_ext($row['name']);
 
@@ -722,11 +726,13 @@ class cms
             }
 
             // Deprecated: spaced versions of field names for compatibility
+            /*
             foreach ($content as $k => $v) {
                 foreach ($v as $k2 => $v2) {
                     $content[$k][spaced($k2)] = $v2;
                 }
             }
+            */
 
             // nested arrays for checkbox info
             foreach ($fields as $name => $field) {
@@ -738,11 +744,11 @@ class cms
                     }
                     continue;
                 }
-
-                if ('files' === $type) {
-                    if ($v[$name]) {
-                        foreach ($content as $k => $v) {
-                            $content[$k][underscored($name)] = explode("\n", $v[$name]);
+                
+                if (in_array($type, ['files', 'uploads'])) {
+                    foreach ($content as $k=>$v) {
+                        if ($v[$field['column']]) {
+                            $content[$k][$field['column']] = explode("\n", str_replace("\r", '', $v[$field['column']]));
                         }
                     }
                     continue;
@@ -1184,7 +1190,6 @@ class cms
                         curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
                         $response = curl_exec($verify);
                         $json = json_decode($response, true);
-                        //var_dump($json);exit;
 
                         $this->score = $json['score'];
 
@@ -1268,7 +1273,7 @@ class cms
             }
 
             // validate fields before saving
-            public function validate($data = null, $recaptcha = false) {
+            public function validate($data = null, $recaptcha = false, $return_object = false) {
                 global $vars,
                 $auth;
 
@@ -1292,7 +1297,7 @@ class cms
                 }
 
                 $fields = $this->get_fields($this->section);
-
+                
                 foreach ($fields as $name => $field) {
                     if (!$field['type']) {
                         continue;
@@ -1311,15 +1316,23 @@ class cms
 
                     // check admin field
                     if ($name === 'admin' && $data[$name] && $data[$name] < $auth->user['admin']) {
-                        $errors[] = $name . ' permission denied';
+                        if ($return_object) {
+                            $errors[$name] = ' permission denied';
+                        } else {
+                            $errors[] = $name . 'permission denied';
+                        }
                     }
 
-                    // check fields
+                    // check valid
                     if (
                         ('' != $data[$field_name] && $component && !$component->isValid($data[$field_name])) ||
                         ($field['required'] && '' == $data[$field_name] && !count((array)$_FILES[$field_name]))
                     ) {
-                        $errors[] = $field_name;
+                        if ($return_object) {
+                            $errors[$name] = 'invalid';
+                        } else {
+                            $errors[] = $field_name;
+                        }
                         continue;
                     }
 
@@ -1349,22 +1362,31 @@ class cms
 
                         if ($row) {
                             foreach ($fields as $field) {
-                                $errors[] = $field . ' ' . $in_use;
+                                if ($return_object) {
+                                    $errors[$name] = $in_use;
+                                } else {
+                                    $errors[] = $field . ' ' . $in_use;
+                                }
                             }
                             break;
                         }
                     }
                 }
-
+                
                 if ($recaptcha) {
-                    if ($data['validate'] && !$data['g-recaptcha-response']) {
-                        $errors[] = 'recaptcha';
-                    } else if (!$data['validate'] && !$this->verifyRecaptcha($data['g-recaptcha-response'])) {
-                        $errors[] = 'recaptcha';
+                    if (
+                        ($data['validate'] && !$data['g-recaptcha-response']) ||
+                        (!$data['validate'] && !$this->verifyRecaptcha($data['g-recaptcha-response']))
+                    ) {
+                        if ($return_object) {
+                            $errors['recaptcha'] = 'required';
+                        } else {
+                            $errors[] = 'recaptcha';
+                        }
                     }
                 }
 
-                return array_values(array_unique($errors));
+                return $return_object ? $errors : array_values(array_unique($errors));
             }
 
             // build update query from array
