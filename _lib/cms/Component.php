@@ -139,19 +139,4 @@ abstract class Component
         }
         return $tablePrefix . $fieldName . " $func '" . escape($value) . "'";
     }
-
-    /**
-     * @param $name
-     * @param $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        $fieldName = underscored($name);
-        $html = [];
-        $html[] = '<label for="' . $fieldName . '" class="col-form-label">' . ucfirst($name) . '</label>';
-        $html[] = '<input type="text" class="form-control" name="' . $fieldName . '" value="' . $value . '">';
-
-        return implode(' ', $html);
-    }
 }

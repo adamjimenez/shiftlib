@@ -86,37 +86,4 @@ class Date extends Component implements ComponentInterface
         
         return $where;
     }
-
-    /**
-     * @param $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        $field_name = underscored($name);
-
-        $html = [];
-        $html[] = '<div>';
-        $html[] = '<label class="col-form-label">' . ucfirst($name) . '</label>';
-        $html[] = '<div>';
-        $html[] = '<div style="float:left">';
-        $html[] = 'From&nbsp;';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '<input type="text" name="' . $field_name . '" value="' . $_GET[$field_name] . '" size="8" data-type="date" autocomplete="off" class="form-control">';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '&nbsp;To&nbsp;';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '<input type="text" name="func[' . $field_name . '][end]" value="' . (is_array($_GET['func'][$field_name]) ? $_GET['func'][$field_name]['end'] : '') . '" size="8" data-type="date" autocomplete="off" class="form-control">';
-        $html[] = '</div>';
-        $html[] = '<br style="clear: both;">';
-        $html[] = '</div>';
-        $html[] = '</div>';
-        $html[] = '<br>';
-
-        return implode(' ', $html);
-    }
 }

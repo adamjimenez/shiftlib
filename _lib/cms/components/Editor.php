@@ -56,14 +56,4 @@ class Editor extends Component implements ComponentInterface
         $value = $doc->saveHTML();
         return trim($value);
     }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        return '';
-    }
 }

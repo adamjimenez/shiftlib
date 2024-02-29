@@ -8,6 +8,9 @@ class cms
     * @var string
     */
     public $section = '';
+    
+    // hide these field types from the list view
+    public $hidden_columns = ['password'];
 
     /**
     * @var array
@@ -20,28 +23,24 @@ class cms
     */
     public $sections = [];
 
-    // hide these field types from the list view
-    public $hidden_columns = ['password'];
-
     public $buttons = [];
 
     public $handlers = [];
 
     public $file_upload_path = 'uploads/files/';
     
-    private $default_users_table =    
-        [
-            'email' => 'email',
-            'password' => 'password',
-            'admin' => 'select',
-            'date' => 'timestamp',
-            'id' => 'id',
-            'indexes' => [[
-                'name' => 'email',
-                'type' => 'unique',
-                'fields' => ['email'],
-            ]]
-        ];
+    private $default_users_table = [
+        'email' => 'email',
+        'password' => 'password',
+        'admin' => 'select',
+        'date' => 'timestamp',
+        'id' => 'id',
+        'indexes' => [[
+            'name' => 'email',
+            'type' => 'unique',
+            'fields' => ['email'],
+        ]]
+    ];
 
     public function __construct() {}
 
@@ -51,8 +50,7 @@ class cms
             'page' => 'view',
             'label' => 'Send Preview',
             'handler' => function () {
-                global $auth,
-                $cms;
+                global $auth, $cms;
 
                 $content = $cms->get('email templates', $_GET['id']);
                 email_template($auth->user['email'], $content['id'], $auth->user);
@@ -512,25 +510,9 @@ class cms
                     $or_str = implode(' OR ', $or);
                     $where[] = '(' . $or_str . ')';
                 }
-    
-                // add 'or' array to 'having' array
-                /*
-            if (count($having_or)) {
-                $having_or_str = implode(' OR ', $having_or);
-                $having[] = '(' . $having_or_str . ')';
-            }
-            */
+
             }
         }
-    
-        // additional custom conditions // disabled for security
-        /*
-        foreach ($conditions as $k => $v) {
-            if (is_int($k)) {
-                $where[] = $v;
-            }
-        }
-        */
     
         // create where string
         $where_str = '';
@@ -710,8 +692,6 @@ class cms
         $having_str
         ";
     
-        //debug($query);
-    
         if (true === $return_query) {
             return $query;
         }
@@ -724,15 +704,6 @@ class cms
         if (true === $num_results) {
             return $content[0]['count'];
         }
-    
-        // Deprecated: spaced versions of field names for compatibility
-        /*
-        foreach ($content as $k => $v) {
-            foreach ($v as $k2 => $v2) {
-                $content[$k][spaced($k2)] = $v2;
-            }
-        }
-        */
     
         // nested arrays for checkbox info
         foreach ($fields as $name => $field) {
@@ -1545,10 +1516,7 @@ class cms
                     $handler['section'] = [$handler['section']];
                 }
 
-                if (
-                    in_array($this->section, $handler['section']) &&
-                    $handler['event'] === $event
-                ) {
+                if (in_array($this->section, $handler['section']) && $handler['event'] === $event) {
                     return call_user_func_array($handler['handler'], (array) $args);
                 }
             }

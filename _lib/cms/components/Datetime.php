@@ -63,37 +63,4 @@ class Datetime extends Date implements ComponentInterface
     {
         return Component::isValid($value);
     }
-    
-    /**
-     * @param $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        $field_name = underscored($name);
-
-        $html = [];
-        $html[] = '<div>';
-        $html[] = '<label class="col-form-label">' . ucfirst($name) . '</label>';
-        $html[] = '<div>';
-        $html[] = '<div style="float:left">';
-        $html[] = 'From&nbsp;';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '<input type="datetime-local" name="' . $field_name . '" value="' . $_GET[$field_name] . '" autocomplete="off" class="form-control">';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '&nbsp;To&nbsp;';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '<input type="datetime-local" name="func[' . $field_name . '][end]" value="' . $_GET['func'][$field_name]['end'] . '" autocomplete="off" class="form-control">';
-        $html[] = '</div>';
-        $html[] = '<br style="clear: both;">';
-        $html[] = '</div>';
-        $html[] = '</div>';
-        $html[] = '<br>';
-
-        return implode(' ', $html);
-    }
 }

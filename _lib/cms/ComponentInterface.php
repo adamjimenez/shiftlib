@@ -35,14 +35,6 @@ interface ComponentInterface
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string;
 
     /**
-     * @param string $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string;
-
-
-    /**
      * @return null|string
      */
     public function getFieldSql(): ?string;

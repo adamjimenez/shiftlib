@@ -89,31 +89,4 @@ class Integer extends Component implements ComponentInterface
     {
         return (int) $value;
     }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        $fieldName = underscored($name);
-
-        $html = [];
-        $html[] = '<label>' . ucfirst($name) . '</label><br>';
-
-        $html[] = '<div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '<select name="func[' . $fieldName . ']" class="form-control">';
-        $html[] = '<option value=""></option>';
-        $html[] = html_options(['=' => '=', '!=' => '!=', '>' => '>', '<' => '<'], $_GET['func'][$fieldName]);
-        $html[] = '</select>';
-        $html[] = '</div>';
-        $html[] = '<div style="float:left">';
-        $html[] = '<input type="number" id="' . $name . '" name="' . $fieldName . '" value="' . $_GET[$fieldName] . '" size="8" class="form-control">';
-        $html[] = '</div>';
-        $html[] = '<br style="clear: both;">';
-        $html[] = '</div>';
-        return implode(' ', $html);
-    }
 }

@@ -52,36 +52,4 @@ class Dob extends Date implements ComponentInterface
         return '`' . $fieldName . "`!='0000-00-00' AND " .
             "DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(" . $fieldName . ", '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(" . $fieldName . ", '00-%m-%d')) LIKE '" . escape($value) . ' ';
     }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        $fieldName = underscored($name);
-
-        $opts = [];
-        for ($i = 1; $i <= 60; $i++) {
-            $opts['age'][] = $i;
-        }
-
-        $html = [];
-
-        $html[] = ucfirst($name) . '<br>';
-        $html[] = '<select name="' . $fieldName . '">';
-        $html[] = '<option value="">Any</option>';
-        $html[] = html_options($opts['age'], $_GET[$fieldName]);
-        $html[] = '</select>';
-        $html[] = 'to';
-        $html[] = '<select name="func[' . $fieldName . ']">';
-        $html[] = '<option value="">Any</option>';
-        $html[] = html_options($opts['age'], $_GET['func'][$fieldName]);
-        $html[] = '</select>';
-        $html[] = '<br>';
-        $html[] = '<br>';
-
-        return implode(' ', $html);
-    }
 }

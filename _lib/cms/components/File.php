@@ -157,25 +157,4 @@ class File extends Component implements ComponentInterface
         $operator = $value == 0 ? '=' : '>';
         return $tablePrefix . $fieldName . ' ' . $operator . ' 0';
     }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return string
-     */
-    public function searchField(string $name, $value): string
-    {
-        $fieldName = underscored($name);
-
-        $html = [];
-        $html[] = '<div>';
-        $html[] = '<label for="' . underscored($name) . '" class="col-form-label">' . ucfirst($name) . '</label><br>';
-        $html[] = '<select name="' . $fieldName . '" class="form-control">';
-        $html[] = '<option value=""></option>';
-        $html[] = html_options([1 => 'Yes', 0 => 'No'], $_GET[$fieldName]);
-        $html[] = '</select>';
-        $html[] = '</div>';
-
-        return implode(' ', $html);
-    }
 }
