@@ -66,12 +66,16 @@ function get_include($request)
     //check for predefined pages
     switch ($request) {
         case 'admin':
+            redirect('/admin/');
+            
+            /*
             if (!$cms) {
                 die('Error: db is not configured');
             }
 
             $cms->admin();
             exit;
+            */
             break;
         case 'sitemap.xml':
             if (!file_exists($root_folder . '/_tpl/sitemap.xml.php')) {
@@ -83,6 +87,11 @@ function get_include($request)
             $auth->logout();
             redirect('/');
             break;
+    }
+    
+    if (starts_with($request, 'admin/')) {
+        require(__DIR__ . '/admin.php');
+        exit;
     }
 
     // strip file extension from url
@@ -97,7 +106,7 @@ function get_include($request)
     // check redirects list
     } elseif ($tpl_config['redirects'][$request]) {
         $redirect = $tpl_config['redirects'][$request];
-        if (!starts_with('/', $redirect)) {
+        if (!starts_with($redirect, '/')) {
             $redirect = '/' . $redirect;
         }
         redirect($redirect, 301);

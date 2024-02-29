@@ -181,7 +181,7 @@ class cms
                 $columns[$k] = "T_$table." . underscored($v);
             }
 
-            $cols = count($columns) ? implode(',', $columns) : "T_$table.* " . $sql['cols'];
+            $cols = count($columns) ? implode(',', $columns) : "T_$table.* " . ($sql['cols'] ? ', ' . $sql['cols'] : '');
 
             $query = "SELECT " . $cols . "
             FROM `$table` T_$table
@@ -292,16 +292,16 @@ class cms
                     $this->save(['deleted' => 1]);
                 } else {
                     sql_query('DELETE FROM `' . escape(underscored($section)) . '`
-                    WHERE id = ' . (int)$id . '
-                        LIMIT 1
-                ');
+                        WHERE id = ' . (int)$id . '
+                            LIMIT 1
+                    ');
 
                     //multiple select items
                     sql_query("DELETE FROM cms_multiple_select
-                    WHERE
-                        section = '" . escape(underscored($section)) . "' AND
-                        item = '$id'
-                ");
+                        WHERE
+                            section = '" . escape(underscored($section)) . "' AND
+                            item = '$id'
+                    ");
                 }
 
                 // log it
@@ -1414,6 +1414,10 @@ class cms
 
                     // apply field formatting
                     $data[$field_name] = $component->formatValue($data[$field_name], $field_name);
+                    
+                    if ($data[$field_name] === 'null') {
+                        $data[$field_name] = '';
+                    }
 
                     // skip if preserving or not for saving this way
                     if (
@@ -1429,6 +1433,7 @@ class cms
 
                     // handle null fields
                     $query .= "`$field_name`=";
+                    
                     if (empty($data[$field_name]) && in_array($field_name, $null_fields)) {
                         $query .= 'NULL';
                     } elseif ('coords' == $type) {

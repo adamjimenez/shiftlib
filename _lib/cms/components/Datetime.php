@@ -7,6 +7,8 @@ use cms\ComponentInterface;
 
 class Datetime extends Date implements ComponentInterface
 {
+    public $dateFormat = 'Y-m-d H:i:s';
+    
     /**
      * @return string|null
      */
@@ -62,38 +64,6 @@ class Datetime extends Date implements ComponentInterface
         return Component::isValid($value);
     }
     
-    /**
-     * @param string $fieldName
-     * @param mixed $value
-     * @param string $func
-     * @param string $tablePrefix
-     * @return string|null
-     */
-    public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
-    {
-        if ('now' == $value) {
-            $start = 'NOW()';
-        } elseif ('month' == $func) {
-            $start = dateformat('mY', $value);
-        } else {
-            $start = "'" . escape(dateformat('Y-m-d H:i:s', $value)) . "'";
-        }
-
-        if ($value and is_array($func) and $func['end']) {
-            $end = escape($func['end']);
-
-            $where = '(' . $tablePrefix . $fieldName . ' >= ' . $start . ' AND ' . $tablePrefix . $fieldName . " <= '" . $end . "')";
-        } else {
-            if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
-                $func = '=';
-            }
-
-            $where = $tablePrefix . $fieldName . ' ' . escape($func) . ' ' . $start;
-        }
-
-        return $where;
-    }
-
     /**
      * @param $name
      * @param mixed $value

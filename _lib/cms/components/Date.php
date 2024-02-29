@@ -7,6 +7,8 @@ use cms\ComponentInterface;
 
 class Date extends Component implements ComponentInterface
 {
+    public $dateFormat = 'Y-m-d';
+    
     /**
      * @return string|null
      */
@@ -64,16 +66,15 @@ class Date extends Component implements ComponentInterface
         } elseif ('month' == $func) {
             $start = dateformat('mY', $value);
         } else {
-            $start = "'" . escape(dateformat('Y-m-d', $value)) . "'";
+            $start = "'" . escape(dateformat($this->dateFormat, $value)) . "'";
         }
 
-        if ('month' == $func) {
+        if ('month' === $func) {
             $where = 'date_format(' . $tablePrefix . $fieldName . ", '%m%Y') = '" . escape(dateformat('mY', $value)) . "'";
-        } elseif ('year' == $func) {
+        } elseif ('year' === $func) {
             $where = 'date_format(' . $tablePrefix . $fieldName . ", '%Y') = '" . escape($value) . "'";
-        } elseif ($value and is_array($func) and $func['end']) {
-            $end = escape($func['end']);
-
+        } elseif ($value && strtotime($func)) {
+            $end = escape(dateformat($this->dateFormat, $func));
             $where = '(' . $tablePrefix . $fieldName . ' >= ' . $start . ' AND ' . $tablePrefix . $fieldName . " <= '" . $end . "')";
         } else {
             if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
@@ -82,7 +83,7 @@ class Date extends Component implements ComponentInterface
 
             $where = $tablePrefix . $fieldName . ' ' . escape($func) . ' ' . $start;
         }
-
+        
         return $where;
     }
 

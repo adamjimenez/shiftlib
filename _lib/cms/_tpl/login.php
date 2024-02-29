@@ -2,6 +2,11 @@
 // redirect to home if logged in
 $result = $auth->login();
 
+if ($result['error']) {
+    print json_encode(['errors' => [$result['error']]]);
+    exit;
+}
+
 // handle login
 if (1 === $result['code']) {
     if ($auth->user['admin']) {
