@@ -67,15 +67,6 @@ function get_include($request)
     switch ($request) {
         case 'admin':
             redirect('/admin/');
-            
-            /*
-            if (!$cms) {
-                die('Error: db is not configured');
-            }
-
-            $cms->admin();
-            exit;
-            */
             break;
         case 'sitemap.xml':
             if (!file_exists($root_folder . '/_tpl/sitemap.xml.php')) {
