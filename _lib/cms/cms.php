@@ -29,7 +29,7 @@ class cms
 
     public $file_upload_path = 'uploads/files/';
     
-    private $default_users_table = [
+    public $default_users_table = [
         'email' => 'email',
         'password' => 'password',
         'admin' => 'select',

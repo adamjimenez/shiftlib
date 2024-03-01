@@ -27,7 +27,6 @@ function get_db_field($table, $field_name) {
 	return $old_field;
 }
 
-
 global $last_modified,
 $db_config,
 $auth_config,
@@ -36,12 +35,9 @@ $shop_enabled,
 $from_email,
 $tpl_config,
 $vars,
-$count,
 $section,
 $table,
 $fields;
-
-//print_r($tables);exit;
 
 // internal tables
 $default_tables = [
@@ -442,19 +438,6 @@ try {
 			// check internal tables
 			foreach ($default_tables as $name => $fields) {
 				$cms->check_table(underscored($name), $fields);
-			}
-
-			$count['sections'] = 0;
-			$count['subsections'] = 0;
-			$count['options'] = 0;
-
-			$display = [];
-			foreach ($_POST['sections'] as $section_id => $section) {
-				if (is_array($section)) {
-					continue;
-				}
-
-				$display[] = $section;
 			}
 
 			// hash passwords

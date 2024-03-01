@@ -80,7 +80,6 @@ function filter_menu($arr) {
         $v['to'] = file_exists('_tpl/admin/' . underscored($v['section']) . '.php') ? $v['section'] : 'section/' . $v['section'];
 
         $new_arr[$i] = $v;
-        $i++;
 
         foreach ($filters as $k2 => $filter) {
             if ($filter['section'] != $v['section']) {
@@ -102,15 +101,16 @@ function filter_menu($arr) {
                 $filter['filter'] = 'section/' . $filter['section'] . '?' . $filter['filter'];
             }
 
-            $new_arr[$i] = [
+            $new_arr[$i]['children'][] = [
                 'icon' => 'mdi-filter',
                 'title' => $filter['name'],
                 'to' => $filter['filter'],
                 'count' => $result,
                 'filter_id' => $filter['id'],
             ];
-            $i++;
         }
+        
+        $i++;
     }
 
     return array_values($new_arr);
@@ -122,8 +122,25 @@ try {
 
     // check permissions
     if (!$auth->user['admin'] && !$auth->user['privileges'][$_GET['section']] && !in_array($_GET['cmd'], ['login'])) {
-        header("HTTP/1.1 401 Unauthorized");
-        throw new Exception('permission denied');
+        // check table exists
+        if (!table_exists($auth->table)) {
+            $cms->check_table($auth->table, $cms->default_users_table);
+        }
+
+        // check admin user exists
+        $row = sql_query('SELECT id FROM ' . $auth->table . ' LIMIT 1', 1);
+        if (!$row) {
+            $default_pass = $auth->create_hash('123');
+
+            sql_query('INSERT INTO ' . $auth->table . " SET email='admin', password='" . escape($default_pass) . "', admin='1'");
+            
+            $auth->set_login('admin', $default_pass);
+            
+            $auth->load();
+        } else {
+            header("HTTP/1.1 401 Unauthorized");
+            throw new Exception('permission denied');
+        }
     }
 
     switch ($_GET['cmd']) {
@@ -596,6 +613,13 @@ try {
         case 'restore':
             $cms->set_section($_GET['section'], $_POST['id'], ['deleted']);
             $cms->save(['deleted' => 0]);
+            break;
+
+        case 'bulkedit':
+            foreach ($_POST['ids'] as $id) {
+                $cms->set_section($_GET['section'], $id, array_keys($_POST['data']));
+                $cms->save($_POST['data']);
+            }
             break;
 
         case 'delete':
