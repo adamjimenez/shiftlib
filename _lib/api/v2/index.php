@@ -100,6 +100,14 @@ function filter_menu($arr) {
             } else {
                 $filter['filter'] = 'section/' . $filter['section'] . '?' . $filter['filter'];
             }
+            
+            if (!count((array)$new_arr[$i]['children'])) {
+                $new_arr[$i]['children'][] = [
+                    'icon' => 'mdi-filter',
+                    'title' => 'All',
+                    'to' => 'section/' . $filter['section'],
+                ];
+            }
 
             $new_arr[$i]['children'][] = [
                 'icon' => 'mdi-filter',
