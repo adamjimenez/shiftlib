@@ -15,7 +15,7 @@ function parse_request(): string
     }
 
     // check trailing index
-    if (str_ends_with($request, 'index')) {
+    if (substr($request, -6) === 'index') {
         header('location:' . substr($request, 0, -5), true, 301);
     }
 
