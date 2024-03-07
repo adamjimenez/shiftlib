@@ -525,7 +525,9 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 			file_put_contents($config_file, $config);
 
 			// clear config.php cache
-			opcache_reset();
+			if (function_exists('opcache_reset')) {
+				opcache_reset();
+			}
 
 			break;
 
