@@ -124,6 +124,7 @@ function filter_menu($arr) {
     return array_values($new_arr);
 }
 
+header('Content-Type: application/json, charset=utf-8');
 $response = [];
 
 try {
@@ -335,14 +336,22 @@ try {
             }
 
             if ($_POST['createFolder']) {
-                mkdir($path . $_POST['createFolder']) or throw new Exception('error creating folder ' . $_POST['createFolder']);
+                $result = mkdir($path . $_POST['createFolder']);
+                
+                if ($result === false) {
+                    throw new Exception('error creating folder ' . $_POST['createFolder']);
+                }
             } else if ($_FILES['file']) {
                 $tmp = $_FILES['file']['tmp_name'];
                 $file_name = $_FILES['file']['name'];
                 $dest = $path . $file_name;
 
                 if ($tmp) {
-                    rename($tmp, $dest) or throw new Exception("Can't rename " . $tmp . ' to ' . $dest);
+                    $result = rename($tmp, $dest);
+                
+                    if ($result === false) {
+                        throw new Exception("Can't rename " . $tmp . ' to ' . $dest);
+                    }
                 }
             } else if ($_POST['delete']) {
                 foreach ((array)$_POST['delete'] as $v) {
@@ -350,9 +359,17 @@ try {
                         $item_path = $path . $v;
 
                         if (is_file($item_path)) {
-                            unlink($item_path) or throw new Exception('could not delete file ' . $item_path);
+                            $result = unlink($item_path);
+                
+                            if ($result === false) {
+                                throw new Exception('could not delete file ' . $item_path);
+                            }
                         } else if (is_dir($item_path)) {
-                            rmdir($item_path) or throw new Exception('could not delete directory ' . $item_path);
+                            $result = rmdir($item_path);
+                
+                            if ($result === false) {
+                                throw new Exception('could not delete directory ' . $item_path);
+                            }
                         }
                     }
                 }
@@ -887,5 +904,4 @@ try {
 
 $response['success'] = $response['error'] ? false : true;
 
-header('Content-Type: application/json, charset=utf-8');
 print json_encode($response, JSON_PARTIAL_OUTPUT_ON_ERROR);
