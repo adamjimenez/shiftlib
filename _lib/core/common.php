@@ -884,7 +884,15 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
                 }
             }
 
-            echo '<script>console.error(`' . ($auth->user['admin'] ? $errorstring : 'Server error') . '`);</script>';
+            // check whether to return as json or console log
+            if (in_array('Content-Type: application/json, charset=utf-8', headers_list())) {
+                $response = [
+                    'error' => $error
+                ];
+                print json_encode($response, JSON_PARTIAL_OUTPUT_ON_ERROR);
+            } else {
+                echo '<script>console.error(`' . $error . '`);</script>';
+            }
             
             if (!$admin_email) {
                 return;
