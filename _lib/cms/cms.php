@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.3';
+    const VERSION = '4.0.4';
 
     /**
     * @var string
@@ -364,14 +364,31 @@ class cms
     }
     
     // create search params, used by get()
-    public function conditionsToSql($section, $conditions = [], $num_results = null, $cols = null) {
-        global $vars,
-        $auth;
+    public function conditionsToSql($section, $conditions = [], $num_results = null, $columns = null) {
+        global $vars, $auth;
     
         $table = underscored($section);
         $field_id = $this->get_id_field($section);
     
         $fields = $this->get_fields($section);
+        
+        $cols = [];
+        foreach ($fields as $name => $field) {
+            $type = $field['type'];
+    
+            if (
+                !$type || 
+                in_array($type, ['checkboxes', 'separator']) ||
+                (is_array($columns) && !in_array(underscored($name), $columns))
+            ) {
+                continue;
+            }
+    
+            $component = $this->get_component($type);
+            $col = $component->getColSql(underscored($name), "T_$table.");
+    
+            $cols[] = "\t" . $col . ' AS `' . underscored($name) . '`' . "\n";
+        }
     
         // check for id or page name
         $id = null;
@@ -528,9 +545,14 @@ class cms
     
         $keys = [];
         foreach ($fields as $name => $field) {
-            if (in_array($field['type'], ['select', 'combo', 'radio'])) {
-                $keys[] = $name;
+            if (
+                !in_array($field['type'], ['select', 'combo', 'radio']) ||
+                (is_array($columns) && !in_array(underscored($name), $columns))
+            ) {
+                continue;
             }
+            
+            $keys[] = $name;
         }
     
         // create joins
@@ -574,9 +596,23 @@ class cms
     * @throws Exception
     * @return array|bool|mixed|string
     */
-    public function get($section, $conditions = null, $num_results = null, $order = null, $asc = true, $prefix = null, $return_query = false) {
+    public function get($opts) {
         global $vars;
-    
+        
+        // backcompat
+        if (is_string($opts)) {
+            $args = func_get_args();
+            $section = $args[0];
+            $conditions = $args[1];
+            $limit = $args[2];
+            $order = $args[3];
+            $asc = $args[4];
+            $prefix = $args[5];
+            $return_query = $args[6];
+        } else {
+            extract($opts);
+        }
+        
         $table = underscored($section);
     
         // set a default prefix to prevent pagination clashing
@@ -588,28 +624,9 @@ class cms
         // todo move to components
         $fields = $this->get_fields($section);
     
-        $cols = [];
-        foreach ($fields as $name => $field) {
-            $type = $field['type'];
-    
-            if (!$type || in_array($type, ['checkboxes', 'separator'])) {
-                continue;
-            }
-    
-            $component = $this->get_component($type);
-            $col = $component->getColSql(underscored($name), "T_$table.");
-    
-            $cols[] = "\t" . $col . ' AS `' . underscored($name) . '`' . "\n";
-        }
-    
-        // backcompat
-        $no_id = is_array($vars['fields'][$section]) && count($vars['fields'][$section]) && !$vars['fields'][$section]['id'];
-    
         // select id column
-        if ($fields['id'] && false === $no_id) {
-            $cols[] = "\tT_$table.id";
-        } else {
-            $num_results = 1;
+        if (!$fields['id']) {
+            $limit = 1;
         }
     
         // determine sort order
@@ -669,15 +686,15 @@ class cms
             }
         }
     
-        $sql = $this->conditionsToSql($section, $conditions, $num_results, $cols);
-    
+        $sql = $this->conditionsToSql($section, $conditions, $limit, $columns);
+        
         $where_str = $sql['where_str'];
         $group_by_str = '';
         $having_str = $sql['having_str'];
         $joins = $sql['joins'];
         $cols = $sql['cols'];
     
-        if (true === $num_results) {
+        if (true === $limit) {
             $cols = 'COUNT(*) AS `count`';
         } else if ($fields['id']) {
             $group_by_str = "GROUP BY T_$table.id";
@@ -691,22 +708,26 @@ class cms
         $group_by_str
         $having_str
         ";
-    
+        
         if (true === $return_query) {
             return $query;
         }
     
-        $limit = $sql['num_results'] ?: null;
-        $this->p = new paging($query, $limit, $order, $asc, $prefix);
+        $num_results = $sql['num_results'] ?: null;
+        $this->p = new paging($query, $num_results, $order, $asc, $prefix);
     
         $content = $this->p->rows;
-    
-        if (true === $num_results) {
+        
+        if (true === $limit) {
             return $content[0]['count'];
         }
     
         // nested arrays for checkbox info
         foreach ($fields as $name => $field) {
+            if (is_array($columns) && !in_array(underscored($name), $columns)) {
+                continue;
+            }
+            
             $type = $field['type'];
     
             if ('select_multiple' === $type) {
@@ -732,6 +753,7 @@ class cms
             foreach ($content as $k => $v) {
     
                 if (false === is_array($vars['options'][$name]) && $vars['options'][$name]) {
+                    // deprecated
                     $join_id = $this->get_id_field($name);
                     $key = $this->get_option_label($name);
     
@@ -747,6 +769,7 @@ class cms
                     );
     
                 } else {
+                    // deprecated
                     $key = 'value';
     
                     $rows = sql_query("SELECT value FROM cms_multiple_select
@@ -769,7 +792,7 @@ class cms
                 $content[$k][underscored($name) . '_label'] = $label;
             }
         }
-        
+
         // return first array item if one result requested
         return (1 == $sql['num_results']) ? $content[0] : $content;
     }

@@ -79,11 +79,6 @@ function get_include($request)
             redirect('/');
             break;
     }
-    
-    if (starts_with($request, 'admin/')) {
-        require(__DIR__ . '/admin.php');
-        exit;
-    }
 
     // strip file extension from url
     if (strstr($request, '.php')) {
@@ -104,6 +99,8 @@ function get_include($request)
     // check catchers
     } elseif ($catcher = get_tpl_catcher($request)) {
         return $root_folder . '/_tpl/' . $catcher . '.php';
+    } else if (starts_with($request, 'admin/')) {
+        require(__DIR__ . '/admin.php');
     } else {
         // check pages section
         if ($vars['fields']['pages']['id']) {

@@ -510,7 +510,7 @@ class shop
             $this->total += ($this->total * $this->vat_rate);
         }
 
-        $this->total += $this->delivery;
+        $this->total += (float)$this->delivery;
         
         $this->total = round($this->total, 2);
     }

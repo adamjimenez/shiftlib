@@ -858,43 +858,17 @@ try {
             $limit = $start . ', ' . $length;
 
             // gather rows
-            $rows = $cms->get($_GET['section'], $conditions, $limit, $order, $asc);
-            //var_dump($rows);
+            $opts = [
+                'section' => $_GET['section'],
+                'conditions' => $conditions,
+                'limit' => $limit,
+                'order' => $order,
+                'asc' => $asc,
+                'columns' => $_GET['columns'],
+            ];
+            
+            $response['data'] = $cms->get($opts);
 
-            // prepare rows
-            foreach ($rows as $row) {
-                // every item starts with position
-                $item = [$row['position'],
-                    $row['id']];
-
-                // use labels when available
-                foreach ($cols as $name) {
-                    $field_name = underscored($name);
-
-                    // truncate editor
-                    if (in_array($fields[$name]['type'], ['editor', 'textarea'])) {
-                        $row[$field_name] = truncate($row[$field_name]);
-                    }
-
-                    // get field values
-                    if (in_array($fields[$name]['type'], ['select_multiple'])) {
-                        $label_table = $vars['options'][spaced($name)];
-
-                        if (is_string($vars['options'][spaced($name)])) {
-                            $label = $cms->get_label_field($label_table);
-
-                            foreach ($row[$field_name] as $k => $v) {
-                                $result = cache_query("SELECT " . $label['column'] . " AS 'label' FROM `".escape($label_table)."`  WHERE id = '".(int)$v."'", 1);
-                                $row[$field_name][$k] = is_array($result) ? current($result) : '';
-                            }
-                        }
-                    }
-
-                    $item[] = $row[$field_name . '_label'] ?: $row[$field_name];
-                }
-
-                $response['data'][] = $row;
-            }
             break;
     }
 
