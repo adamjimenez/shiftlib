@@ -194,13 +194,13 @@ class Select extends Component implements ComponentInterface
         if (is_array($value)) {
             $or = '(';
             foreach ($value as $k => $v) {
-                $or .= $tablePrefix . $fieldName . " LIKE '" . escape($v) . "' OR ";
+                $or .= $tablePrefix . $fieldName . " = '" . escape($v) . "' OR ";
             }
             $or = substr($or, 0, -4);
             $or .= ')';
 
             return $or;
         }
-        return $tablePrefix . $fieldName . " LIKE '" . escape($value) . "'";
+        return $tablePrefix . $fieldName . " = '" . escape($value) . "'";
     }
 }

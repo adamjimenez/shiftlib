@@ -166,7 +166,7 @@ class auth
         }
 
         if (!$email_templates['Password Reminder']) {
-            $email_templates['Password Reminder'] = 'Dear {$name},
+            $email_templates['Password Reminder'] = 'Hi {$name},
         
             You have requested a password reset for your {$domain} member account.
             Please use the following link:
@@ -176,10 +176,12 @@ class auth
             Kind regards
         
             The {$domain} Team';
+            
+            $email_templates['Password Reminder'] = str_replace("\n", '', $email_templates['Password Reminder']);
         }
 
         if (!$email_templates['Registration Confirmation']) {
-            $email_templates['Registration Confirmation'] = 'Dear {$name},
+            $email_templates['Registration Confirmation'] = 'Hi {$name},
         
             Thank you for registering as a member of {$domain}.
         
@@ -187,6 +189,8 @@ class auth
         
             Kind regards
             The {$domain} Team';
+            
+            $email_templates['Registration Confirmation'] = str_replace("\n", '', $email_templates['Registration Confirmation']);
         }
 
         $this->required = $vars['required'][$this->table];

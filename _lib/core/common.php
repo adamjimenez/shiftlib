@@ -1400,8 +1400,12 @@ function array_to_csv_file($rows, $filename = 'data', $add_header = true)
         $i++;
     }
 
+    if ($filename === false) {
+        return $data;        
+    }
+
     header('Pragma: cache');
-    header('Content-Type: text/comma-separated-values');
+    header("Content-Type: text/csv");
     header("Content-Disposition: attachment; filename=$filename.csv");
 
     print $data;
@@ -2079,4 +2083,18 @@ function finish_request($content = '') {
     flush();
     
     if(session_id()) session_write_close();
+}
+
+function get_icon($key) {
+    $icons = [
+        'users' => 'mdi-account',
+        'orders' => 'mdi-basket',
+        'pages' => 'mdi-file-document-edit',
+        'settings' => 'mdi-cog',
+        'enquiries' => 'mdi-email-box',
+        'email templates' => 'mdi-email-box',
+        'news' => 'mdi-newspaper',
+    ];
+    
+    return $icons[$key];
 }

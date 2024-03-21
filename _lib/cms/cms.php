@@ -666,6 +666,7 @@ class cms
     
             if ($fields['position']) {
                 $order = 'T_' . $table . '.position';
+                $asc = true;
             } elseif ($field_date) {
                 $order = 'T_' . $table . '.' . underscored($field_date);
                 $asc = false;
@@ -742,6 +743,17 @@ class cms
                     if ($v[$field['column']]) {
                         $content[$k][$field['column']] = explode("\n", str_replace("\r", '', $v[$field['column']]));
                     }
+                }
+                continue;
+            }
+            
+            if (in_array($type, ['upload'])) {
+                foreach ($content as $k=>$v) {
+                     $json = json_decode($content[$k][$field['column']], true);
+                     
+                     if (is_array($json)) {
+                          $content[$k][$field['column']] = $json[0];
+                     }
                 }
                 continue;
             }
@@ -829,7 +841,7 @@ class cms
         $this->field_id = 'id';
     
         // default id to 1 if no id field
-        if ($id || !$fields['id']) {
+        if ($id > 0 || !$fields['id']) {
             $this->id = $id;
     
             if ($select) {
@@ -1275,6 +1287,10 @@ class cms
             }
 
             // check valid
+            if ($data[$field_name] === 'null') {
+                $data[$field_name] = '';
+            }
+            
             if (
                 ('' != $data[$field_name] && $component && !$component->isValid($data[$field_name])) ||
                 ($field['required'] && '' == $data[$field_name] && !count((array)$_FILES[$field_name]))

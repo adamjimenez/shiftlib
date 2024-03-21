@@ -75,29 +75,6 @@ $default_tables = [
 		]],
 	],
 
-	'cms multiple select' => [
-		'section' => 'text',
-		'field' => 'text',
-		'item' => 'integer',
-		'value' => 'text',
-		'id' => 'id',
-		'indexes' => [[
-			'name' => 'section_field_item',
-			'type' => 'index',
-			'fields' => ['section',
-				'field',
-				'item'],
-		],
-			[
-				'name' => 'section_field_item_value',
-				'type' => 'index',
-				'fields' => ['section',
-					'field',
-					'item',
-					'value'],
-			]],
-	],
-
 	'cms logs' => [
 		'user' => 'select',
 		'section' => 'text',
@@ -138,79 +115,13 @@ $default_tables = [
 				'date'],
 		]],
 	],
-];
-
-//section templates
-$section_templates = [
-	'blank' => [],
-	'pages' => [
-		'heading' => 'text',
-		'copy' => 'editor',
-		'page name' => 'page-name',
-		'page title' => 'text',
-		'meta description' => 'textarea',
-		'id' => 'id',
-	],
-	'page' => [
-		'heading' => 'text',
-		'copy' => 'editor',
-		'meta description' => 'textarea',
-	],
-	'blog' => [
-		'heading' => 'text',
-		'copy' => 'editor',
-		'tags' => 'textarea',
-		'blog category' => 'checkboxes',
-		'date' => 'timestamp',
-		'page name' => 'page-name',
-		'display' => 'checkbox',
-		'id' => 'id',
-	],
-	'blog categories' => [
-		'category' => 'text',
-		'page name' => 'page-name',
-		'id' => 'id',
-	],
-	'news' => [
-		'heading' => 'text',
-		'copy' => 'editor',
-		'date' => 'timestamp',
-		'meta description' => 'textarea',
-		'page name' => 'page-name',
-		'id' => 'id',
-	],
-	'comments' => [
-		'name' => 'text',
-		'email' => 'email',
-		'website' => 'url',
-		'comment' => 'textarea',
-		'blog' => 'select',
-		'date' => 'timestamp',
-		'ip' => 'ip',
-		'id' => 'id',
-	],
-	'enquiries' => [
-		'name' => 'text',
-		'email' => 'email',
-		'tel' => 'tel',
-		'enquiry' => 'textarea',
-		'date' => 'timestamp',
-		'read' => 'read',
-		'id' => 'id',
-	],
+	
 	'email templates' => [
 		'subject' => 'text',
 		'body' => 'editor',
 		'id' => 'id',
 	],
 ];
-
-// generate field list from the components dir
-$field_opts = [];
-foreach (glob(__DIR__ . '/../cms/components/*.php') as $filename) {
-	$filename = str_replace('.php', '', basename($filename));
-	$field_opts[] = camelCaseToSnakeCase($filename);
-}
 
 // check config file
 global $root_folder;
@@ -379,30 +290,22 @@ try {
 
 							// get generated column definition
 							$schema = sql_query("SELECT table_schema, column_name, generation_expression
-			                        FROM INFORMATION_SCHEMA.COLUMNS
-			                        WHERE
-			                            TABLE_NAME = 'orders' AND
-			                            COLUMN_NAME = 'delivery_duration' AND
-			                            TABLE_SCHEMA = '" . $db_config['name'] . "'
-			                    ", 1);
-
-							//var_dump($schema); exit;
-
-							// ALTER TABLE `orders` CHANGE `delivery_duration` `delivery_duration` INT(11) AS (timestampdiff(MINUTE,`wanted_date`,`complete_date`)) VIRTUAL COMMENT 'int|0|';
+		                        FROM INFORMATION_SCHEMA.COLUMNS
+		                        WHERE
+		                            TABLE_NAME = '" . $table . "' AND
+		                            COLUMN_NAME = '" . underscored($name) . "' AND
+		                            TABLE_SCHEMA = '" . $db_config['name'] . "'
+		                    ", 1);
 
 							$extra = 'AS (' . $schema['generation_expression'] . ') VIRTUAL';
 
 							$query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
 
 						} else {
-
 							$collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' : '';
 
 							$query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $extra . " COMMENT '" . $comment . "'";
 						}
-
-						//print_r($old_field);
-						//print($query);
 
 						sql_query($query);
 
@@ -410,10 +313,10 @@ try {
 							$rows = sql_query("SELECT id FROM `" . escape($table) . '`');
 							foreach ($rows as $row) {
 								$vals = sql_query("SELECT value FROM cms_multiple_select WHERE
-			                            section = '" . $section . "' AND
-			                            field = '" . $name . "' AND
-			                            item = '" . $row['id'] . "'
-			                        ");
+		                            section = '" . $section . "' AND
+		                            field = '" . $name . "' AND
+		                            item = '" . $row['id'] . "'
+		                        ");
 
 								$data = [];
 								foreach ($vals as $val) {
@@ -421,10 +324,10 @@ try {
 								}
 
 								sql_query("UPDATE `" . escape($table) . "` SET
-			                            `" . underscored($name) . "` = '".escape(json_encode($data))."'
-			                            WHERE
-			                                id = '". $row['id'] ."'
-			                        ");
+		                            `" . underscored($name) . "` = '".escape(json_encode($data))."'
+		                            WHERE
+		                                id = '". $row['id'] ."'
+		                        ");
 							}
 						}
 					}
@@ -448,10 +351,10 @@ try {
 				foreach ($users as $user) {
 					$password = $auth->create_hash($user['password']);
 					sql_query("UPDATE users SET
-			                password = '" . escape($password) . "'
-			                WHERE
-			                    id = '" . $user['id'] . "'
-			            ");
+		                password = '" . escape($password) . "'
+		                WHERE
+		                    id = '" . $user['id'] . "'
+		            ");
 				}
 			}
 
@@ -541,8 +444,6 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 
 				$fields = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
 
-				//print_r($fields);
-
 				foreach ($fields as $field) {
 					$field_name = $field['Field'];
 					$name = spaced($field_name);
@@ -565,6 +466,18 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 						'label' => $label,
 					];
 				}
+			}
+			
+			if (!$vars['menu']) {
+            	foreach ($vars["sections"] as $section) {
+            		$menu[] = [
+				        'title' => ucfirst(spaced($section)),
+				        'section' => $section,
+				        'icon' => get_icon($section),
+				    ];
+            	}
+				
+				$vars['menu'] = $menu;
 			}
 
 			$response['tables'] = $tables;

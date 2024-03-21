@@ -158,25 +158,17 @@ try {
             $data['login'] = 1;
 
             $response = $auth->login($data);
+            $response['admin'] = $auth->user['admin'];
             break;
         case 'config':
             $data = [];
             
             if (!$vars['menu']) {
-                $icons = [
-        	        'users' => 'mdi-account',
-        	        'orders' => 'mdi-basket',
-        	        'pages' => 'mdi-file-document-edit',
-        	        'settings' => 'mdi-cog',
-        	        'enquiries' => 'mdi-email-box',
-        	        'news' => 'mdi-newspaper',
-        	    ];
-                
             	foreach ($vars["sections"] as $section) {
             		$vars['menu'][] = [
 				        'title' => ucfirst(spaced($section)),
 				        'section' => $section,
-				        'icon' => $icons[$section],
+				        'icon' => get_icon($section),
 				    ];
             	}
             }
@@ -856,6 +848,10 @@ try {
             $start = max((int)($_GET['page'] - 1) * $length, 0);
 
             $limit = $start . ', ' . $length;
+            
+            if (is_array($_GET['columns']) && !in_array('id', $_GET['columns'])) {
+                $_GET['columns'][] = 'id';
+            }
 
             // gather rows
             $opts = [
