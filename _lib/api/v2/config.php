@@ -424,7 +424,6 @@ $shop_config["paypal_email"] = "' . $shop_config['paypal_email'] . '";
 $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 ';
 
-			//die($config);
 			file_put_contents($config_file, $config);
 
 			// clear config.php cache

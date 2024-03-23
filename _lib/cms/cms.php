@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.4';
+    const VERSION = '4.0.5';
 
     /**
     * @var string
@@ -1410,7 +1410,7 @@ class cms
                 // copy start coord to end
                 $val = $data[$field_name];
                 $pos = strpos($val, ',');
-                $val .= substr($val, 0, $pos);
+                $val .= ',' . substr($val, 0, $pos);
                 
                 // todo: move to components
                 $query .= "ST_GeomFromText('POLYGON((" . escape($val) . "))')";
