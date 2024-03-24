@@ -562,7 +562,7 @@ class cms
                     $option_table = underscored($vars['options'][$key]);
     
                     if (!$option_table) {
-                        die('missing options array value for: ' . $key);
+                        throw new Exception('missing options array value for: ' . $key);                        
                     }
     
                     $option = $this->get_option_label($vars['options'][$key]);
@@ -860,10 +860,7 @@ class cms
     // get label for current content
     public function get_label() {
         $field = $this->get_label_field($this->section);
-    
-        $value = $this->content[$field['column']];
-    
-        return truncate($value);
+        return truncate($this->content[$field['column']]);
     }
     
     // get field used for labels
