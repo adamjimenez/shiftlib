@@ -61,6 +61,11 @@ class Date extends Component implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
+        if (is_array($value)) {
+            $func = end($value);
+            $value = reset($value);
+        }
+        
         if ('now' == $value) {
             $start = 'NOW()';
         } elseif ('month' == $func) {
