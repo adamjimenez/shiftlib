@@ -1,3 +1,8 @@
-<h1>Default holding page</h1>
+<h1>ShiftLib has been installed!</h1>
 
-<p>The template system has been installed and the templates are ready for editing.</p>
+<p>The templates are ready for editing.</p>
+
+<ul>
+	<li><a href="https://github.com/adamjimenez/shiftlib/wiki" target="_blank">Read the docs</a></li>
+	<li><a href="/admin/" target="_blank">Open GenieAdmin</a></li>
+</ul>

@@ -11,6 +11,8 @@
 	<style>
     body {
       padding-top: 50px;
+      background-color: #333333;
+      color: #ffffff;
     }
 	</style>
 </head>
