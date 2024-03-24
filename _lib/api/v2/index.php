@@ -245,16 +245,16 @@ try {
             if ($_POST['section'] and $_POST['field'] and $_POST['item'] and $_POST['value']) {
                 if (!table_exists('cms_ratings')) {
                     sql_query('CREATE TABLE IF NOT EXISTS `cms_ratings` (
-                      `id` int(11) NOT NULL AUTO_INCREMENT,
-                      `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                      `user` varchar(255) NOT NULL,
-                      `section` varchar(255) NOT NULL,
-                      `field` varchar(255) NOT NULL,
-                      `item` int(11) NOT NULL,
-                      `value` tinyint(4) NOT NULL,
-                      PRIMARY KEY (`id`),
-                      UNIQUE KEY `id` (`id`),
-                      UNIQUE KEY `user_section_field_item` (`user`,`section`,`field`,`item`)
+                        `id` int(11) NOT NULL AUTO_INCREMENT,
+                        `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        `user` varchar(255) NOT NULL,
+                        `section` varchar(255) NOT NULL,
+                        `field` varchar(255) NOT NULL,
+                        `item` int(11) NOT NULL,
+                        `value` tinyint(4) NOT NULL,
+                        PRIMARY KEY (`id`),
+                        UNIQUE KEY `id` (`id`),
+                        UNIQUE KEY `user_section_field_item` (`user`,`section`,`field`,`item`)
                     )');
                 }
 
@@ -299,8 +299,6 @@ try {
                 ");
             }
 
-            $response['success'] = true;
-
             break;
 
         case 'filters':
@@ -322,9 +320,10 @@ try {
 
         case 'uploads':
             $path = 'uploads/';
+            $subdir = $_GET['path'];
 
-            if ($_GET['path'] && !starts_with($_GET['path'], '../')) {
-                $path .= $_GET['path'];
+            if ($subdir && !starts_with($subdir, '../')) {
+                $path .= $subdir;
             }
 
             if ($_POST['createFolder']) {
@@ -366,7 +365,6 @@ try {
                     }
                 }
             } else {
-
                 $paths = glob($path . '*', GLOB_NOSORT);
 
                 $items = [];
@@ -389,7 +387,6 @@ try {
                 $items = array_orderby($items, 'leaf');
 
                 $response['items'] = $items;
-
             }
 
             break;
@@ -679,7 +676,6 @@ try {
             $cols = '`' . $field['column'] . '`';
 
             // sort by position if available or fall back to field order
-            // $order = in_array('position', $this->vars['fields'][$this->vars['options'][$name]]) ? 'position' : $field;
             $order = $field['column'];
 
             // filter deleted rows
