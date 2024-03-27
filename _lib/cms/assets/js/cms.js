@@ -222,6 +222,11 @@ function initForms() {
         });
 }
 
+function delItem(field) {
+    var obj=field.parentNode;
+    obj.parentNode.removeChild(obj);
+}
+
 $(function() {
     initForms();
 });

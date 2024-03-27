@@ -131,7 +131,7 @@ $response = [];
 
 try {
 
-	if (1 != $auth->user['admin']) {
+	if (1 !== (int)$auth->user['admin']) {
 		throw new Exception('access denied');
 	}
 

@@ -62,28 +62,70 @@ class Date extends Component implements ComponentInterface
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         if (is_array($value)) {
-            $func = end($value);
-            $value = reset($value);
+            $end = end($value);
+            $start = reset($value);
+        } else {
+            switch ($value) {
+                case 'today':
+                    $start = strtotime('today');
+                    $end = $start;
+                break;
+                case 'yesterday':
+                    $start = strtotime('yesterday');
+                    $end = $start;
+                break;
+                case 'thismonth':
+                    $start = strtotime('first day of this month');
+                    $end = strtotime('last day of this month');
+                break;
+                case 'lastmonth':
+                    $start = strtotime('first day of last month');
+                    $end = strtotime('last day of last month');
+                break;
+                case 'thisyear':
+                    $start = strtotime('first day of january this year');
+                    $end = strtotime('last day of december this year');
+                break;
+                case 'lastyear':
+                    $start = strtotime('first day of january last year');
+                    $end = strtotime('last day of december last year');
+                break;
+                default:
+                    preg_match("/^last([0-9]+)d$/", $value, $matches);
+                    
+                    if ($matches[1]) {
+                        $start = strtotime('-' . ((int)$matches[1] - 1) . ' days');
+                        $end = strtotime('today');
+                    } else {
+                        // backcompat
+                        if (strtotime($func)) {
+                            $end = strtotime($func);
+                        }
+                    }
+                break;
+            }
         }
         
-        if ('now' == $value) {
-            $start = 'NOW()';
-        } elseif ('month' == $func) {
-            $start = dateformat('mY', $value);
-        } else {
-            $start = "'" . escape(dateformat($this->dateFormat, $value)) . "'";
+        if ($end) {
+            return '(' . $tablePrefix . $fieldName . " >= '" . dateformat('Y-m-d', $start) . "' AND " . $tablePrefix . $fieldName . " < '" . dateformat('Y-m-d', strtotime('tomorrow', make_timestamp($end))) . "')";
         }
-
+        
+        // backcompat
         if ('month' === $func) {
             $where = 'date_format(' . $tablePrefix . $fieldName . ", '%m%Y') = '" . escape(dateformat('mY', $value)) . "'";
         } elseif ('year' === $func) {
             $where = 'date_format(' . $tablePrefix . $fieldName . ", '%Y') = '" . escape($value) . "'";
-        } elseif ($value && strtotime($func)) {
-            $end = escape(dateformat($this->dateFormat, $func));
-            $where = '(' . $tablePrefix . $fieldName . ' >= ' . $start . ' AND ' . $tablePrefix . $fieldName . " <= '" . $end . "')";
         } else {
             if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
                 $func = '=';
+            }
+            
+            if ('now' == $value) {
+                $start = 'NOW()';
+            } elseif ('month' == $func) {
+                $start = dateformat('mY', $value);
+            } else {
+                $start = "'" . escape(dateformat($this->dateFormat, $value)) . "'";
             }
 
             $where = $tablePrefix . $fieldName . ' ' . escape($func) . ' ' . $start;

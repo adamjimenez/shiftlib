@@ -64,7 +64,7 @@ function filter_menu($arr) {
         }
 
         // check permissions
-        if (1 !== $auth->user['admin'] && $auth->user['privileges'][$v['section']]) {
+        if (1 !== (int)$auth->user['admin'] && !$auth->user['privileges'][$v['section']]) {
             continue;
         }
 
@@ -151,6 +151,11 @@ try {
             throw new Exception('permission denied');
         }
     }
+    
+    $cms->check_permissions();
+    if ((int)$auth->user['admin'] !== 1 and $_GET['section'] and !$auth->user['privileges'][$_GET['section']]) {
+        throw new Exception('access denied');
+    }
 
     switch ($_GET['cmd']) {
         case 'login':
@@ -158,7 +163,7 @@ try {
             $data['login'] = 1;
 
             $response = $auth->login($data);
-            $response['admin'] = $auth->user['admin'];
+            $response['admin'] = (int)$auth->user['admin'];
             break;
         case 'config':
             $data = [];
@@ -181,6 +186,18 @@ try {
             $vars['buttons'] = $cms->buttons;
 
             $response['vars'] = $vars;
+            
+            $words = preg_split('/\s+/', $auth->user['name'] ?: $auth->user['email']);
+            $initials = "";
+            foreach ($words as $word) {
+                $initials .= strtoupper($word[0]);
+            }
+            
+            $response['user'] = [
+                'initials' => substr($initials, 0, 2),
+                'admin' => (int)$auth->user['admin'],
+                'privileges' => $auth->user['privileges'],
+            ];
             break;
 
         case 'logs':
@@ -241,55 +258,6 @@ try {
 
             break;
 
-        case 'rating':
-            if ($_POST['section'] and $_POST['field'] and $_POST['item'] and $_POST['value']) {
-                if (!table_exists('cms_ratings')) {
-                    sql_query('CREATE TABLE IF NOT EXISTS `cms_ratings` (
-                        `id` int(11) NOT NULL AUTO_INCREMENT,
-                        `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        `user` varchar(255) NOT NULL,
-                        `section` varchar(255) NOT NULL,
-                        `field` varchar(255) NOT NULL,
-                        `item` int(11) NOT NULL,
-                        `value` tinyint(4) NOT NULL,
-                        PRIMARY KEY (`id`),
-                        UNIQUE KEY `id` (`id`),
-                        UNIQUE KEY `user_section_field_item` (`user`,`section`,`field`,`item`)
-                    )');
-                }
-
-                $user = $auth->user['id'] ?: $_SERVER['REMOTE_ADDR'];
-
-                sql_query("INSERT INTO cms_ratings SET
-                    user = '" . $user . "',
-                    section = '" . escape($_POST['section']) . "',
-                    field = '" . escape($_POST['field']) . "',
-                    item = '" . escape($_POST['item']) . "',
-                    value = '" . escape($_POST['value']) . "'
-                    ON DUPLICATE KEY UPDATE value = '" . escape($_POST['value']) . "'
-                ");
-
-                //get average
-                $row = sql_query("SELECT AVG(value) AS `value` FROM cms_ratings
-                    WHERE
-                        section = '" . escape($_POST['section']) . "' AND
-                        field = '" . escape($_POST['field']) . "' AND
-                        item = '" . escape($_POST['item']) . "'
-                ", 1);
-                $value = round($row['value']);
-
-                //update average
-                sql_query('UPDATE ' . underscored(escape($_POST['section'])) . ' SET
-                    `' . underscored(escape($_POST['field'])) . "` = '" . $value . "'
-                    WHERE
-                        id = '" . escape($_POST['item']) . "'
-                    LIMIT 1
-                ");
-
-            }
-
-            break;
-
         case 'reorder':
             foreach ($_POST['items'] as $k => $v) {
                 sql_query('UPDATE ' . escape(underscored($_GET['section'])) . " SET
@@ -319,6 +287,10 @@ try {
             break;
 
         case 'uploads':
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges']['uploads']) {
+                throw new Exception('access denied');               
+            }
+            
             $path = 'uploads/';
             $subdir = $_GET['path'];
 
@@ -344,6 +316,8 @@ try {
                         throw new Exception("Can't rename " . $tmp . ' to ' . $dest);
                     }
                 }
+                
+                $response['file'] = $subdir . $file_name;
             } else if ($_POST['delete']) {
                 foreach ((array)$_POST['delete'] as $v) {
                     if (!starts_with($v, '../')) {
@@ -392,6 +366,10 @@ try {
             break;
 
         case 'import':
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_GET['section']]) {
+                throw new Exception('access denied');               
+            }
+            
             $file = current($_FILES);
                 
             if (!$file) {
@@ -576,22 +554,25 @@ try {
 
                 foreach ($_POST['privileges'] as $k => $v) {
                     sql_query("INSERT INTO cms_privileges SET
-        			user='" . escape($user['id']) . "',
-        			section='" . escape($k) . "',
-        			access='" . escape($v['access']) . "',
-        			filter='" . escape($v['filters']) . "'
-        		");
+            			user='" . escape($user['id']) . "',
+            			section='" . escape($k) . "',
+            			access='" . escape($v['access']) . "',
+            			filter='" . escape($v['filters']) . "'
+            		");
                 }
             } else {
-                $sections = $vars['sections'];
-
                 // get all tables
                 $rows = sql_query("SHOW TABLES FROM `" . escape($db_config['name']) . "`");
 
                 foreach ($rows as $row) {
+                    if (in_array(current($row), ['cms_activation', 'cms_filters', 'cms_login_attempts', 'cms_logs', 'cms_privileges', 'files'])) {
+                        continue;
+                    }
+                    
                     $sections[] = spaced(current($row));
                 }
 
+                $sections[] = 'uploads';
                 $sections = array_unique($sections);
                 sort($sections);
 
@@ -616,6 +597,10 @@ try {
             break;
 
         case 'save':
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_GET['section']]) {
+                throw new Exception('access denied');               
+            }
+            
             $cms->set_section($_GET['section'], $_GET['id']);
             $response['errors'] = $cms->validate($_POST, null, true);
 
@@ -625,11 +610,19 @@ try {
             break;
 
         case 'restore':
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_GET['section']]) {
+                throw new Exception('access denied');               
+            }
+            
             $cms->set_section($_GET['section'], $_POST['id'], ['deleted']);
             $cms->save(['deleted' => 0]);
             break;
 
         case 'bulkedit':
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_GET['section']]) {
+                throw new Exception('access denied');               
+            }
+            
             foreach ($_POST['ids'] as $id) {
                 $cms->set_section($_GET['section'], $id, array_keys($_POST['data']));
                 $cms->save($_POST['data']);
@@ -637,6 +630,10 @@ try {
             break;
 
         case 'delete':
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_POST['section']]) {
+                throw new Exception('access denied');               
+            }
+            
             $conditions = $_POST['select_all_pages'] ? $_GET : $_POST['ids'];
             $cms->delete_items($_POST['section'], $conditions, $_POST['select_all_pages']);
             break;

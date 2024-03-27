@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.6';
+    const VERSION = '4.0.7';
 
     /**
     * @var string
@@ -609,6 +609,7 @@ class cms
             $asc = $args[4];
             $prefix = $args[5];
             $return_query = $args[6];
+            $columns = null;
         } else {
             extract($opts);
         }
@@ -693,7 +694,7 @@ class cms
         $group_by_str = '';
         $having_str = $sql['having_str'];
         $joins = $sql['joins'];
-        $cols = $sql['cols'];
+        $cols = $sql['cols'] ?: '*';
     
         if (true === $limit) {
             $cols = 'COUNT(*) AS `count`';
@@ -1008,7 +1009,7 @@ class cms
             ");
 
             foreach ($rows as $row) {
-                $auth->user['privileges'][$row['section']] = $row['access'];
+                $auth->user['privileges'][$row['section']] = (int)$row['access'];
                 $pairs = explode('&', $row['filter']);
 
                 foreach ($pairs as $pair) {

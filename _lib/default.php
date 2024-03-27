@@ -103,17 +103,8 @@ function get_include($request)
         require(__DIR__ . '/admin.php');
     } else {
         // check pages section
-        if ($vars['fields']['pages']['id']) {
-            $content = $cms->get('pages', $request);
-
-            if ($content && file_exists('_tpl/pages.php')) {
-                return $root_folder . '/_tpl/pages.php';
-            }
-        }
-
-        // deprecated: check if catch all file exists
-        if (file_exists($root_folder . '/_inc/catch_all.php')) {
-            return $root_folder . '/_inc/catch_all.php';
+        if (file_exists('_tpl/pages.php')) {
+            return $root_folder . '/_tpl/pages.php';
         }
     }
 }
