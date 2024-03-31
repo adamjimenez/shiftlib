@@ -1,5 +1,4 @@
 <?php
-
 set_error_handler('error_handler');
 register_shutdown_function('shutdown');
 
@@ -310,39 +309,25 @@ function image($file, $w = null, $h = null, $attribs = '', $crop = false)
     }
 }
 
-function carousel ($images, $width=386, $height=304) {
-    if (is_string($images)) {
-        $images = explode("\n", $images);
+function anonymize_email($email) {
+    $parts = explode('@', $email);
+    $username = $parts[0];
+    $domain = $parts[1];
+    $length = strlen($username);
+    $first_char = substr($username, 0, 1);
+    $last_char = substr($username, -1);
+    $replacement = str_repeat('*', $length - 2);
+    return $first_char . $replacement . $last_char . '@' . $domain;
+}
+
+function anonymize_phone($phone) {
+    if (strlen($phone) < 6) {
+        return '';
     }
     
-    if (count($images)) { 
-    ?>
-    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="false" style="max-width: <?=$width;?>px;">
-        <?php if (count($images) > 1) { ?>
-        <ol class="carousel-indicators">
-            <?php foreach($images as $k=>$image) { ?>
-            <li data-target="#carouselExampleIndicators" data-slide-to="<?=$k;?>" class="<?=$k==0 ? 'active' : '';?>"></li>
-            <?php } ?>
-        </ol>
-        <?php } ?>
-        <div class="carousel-inner">
-            <?php foreach($images as $k=>$image) { ?>
-            <div class="carousel-item <?=$k==0 ? 'active' : '';?>">
-                <?=image($image, $width, $height, 'style="max-width: 100%; max-height: ' . $height . 'px;"');?>
-            </div>
-            <?php } ?>
-        </div>
-        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
-    </div>
-    <?php 
-    }
+    $visible_digits = substr($phone, -4);
+    $replacement = str_repeat('*', strlen($phone) - 4);
+    return $replacement . $visible_digits;
 }
 
 // calculate age from dob
@@ -547,16 +532,6 @@ function bank_holidays($yr): array
     return $bankHols;
 }
 
-/*
-function basename_safe($path)
-{
-    if (false !== mb_strrpos($path, '/')) {
-        return mb_substr($path, mb_strrpos($path, '/') + 1);
-    }
-    return $path;
-}
-*/
-
 // get coords from a postcode
 function calc_grids($pcodeA, $lat = false)
 {
@@ -645,14 +620,6 @@ function debug($log = '')
     $log = [
         'log' => $log,
         'backtrace' => $bt,
-        /*
-        'vars' => [
-            '$_SESSION' => $_SESSION,
-            '$_POST' => $_POST,
-            '$_GET' => $_GET,
-            '$_SERVER' => $_SERVER,
-        ],
-        */
     ];
     
     print '<script>console.log("PHP DEBUG '.$caller['file'].': '.$caller['line'].'"); console.log(' . json_encode($log) . ');</script>';

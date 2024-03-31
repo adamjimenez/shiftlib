@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.7';
+    const VERSION = '4.0.8';
 
     /**
     * @var string
@@ -44,18 +44,33 @@ class cms
 
     public function __construct() {}
 
-    public function addButton($buttons) {
+    public function addButtons($buttons) {
         $default_buttons = [[
+            'section' => 'users',
+            'page' => 'view',
+            'label' => 'Send Staff Login',
+            'enabled' => [
+                'admin' => 2,
+            ],
+            'confirm' => 'Send password email?',
+            'handler' => function ($data) {
+                global $auth;
+                $auth->send_password_reset($data['email'], 'admin/');
+                return ['message' => 'Email sent'];
+            }
+        ], [
             'section' => 'email templates',
             'page' => 'view',
             'label' => 'Send Preview',
+            'confirm' => 'Reset Preview?',
             'handler' => function () {
                 global $auth, $cms;
 
                 $content = $cms->get('email templates', $_GET['id']);
                 email_template($auth->user['email'], $content['id'], $auth->user);
-                $_SESSION['message'] = 'Preview sent';
-            }]];
+                return ['message' => 'Preview sent'];
+            }
+        ]];
         $this->buttons = array_merge($default_buttons, $buttons);
     }
 
@@ -293,13 +308,6 @@ class cms
                     WHERE id = ' . (int)$id . '
                         LIMIT 1
                 ');
-    
-                //multiple select items
-                sql_query("DELETE FROM cms_multiple_select
-                    WHERE
-                        section = '" . escape(underscored($section)) . "' AND
-                        item = '$id'
-                ");
             }
     
             // log it
@@ -450,27 +458,6 @@ class cms
     
                         $or_str = implode(' OR ', $or);
                         $where[] = '(' . $or_str . ')';
-                    }
-                    break;
-                case 'postcode':
-                    // todo: move to component and replace with ST_Distance_Sphere when supported (https://jira.mariadb.org/browse/MDEV-13467)
-                    if ($value && calc_grids($value) && is_numeric($conditions['func'][$field_name])) {
-                        $grids = calc_grids($value);
-    
-                        if ($grids) {
-                            $cols[] = '
-                        (
-    						SELECT
-    							ROUND(SQRT(POW(Grid_N-' . $grids[0] . ',2)+POW(Grid_E-' . $grids[1] . ",2)) * 0.000621371192)
-    							AS distance
-    						FROM postcodes
-    						WHERE
-    							Pcode=
-    							REPLACE(SUBSTRING(SUBSTRING_INDEX(T_places.postcode, ' ', 1), LENGTH(SUBSTRING_INDEX(T_places.postcode, ' ', 0)) + 1), ',', '')
-    					) AS distance";
-    
-                            $having[] = 'distance <= ' . escape($conditions['func'][$field_name]) . '';
-                        }
                     }
                     break;
                 default:

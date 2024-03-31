@@ -1,5 +1,9 @@
 <?php
 $result = $auth->forgot_password();
+
+if ($auth->user) {
+	redirect($_SESSION['request'] ?: '/');
+}
 ?>
 
 <div class="container">
@@ -21,19 +25,15 @@ $result = $auth->forgot_password();
 				
 			<?php
 				// password reset
-				if ($result['code'] == 2) {
+				if ($result['code'] == 3) {
 				?>
-				
 					<form method="post" class="validate">
-					<input type="hidden" name="reset_password" value="1">
+						<input type="hidden" name="reset_password" value="1">
 						<input type="password" name="password" id="password" autofocus="autofocus" placeholder="Enter a new password"><br>
 						<button type="submit" class="submit">Continue</button>
-						
 					</form>
-				
 				<?php
 				}
-			
 			} else {
 			?>
 			
@@ -55,5 +55,4 @@ $result = $auth->forgot_password();
 		</div>
 		
 	</div>
-	
 </div>

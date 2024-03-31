@@ -128,28 +128,25 @@ header('Content-Type: application/json, charset=utf-8');
 $response = [];
 
 try {
-
-    // check permissions
-    if (!$auth->user['admin'] && !$auth->user['privileges'][$_GET['section']] && !in_array($_GET['cmd'], ['login'])) {
+        
+    // check 2fa
+    $trusted = null;
+    if ($auth->user['admin']) {
+        $trusted = $auth->check_2fa();
+    }
+    
+    if (
+        !in_array($_GET['cmd'], ['login', 'logout']) && (
+            $trusted === false || !$auth->user['admin']
+        )
+    ) {
         // check table exists
         if (!table_exists($auth->table)) {
             $cms->check_table($auth->table, $cms->default_users_table);
         }
 
-        // check admin user exists
-        $row = sql_query('SELECT id FROM ' . $auth->table . ' LIMIT 1', 1);
-        if (!$row) {
-            $default_pass = $auth->create_hash('123');
-
-            sql_query('INSERT INTO ' . $auth->table . " SET email='admin', password='" . escape($default_pass) . "', admin='1'");
-            
-            $auth->set_login('admin', $default_pass);
-            
-            $auth->load();
-        } else {
-            header("HTTP/1.1 401 Unauthorized");
-            throw new Exception('permission denied');
-        }
+        header("HTTP/1.1 401 Unauthorized");
+        throw new Exception('permission denied');
     }
     
     $cms->check_permissions();
@@ -159,11 +156,77 @@ try {
 
     switch ($_GET['cmd']) {
         case 'login':
-            $data = $_POST;
-            $data['login'] = 1;
+            // password reset
+            if ($_POST['reset']) {
+                if ($_POST['email']) {
+                    $_POST['forgot_password'] = 1;
+                }
+                
+                $response = $auth->forgot_password_handler([
+                    'code' => $_POST['query']['code'],
+                    'user' => $_POST['query']['user'],
+                    'forgot_password' => $_POST['forgot_password'],
+                    'email' => $_POST['email'],
+                    'password' => $_POST['password'],
+                ], ['request' => 'admin/login']);
+            } else {
+                if ($_POST['email']) {
+                    $_POST['login'] = 1;
+                }
+                
+                $response = $auth->login($_POST);
+            }
+            
+            if (!$auth->user) {
+                $row = sql_query('SELECT id FROM ' . $auth->table . ' WHERE admin = 1 LIMIT 1', 1);
+                if (!$row) {
+                
+                    if ($_POST['email'] && $_POST['password']) {
+                        $hash = $auth->create_hash($_POST['password']);
+                        
+                        sql_query('INSERT INTO ' . $auth->table . " SET
+                            email = '".escape($_POST['email'])."',
+                            password = '".escape($hash)."',
+                            admin = 1
+                        ");
+                        
+                        $response = $auth->login($_POST);
+                    } else {
+                        $response['no_admin'] = true;
+                    }
+                }
+            }
 
-            $response = $auth->login($data);
-            $response['admin'] = (int)$auth->user['admin'];
+            if ($auth->user) {
+                $response['admin'] = (int)$auth->user['admin'];
+                
+                // 2fa
+                if ($trusted === false) {
+                    if ($_POST['otp']) {
+                        $_SESSION['otp_attempts']++;
+                
+                        if ($_SESSION['otp_attempts'] > 3) {
+                            throw new Exception('Too many otp attempts');
+                        } else {
+                            if (strtoupper($_POST['otp']) !== $_SESSION['otp']) {
+                                throw new Exception('OTP is incorrect');
+                            }
+                            
+                            $auth->pass_2fa();
+                            $trusted = true;
+                        }
+                    } else if ($_POST['otp_method']) {
+                        $auth->send_2fa();
+                    }
+                    
+                    $response['trusted'] = $trusted;
+                    $response['email'] = anonymize_email($auth->user['email']);
+                    $response['otp_sent'] = $_SESSION['otp'] != '';
+                }
+            }
+            break;
+        case 'logout':
+            $auth->logout(false);
             break;
         case 'config':
             $data = [];
@@ -187,13 +250,16 @@ try {
 
             $response['vars'] = $vars;
             
-            $words = preg_split('/\s+/', $auth->user['name'] ?: $auth->user['email']);
+            $name = $auth->user['name'] ?: $auth->user['email'];
+            
+            $words = preg_split('/\s+/', $name);
             $initials = "";
             foreach ($words as $word) {
                 $initials .= strtoupper($word[0]);
             }
             
             $response['user'] = [
+                'name' => $name,
                 'initials' => substr($initials, 0, 2),
                 'admin' => (int)$auth->user['admin'],
                 'privileges' => $auth->user['privileges'],
@@ -212,50 +278,6 @@ try {
                 	ORDER BY L.id DESC
                 ");
             }
-            break;
-
-        case 'autocomplete':
-            $name = spaced($_GET['field']);
-
-            if (!isset($vars['options'][$name])) {
-                throw new Exception('no options');
-            }
-
-            $table = underscored($vars['options'][$name]);
-
-            $fields = $cms->get_fields($vars['options'][$name]);
-
-            foreach ($fields as $k => $v) {
-                $type = $v['type'];
-                if ('separator' != $type) {
-                    $field = $k;
-                    break;
-                }
-            }
-
-            $cols .= '`' . underscored($field) . '`';
-
-            $rows = sql_query("SELECT id, $cols FROM
-                $table
-                WHERE
-                    `$field` LIKE '" . escape($_GET['term']) . "%'
-                ORDER BY `" . underscored($field) . '`
-                LIMIT 10
-            ');
-
-            $options = [];
-            foreach ($rows as $row) {
-                $options[$row['id']] = $row[underscored($field)];
-            }
-
-            $results = [];
-            foreach ($options as $k => $v) {
-                $response['options'][] = [
-                    'value' => $k,
-                    'title' => $v,
-                ];
-            }
-
             break;
 
         case 'reorder':
@@ -500,7 +522,7 @@ try {
                 throw new Exception('missing section');
             }
 
-            if (!$_POST['button']) {
+            if (!isset($_POST['button'])) {
                 throw new Exception('missing button');
             }
 
@@ -704,66 +726,6 @@ try {
             $response['options'] = $options;
             break;
 
-        case 'search':
-            if (!$_GET['section']) {
-                break;
-            }
-
-            // datatable search
-            $_GET['fields']['s'] = $_POST['term'];
-
-            $fields = $cms->get_fields($_GET['section']);
-
-            if (!$fields['id']) {
-                break;
-            }
-
-            // get field names
-            $cols = [];
-            foreach ($fields as $name => $field) {
-                if (in_array($field['type'], $cms->hidden_columns)) {
-                    continue;
-                }
-
-                $cols[] = $name;
-            }
-
-            // add extra fields for checkbox and actions
-            array_unshift($cols, 'id');
-
-            // sort order
-            if ($fields['position'] && $fields['position']['type'] === 'position') {
-                $order = 'position';
-            } else {
-                $order = underscored($cols[($_POST['order'][0]['column'] - 2)]) ?: 'id';
-            }
-
-            $conditions = (array)$_GET['fields'];
-
-            // restrict results to staff perms
-            $cms->check_permissions();
-            foreach ($auth->user['filters'][$_GET['section']] as $k => $v) {
-                $conditions[$k] = $v;
-            }
-
-            $sql = $cms->conditionsToSql($_GET['section'], $conditions);
-
-            // gather rows
-            $rows = $cms->get($_GET['section'], $conditions, 10);
-            //var_dump($rows);
-
-            $label = $cms->get_label_field($_GET['section']);
-
-            // prepare rows
-            $response['data'] = [];
-            foreach ($rows as $row) {
-                $response['data'][] = [
-                    'title' => $row[$label['column']],
-                    'value' => $row['id'],
-                ];
-            }
-            break;
-
         default:
             if (!$_GET['section']) {
                 break;
@@ -778,9 +740,6 @@ try {
                 }
                 break;
             }
-
-            // datatable search
-            $_GET['fields']['s'] = $_GET['fields']['s'] ?: $_POST['search']['value'];
 
             $fields = $response['fields'];
 

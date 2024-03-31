@@ -28,14 +28,16 @@ if ($db_config) {
 
 if ($db_connection) {
     $cms = new cms;
-    $auth = new auth();
+    $auth = new auth;
 } elseif (false !== $db_config) {
     //prompt to configure connection
     require(__DIR__ . '/cms/_tpl/db.php');
     exit;
 }
 
-include($root_folder . '/_inc/custom.php');
+if (file_exists($root_folder . '/_inc/custom.php')) {
+    include($root_folder . '/_inc/custom.php');
+}
 
 if ($auth) {
     $auth->init($auth_config);
@@ -43,7 +45,7 @@ if ($auth) {
 
 //backcompat
 if ($cms_buttons) {
-    $cms->addButton($cms_buttons);
+    $cms->addButtons($cms_buttons);
 }
 
 if ($cms_handlers) {

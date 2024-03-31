@@ -115,6 +115,19 @@ $default_tables = [
 				'date'],
 		]],
 	],
+
+	'cms trusted devices' => [
+		'user' => 'combo',
+		'useragent' => 'text',
+		'hash' => 'text',
+		'ip' => 'ip',
+		'id' => 'id',
+		'indexes' => [[
+			'name' => 'hash_user',
+			'type' => 'unique',
+			'fields' => ['hash', 'user'],
+		]],
+	],
 	
 	'email templates' => [
 		'subject' => 'text',
@@ -193,11 +206,12 @@ try {
 			$db_field = $old_field['Type'];
 			$comment = $old_field['Comment'];
 			$null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
+			$auto_increment = $old_field['Extra'] === 'auto_increment' ? 'AUTO_INCREMENT' : '';
 			$action = 'MODIFY';
 			$collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' : '';
 			$default = $old_field['Default'] ? 'DEFAULT ' . $old_field['Default'] : '';
 
-			$query = "ALTER TABLE `" . escape($_POST['table']) . '` ' . $action . ' `' . underscored($_POST['field']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $default . " COMMENT '" . $comment . "' " . ($_POST['after'] ? ' AFTER `' . $_POST['after'] . '`' : 'FIRST');
+			$query = "ALTER TABLE `" . escape($_POST['table']) . '` ' . $action . ' `' . underscored($_POST['field']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $auto_increment . " " . $default . " COMMENT '" . $comment . "' " . ($_POST['after'] ? ' AFTER `' . $_POST['after'] . '`' : 'FIRST');
 
 			sql_query($query);
 			break;

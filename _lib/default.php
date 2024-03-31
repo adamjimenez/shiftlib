@@ -84,7 +84,7 @@ function get_include($request)
     if (strstr($request, '.php')) {
         redirect('http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '', $_SERVER['REQUEST_URI']));
     // redirect if a folder and missing trailing /
-    } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, (array)$tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php')) {
+    } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, (array)$tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php') && $request !== 'index') {
         redirect('/' . $request . '/');
     // check if template exists
     } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {
@@ -102,9 +102,10 @@ function get_include($request)
     } else if (starts_with($request, 'admin/')) {
         require(__DIR__ . '/admin.php');
     } else {
-        // check pages section
-        if (file_exists('_tpl/pages.php')) {
-            return $root_folder . '/_tpl/pages.php';
+        // check index catcher
+        $index_catcher = '_tpl/index.catcher.php';
+        if (file_exists($index_catcher)) {
+            return $root_folder . '/' . $index_catcher;
         }
     }
 }
