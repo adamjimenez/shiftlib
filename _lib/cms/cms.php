@@ -78,26 +78,6 @@ class cms
         $this->handlers = array_merge($this->handlers, $handlers);
     }
 
-    public function getId() {
-        return $this->id;
-    }
-
-    /**
-    * @return string
-    */
-    public function getSection(): string
-    {
-        return $this->section;
-    }
-
-    /**
-    * @return array
-    */
-    public function getContent(): ?array
-    {
-        return $this->content;
-    }
-
     /**
     * @param string $table
     * @param array $fields OR NULL
@@ -149,23 +129,20 @@ class cms
 
         switch ($type) {
             case 'id':
-                case 'separator':
-                    break;
-                case 'read':
-                    case 'deleted':
-                        return 'TINYINT(1)';
-                        break;
-                    default:
-                        return "VARCHAR(140)";
-                        break;
-            }
+                break;
+            case 'read':
+            case 'deleted':
+                return 'TINYINT(1)';
+                break;
+            default:
+                return "VARCHAR(140)";
+                break;
         }
+    }
 
     // export items to csv
     public function export_items($section, $conditions, $select_all_pages, $columns = []) {
-        global $auth,
-        $db_connection,
-        $vars;
+        global $auth, $db_connection;
     
         if (1 !== (int)$auth->user['admin'] && 3 !== (int)$auth->user['privileges'][$section]) {
             $_SESSION['message'] = 'Permission denied';
@@ -188,7 +165,6 @@ class cms
         $sql = $this->conditionsToSql($section, $conditions);
     
         $table = underscored($section);
-        $field_id = 'id';
     
         foreach ($columns as $k => $v) {
             $columns[$k] = "T_$table." . underscored($v);
@@ -201,7 +177,7 @@ class cms
         " . $sql['joins'] . '
         ' . $sql['where_str'] . '
         GROUP BY
-        T_' . $table . '.' . $field_id . '
+        T_' . $table . '.id
         ' . $sql['having_str'];
     
         $result = mysqli_query($db_connection, $query, MYSQLI_USE_RESULT);
@@ -278,8 +254,6 @@ class cms
     
     public function delete($section, $ids) // no security checks
     {
-        global $vars;
-    
         if (false === is_array($ids)) {
             $ids = [$ids];
         }
@@ -288,13 +262,11 @@ class cms
             return false;
         }
     
-        $field_id = $this->get_id_field($section);
-    
         $fields = $this->get_fields($section);
     
         foreach ($ids as $id) {
             // cheeck perms
-            $conditions[$field_id] = $id;
+            $conditions['id'] = $id;
             $content = $this->get($section, $conditions);
             if (!$content) {
                 continue;
@@ -376,7 +348,6 @@ class cms
         global $vars, $auth;
     
         $table = underscored($section);
-        $field_id = $this->get_id_field($section);
     
         $fields = $this->get_fields($section);
         
@@ -440,7 +411,7 @@ class cms
     
             switch ($type) {
                 case 'checkboxes':
-                    $joins .= ' LEFT JOIN cms_multiple_select S_' . $field_name . ' ON S_' . $field_name . '.item = T_' . $table . '.' . $field_id;
+                    $joins .= ' LEFT JOIN cms_multiple_select S_' . $field_name . ' ON S_' . $field_name . '.item = T_' . $table . '.id';
     
                     if (isset($value) && $value !== '') {
                         // todo: move to component
@@ -485,7 +456,6 @@ class cms
     
             foreach ($words as $word) {
                 $or = [];
-                //$having_or = [];
     
                 foreach ($fields as $name => $field) {
                     $type = $field['type'];
@@ -496,16 +466,10 @@ class cms
     
                     $value = str_replace('*', '%', $word);
     
-                    if ('select' == $type) {
-                        if (is_string($vars['options'][$name])) {
-                            //$having_or[] = underscored($name) . "_label LIKE '%" . escape($value) . "%'";
-                        }
+                    if ($conditions['w']) {
+                        $or[] = "T_$table." . underscored($name) . " REGEXP '[[:<:]]" . escape($value) . "[[:>:]]'";
                     } else {
-                        if ($conditions['w']) {
-                            $or[] = "T_$table." . underscored($name) . " REGEXP '[[:<:]]" . escape($value) . "[[:>:]]'";
-                        } else {
-                            $or[] = "T_$table." . underscored($name) . " LIKE '%" . escape($value) . "%'";
-                        }
+                        $or[] = "T_$table." . underscored($name) . " LIKE '%" . escape($value) . "%'";
                     }
                 }
     
@@ -754,12 +718,11 @@ class cms
     
                 if (false === is_array($vars['options'][$name]) && $vars['options'][$name]) {
                     // deprecated
-                    $join_id = $this->get_id_field($name);
                     $key = $this->get_option_label($name);
     
                     $rows = sql_query("SELECT `" . underscored($key) . '`,T1.value FROM cms_multiple_select T1
                         INNER JOIN `' . escape(underscored($vars['options'][$name])) . "` T2
-                        ON T1.value = T2.$join_id
+                        ON T1.value = T2.id
                         WHERE
                             T1.section='" . escape($section) . "' AND
                             T1.field='" . escape($name) . "' AND
@@ -806,8 +769,7 @@ class cms
     * @throws Exception
     */
     public function set_section($section, $id = null, $editable_fields = null, $select = true) {
-        global $vars,
-        $auth;
+        global $vars, $auth;
     
         $this->section = $section;
         $this->table = underscored($section);
@@ -825,8 +787,6 @@ class cms
         if (1 != $auth->user['admin'] && in_array('admin', $this->editable_fields) && $auth->user['privileges']['cms privileges'] < 2) {
             unset($this->editable_fields[array_search('admin', $this->editable_fields)]);
         }
-    
-        $this->field_id = 'id';
     
         // default id to 1 if no id field
         if ($id > 0 || !$fields['id']) {
@@ -873,9 +833,7 @@ class cms
     */
     private function get_component(string $type): cms\ComponentInterface
     {
-        global $cms,
-        $auth,
-        $vars;
+        global $cms, $auth, $vars;
     
         $type = $this->get_component_name($type);
     
@@ -907,14 +865,7 @@ class cms
         return $type;
     }
 
-    // get name of the id field
-    public function get_id_field($section) {
-        return 'id';
-    }
-
     public function get_option_label($field) {
-        global $vars;
-
         $fields = $this->get_fields($field);
 
         foreach ($fields as $name => $field) {
@@ -1093,7 +1044,7 @@ class cms
             $errors = array_values(array_unique(array_merge($errors, $other_errors)));
         }
 
-        //handle validation
+        // handle validation
         if (count($errors)) {
             //validateion failed
             die(json_encode($errors));
@@ -1222,8 +1173,7 @@ class cms
 
     // validate fields before saving
     public function validate($data = null, $recaptcha = false, $return_object = false) {
-        global $vars,
-        $auth;
+        global $vars, $auth;
 
         if (false === is_array($data)) {
             $data = $_POST;
@@ -1302,7 +1252,7 @@ class cms
 
                 // exclude current item
                 if ($this->id) {
-                    $where[] = '`' . $this->field_id . "`!='" . escape($this->id) . "'";
+                    $where[] = "`id`!='" . escape($this->id) . "'";
                 }
 
                 $where_str = "WHERE \n" . implode(" AND \n", array_filter($where));
@@ -1410,8 +1360,7 @@ class cms
 
     // save data, called after set_section
     public function save($data = null) {
-        global $vars,
-        $auth;
+        global $vars, $auth;
 
         // default to post data
         if (null === $data) {

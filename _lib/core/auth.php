@@ -13,11 +13,6 @@ class auth
     public $initiated = false;
 
     /**
-    * @var bool
-    */
-    public $generate_password = true;
-
-    /**
     * @var int
     */
     public $cookie_duration = 14;
@@ -141,14 +136,6 @@ class auth
         }
         
         $this->cookie_domain = $_SERVER['HTTP_HOST'];
-    }
-
-    /**
-    * @return bool
-    */
-    public function shouldHashPassword(): bool
-    {
-        return $this->hash_password;
     }
 
     public function init(?array $config = []) {
@@ -550,7 +537,7 @@ class auth
 
             if ($options['recaptchav3']) {
                 if (!$cms->verifyRecaptcha($_POST['g-recaptcha-response'])) {
-                    die('feiled captcha');
+                    die('failed captcha');
                 }
             }
 
@@ -779,7 +766,7 @@ class auth
         sql_query("INSERT INTO cms_activation SET
             code = '" . escape($code) . "',
             expiration = DATE_ADD(CURDATE(), INTERVAL " . $this->activation_timeout . " HOUR),
-            user = " . $user['id'] . "
+            user = " . (int)$user['id'] . "
             ON DUPLICATE KEY UPDATE
                 code = '" . escape($code) . "',
                 expiration = DATE_ADD(CURDATE(), INTERVAL " . $this->activation_timeout . " HOUR)
@@ -854,7 +841,6 @@ class auth
             }
 
             if ($error) {
-                //$this->show_error($errors);
                 $result['error'] = $error;
             } elseif ($data['validate']) {
                 print 1;

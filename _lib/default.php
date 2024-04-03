@@ -100,7 +100,11 @@ function get_include($request)
     } elseif ($catcher = get_tpl_catcher($request)) {
         return $root_folder . '/_tpl/' . $catcher . '.php';
     } else if (starts_with($request, 'admin/')) {
-        require(__DIR__ . '/admin.php');
+        if (!$_GET['frame']) {
+            require(__DIR__ . '/admin.php');
+        } else {
+            die('404 not found');
+        }
     } else {
         // check index catcher
         $index_catcher = '_tpl/index.catcher.php';

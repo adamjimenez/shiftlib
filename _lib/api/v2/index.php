@@ -247,11 +247,16 @@ try {
 
             $vars['menu'] = filter_menu($data['menu']);
             $vars['buttons'] = $cms->buttons;
+            
+            // reports
+            if (table_exists('cms_reports')) {
+                $vars['reports'] = sql_query("SELECT id, title FROM cms_reports WHERE user = '" . escape($auth->user['id']) . "'");
+            }
 
             $response['vars'] = $vars;
             
+            // user details
             $name = $auth->user['name'] ?: $auth->user['email'];
-            
             $words = preg_split('/\s+/', $name);
             $initials = "";
             foreach ($words as $word) {
@@ -278,6 +283,52 @@ try {
                 	ORDER BY L.id DESC
                 ");
             }
+            break;
+
+        case 'reports':
+            if ($_POST['save']) {
+                $cms->set_section('cms_reports', (int)$_POST['id'], ['title', 'report', 'user']);
+                $response['id'] = $cms->save([
+                    'title' => $_POST['title'] ?: 'untitled',
+                    'report' => $_POST['report'],
+                    'user' => $auth->user['id'],
+                ]);
+            }  else if ($_POST['delete']) {
+                $cms->delete_items('cms_reports', $_POST['delete']);
+            } else if ($_GET['id']) {
+                $response['report'] = sql_query("SELECT * FROM cms_reports WHERE id = '".(int)$_GET['id']."'", 1);
+            }
+            
+            break;
+            
+        // used by combos
+        case 'autocomplete':
+            $name = spaced($_GET['field']);
+
+            if (!isset($vars['options'][$name])) {
+                throw new Exception('no options');
+            }
+
+            $table = underscored($vars['options'][$name]);
+            $fields = $cms->get_fields($vars['options'][$name]);
+            $field = array_key_first($fields);
+
+            $rows = sql_query("SELECT id, `" . underscored($field) . "` FROM
+                $table
+                WHERE
+                    `$field` LIKE '" . escape($_GET['term']) . "%'
+                ORDER BY `" . underscored($field) . '`
+                LIMIT 10
+            ');
+
+            $results = [];
+            foreach ($rows as $row) {
+                $response['options'][] = [
+                    'value' => $row['id'],
+                    'title' => $row[$field],
+                ];
+            }
+
             break;
 
         case 'reorder':

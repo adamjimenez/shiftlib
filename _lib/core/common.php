@@ -532,43 +532,6 @@ function bank_holidays($yr): array
     return $bankHols;
 }
 
-// get coords from a postcode
-function calc_grids($pcodeA, $lat = false)
-{
-    $pos = strpos($pcodeA, ' ');
-    if ($pos) {
-        $pcodeA = substr($pcodeA, 0, $pos);
-    }
-
-    $row = cache_query("SELECT Latitude, Longitude, Grid_N, Grid_E FROM postcodes WHERE Pcode='$pcodeA' LIMIT 1", 1);
-
-    if ($row) {
-        if ($lat) {
-            $grids[0] = $row['Latitude'];
-            $grids[1] = $row['Longitude'];
-        } else {
-            $grids[0] = $row['Grid_N'];
-            $grids[1] = $row['Grid_E'];
-        }
-
-        return $grids;
-    }
-    return false;
-}
-
-// return straight line distance between two postcodes in meters
-function calc_distance($postcode_a, $postcode_b)
-{
-    if ($postcode_a == $postcode_b) {
-        return 0;
-    }
-    
-    $grid_a = calc_grids($postcode_a);
-    $grid_b = calc_grids($postcode_b);
-    
-    return (int)round(sqrt(pow($grid_a[0] - $grid_b[0], 2) + pow($grid_a[1] - $grid_b[1], 2)));
-}
-
 // add active class to the active tab
 function current_tab($tab, $class = ''): string
 {
@@ -807,12 +770,6 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
     global $db_connection, $auth, $admin_email, $die_quietly;
 
     switch ($errno) {
-        case E_USER_NOTICE:
-        case E_WARNING:
-        case E_NOTICE:
-        case E_CORE_WARNING:
-        case E_COMPILE_WARNING:
-            break;
         case E_USER_WARNING:
         case E_USER_ERROR:
         case E_ERROR:
@@ -1182,7 +1139,6 @@ function load_js($libs)
         switch ($lib) {
             case 'jqueryui':
             case 'cycle':
-            case 'colorbox':
             case 'lightbox':
             case 'cms':
                 $deps['jquery'] = true;
@@ -1337,15 +1293,6 @@ function make_timestamp($string)
     return $time;
 }
 
-function num2alpha($n) {
-    $r = '';
-    for ($i = 1; $n >= 0 && $i < 10; $i++) {
-        $r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
-        $n -= pow(26, $i);
-    }
-    return $r;
-}
-
 function array_to_csv_file($rows, $filename = 'data', $add_header = true)
 {
     $i = 0;
@@ -1372,7 +1319,6 @@ function array_to_csv_file($rows, $filename = 'data', $add_header = true)
     header('Pragma: cache');
     header("Content-Type: text/csv");
     header("Content-Disposition: attachment; filename=$filename.csv");
-
     print $data;
     exit;
 }
@@ -1873,29 +1819,6 @@ function truncate($string, $max = 50, $rep = '..'): string
 function underscored($str) // also see spaced
 {
     return str_replace(' ', '_', $str);
-}
-
-function url_grab_title($url)
-{
-    $fp = @fopen($url, 'r');
-    if (!$fp) {
-        $title = (!$text ? $link : $text);
-        return false;
-    }
-
-    // How many bytes to grab in one chunk.
-    // Most sites seem to have <title> within 512
-    $chunk_size = 1024;
-
-    $chunk = fread($fp, $chunk_size);
-    $chunk = preg_replace("/(\n|\r)/", '', $chunk);
-
-    // Look for <title>(.*?)</title> in the text
-    if (preg_match('/<title>(.*?)<\/title>/i', $chunk, $matches)) {
-        return $matches[1];
-    }
-
-    return null;
 }
 
 function validate($fields, $required, $array = true)

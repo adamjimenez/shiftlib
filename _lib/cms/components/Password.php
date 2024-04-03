@@ -39,7 +39,7 @@ class Password extends Component implements ComponentInterface
     public function formatValue($value, string $fieldName = null)
     {
         // add 1 to max position
-        if ($value && $this->auth->shouldHashPassword()) {
+        if ($value && $this->auth->hash_password) {
             $value = $this->auth->create_hash($value);
         }
 

@@ -103,6 +103,15 @@ $default_tables = [
 		]],
 	],
 
+	'cms reports' => [
+		'user' => 'text',
+		'title' => 'text',
+		'report' => 'textarea',
+		'created' => 'timestamp',
+		'position' => 'position',
+		'id' => 'id',
+	],
+
 	'cms login attempts' => [
 		'email' => 'email',
 		'ip' => 'ip',
