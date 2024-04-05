@@ -22,7 +22,7 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
-        return $value && $value !== 'false' ? 1 : 0;
+        return (int)$value ? 1 : 0;
     }
 
     /**
@@ -54,7 +54,7 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function isValid($value): bool
     {
-        return is_numeric($value) or is_bool($value) or in_array($value, ['true', 'false']);
+        return is_numeric($value);
     }
 
     /**
@@ -66,7 +66,7 @@ class Checkbox extends Integer implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        $value = $value && $value !== 'false' ? 1 : 0;
+        $value = (int)$value ? 1 : 0;
         return Component::conditionsToSql($fieldName, $value, $func, $tablePrefix);
     }
 }

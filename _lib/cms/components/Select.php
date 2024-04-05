@@ -9,20 +9,20 @@ use Exception;
 class Select extends Component implements ComponentInterface
 {
     /**
-     * @return string|null
-     */
+    * @return string|null
+    */
     public function getFieldSql(): ?string
     {
         return "VARCHAR( 64 ) NOT NULL DEFAULT ''";
     }
 
     /**
-     * @param string $fieldName
-     * @param string $value
-     * @param array $options
-     * @throws Exception
-     * @return string
-     */
+    * @param string $fieldName
+    * @param string $value
+    * @param array $options
+    * @throws Exception
+    * @return string
+    */
     public function field(string $fieldName, $value = '', array $options = []): string
     {
         $name = spaced($fieldName);
@@ -50,15 +50,14 @@ class Select extends Component implements ComponentInterface
     }
 
     /**
-     * Get parent fields child rows
-     *
-     * @param string $name
-     * @param string $where
-     * @throws Exception
-     * @return array
-     */
-    public function get_options(string $name, $where = null)
-    {
+    * Get parent fields child rows
+    *
+    * @param string $name
+    * @param string $where
+    * @throws Exception
+    * @return array
+    */
+    public function get_options(string $name, $where = null) {
         if (!isset($this->vars['options'][$name])) {
             return null;
         }
@@ -70,47 +69,39 @@ class Select extends Component implements ComponentInterface
 
             // get first field from section as we will use this for the option labels
             $field = $this->cms->get_label_field($this->vars['options'][$name]);
-            
+
             $cols = '`' . $field['column'] . '`';
 
             // sort by position if available or fall back to field order
             // $order = in_array('position', $this->vars['fields'][$this->vars['options'][$name]]) ? 'position' : $field;
             $order = $field['column'];
 
-            /*
-            $parent_field = array_search('parent', $this->vars['fields'][$this->vars['options'][$name]]);
-            
-            if (false !== $parent_field) {
-                // if we have a parent field than get an indented list of options
-                $options = $this->get_children($this->vars['options'][$name], $parent_field);
-            } else {
-            */
-                // filter deleted rows
-                $fields = $this->cms->get_fields($this->vars['options'][$name]);
-                if ($fields['deleted']) {
-                    if ($where) {
-                        $where .= ' AND ';
-                    }
-                    
-                    $where .= 'deleted = 0';
-                }
-                
-                $whereStr = '';
+
+            // filter deleted rows
+            $fields = $this->cms->get_fields($this->vars['options'][$name]);
+            if ($fields['deleted']) {
                 if ($where) {
-                    $whereStr = 'WHERE ' . $where;
+                    $where .= ' AND ';
                 }
 
-                $rows = sql_query("SELECT id, $cols FROM
+                $where .= 'deleted = 0';
+            }
+
+            $whereStr = '';
+            if ($where) {
+                $whereStr = 'WHERE ' . $where;
+            }
+
+            $rows = sql_query("SELECT id, $cols FROM
                     $table
                     $whereStr
                     ORDER BY `" . underscored($order) . '`
                 ');
 
-                $options = [];
-                foreach ($rows as $row) {
-                    $options[$row['id']] = $row[$field['column']];
-                }
-            //}
+            $options = [];
+            foreach ($rows as $row) {
+                $options[$row['id']] = $row[$field['column']];
+            }
 
             $this->vars['options'][$name] = $options;
         }
@@ -119,15 +110,14 @@ class Select extends Component implements ComponentInterface
     }
 
     /**
-     * @param $section
-     * @param $parent_field
-     * @param int $parent
-     * @param int $depth
-     * @throws Exception
-     * @return array
-     */
-    public function get_children($section, $parent_field, int $parent = 0, int $depth = 0)
-    {
+    * @param $section
+    * @param $parent_field
+    * @param int $parent
+    * @param int $depth
+    * @throws Exception
+    * @return array
+    */
+    public function get_children($section, $parent_field, int $parent = 0, int $depth = 0) {
         reset($this->vars['fields'][$section]);
         $label = key($this->vars['fields'][$section]);
 
@@ -161,10 +151,10 @@ class Select extends Component implements ComponentInterface
     }
 
     /**
-     * @param mixed $value
-     * @param string $name
-     * @return string
-     */
+    * @param mixed $value
+    * @param string $name
+    * @return string
+    */
     public function value($value, string $name = ''): string
     {
         if (false === is_array($this->vars['options'][$name])) {
@@ -183,12 +173,12 @@ class Select extends Component implements ComponentInterface
     }
 
     /**
-     * @param string $fieldName
-     * @param mixed $value
-     * @param string $func
-     * @param string $tablePrefix
-     * @return string|null
-     */
+    * @param string $fieldName
+    * @param mixed $value
+    * @param string $func
+    * @param string $tablePrefix
+    * @return string|null
+    */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         if (is_array($value)) {

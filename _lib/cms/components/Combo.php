@@ -24,7 +24,7 @@ class Combo extends Select implements ComponentInterface
     {
         $parts = [];
         $parts[] = '<input type="hidden" name="' . $fieldName . '"' . ($options['readonly'] ? ' disabled' : '') . ' value="' . $value . '" ' . $options['attribs'] . '>';
-        $parts[] = '<input type="text"' . ($options['readonly'] ? ' disabled' : '') . ' value="' . ($this->cms->getContent()[$fieldName . '_label'] ?: $this->cms->getContent()[$fieldName]) . '" data-type="combo" data-field="' . $fieldName . '" ' . $options['attribs'] . '>';
+        $parts[] = '<input type="text"' . ($options['readonly'] ? ' disabled' : '') . ' value="' . ($this->cms->content[$fieldName . '_label'] ?: $this->cms->content[$fieldName]) . '" data-type="combo" data-field="' . $fieldName . '" ' . $options['attribs'] . '>';
         return implode(' ', $parts);
     }
 }

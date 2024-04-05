@@ -463,7 +463,7 @@ class auth
         ");
 
         if (count($rows) >= 5) {
-            $this->show_error(['password Too many login attempts - try again in 10 minutes.']);
+            throw new Exception('Too many login attempts - try again in 10 minutes.');
         }
     }
 
@@ -826,18 +826,18 @@ class auth
 
                         $cms->save_log('users', $row['id'], 'login', 'Successful login from ' . $_SERVER['REMOTE_ADDR']);
                     } else {
-                        $error = 'password incorrect';
+                    throw new Exception('password incorrect');
                         $this->failed_login_attempt($data['email'], $data['password']);
 
                         $cms->save_log('users', $row['id'], 'login', 'Failed login from ' . $_SERVER['REMOTE_ADDR']);
                     }
                 } else {
-                    $error = 'password incorrect';
+                    throw new Exception('login incorrect');
                 }
             } elseif (!$data['email']) {
-                $error = 'email required';
+                throw new Exception('email required');
             } elseif (!$data['password']) {
-                $error = 'password required';
+                throw new Exception('password required');
             }
 
             if ($error) {

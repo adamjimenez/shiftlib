@@ -35,11 +35,9 @@ class Checkboxes extends Select implements ComponentInterface
         // get options from a section
         if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
             if ($this->cms->id) {
-                $joinId = $this->cms->get_id_field($name);
-
                 // get preselected values
                 $rows = sql_query('SELECT T1.value FROM cms_multiple_select T1
-                    INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value=T2.$joinId
+                    INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value=T2.id
                     WHERE
                         section='" . escape($this->cms->section) . "' AND
                         field='" . escape($name) . "' AND
@@ -91,13 +89,12 @@ class Checkboxes extends Select implements ComponentInterface
     {
         $array = [];
         if (false === is_array($this->vars['options'][$name]) and $this->vars['options'][$name]) {
-            $joinId = $this->cms->get_id_field($name);
 
             //make sure we get the label from the first array item
             reset($this->vars['fields'][$this->vars['options'][$name]]);
 
             $rows = sql_query('SELECT `' . underscored(key($this->vars['fields'][$this->vars['options'][$name]])) . '`,T1.value FROM cms_multiple_select T1
-                INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value = T2.$joinId
+                INNER JOIN `' . escape(underscored($this->vars['options'][$name])) . "` T2 ON T1.value = T2.id
                 WHERE
                     T1.field='" . escape($name) . "' AND
                     T1.item='" . $this->cms->id . "' AND

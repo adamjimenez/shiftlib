@@ -867,6 +867,22 @@ try {
             ];
             
             $response['data'] = $cms->get($opts);
+            
+            // compare
+            if ($_GET['compare']) {
+                $conditions = array_merge($conditions, $_GET['compare']);
+                
+                $opts = [
+                    'section' => $_GET['section'],
+                    'conditions' => $conditions,
+                    'limit' => $limit,
+                    'order' => $order,
+                    'asc' => $asc,
+                    'columns' => $_GET['columns'],
+                ];
+                
+                $response['compare_data'] = $cms->get($opts);
+            }
 
             break;
     }
