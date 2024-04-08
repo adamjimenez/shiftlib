@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.9';
+    const VERSION = '4.0.10';
 
     /**
     * @var string
@@ -293,28 +293,39 @@ class cms
         global $auth, $vars, $auth;
     
         if (1 != $auth->user['admin'] and !$auth->user['privileges']['uploads'] and $_GET['hash'] !== md5($auth->hash_salt . $file_id)) {
-            die('access denied');
+            throw new Exception('access denied');
         }
         
         if (is_numeric($file_id)) {
             $row = sql_query("SELECT * FROM files
                 WHERE
             	    id='" . escape($file_id) . "'
-            ", 1) or die('file not found');
+            ", 1);
+            
+            if (!$row) {
+                throw new Exception('file not found');
+            }
             
             $name = $row['name'];
             $type = $row['type'];
             $path = $this->file_upload_path . $row['id'];
         } else {
             $name = $file_id;
-            $type = 'image/jpeg';
             $path = 'uploads/' . $file_id;
+        }
+        
+        $ext = file_ext($name);
+        
+        if ($ext === 'svg') {
+            $type = 'image/svg+xml';
+        } else if (!$type) {
+            $type = 'image/'. $ext;
         }
     
         header('Content-type: ' . $type);
         header('Content-Disposition: inline; filename="' . $name . '"');
     
-        if (!$_GET['w'] && !$_GET['h']) {
+        if ((!$_GET['w'] && !$_GET['h']) || $ext === 'svg') {
             print file_get_contents($path);
         } else {
             // end configure
@@ -323,7 +334,6 @@ class cms
     
             $img = imageorientationfix($path);
             $img = thumb_img($img, [$max_width, $max_height], false);
-            $ext = file_ext($row['name']);
     
             switch ($ext) {
                 case 'png':

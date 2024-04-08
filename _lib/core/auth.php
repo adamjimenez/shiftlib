@@ -783,6 +783,27 @@ class auth
     }
 
     public function login($data = null) {
+        try {
+        	$result = $this->login_handler();
+        	
+        	if ($_POST['validate']) {
+        	    print json_encode($result);
+        	    exit;
+        	}
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        	print json_encode([
+                'success' => false,
+                'error' => $error,
+                'errors' => [$error]
+            ]);
+            exit;
+        }
+        
+        return $result;
+    }
+    
+    public function login_handler() {
         global $cms;
 
         $result = $this->single_sign_on();
@@ -843,8 +864,7 @@ class auth
             if ($error) {
                 $result['error'] = $error;
             } elseif ($data['validate']) {
-                print 1;
-                exit;
+                $result['success'] = 1;
             }
         }
 

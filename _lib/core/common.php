@@ -1140,7 +1140,7 @@ function load_js($libs)
             case 'jqueryui':
             case 'cycle':
             case 'lightbox':
-            case 'cms':
+            case 'bootstrap':
                 $deps['jquery'] = true;
             break;
             case 'vuetify':

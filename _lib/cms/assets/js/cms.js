@@ -1,15 +1,17 @@
+/*jshint esversion: 11 */
+
 function timeSince(timeStamp) {
     if (typeof timeStamp === "string") {
         timeStamp = new Date(timeStamp.replace(/-/g, "/"));
     }
 
-    var now = new Date();
-    var secondsPast = parseInt((now.getTime() - timeStamp.getTime()) / 1000);
+    let now = new Date();
+    let secondsPast = parseInt((now.getTime() - timeStamp.getTime()) / 1000);
 
     if (secondsPast <= 86400) {
-        var hour = timeStamp.getHours();
+        let hour = timeStamp.getHours();
         hour = ("0" + hour).slice(-2);
-        var min = timeStamp.getMinutes();
+        let min = timeStamp.getMinutes();
         min = ("0" + min).slice(-2);
         return hour + ':' + min;
     }
@@ -21,207 +23,144 @@ function timeSince(timeStamp) {
     }
 }
 
-//needed to include input file
-function serializeAll (form) {
-    var rselectTextarea = /^(?:select|textarea)/i;
-    var rinput = /^(?:color|date|datetime|datetime-local|email|file|hidden|month|number|password|range|search|tel|text|time|url|week)$/i;
-    var rCRLF = /\r?\n/g;
-
-    var arr = $(form).map(function() {
-        return form.elements ? $.makeArray(form.elements): form;
-    })
-    .filter(function() {
-        return this.name && !this.disabled &&
-        (this.checked || rselectTextarea.test(this.nodeName) ||
-            rinput.test(this.type));
-    })
-    .map(function(i, elem) {
-        if ($(elem).attr('type') == 'file') {
-            var val = [];
-            for (var i = 0; i < $(elem).get(0).files.length; ++i) {
-                val.push($(elem).get(0).files[i].name);
-            }
-        } else {
-            var val = $(this).val();
-        }
-
-        return val === null ?
-        null:
-        $.isArray(val) ?
-        $.map(val, function(val, i) {
-            return {
-                name: elem.name, value: val.replace(rCRLF, "\r\n")
-            };
-        }):
-        {
-            name: elem.name,
-            value: val.replace(rCRLF, "\r\n")
-        };
-    }).get();
-
-    return $.param(arr);
-}
-
 function initForms() {
-    //validation
-    $.each($('form.validate'),
-        function() {
-            if ($('*[type=file], *[type=files]', this).length) {
-                $(this).attr('enctype', 'multipart/form-data');
+    // validation
+    document.querySelectorAll('form.validate').forEach(function(form) {
+        const fileInputs = form.querySelectorAll('*[type="file"], *[type="files"]');
+        if (fileInputs.length) {
+            form.setAttribute('enctype', 'multipart/form-data');
+        }
+    });
+
+    const validateForms = document.querySelectorAll('form.validate');
+
+    validateForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            // Your form validation logic goes here
+            event.preventDefault(); // Prevent default form submission
+
+            let form = this;
+
+            // Disable the buttons
+            const submitButtons = form.querySelectorAll('*[type="submit"], *[type="image"]');
+            submitButtons.forEach(button => button.disabled = true);
+
+            // Remove error messages
+            const errorDivs = form.querySelectorAll('div.error');
+            errorDivs.forEach(div => div.remove());
+
+            let url = form.action ? form.action : location.href;
+            
+            const data = new URLSearchParams();
+            for (const pair of new FormData(form)) {
+                let value = pair[1] instanceof File ? pair[1].name : pair[1];
+                data.append(pair[0], value);
             }
-        });
-
-    var callback = function(form) {
-        form.submit();
-    }
-
-    $('form.validate').on('submit',
-        function(evt) {
-            evt.preventDefault();
-            evt.stopPropagation();
-
-            var form = this;
-
-            //disable buttons
-            $('*[type=submit], *[type=image]', form).attr('disabled', '');
-
-            //remove error messages
-            $('div.error').remove();
-            $('.errors').hide();
-
-            var url = location.href;
-            if (form.action) {
-                url = form.action;
-            }
-
-            if (typeof tinyMCE !== 'undefined') {
-                tinyMCE.triggerSave();
-            }
+            
+            data.append('validate', 1);
+            data.append('nospam', 1);
 
             //validate
-            $.ajax(url, {
-                dataType: 'json',
-                type: $(form).attr('method'),
-                data: serializeAll(form)+'&validate=1&nospam=1',
-                error: function(returned) {
-                    //alert('Submit error, check console for details');
-                    alert(returned.responseText)
-                },
-                success: function(data) {
-                    var errorMethod = 'inline';
-                    var firstError;
-                    var errorText = '';
-
-                    if ($(form).attr('data-errorMethod')) {
-                        errorMethod = $(form).attr('data-errorMethod');
-                        //legacy support
-                    } else if ($(form).attr('errorMethod')) {
-                        errorMethod = $(form).attr('errorMethod');
-                    }
-
-                    console.log(data);
-
-                    if (parseInt(data) !== 1) {
-
-                        //display errors
-                        var errors = data.errors ? data.errors: data;
-
-                        errors.forEach(function(item) {
-
-                            var pos = item.indexOf(' ');
-                            var field;
-
-                            if (pos === -1) {
-                                field = item;
-                                error = 'required';
-                            } else {
-                                field = item.substring(0, pos);
-                                error = item.substring(pos + 1);
-                            }
-
-                            var parent = '';
-                            if (form[field]) {
-                                if (form[field].style) {
-                                    if (!firstError) {
-                                        firstError = field;
-                                    }
-
-                                    parent = form[field].parentNode;
-                                } else if (form[field][0]) {
-                                    parent = form[field][0].parentNode.parentNode;
-                                }
-
-                                errorText += field + ': ' + error + '\n';
-                            } else if (form[field + '[]']) {
-                                if (form[field + '[]'].style) {
-                                    if (!firstError) {
-                                        firstError = field;
-                                    }
-
-                                    parent = form[field + '[]'].parentNode;
-                                } else if (form[field + '[]'][0]) {
-                                    parent = form[field + '[]'][0].parentNode.parentNode;
-                                }
-
-                                errorText += field + ': ' + error + '\n';
-                            } else {
-                                errorText += error + '\n';
-                                console.log('field not found: ' + field);
-                            }
-
-                            if (parent && errorMethod === 'inline') {
-                                div = document.createElement("div");
-                                div.innerHTML = error;
-                                div.style.color = 'red';
-                                div.className = 'error';
-                                parent.appendChild(div);
-                            }
-                        })
-
-                        if (errorMethod === 'alert') {
-                            alert('Please check the required fields\n' + errorText);
-                        }
-
-                        $('.errors').html('Please check the following:<br>' + errorText.replace(/(?:\r\n|\r|\n)/g, '<br>')).show();
-                        $(form).trigger('validationError');
-
-                    } else {
-                        //submit form
-                        window.onbeforeunload = null;
-
-                        //nospam
-                        $(form).append('<input type="hidden" name="nospam" value="1">');
-
-                        var recaptchaSiteKey = $('#recaptcha').data('key');
-
-                        if (recaptchaSiteKey) {
-                            grecaptcha.ready(function() {
-                                grecaptcha.execute(recaptchaSiteKey, {
-                                    action: 'submit'
-                                }).then(function(token) {
-
-                                    var el = $(form).find('.recaptcha');
-                                    if (!el.length) {
-                                        el = $('<textarea style="display: none;" class="recaptcha" name="g-recaptcha-response"></textarea>').appendTo(form);
-                                    }
-
-                                    el.val(token);
-                                    callback(form);
-                                });
-                            });
-                        } else {
-                            callback(form);
-                        }
-                    }
-                },
-                complete: function(returned) {
-                    // re-enable submit
-                    $('*[type=submit], *[type=image]', form).removeAttr('disabled');
+            fetch(url, {
+                method: form.method,
+                body: data,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded' // For POST requests
                 }
+            })
+            .then(response => response.json()) // Parse JSON response
+            .then(data => {
+                // Handle successful response (replace with your logic)
+                console.log('Success:', data);
+
+                if (!data.success) {
+
+                    // display errors
+                    let errors = data.errors ? data.errors: data;
+
+                    errors.forEach(function(item) {
+                        let pos = item.indexOf(' ');
+                        let fieldName;
+
+                        if (pos === -1) {
+                            fieldName = item;
+                            error = 'required';
+                        } else {
+                            fieldName = item.substring(0, pos);
+                            error = item.substring(pos + 1);
+                        }
+
+                        let parent = '';
+                        let fieldInput = form[fieldName + '[]'] ? form[fieldName + '[]'] : form[fieldName];
+                        
+                        if (fieldInput) {
+                            if (fieldInput.style) {
+                                parent = fieldInput.parentNode;
+                            } else if (fieldInput[0]) {
+                                parent = fieldInput[0].parentNode.parentNode;
+                            }
+                        } else {
+                            console.log('field not found: ' + fieldName);
+                        }
+
+                        if (parent) {
+                            div = document.createElement("div");
+                            div.innerHTML = error;
+                            div.style.color = 'red';
+                            div.className = 'error';
+                            parent.appendChild(div);
+                        }
+                    })
+
+                } else {
+                    // Create the hidden input element
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'nospam';
+                    hiddenInput.value = '1';
+
+                    // Append the hidden input to the form
+                    form.appendChild(hiddenInput);
+
+                    const recaptchaSiteKey = document.querySelector('#recaptcha')?.dataset?.key;
+
+                    if (recaptchaSiteKey) {
+                        grecaptcha.ready(() => {
+                            grecaptcha.execute(recaptchaSiteKey, {
+                                action: 'submit'
+                            }).then(token => {
+                                const recaptchaTextarea = form.querySelector('.recaptcha') || document.createElement('textarea');
+
+                                if (!recaptchaTextarea.classList.contains('recaptcha')) {
+                                    recaptchaTextarea.style.display = 'none';
+                                    recaptchaTextarea.classList.add('recaptcha');
+                                    recaptchaTextarea.name = 'g-recaptcha-response';
+                                    form.appendChild(recaptchaTextarea);
+                                }
+
+                                recaptchaTextarea.value = token;
+                                form.submit();
+                            });
+                        });
+                    } else {
+                        form.submit();
+                    }
+                }
+                // re-enable submit
+                const submitButtons = form.querySelectorAll('*[type="submit"], *[type="image"]');
+                submitButtons.forEach(button => button.disabled = false);
+            })
+            .catch(error => {
+                // Handle errors
+                console.error('Error:', error);
+                alert(error.message); // Example error message display
             });
+
         });
+    });
 
     //datefields
+    /*
     if ($().datepicker) {
         $("input[data-type='date']").datepicker({
             dateFormat: 'yy-mm-dd',
@@ -239,13 +178,14 @@ function initForms() {
             maxDate: '-1d'
         });
     }
+    */
 }
 
 function delItem(field) {
-    var obj = field.parentNode;
+    let obj = field.parentNode;
     obj.parentNode.removeChild(obj);
 }
 
-$(function() {
+window.addEventListener('DOMContentLoaded', function() {
     initForms();
 });

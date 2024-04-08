@@ -1,11 +1,6 @@
 <?php
 // redirect to home if logged in
-$error = '';
-try {
-	$result = $auth->login();
-} catch (Exception $e) {
-    $error = $e->getMessage();
-}
+$result = $auth->login();
 
 // handle login
 if ($result['code'] === 1) {

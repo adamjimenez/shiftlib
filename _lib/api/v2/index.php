@@ -243,7 +243,9 @@ try {
             
             $data['menu'] = $vars['menu'];
             
-            $filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
+            if (table_exists('cms_filters')) {
+                $filters = sql_query("SELECT * FROM cms_filters WHERE user = '" . escape($auth->user['id']) . "'");
+            }
 
             $vars['menu'] = filter_menu($data['menu']);
             $vars['buttons'] = $cms->buttons;
