@@ -1,6 +1,9 @@
-ShiftLib: CMS and templating system
+#ShiftLib: PHP framework and templating system for use with GenieAdmin
 --
 
+ShiftLib is a iightweight PHP framework that provides routing and API access for [GenieAdmin](https://genieadmin.com/).
+
+### Get started
 Copy files to your web root.
 
 Configure your database in `_inc/config.php`
@@ -8,8 +11,9 @@ Configure your database in `_inc/config.php`
 Login to GenieAdmin:
 `https://[yourdomain]/admin/`
 
-Create new website sections from the configure area.
+Create new tables, fields and sections from the configure area.
+Look in awe at your newly created admin system.
 
-The website templates go in `_tpl` folder.
+Place your website templates in the `_tpl` folder.
 
-Check [the wiki](https://github.com/adamjimenez/shiftlib/wiki) for information about the template structure.
+Check [the wiki](https://github.com/adamjimenez/shiftlib/wiki) for information about the ShiftLib template structure and functions.
