@@ -5,7 +5,7 @@ ShiftLib is a iightweight PHP framework that provides routing and API access for
 ### Get started
 Copy files to your web root.
 
-Configure your database in `_inc/config.php`
+Configure your MySQL-compatible database in `_inc/config.php`
 
 Login to GenieAdmin:
 `https://[yourdomain]/admin/`
