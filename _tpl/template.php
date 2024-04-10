@@ -6,7 +6,8 @@
     <?php if ($meta_description) { ?>
     <meta name="Description" content="<?=$meta_description;?>" />
     <?php } ?>
-    <?php load_js(['cms', 'bootstrap', 'fontawesome']); ?>
+    
+    <?php load_js(['bootstrap', 'fontawesome']); ?>
 
 	<style>
     body {
@@ -27,7 +28,7 @@
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-            		<li<?=current_tab('index'); ?>><a href="/" title="Home">Home</a></li>
+            		<li><a href="/" title="Home">Home</a></li>
         			<?php if ($auth->user) { ?>
         			    <li><a href="/account/">Account</a></li>
         			    <li><a href="/logout">Sign out</a></li>

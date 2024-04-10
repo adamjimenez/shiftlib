@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.10';
+    const VERSION = '4.0.11';
 
     /**
     * @var string
@@ -333,6 +333,10 @@ class cms
             $max_height = $_GET['h'] ?: 240;
     
             $img = imageorientationfix($path);
+            if (!$img) {
+                return false;
+            }
+            
             $img = thumb_img($img, [$max_width, $max_height], false);
     
             switch ($ext) {
@@ -1078,6 +1082,54 @@ class cms
         }
 
         return $this->id ?: true;
+    }
+    
+    // handle ajax form submission
+    public function submit_handler($options = [], $return_object = false) {
+        // handle validation
+        if ((int)$_POST['nospam'] !== 1) {
+            $response = [ 'errors' => 'no more spam'];
+        } else {
+            $response = [
+                'errors' => $this->validate($_POST, $options['recaptcha'])
+            ];
+            
+            if ($options['errors']) {
+                $response['errors'] = array_merge($response['errors'], $options['errors']);
+            }
+    
+            if (!$_POST['validate'] && !count($response['errors'])) {
+                if ($options['recaptchav3'] && !$this->verifyRecaptcha($_POST['g-recaptcha-response'])) {
+                    $response['errors'][] = 'recaptcha invalid';
+                }
+            
+                if (!count($response['errors'])) {
+                    $response['data'] = $_POST;
+                    $response['data']['id'] = $this->save();
+                    
+                    if ($options['notify']) {
+                        $this->notify(null, $options['notify']);
+                    }
+            
+                    if ($options['redirect']) {
+                        if (is_callable($options['redirect'])) {
+                            $response['redirect'] = $options['redirect']($response['data']);
+                        } else {
+                            $response['redirect'] = $options['redirect'];
+                        }
+                    }
+                }
+            }
+        }
+        
+        $response['success'] = count((array)$response['errors']) ? false : true;
+        
+        if ($return_object) {
+            return $response;
+        }
+
+        print json_encode($response);
+        exit;
     }
 
     function verifyRecaptcha($token) {

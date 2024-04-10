@@ -1202,6 +1202,13 @@ function load_js($libs)
 	<?php
     }
 
+    if ($deps['shiftlib']) {
+        ?>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.8/handlebars.min.js"></script>
+		<script src="/_lib/cms/assets/js/shiftlib.js?v=<?=time();?>"></script>
+	<?php
+    }
+
     if ($deps['jqueryui']) {
         $jqueryui_version = '1.12.1'; ?>
 		<link href="//ajax.googleapis.com/ajax/libs/jqueryui/<?=$jqueryui_version; ?>/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
