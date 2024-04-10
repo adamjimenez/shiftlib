@@ -1,5 +1,4 @@
-#ShiftLib: PHP framework and templating system for use with GenieAdmin
---
+# ShiftLib: PHP framework for use with GenieAdmin
 
 ShiftLib is a iightweight PHP framework that provides routing and API access for [GenieAdmin](https://genieadmin.com/).
 
