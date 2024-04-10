@@ -506,6 +506,11 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 			$response['vars'] = $vars;
 			$response['from_email'] = $from_email;
 			$response['last_modified'] = $last_modified;
+			
+			$response['version'] = cms::VERSION;
+			
+			$json = json_decode(wget('https://api.github.com/repos/adamjimenez/shiftlib/releases'), true);
+			$response['latest'] = $json[0]['name'];
 			break;
 	}
 

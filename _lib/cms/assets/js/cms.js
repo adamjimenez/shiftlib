@@ -73,7 +73,7 @@ function initForms() {
                 // Handle successful response (replace with your logic)
                 console.log('Success:', data);
 
-                if (!data.success) {
+                if (!data.success && data != 1) {
 
                     // display errors
                     let errors = data.errors ? data.errors: data;

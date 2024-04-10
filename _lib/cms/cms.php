@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.11';
+    const VERSION = '4.0.12';
 
     /**
     * @var string
