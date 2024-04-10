@@ -5,8 +5,8 @@ Copy files to your web root.
 
 Configure your database in `_inc/config.php`
 
-login to admin:
-`https://[yourdomain]/admin`
+Login to GenieAdmin:
+`https://[yourdomain]/admin/`
 
 Create new website sections from the configure area.
 
