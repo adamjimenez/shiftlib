@@ -386,6 +386,9 @@ try {
 
                 if ($tmp) {
                     $result = rename($tmp, $dest);
+                    
+                    // set perms
+                    chmod($dest, 0777);
                 
                     if ($result === false) {
                         throw new Exception("Can't rename " . $tmp . ' to ' . $dest);
