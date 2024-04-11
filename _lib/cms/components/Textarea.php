@@ -52,6 +52,12 @@ class Textarea extends Component implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
+        global $auth;
+        
+        if ((int)$auth->user['admin'] === 1) {
+            return $value;
+        }
+        
         return trim(strip_tags($value, '<iframe>'));
     }
 }

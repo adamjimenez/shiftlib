@@ -34,6 +34,12 @@ class Editor extends Component implements ComponentInterface
      */
     public function formatValue($value, string $fieldName = null)
     {
+        global $auth;
+        
+        if ((int)$auth->user['admin'] === 1) {
+            return $value;
+        }
+        
         $doc = new DOMDocument();
         $doc->loadHTML('<div>' . $value . '</div>');
 
