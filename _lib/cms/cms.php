@@ -2,7 +2,7 @@
 
 class cms
 {
-    const VERSION = '4.0.12';
+    const VERSION = '4.0.13';
 
     /**
     * @var string
@@ -832,7 +832,7 @@ class cms
         // find first text field
         $label = null;
         foreach ($fields as $name => $field) {
-            if ($field['type'] === 'text') {
+            if (in_array($field['type'], ['text', 'email'])) {
                 $label = $field;
                 break;
             }
@@ -1177,18 +1177,19 @@ class cms
         //$rows = sql_query("SHOW FULL COLUMNS FROM `" . escape(underscored($section)) . "`");
 
         $rows = sql_query("SELECT 
-        	COLUMN_NAME AS `Field`,
-        	COLUMN_TYPE AS `Type`,
-        	COLLATION_NAME AS `Collation`,
-        	IS_NULLABLE AS `Null`,
-        	COLUMN_KEY AS `Key`,
-        	COLUMN_DEFAULT AS `Default`,
-        	EXTRA AS `Extra`,
-        	PRIVILEGES AS `Privileges`,
-        	COLUMN_COMMENT AS `Comment`
-        FROM information_schema.columns WHERE 
-        	TABLE_NAME = '" . escape(underscored($section)) . "' AND
-        	TABLE_SCHEMA = '" . $db_config['name'] . "'
+            	COLUMN_NAME AS `Field`,
+            	COLUMN_TYPE AS `Type`,
+            	COLLATION_NAME AS `Collation`,
+            	IS_NULLABLE AS `Null`,
+            	COLUMN_KEY AS `Key`,
+            	COLUMN_DEFAULT AS `Default`,
+            	EXTRA AS `Extra`,
+            	PRIVILEGES AS `Privileges`,
+            	COLUMN_COMMENT AS `Comment`
+            FROM information_schema.columns WHERE 
+            	TABLE_NAME = '" . escape(underscored($section)) . "' AND
+            	TABLE_SCHEMA = '" . $db_config['name'] . "'
+            ORDER BY ORDINAL_POSITION
         ");
 
         $fields = [];

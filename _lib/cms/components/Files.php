@@ -46,7 +46,7 @@ class Files extends File implements ComponentInterface
                     $parts[] = '<img src="' . $previewUrl . '" style="max-width: 100px; max-height: 100px;"><br>';
                     $parts[] = $file['name'];
                     $parts[] = '</a>';
-                    $parts[] = '<a href="javascript:" class="link" onClick="delItem(this)">delete</a>';
+                    $parts[] = '<a href="javascript:" class="link" onClick="this.parentNode.parentNode.removeChild(this.parentNode)">delete</a>';
                 }
                 $parts[] = '</li>';
             }

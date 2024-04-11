@@ -160,11 +160,22 @@ function initForms() {
     });
 }
 
-function delItem(field) {
-    let obj = field.parentNode;
-    obj.parentNode.removeChild(obj);
-}
-
 window.addEventListener('DOMContentLoaded', function() {
     initForms();
 });
+
+function clearFile(field)
+{
+    inputFile = document.createElement("input");
+    inputFile.setAttribute('name', field.getAttribute('name'));
+    inputFile.setAttribute('type', 'file');
+
+    var cell = field.parentNode;
+
+    while ( cell.childNodes.length >= 1 )
+    {
+        cell.removeChild( cell.firstChild );
+    }
+
+    cell.appendChild(inputFile);
+}
