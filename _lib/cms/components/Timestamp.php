@@ -13,7 +13,7 @@ class Timestamp extends Datetime implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP';
+        return 'TIMESTAMP';
     }
 
     /**

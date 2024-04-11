@@ -12,7 +12,7 @@ class Decimal extends Integer implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return 'DECIMAL( 8,2 )';
+        return 'DECIMAL(8,2)';
     }
 
     /**

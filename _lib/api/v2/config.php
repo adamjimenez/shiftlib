@@ -148,6 +148,7 @@ $default_tables = [
 // check config file
 global $root_folder;
 $config_file = $root_folder . '/_inc/config.php';
+$default_collation = 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci';
 
 $response = [];
 
@@ -166,7 +167,7 @@ try {
 			if ($_POST['id']) {
 				$query = 'RENAME TABLE `' . escape($_POST['id']) . '`  TO `' . escape(underscored($_POST['name'])) . '`';
 			} else {
-				$query = 'CREATE TABLE `' . escape(underscored($_POST['name'])) . '` ( `id` INT NOT NULL AUTO_INCREMENT , PRIMARY KEY (`id`)) ENGINE = InnoDB';
+				$query = 'CREATE TABLE `' . escape(underscored($_POST['name'])) . "` ( `id` INT NOT NULL AUTO_INCREMENT COMMENT 'id|0|', PRIMARY KEY (`id`)) ENGINE = InnoDB";
 			}
 			sql_query($query);
 			break;
@@ -179,50 +180,52 @@ try {
 			sql_query($query);
 			break;
 		case 'save_field':
-			if (!$_POST['name']) {
-				throw new Exception('Missing name');
-			}
-			if (!$_POST['type']) {
-				throw new Exception('Missing type');
-			}
-			if (!$_POST['table']) {
-				throw new Exception('Missing table');
-			}
-
-			$old_field = $_POST['id'] ? get_db_field($_POST['table'], $_POST['id']) : [];
-
-			$db_field = $old_field['Type'] ?: $cms->form_to_db($_POST['type']);
-			$comment = $_POST['type'] . '|' . ($_POST['required'] ? 1 : 0) . '|' . $_POST['label'];
-			$null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
-			$action = $_POST['id'] ? 'CHANGE `' . underscored($_POST['id']) . '`' : 'ADD';
-			$collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' : '';
-
-			$query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($_POST['name']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " COMMENT '" . $comment . "' ";
-
-			sql_query($query);
-			break;
 		case 'move_field':
 			if (!$_POST['table']) {
 				throw new Exception('Missing table');
 			}
-
-			if (!$_POST['field']) {
-				throw new Exception('Missing field');
+			
+			$column = $_POST['name'] ?: $_POST['field'];
+			
+			if (!$column) {
+				throw new Exception('Missing column');
+			}
+				
+			if ($_GET['cmd'] === 'save_field') {
+				if (!$_POST['type']) {
+					throw new Exception('Missing type');
+				}
+	
+				$old_field = $_POST['id'] ? get_db_field($_POST['table'], $_POST['id']) : [];
+				
+				$comment = $_POST['type'] . '|' . ($_POST['required'] ? 1 : 0) . '|' . escape($_POST['label']);
+				$action = $_POST['id'] ? 'CHANGE `' . underscored($_POST['id']) . '`' : 'ADD';
+				$after = '';
+				
+				if (!$_POST['id'] && $_POST['type'] === 'timestamp') {
+					$default = 'CURRENT_TIMESTAMP';
+				}
+			} else {
+				$old_field = get_db_field($_POST['table'], $column);
+				
+				$comment = $old_field['Comment'];
+				$action = 'MODIFY';
+				$after = $_POST['after'] ? ' AFTER `' . escape($_POST['after']) . '`' : 'FIRST';
 			}
 
-			$old_field = get_db_field($_POST['table'], $_POST['field']);
-
-			$db_field = $old_field['Type'];
-			$comment = $old_field['Comment'];
+			$db_field = $old_field['Type'] ?: $cms->form_to_db($_POST['type']);
 			$null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
-			$auto_increment = $old_field['Extra'] === 'auto_increment' ? 'AUTO_INCREMENT' : '';
-			$action = 'MODIFY';
-			$collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' : '';
-			$default = $old_field['Default'] ? 'DEFAULT ' . $old_field['Default'] : '';
-
-			$query = "ALTER TABLE `" . escape($_POST['table']) . '` ' . $action . ' `' . underscored($_POST['field']) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $auto_increment . " " . $default . " COMMENT '" . $comment . "' " . ($_POST['after'] ? ' AFTER `' . $_POST['after'] . '`' : 'FIRST');
+			$extra = ($old_field['Extra'] === 'auto_increment' || $column === 'id') ? 'AUTO_INCREMENT' : '';
+			
+			$default = $default ?: $old_field['Default'];
+			$default = $default ? 'DEFAULT ' . $default : '';
+			
+			$collation = stristr($db_field, 'CHAR') || stristr($db_field, 'TEXT') ? $default_collation : '';
+			
+			$query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($column) . '` ' . $db_field . ' ' . $collation . ' ' . $null . ' ' . $extra . ' ' . $default . " COMMENT '" . $comment . "' " . $after;
 
 			sql_query($query);
+
 			break;
 		case 'delete_field':
 			if (in_array($_POST['column'], ['id'])) {
@@ -321,14 +324,9 @@ try {
 		                    ", 1);
 
 							$extra = 'AS (' . $schema['generation_expression'] . ') VIRTUAL';
-
-							$query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` `' . underscored($name) . '` ' . $db_field . " " . $null . " " . $extra . " COMMENT '" . $comment . "'";
-
-						} else {
-							$collation = $old_field['Collation'] ? 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci' : '';
-
-							$query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . ' ' . $collation . ' ' . $null . " " . $extra . " COMMENT '" . $comment . "'";
 						}
+				
+						$query = "ALTER TABLE `" . escape($table) . '` ' . $action . ' `' . underscored($name) . '` ' . $db_field . ' ' . $collation . ' ' . $null . ' ' . $extra . " COMMENT '" . $comment . "'";
 
 						sql_query($query);
 
@@ -336,9 +334,9 @@ try {
 							$rows = sql_query("SELECT id FROM `" . escape($table) . '`');
 							foreach ($rows as $row) {
 								$vals = sql_query("SELECT value FROM cms_multiple_select WHERE
-		                            section = '" . $section . "' AND
-		                            field = '" . $name . "' AND
-		                            item = '" . $row['id'] . "'
+		                            section = '" . escape($section) . "' AND
+		                            field = '" . escape($name) . "' AND
+		                            item = '" . (int)$row['id'] . "'
 		                        ");
 
 								$data = [];
@@ -349,14 +347,14 @@ try {
 								sql_query("UPDATE `" . escape($table) . "` SET
 		                            `" . underscored($name) . "` = '".escape(json_encode($data))."'
 		                            WHERE
-		                                id = '". $row['id'] ."'
+		                                id = '". (int)$row['id'] ."'
 		                        ");
 							}
 						}
 					}
 
 					if (!$has_id) {
-						sql_query("ALTER TABLE `" . $table . "` DROP IF EXISTS `id`");
+						sql_query("ALTER TABLE `" . escape($table) . "` DROP IF EXISTS `id`");
 					}
 				}
 			}
@@ -367,6 +365,7 @@ try {
 			}
 
 			// hash passwords
+			/*
 			if (!$auth_config['hash_password'] and $_POST['auth_config']['hash_password']) {
 				$users = sql_query('SELECT * FROM users');
 
@@ -380,6 +379,7 @@ try {
 		            ");
 				}
 			}
+			*/
 
 			$config = '<?php
 $last_modified = ' . time() . ';

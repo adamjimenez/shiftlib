@@ -60,7 +60,7 @@ abstract class Component
      */
     public function getFieldSql(): ?string
     {
-        return "VARCHAR( 140 ) NOT NULL DEFAULT ''";
+        return "VARCHAR(140)";
     }
 
     /**

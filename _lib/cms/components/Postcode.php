@@ -12,7 +12,7 @@ class Postcode extends Component implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return "VARCHAR( 8 ) NOT NULL DEFAULT ''";
+        return "VARCHAR(8)";
     }
     
     /**

@@ -11,7 +11,7 @@ class Id extends Integer implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return 'INT UNSIGNED NOT NULL AUTO_INCREMENT';
+        return 'INT';
     }
 
     /**

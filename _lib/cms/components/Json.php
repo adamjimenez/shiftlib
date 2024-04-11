@@ -7,6 +7,14 @@ use cms\ComponentInterface;
 class Json extends Textarea implements ComponentInterface
 {
     /**
+     * @return string|null
+     */
+    public function getFieldSql(): ?string
+    {
+        return 'JSON';
+    }
+    
+    /**
      * Returns the display value
      *
      * @param $value
