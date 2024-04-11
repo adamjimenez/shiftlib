@@ -4,27 +4,17 @@ require(__DIR__ . "/../includes/cors.php");
 
 function str_to_bool($str): string
 {
-	if ($str) {
-		return 'true';
-	}
-	return 'false';
+	return $str ? 'true' : 'false';
 }
 
 function get_db_field($table, $field_name) {
-	$old_field = [];
-
 	$cols = sql_query("SHOW FULL COLUMNS FROM `" . escape($table) . "`");
 
 	foreach ($cols as $field) {
-		if ($field['Field'] == underscored($field_name)) {
-			$db_field = $field['Type'];
-			$null = $field['Null'] === 'NO' ? 'NOT NULL' : '';
-			$old_field = $field;
-			break;
+		if ($field['Field'] === underscored($field_name)) {
+			return $field;
 		}
 	}
-
-	return $old_field;
 }
 
 global $last_modified,
@@ -214,7 +204,7 @@ try {
 			}
 
 			$db_field = $old_field['Type'] ?: $cms->form_to_db($_POST['type']);
-			$null = $old_field['Null'] === 'NO' ? 'NOT NULL' : '';
+			$null = $old_field['Null'] === 'YES' ? '' : 'NOT NULL';
 			$extra = ($old_field['Extra'] === 'auto_increment' || $column === 'id') ? 'AUTO_INCREMENT' : '';
 			
 			$default = $default ?: $old_field['Default'];
