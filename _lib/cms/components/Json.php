@@ -11,7 +11,7 @@ class Json extends Textarea implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return 'JSON';
+        return 'TEXT';
     }
     
     /**

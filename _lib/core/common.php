@@ -1170,7 +1170,7 @@ function load_js($libs)
 
     if ($deps['vue3']) {
         ?>
-        <script src="https://unpkg.com/vue@3.3.7"></script>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 	<?php
     }
 

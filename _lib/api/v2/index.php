@@ -170,17 +170,9 @@ try {
                     'password' => $_POST['password'],
                 ], ['request' => 'admin/login']);
             } else {
-                if ($_POST['email']) {
-                    $_POST['login'] = 1;
-                }
-                
-                $response = $auth->login($_POST);
-            }
-            
-            if (!$auth->user) {
                 $row = sql_query('SELECT id FROM ' . $auth->table . ' WHERE admin = 1 LIMIT 1', 1);
-                if (!$row) {
                 
+                if (!$row) {
                     if ($_POST['email'] && $_POST['password']) {
                         $hash = $auth->create_hash($_POST['password']);
                         
@@ -190,10 +182,15 @@ try {
                             admin = 1
                         ");
                         
-                        $response = $auth->login($_POST);
+                        $response = $auth->login_handler($_POST);
                     } else {
                         $response['no_admin'] = true;
                     }
+                }
+            
+                if (!$auth->user && $_POST['email']) {
+                    $_POST['login'] = 1;
+                    $response = $auth->login_handler($_POST);
                 }
             }
 
@@ -679,11 +676,13 @@ try {
                 throw new Exception('access denied');               
             }
             
-            $cms->set_section($_GET['section'], $_GET['id']);
+            $fields = $_GET['fields'] ?: null;
+            
+            $cms->set_section($_GET['section'], $_GET['id'], $fields);
             $response['errors'] = $cms->validate($_POST, null, true);
 
             if (!count($response['errors'])) {
-                $response['id'] = $cms->save($_POST['save']);
+                $response['id'] = $cms->save($_POST);
             }
             break;
 
@@ -708,12 +707,12 @@ try {
             break;
 
         case 'delete':
-            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_POST['section']]) {
+            if (1 !== (int)$auth->user['admin'] && 2 > (int)$auth->user['privileges'][$_GET['section']]) {
                 throw new Exception('access denied');               
             }
             
             $conditions = $_POST['select_all_pages'] ? $_GET : $_POST['ids'];
-            $cms->delete_items($_POST['section'], $conditions, $_POST['select_all_pages']);
+            $cms->delete_items($_GET['section'], $conditions, $_POST['select_all_pages']);
             break;
 
         case 'export':
