@@ -128,6 +128,20 @@ $default_tables = [
 		]],
 	],
 	
+	'cms pages' => [
+		'page_name' => 'page_name',
+		'created' => 'timestamp',
+		'meta' => 'json',
+		'name' => 'text',
+		'published' => 'checkbox',
+		'id' => 'id',
+		'indexes' => [[
+			'name' => 'page_name',
+			'type' => 'unique',
+			'fields' => ['page_name'],
+		]],
+	],
+	
 	'email templates' => [
 		'subject' => 'text',
 		'body' => 'editor',

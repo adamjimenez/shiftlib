@@ -1558,4 +1558,57 @@ class cms
             }
         }
     }
+    
+    // used by inline editor
+    public function get_page() {
+    	global $request, $auth;
+    
+    	$template = get_include($request);
+    
+    	$base = $template;
+    	$pos = strpos($base, '_tpl/');
+    	$base = substr($base, $pos + 5);
+    	$pos = strpos($base, '.');
+    	$base = substr($base, 0, $pos);
+    
+    	$is_admin = $auth->user['admin'];
+    
+    	$where_str = $is_admin ? '' : 'AND published = 1';
+    
+    	$page = sql_query("SELECT * FROM cms_pages
+    		WHERE
+    			page_name = '" . escape($request) . "'
+    			$where_str
+    		LIMIT 1
+    		", 1);
+    
+    	$pages = sql_query("SELECT name, page_name, created FROM cms_pages
+    		WHERE
+    			page_name LIKE '" . escape($base) . "/%'
+    			$where_str
+    	");
+    
+    	return [
+    		'page' => $page,
+    		'content' => json_decode($page['meta'], true),
+    		'pages' => $pages,
+    		'request' => $request,
+    		'base' => $base,
+    		'catcher' => strstr($template, '.catcher.php')
+    	];
+    }
+    
+    function load_page_editor($data) {
+    	global $auth;
+    
+    	if (!$auth->user['admin']) {
+    		return false;
+    	}
+    	?>
+    	<script type="application/json" id="pageData">
+    		<?=json_encode($data); ?>
+    	</script>
+    	<?php
+    	load_js('tinymce');
+    }
 }

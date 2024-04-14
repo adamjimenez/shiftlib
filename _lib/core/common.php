@@ -1268,6 +1268,12 @@ function load_js($libs)
         <script id="recaptcha" data-key="<?=$auth_config['recaptcha_key'];?>" src="https://www.google.com/recaptcha/api.js?render=<?=$auth_config['recaptcha_key'];?>"></script>
 	<?php
     }
+
+    if ($deps['tinymce']) {
+        ?>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.0.1/tinymce.min.js"></script>
+	<?php
+    }
 }
 
 function make_timestamp($string)
