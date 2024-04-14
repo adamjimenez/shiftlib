@@ -196,6 +196,7 @@ try {
 
             if ($auth->user) {
                 $response['admin'] = (int)$auth->user['admin'];
+                $response['code'] = 1;
                 
                 // 2fa
                 if ($trusted === false) {
