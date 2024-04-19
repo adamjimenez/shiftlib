@@ -49,7 +49,7 @@ class Date extends Component implements ComponentInterface
      */
     public function isValid($value): bool
     {
-        return preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value);
+        return preg_match('/^[0-9]{4}-(0[0-9]|1[0-2])-(0[0-9]|[1-2][0-9]|3[0-1])$/', $value);
     }
 
     /**
