@@ -151,17 +151,28 @@ window.addEventListener('DOMContentLoaded', function() {
 // inline cms
 class PageEditor {
     constructor() {
-        this.pageData = JSON.parse(document.getElementById('pageData').textContent);
+        let editable = document.querySelectorAll('[sl-id], [sl-name]');
+        
+        if (!editable.length) {
+            return;
+        }
+        
+        let pageDataEl = document.getElementById('pageData');
+        this.pageData = pageDataEl ? JSON.parse(pageDataEl.textContent) : {};
 
         const nav = document.createElement("div");
         nav.classList.add('sl-nav');
         nav.innerHTML = `
-        <button type="button" sl-addpage>
+        <button type="button" class="icon" sl-addpage>
         &plus;
         </button>
 
-        <button type="button" sl-editPage>
-        Edit
+        <button type="button" class="icon" sl-editPage>
+        &#128295;
+        </button>
+
+        <button type="button" class="icon" sl-cancelPage style="display: none;">
+        <div style="transform: rotate(180deg);">&#10140;</div>
         </button>
 
         <button type="button" sl-renamePage>
@@ -172,7 +183,7 @@ class PageEditor {
         &#128465;
         </button>
 
-        <button type="button" sl-savePage disabled>
+        <button type="button" class="icon" sl-savePage disabled style="display: none;">
         &#128190;
         </button>
 
@@ -191,8 +202,40 @@ class PageEditor {
         top: 0;
         left: 0;
         width: 100%;
-        background: #000;
         z-index: 10000;
+        padding: 5px;
+        }
+        
+        [sl-editing] {
+            margin-top: 60px;
+        }
+        
+        [sl-editing] .sl-nav {
+            background: #000;
+        }
+        
+        .sl-nav button {
+          border: none;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          padding: 16px;
+          border-radius: 50px;
+          opacity: 0.9;
+        }
+        
+        .sl-nav button:not([disabled]):hover {
+            opacity: 1;
+            background: #666 !important;
+        }
+        
+        .sl-nav button[disabled] {
+            opacity: 0.5;
+        }
+        
+        .sl-nav button.icon {
+            background: transparent; color: #fff;
         }
 
         .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before {
@@ -210,13 +253,30 @@ class PageEditor {
 
         *[sl-block]:focus,
         *[sl-block]:hover,
-        body[sl-editing] div[sl-type="upload"]:hover {
+        [sl-editing] div[sl-type="upload"]:hover {
             border: 2px solid #1976D2;
         }
         
-        body[sl-editing] div[sl-type="upload"] {
+        [sl-editing] div[sl-type="upload"] {
             min-height: 100px;
             min-width: 100px;
+        }
+        
+        [sl-editing] [sl-cancelpage],
+        [sl-editing] [sl-savePage]
+        {
+            display: inline-block !important;
+        }
+        
+        .sl-nav button.icon[sl-editpage] {
+            background-color: #000;
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+        }
+        
+        [sl-editing] [sl-editpage] {
+            display: none !important;
         }
 
         *[sl-block] .sl-menu {
@@ -278,10 +338,14 @@ class PageEditor {
 
         this.addPageButton = document.querySelector('[sl-addpage]');
         this.editPageButton = document.querySelector('[sl-editpage]');
+        this.cancelButton = document.querySelector('[sl-cancelpage]');
         this.renamePageButton = document.querySelector('[sl-renamepage]');
         this.deletePageButton = document.querySelector('[sl-deletepage]');
         this.savePageButton = document.querySelector('[sl-savepage]');
         this.publishPageButton = document.querySelector('[sl-publish]');
+        
+        this.editors = [];
+        this.dirty = false;
 
         // button handlers
         this.addPageButton.addEventListener('click',
@@ -312,12 +376,48 @@ class PageEditor {
                     }
                 }
             })
+        
+        this.cancelButton.addEventListener('click', () => {
+            document.querySelector('body').removeAttribute('sl-editing');
+            this.editPageButton.disabled = false;
+            
+            // destroy tinymces
+            this.editors.forEach((editor) => {
+                editor.remove();
+            });
+            this.editors = [];
+            
+            // remove elements
+            document.querySelectorAll('.sl-choose, .sl-menu').forEach((node) => {
+                node.remove();
+            });
+            
+            // unregister event listeners
+            document.body.removeEventListener('click', (e) => this.clickHandler(e));
+            window.removeEventListener('beforeunload', this.checkChanges);
+            this.cancelButton.disabled = true;
+            
+            this.editData = {};
+        });
+        this.cancelButton.disabled = true;
 
         this.editPageButton.addEventListener('click',
             async () => {
                 document.querySelector('body').setAttribute('sl-editing', true);
                 
                 this.editPageButton.disabled = true;
+
+                let textConfig = {
+                    menubar: false,
+                    inline: true,
+                    toolbar: 'undo redo',
+                    valid_elements: '',
+                    valid_styles: {},
+                    license_key: 'gpl',
+                    setup: (editor) => {
+                        editor.on("change", e => { this.editorChangeHandler(e, editor); });
+                    },
+                };
 
                 let headingConfig = {
                     menubar: false,
@@ -333,13 +433,10 @@ class PageEditor {
                     },
                     license_key: 'gpl',
                     setup: (editor) => {
-                        editor.on("change", (e) => {
-                            let key = e.target.bodyElement.getAttribute('sl-name');
-                            this.setValue(key, editor.getContent());
-                        });
+                        editor.on("change", e => { this.editorChangeHandler(e, editor); });
                     },
                 };
-
+                
                 const copyConfig = {
                     menubar: false,
                     inline: true,
@@ -351,7 +448,7 @@ class PageEditor {
                     ],
                     toolbar: [
                         'undo redo | bold italic underline | fontfamily fontsize',
-                        'forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent | image'
+                        'forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent | hr link image forecolor backcolor'
                     ],
                     valid_elements: 'p[style],strong,em,span[style],a[href],ul,ol,li,img[longdesc|usemap|src|border|alt=|title|hspace|vspace|width|height|align]',
                     valid_styles: {
@@ -362,42 +459,43 @@ class PageEditor {
                     },
                     license_key: 'gpl',
                     setup: (editor) => {
-                        editor.on("change", (e) => {
-                            let key = e.target.bodyElement.getAttribute('sl-name');
-                            this.setValue(key, editor.getContent());
-                        });
+                        editor.on("change", e => { this.editorChangeHandler(e, editor); });
                     }
                 };
 
-                document.querySelectorAll('h1[sl-name], [sl-type="text"]').forEach((node) => {
-                    headingConfig.target = node;
-                    headingConfig.placeholder = node.getAttribute('sl-name');
-                    tinymce.init({
-                        ...headingConfig
+                document.querySelectorAll('[sl-type="text"]').forEach(async (node) => {
+                    textConfig.target = node;
+                    textConfig.placeholder = this.getFieldName(node);
+                    let editor = await tinymce.init({
+                        ...textConfig
                     });
+                    this.editors.push(editor[0]);
                 });
 
-                document.querySelectorAll('div[sl-type="editor"]').forEach((node) => {
+                document.querySelectorAll('[sl-type="heading"]').forEach(async (node) => {
+                    headingConfig.target = node;
+                    headingConfig.placeholder = this.getFieldName(node);
+                    let editor = await tinymce.init({
+                        ...headingConfig
+                    });
+                    this.editors.push(editor[0]);
+                });
+
+                document.querySelectorAll('[sl-type="editor"]').forEach(async (node) => {
                     copyConfig.target = node;
-                    copyConfig.placeholder = node.getAttribute('sl-name');
-                    tinymce.init({
+                    copyConfig.placeholder = this.getFieldName(node);
+                    let editor = await tinymce.init({
                         ...copyConfig
                     });
+                    this.editors.push(editor[0]);
                 });
 
                 // image uploads
                 this.uploadsEl = document.querySelector('[sl-uploads]');
                 
-                // close when clicking outside
-                document.body.addEventListener("click", (event) => {
-                    if (!this.uploadsEl.contains(event.target)) { // Check if clicked element is not a descendant of the overlay
-                        this.uploadsEl.style.display = "none"; // Hide the overlay
-                    }
-                });
-
                 this.uploadCallback = null;
 
-                document.querySelectorAll('div[sl-type="upload"]').forEach((node) => {
+                document.querySelectorAll('[sl-type="upload"]').forEach((node) => {
                     node.style.position = 'relative';
                     
                     const buttonContainer = document.createElement("div");
@@ -428,7 +526,7 @@ class PageEditor {
         
                         // change meta value
                         let name = node.getAttribute('sl-name');
-                        this.setValue(name, '');
+                        this.setValue(name, '', this.meta);
                     })
 
                     buttonContainer.appendChild(clearButton);
@@ -453,69 +551,11 @@ class PageEditor {
                     }
                 });
                 
-                document.body.addEventListener('click', (e) => {
-                    // todo add handlers for duplicate and sort here
-                    if (e.target.hasAttribute('sl-delete-element')) {
-                        let confirmed = confirm('Delete this element?');
-
-                        if (!confirmed) {
-                            return;
-                        }
-                        
-                        let node = e.target.closest('[sl-name]');
-                        
-                        this.updateProperty(node, (obj, arrayName, key) => {
-                            let arr = obj[arrayName];
-                            arr.splice(key, 1);
-                        });
-                        
-                        node.remove();
-                        
-                        this.setDirty(true);
-
-                    } else if (e.target.hasAttribute('sl-duplicate-element')) {
-                        let node = e.target.closest('[sl-name]');
-                        
-                        this.updateProperty(node, (obj, arrayName, key) => {
-                            let arr = obj[arrayName];
-                            const firstPart = arr.slice(0, key + 1);
-                            const duplicatedElement = arr[key];
-                            const secondPart = arr.slice(key + 1);
-
-                            obj[arrayName] = firstPart.concat(duplicatedElement, secondPart);
-                        });
-
-                        node.parentNode.insertBefore(node.cloneNode(true), node.nextSibling);
-                        
-                        this.setDirty(true);
-                    
-                    } else if (e.target.hasAttribute('sl-move-down')) {
-                        let node = e.target.closest('[sl-name]');
-                        
-                        this.updateProperty(node, (obj, arrayName, key) => {
-                            let arr = obj[arrayName];
-                            const item = arr.splice(key, 1)[0];
-                            arr.splice(key + 1, 0, item);
-                        });
-
-                        node.parentNode.insertBefore(node, node.nextElementSibling.nextSibling);
-                        
-                        this.setDirty(true);
-                    } else if (e.target.hasAttribute('sl-move-up')) {
-                        let node = e.target.closest('[sl-name]');
-                        
-                        this.updateProperty(node, (obj, arrayName, key) => {
-                            let arr = obj[arrayName];
-                            const item = arr.splice(key, 1)[0];
-                            arr.splice(key - 1, 0, item);
-                        });
-                        
-                        node.parentNode.insertBefore(node, node.previousElementSibling);
-                        
-                        this.setDirty(true);
-                    }
-                });
-
+                document.body.addEventListener('click', (e) => this.clickHandler(e));
+                
+                window.addEventListener('beforeunload', (e) => this.checkChanges(e));
+                
+                this.cancelButton.disabled = false;
             })
 
         this.renamePageButton.addEventListener('click',
@@ -616,34 +656,52 @@ class PageEditor {
                     }
                 }
             })
-
+            
         this.savePageButton.addEventListener('click',
             async () => {
-                let formData = new FormData();
-
-                for (const [name, value] of Object.entries(this.pageData.page)) {
-                    formData.append(name, value);
+                console.log(this.editData);
+                
+                let result;
+                
+                for (const [section, value] of Object.entries(this.editData)) {
+                    if (Array.isArray(value)) {
+                        value.forEach(async (item, id) => {
+                            result = await this.saveData(section, id, item);    
+                        });
+                    } else {
+                        result = await this.saveData(section, 1, value);
+                    }
+                }
+                
+                if (this.meta) {
+                    let formData = new FormData();
+    
+                    for (const [name, value] of Object.entries(this.pageData.page)) {
+                        formData.append(name, value);
+                    }
+    
+                    formData.append('meta', JSON.stringify(this.meta));
+    
+                    let url = '/_lib/api/v2/?cmd=save&section=cms%20pages&id=' + this.pageData.page.id;
+                    let response = await fetch(url, {
+                        method: 'post',
+                        body: formData
+                    });
+    
+                    let data = await response.json();
+    
+                    if (data.error) {
+                        alert(data.error)
+                        return;
+                    }
                 }
 
-                formData.append('meta', JSON.stringify(this.meta));
-
-                let url = '/_lib/api/v2/?cmd=save&section=cms%20pages&id=' + this.pageData.page.id;
-                let response = await fetch(url, {
-                    method: 'post',
-                    body: formData
-                });
-
-                let data = await response.json();
-
-                if (data.error) {
-                    alert(data.error)
-                    return;
-                }
-
-                this.setDirty(false);
+                if (result !== false)
+                    this.setDirty(false);
             })
 
         this.meta = this.pageData.content;
+        this.editData = {};
 
         if (!this.pageData.catcher) {
             this.addPageButton.style.display = "none";
@@ -651,8 +709,136 @@ class PageEditor {
             this.deletePageButton.style.display = "none";
         }
 
-        if (parseInt(this.pageData.page.published)) {
+        if (!this.pageData.page) {
+            this.publishPageButton.style.display = "none";
+        } else if (parseInt(this.pageData.page.published)) {
             this.publishPageButton.innerText = 'Unpublish';
+        }
+    }
+    
+    async saveData(section, id, data) {
+        let formData = new FormData();
+
+        let params = new URLSearchParams();
+        params.append('cmd', 'save');
+        params.append('section', section);
+        params.append('id', id);
+
+        for (const [name, value] of Object.entries(data)) {
+            formData.append(name, value);
+            params.append('fields[]', name);
+        }
+
+        let url = '/_lib/api/v2/?' + params.toString();
+
+        let response = await fetch(url, {
+            method: 'post',
+            body: formData
+        });
+
+        let result = await response.json();
+
+        if (result.error) {
+            alert(result.error)
+            return false;
+        }
+    }
+    
+    getFieldName(node) {
+        let name = node.getAttribute('sl-name');
+        
+        if (!name) {
+            name = node.getAttribute('sl-id');
+        }
+        
+        return name;
+    }
+    
+    editorChangeHandler(e, editor) {
+        let node = e.target.bodyElement;
+        let name = node.getAttribute('sl-name');
+        let obj = this.meta;
+        
+        if (!name) {
+            name = node.getAttribute('sl-id');
+            obj = this.editData;
+        }
+        
+        this.setValue(name, editor.getContent(), obj);
+    }
+    
+    checkChanges(e) {
+        if (this.dirty) {
+            e.preventDefault();
+            return "Are you sure you want to leave? You have unsaved changes.";
+        }
+    }
+    
+    clickHandler(e) {
+        // close when clicking outside
+        if (!this.uploadsEl.contains(e.target)) { // Check if clicked element is not a descendant of the overlay
+            this.uploadsEl.style.display = "none"; // Hide the overlay
+        }
+        
+        // todo add handlers for duplicate and sort here
+        if (e.target.hasAttribute('sl-delete-element')) {
+            let confirmed = confirm('Delete this element?');
+
+            if (!confirmed) {
+                return;
+            }
+            
+            let node = e.target.closest('[sl-name]');
+            
+            this.updateProperty(node, (obj, arrayName, key) => {
+                let arr = obj[arrayName];
+                arr.splice(key, 1);
+            });
+            
+            node.remove();
+            
+            this.setDirty(true);
+
+        } else if (e.target.hasAttribute('sl-duplicate-element')) {
+            let node = e.target.closest('[sl-name]');
+            
+            this.updateProperty(node, (obj, arrayName, key) => {
+                let arr = obj[arrayName];
+                const firstPart = arr.slice(0, key + 1);
+                const duplicatedElement = arr[key];
+                const secondPart = arr.slice(key + 1);
+
+                obj[arrayName] = firstPart.concat(duplicatedElement, secondPart);
+            });
+
+            node.parentNode.insertBefore(node.cloneNode(true), node.nextSibling);
+            
+            this.setDirty(true);
+        
+        } else if (e.target.hasAttribute('sl-move-down')) {
+            let node = e.target.closest('[sl-name]');
+            
+            this.updateProperty(node, (obj, arrayName, key) => {
+                let arr = obj[arrayName];
+                const item = arr.splice(key, 1)[0];
+                arr.splice(key + 1, 0, item);
+            });
+
+            node.parentNode.insertBefore(node, node.nextElementSibling.nextSibling);
+            
+            this.setDirty(true);
+        } else if (e.target.hasAttribute('sl-move-up')) {
+            let node = e.target.closest('[sl-name]');
+            
+            this.updateProperty(node, (obj, arrayName, key) => {
+                let arr = obj[arrayName];
+                const item = arr.splice(key, 1)[0];
+                arr.splice(key - 1, 0, item);
+            });
+            
+            node.parentNode.insertBefore(node, node.previousElementSibling);
+            
+            this.setDirty(true);
         }
     }
     
@@ -778,16 +964,15 @@ class PageEditor {
 
             // change meta value
             let name = this.uploadCallback.getAttribute('sl-name');
-            this.setValue(name, id);
+            this.setValue(name, id, this.meta);
         }
 
         this.uploadsEl.style.display = 'none';
     }
 
-    setValue(keyStr, value) {
+    setValue(keyStr, value, obj) {
         // find nested object
         let parts = keyStr.split('.');
-        let obj = this.meta;
 
         parts.forEach((part, index) => {
             const regex = /^(.+?)\[(\d+)\]$/;
@@ -826,6 +1011,7 @@ class PageEditor {
 
     setDirty(dirty) {
         this.savePageButton.disabled = !dirty;
+        this.dirty = dirty;
     }
 
     strToPageName(pageName) {
@@ -851,7 +1037,3 @@ class PageEditor {
         return pageName;
     }
 }
-
-window.addEventListener('DOMContentLoaded', function() {
-    new PageEditor();
-});

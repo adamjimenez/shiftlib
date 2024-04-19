@@ -1468,6 +1468,10 @@ class cms
         }
         
         if ($do_update) {
+            if (!$this->query) {
+                throw new Exception('missing update query');
+            }
+            
             $whereStr = $fields['id'] ? "WHERE id = '" . (int)$this->id . "'" : '';
 
             // remember old state
@@ -1598,15 +1602,25 @@ class cms
     	];
     }
     
-    function load_page_editor($data) {
+    function load_page_editor($data = null) {
     	global $auth;
     
     	if (!$auth->user['admin']) {
     		return false;
     	}
+    	
+    	if ($data) {
     	?>
     	<script type="application/json" id="pageData">
     		<?=json_encode($data); ?>
+    	</script>
+    	<?php
+    	}
+    	?>
+    	<script>
+        window.addEventListener('DOMContentLoaded', function() {
+            new PageEditor();
+        });
     	</script>
     	<?php
     	load_js('tinymce');
