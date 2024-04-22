@@ -382,22 +382,24 @@ class PageEditor {
             this.editPageButton.disabled = false;
             
             // destroy tinymces
-            this.editors.forEach((editor) => {
+            this.editors.forEach(editor => {
                 editor.remove();
             });
             this.editors = [];
             
             // remove elements
-            document.querySelectorAll('.sl-choose, .sl-menu').forEach((node) => {
+            document.querySelectorAll('.sl-choose, .sl-menu').forEach(node => {
                 node.remove();
             });
             
             // unregister event listeners
-            document.body.removeEventListener('click', (e) => this.clickHandler(e));
+            document.body.removeEventListener('click', e => this.clickHandler(e));
             window.removeEventListener('beforeunload', this.checkChanges);
             this.cancelButton.disabled = true;
             
             this.editData = {};
+            
+            this.loadSavePoint();
         });
         this.cancelButton.disabled = true;
 
@@ -454,16 +456,18 @@ class PageEditor {
                     valid_styles: {
                         '*': 'font-size,font-family,color,text-decoration,text-align'
                     },
-                    file_picker_callback: (cb) => {
+                    file_picker_callback: cb => {
                         this.chooseImage(cb);
                     },
                     license_key: 'gpl',
                     setup: (editor) => {
                         editor.on("change", e => { this.editorChangeHandler(e, editor); });
-                    }
+                    },
+                    relative_urls: false,
+                    remove_script_host: true
                 };
 
-                document.querySelectorAll('[sl-type="text"]').forEach(async (node) => {
+                document.querySelectorAll('[sl-type="text"]').forEach(async node => {
                     textConfig.target = node;
                     textConfig.placeholder = this.getFieldName(node);
                     let editor = await tinymce.init({
@@ -472,7 +476,7 @@ class PageEditor {
                     this.editors.push(editor[0]);
                 });
 
-                document.querySelectorAll('[sl-type="heading"]').forEach(async (node) => {
+                document.querySelectorAll('[sl-type="heading"]').forEach(async node => {
                     headingConfig.target = node;
                     headingConfig.placeholder = this.getFieldName(node);
                     let editor = await tinymce.init({
@@ -481,7 +485,7 @@ class PageEditor {
                     this.editors.push(editor[0]);
                 });
 
-                document.querySelectorAll('[sl-type="editor"]').forEach(async (node) => {
+                document.querySelectorAll('[sl-type="editor"]').forEach(async node => {
                     copyConfig.target = node;
                     copyConfig.placeholder = this.getFieldName(node);
                     let editor = await tinymce.init({
@@ -495,7 +499,7 @@ class PageEditor {
                 
                 this.uploadCallback = null;
 
-                document.querySelectorAll('[sl-type="upload"]').forEach((node) => {
+                document.querySelectorAll('[sl-type="upload"]').forEach(node => {
                     node.style.position = 'relative';
                     
                     const buttonContainer = document.createElement("div");
@@ -505,7 +509,7 @@ class PageEditor {
                     const chooseButton = document.createElement("button");
                     chooseButton.innerText = 'Choose';
 
-                    chooseButton.addEventListener('click', (event) => {
+                    chooseButton.addEventListener('click', event => {
                         this.chooseImage(node);
                         event.stopPropagation();
                     })
@@ -515,7 +519,7 @@ class PageEditor {
                     const clearButton = document.createElement("button");
                     clearButton.innerHTML = '&#10005;';
 
-                    clearButton.addEventListener('click', (event) => {
+                    clearButton.addEventListener('click', event => {
                         let imgEl = node.querySelector('img');
                         if (!imgEl) {
                             return;
@@ -533,7 +537,7 @@ class PageEditor {
                 });
 
                 // blocks
-                document.querySelectorAll('[sl-name]').forEach((node) => {
+                document.querySelectorAll('[sl-name]').forEach(node => {
                     let name = node.getAttribute('sl-name');
                     if (name.endsWith(']')) {
                         node.setAttribute('sl-block', true);
@@ -551,11 +555,13 @@ class PageEditor {
                     }
                 });
                 
-                document.body.addEventListener('click', (e) => this.clickHandler(e));
+                document.body.addEventListener('click', e => this.clickHandler(e));
                 
-                window.addEventListener('beforeunload', (e) => this.checkChanges(e));
+                window.addEventListener('beforeunload', e => this.checkChanges(e));
                 
                 this.cancelButton.disabled = false;
+                
+                this.setSavePoint();
             })
 
         this.renamePageButton.addEventListener('click',
@@ -698,10 +704,13 @@ class PageEditor {
 
                 if (result !== false)
                     this.setDirty(false);
+                    
+                this.setSavePoint();
             })
 
         this.meta = this.pageData.content;
         this.editData = {};
+        this.savePointData = {};
 
         if (!this.pageData.catcher) {
             this.addPageButton.style.display = "none";
@@ -714,6 +723,36 @@ class PageEditor {
         } else if (parseInt(this.pageData.page.published)) {
             this.publishPageButton.innerText = 'Unpublish';
         }
+    }
+    
+    setSavePoint() {
+        document.querySelectorAll('[sl-type="heading"],[sl-type="editor"],[sl-type="text"]').forEach(node => {
+            this.savePointData[this.getFieldName(node)] = node.innerHTML;
+        });
+        
+        document.querySelectorAll('[sl-type="upload"]').forEach(node => {
+            let imageEl = this.uploadCallback.querySelector('img');
+            
+            if (imageEl) {
+                this.savePointData[this.getFieldName(node)] = imageEl.src;
+            }
+        });
+    }
+    
+    loadSavePoint() {
+        document.querySelectorAll('[sl-type="heading"],[sl-type="editor"],[sl-type="text"]').forEach(node => {
+                node.innerHTML = this.savePointData[this.getFieldName(node)];
+        });
+        
+        document.querySelectorAll('[sl-type="upload"]').forEach(node => {
+            let imageEl = this.uploadCallback.querySelector('img');
+            
+            if (imageEl) {
+                 imageEl.src = this.savePointData[this.getFieldName(node)];
+            }
+        });
+        
+        this.dirty = false;
     }
     
     async saveData(section, id, data) {
