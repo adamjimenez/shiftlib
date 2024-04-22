@@ -1598,7 +1598,7 @@ class cms
     		'pages' => $pages,
     		'request' => $request,
     		'base' => $base,
-    		'catcher' => strstr($template, '.catcher.php')
+    		'catcher' => str_contains($template, '.catcher.php')
     	];
     }
     

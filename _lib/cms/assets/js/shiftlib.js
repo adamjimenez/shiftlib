@@ -151,19 +151,19 @@ window.addEventListener('DOMContentLoaded', function() {
 // inline cms
 class PageEditor {
     constructor() {
-        let editable = document.querySelectorAll('[sl-id], [sl-name]');
-        
-        if (!editable.length) {
-            return;
-        }
-        
         let pageDataEl = document.getElementById('pageData');
         this.pageData = pageDataEl ? JSON.parse(pageDataEl.textContent) : {};
+        
+        let editable = document.querySelectorAll('[sl-id], [sl-name]');
+        
+        if (!editable.length && !this.pageData?.catcher) {
+            return;
+        }
 
         const nav = document.createElement("div");
         nav.classList.add('sl-nav');
         nav.innerHTML = `
-        <button type="button" class="icon" sl-addpage>
+        <button type="button" class="icon" sl-addpage style="display: none;">
         &plus;
         </button>
 
@@ -175,11 +175,11 @@ class PageEditor {
         <div style="transform: rotate(180deg);">&#10140;</div>
         </button>
 
-        <button type="button" sl-renamePage>
-        Rename
+        <button type="button" class="icon" sl-renamePage style="display: none;">
+        &#9998;
         </button>
 
-        <button type="button" sl-deletePage>
+        <button type="button" class="icon" sl-deletePage style="display: none;">
         &#128465;
         </button>
 
@@ -187,7 +187,7 @@ class PageEditor {
         &#128190;
         </button>
 
-        <button type="button" sl-publish>
+        <button type="button" class="icon" sl-publish style="display: none;">
         Publish
         </button>
 
@@ -380,6 +380,11 @@ class PageEditor {
         this.cancelButton.addEventListener('click', () => {
             document.querySelector('body').removeAttribute('sl-editing');
             this.editPageButton.disabled = false;
+
+            this.addPageButton.style.display = "none";
+            this.renamePageButton.style.display = "none";
+            this.deletePageButton.style.display = "none";
+            this.publishPageButton.style.display = "none";
             
             // destroy tinymces
             this.editors.forEach(editor => {
@@ -408,6 +413,16 @@ class PageEditor {
                 document.querySelector('body').setAttribute('sl-editing', true);
                 
                 this.editPageButton.disabled = true;
+
+                if (this.pageData.catcher) {
+                    this.addPageButton.style.display = "";
+                    
+                    if (this.pageData?.page?.name) {
+                        this.renamePageButton.style.display = "";
+                        this.deletePageButton.style.display = "";
+                        this.publishPageButton.style.display = "";
+                    }
+                }
 
                 let textConfig = {
                     menubar: false,
@@ -711,12 +726,6 @@ class PageEditor {
         this.meta = this.pageData.content;
         this.editData = {};
         this.savePointData = {};
-
-        if (!this.pageData.catcher) {
-            this.addPageButton.style.display = "none";
-            this.renamePageButton.style.display = "none";
-            this.deletePageButton.style.display = "none";
-        }
 
         if (!this.pageData.page) {
             this.publishPageButton.style.display = "none";
