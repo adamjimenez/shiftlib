@@ -16,3 +16,5 @@ Look in awe at your newly created admin system.
 Place your website templates in the `_tpl` folder.
 
 Check [the wiki](https://github.com/adamjimenez/shiftlib/wiki) for information about the ShiftLib template structure and functions.
+
+Join the [discord](https://discord.com/invite/S62zf24)
