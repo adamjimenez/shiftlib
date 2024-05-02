@@ -368,7 +368,7 @@ try {
             $subdir = $_GET['path'];
 
             if ($subdir && !starts_with($subdir, '../')) {
-                $path .= $subdir;
+                $path .= $subdir . '/';
             }
 
             if ($_POST['createFolder']) {
@@ -377,9 +377,11 @@ try {
                 if ($result === false) {
                     throw new Exception('error creating folder ' . $_POST['createFolder']);
                 }
-            } else if ($_FILES['file']) {
-                $tmp = $_FILES['file']['tmp_name'];
-                $file_name = $_FILES['file']['name'];
+            } else if (count($_FILES)) {
+                $file = current($_FILES);
+                
+                $tmp = $file['tmp_name'];
+                $file_name = $file['name'];
                 $dest = $path . $file_name;
 
                 if ($tmp) {
@@ -393,7 +395,9 @@ try {
                     }
                 }
                 
-                $response['file'] = $subdir . $file_name;
+                $response['file'] = [
+                    'url' => 'https://' . $_SERVER['HTTP_HOST'] . '/' . $path . $file_name
+                ];
             } else if ($_POST['delete']) {
                 foreach ((array)$_POST['delete'] as $v) {
                     if (!starts_with($v, '../')) {
@@ -427,7 +431,7 @@ try {
                         $item['leaf'] = !is_dir($pathname);
 
                         if ($item['leaf']) {
-                            $item['thumb'] = image($item['id'], 50, 39, false);
+                            $item['thumb'] = image($item['id'], 80, 60, false);
                         }
 
                         $items[] = $item;
