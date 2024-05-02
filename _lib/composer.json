@@ -1,0 +1,5 @@
+{
+    "require": {
+        "bumpcore/editor.php": "^1.0"
+    }
+}

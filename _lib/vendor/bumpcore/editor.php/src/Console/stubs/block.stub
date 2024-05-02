@@ -1,0 +1,32 @@
+<?php
+
+namespace {{ namespace }};
+
+use BumpCore\EditorPhp\Block\Block;
+
+class {{ class }} extends Block
+{
+    /**
+     * Rules to validate data of the block.
+     *
+     * @return array
+     */
+    public function rules(): array
+    {
+        return [
+			// ...
+		];
+    }
+
+    /**
+     * Renderer for the block.
+     *
+     * @return string
+     */
+    public function render(): string
+    {
+        return view('block')
+            ->with(['data' => $this->data])
+            ->render();
+    }
+}

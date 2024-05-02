@@ -8,6 +8,7 @@ chdir($root_folder);
 if (file_exists('vendor/autoload.php')) {
     include('vendor/autoload.php');
 }
+require(__DIR__ . '/vendor/autoload.php');
 require(__DIR__ . '/autoload.php');
 require_once(__DIR__ . '/core/common.php');
 require($root_folder . '/_inc/config.php');

@@ -42,12 +42,12 @@ window.addEventListener('DOMContentLoaded', function() {
         });
 
         let data = await response.json();
-
-        if (!data.success) {
+        
+        if (!data.success && data !== 1) {
             // display errors
             let errors = data.errors ? data.errors: data;
 
-            errors.forEach(function(item) {
+            errors?.forEach(function(item) {
                 let pos = item.indexOf(' ');
                 let fieldName = item;
 
@@ -79,6 +79,12 @@ window.addEventListener('DOMContentLoaded', function() {
                     parent.appendChild(div);
                 }
             })
+            
+            // scroll to first error
+            const firstError = document.querySelector('.sl-error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
 
         } else {
             const recaptchaSiteKey = document.querySelector('#recaptcha')?.dataset?.key;
@@ -154,7 +160,7 @@ class PageEditor {
         let pageDataEl = document.getElementById('pageData');
         this.pageData = pageDataEl ? JSON.parse(pageDataEl.textContent) : {};
         
-        let editable = document.querySelectorAll('[sl-id], [sl-name]');
+        let editable = document.querySelectorAll('[sl-id], [sl-name], [sl-block]');
         
         if (!editable.length && !this.pageData?.catcher) {
             return;
@@ -310,10 +316,16 @@ class PageEditor {
         width: calc(100% - 40px); /* Account for left and right margins */
         height: calc(100vh - 40px); /* Account for top and bottom margins and viewport height (vh) */
         z-index: 1000;
+        overflow: auto;
         }
 
         *[sl-uploads] img {
         margin: 10px;
+        }
+
+        *[sl-uploads] .folder {
+        margin: 10px;
+        cursor: pointer;
         }
         
         *[sl-block]:first-child button[sl-move-up] {
@@ -333,6 +345,12 @@ class PageEditor {
         *[sl-block]:last-child button[sl-move-down] {
           display: none;
         }
+        
+        /* carousel fix */
+        .cdxcarousel-item {
+            min-height: 235px;
+            height: auto;
+        }
         `;
         document.head.appendChild(style);
 
@@ -345,6 +363,7 @@ class PageEditor {
         this.publishPageButton = document.querySelector('[sl-publish]');
         
         this.editors = [];
+        this.blockEditors = [];
         this.dirty = false;
 
         // button handlers
@@ -392,6 +411,13 @@ class PageEditor {
             });
             this.editors = [];
             
+            // destroy editorjs
+            this.blockEditors.forEach(editor => {
+                console.log(editor)
+                editor.destroy();
+            });
+            this.blockEditors = [];
+            
             // remove elements
             document.querySelectorAll('.sl-choose, .sl-menu').forEach(node => {
                 node.remove();
@@ -405,6 +431,9 @@ class PageEditor {
             this.editData = {};
             
             this.loadSavePoint();
+            
+            // needed for editorjs
+            location.reload();
         });
         this.cancelButton.disabled = true;
 
@@ -507,6 +536,55 @@ class PageEditor {
                         ...copyConfig
                     });
                     this.editors.push(editor[0]);
+                });
+
+                document.querySelectorAll('[sl-type="block"]').forEach(async node => {
+            		let fieldName = this.getFieldName(node);
+            		
+            		node.innerHTML = '';
+            		
+            		let tools = {
+        				header: window.Header,
+        				list: window.List,
+        				image: {
+                            class: window.ImageTool,
+                            config: {
+                                endpoints: {
+                                    byFile: '/_lib/api/v2/?cmd=uploads',
+                                }
+                            }
+                        },
+        				carousel: {
+                            class: window.Carousel,
+                            config: {
+                                endpoints: {
+                                    byFile: '/_lib/api/v2/?cmd=uploads',
+                                }
+                            }
+                        },
+        			};
+        			
+        			this.pageData.block_tools.forEach(item => {
+        			    tools[item.name.toLowerCase()] = {
+        			        class: window[item.name],
+        			        config: item.config
+        			    }
+        			});
+            		
+            		let blockEditor = new EditorJS({
+            			holder: node,
+            			tools: tools,
+            			data: this.meta[fieldName] ? this.meta[fieldName] : {},
+                        onChange: (editor) => {
+                    		editor.saver.save().then(async (outputData) => {
+                                this.setValue(fieldName, outputData, this.meta);
+                    		}).catch((error) => {
+                    			console.log('Saving failed: ', error)
+                    		});
+                        }
+            		});
+            		
+            		this.blockEditors.push(blockEditor);
                 });
 
                 // image uploads
@@ -703,7 +781,7 @@ class PageEditor {
     
                     formData.append('meta', JSON.stringify(this.meta));
     
-                    let url = '/_lib/api/v2/?cmd=save&section=cms%20pages&id=' + this.pageData.page.id;
+                    let url = '/_lib/api/v2/?cmd=save&section=cms%20pages&id=' + this.pageData.page?.id;
                     let response = await fetch(url, {
                         method: 'post',
                         body: formData
@@ -723,7 +801,7 @@ class PageEditor {
                 this.setSavePoint();
             })
 
-        this.meta = this.pageData.content;
+        this.meta = this.pageData.content ? this.pageData.content : {};
         this.editData = {};
         this.savePointData = {};
 
@@ -740,7 +818,7 @@ class PageEditor {
         });
         
         document.querySelectorAll('[sl-type="upload"]').forEach(node => {
-            let imageEl = this.uploadCallback.querySelector('img');
+            let imageEl = node.querySelector('img');
             
             if (imageEl) {
                 this.savePointData[this.getFieldName(node)] = imageEl.src;
@@ -754,7 +832,7 @@ class PageEditor {
         });
         
         document.querySelectorAll('[sl-type="upload"]').forEach(node => {
-            let imageEl = this.uploadCallback.querySelector('img');
+            let imageEl = node.querySelector('img');
             
             if (imageEl) {
                  imageEl.src = this.savePointData[this.getFieldName(node)];
@@ -945,11 +1023,13 @@ class PageEditor {
 		}
 		*/
 
-    async fetchImages() {
+    async fetchImages(path) {
         // get data
-        let url = '/_lib/api/v2/?cmd=uploads';
+        let url = '/_lib/api/v2/?cmd=uploads&path=' + (path ? path : '');
         let response = await fetch(url);
 
+        this.uploadsEl.innerHTML = '<h1>Loading..</h1>';
+        
         let data = await response.json();
 
         this.uploadsEl.innerHTML = '';
@@ -980,18 +1060,32 @@ class PageEditor {
         })
         
         data.items.forEach((item) => {
-            if (!item.thumb) {
+            let node;
+            
+            if (!item.leaf) {
+                node = document.createElement('div');
+                node.innerText = item.name;
+                node.classList.add("folder");
+                
+                node.addEventListener('click', () => {
+                    this.openFolder(item.id);
+                });
+            } else if (item.thumb) {
+                node = document.createElement('img');
+                node.src = item.thumb;
+                node.addEventListener('click', () => {
+                    this.selectFile(item.id);
+                });
+            } else {
                 return;
             }
 
-            let node = document.createElement('img');
-            node.src = item.thumb;
-            node.addEventListener('click', () => {
-                this.selectFile(item.id);
-            });
-
             this.uploadsEl.appendChild(node);
         });
+    }
+    
+    openFolder(path) {
+        this.fetchImages(path);
     }
     
     selectFile(id) {
@@ -1051,7 +1145,6 @@ class PageEditor {
 
                 obj = obj[part];
             }
-                
         })
 
         this.setDirty(true);
@@ -1064,23 +1157,19 @@ class PageEditor {
 
     strToPageName(pageName) {
         // Remove odd characters (except whitespace, A-Z, a-z, 0-9, ., -, /, and ())
-        pageName = pageName.toLowerCase().replace(/[^a-zA-Z0-9\s\.\-\/\(\)]/g,
-            "");
+        pageName = pageName.toLowerCase().replace(/[^a-zA-Z0-9\s\.\-\/\(\)]/g, "");
 
         // Replace ">" with "/"
-        pageName = pageName.replace(/>/g,
-            "/");
+        pageName = pageName.replace(/>/g, "/");
 
         // Trim leading and trailing whitespace
         pageName = pageName.trim();
 
         // Replace spaces with dashes
-        pageName = pageName.replace(/\s+/g,
-            "-");
+        pageName = pageName.replace(/\s+/g, "-");
 
         // Remove trailing dot (.)
-        pageName = pageName.replace(/\.$/,
-            "");
+        pageName = pageName.replace(/\.$/, "");
 
         return pageName;
     }

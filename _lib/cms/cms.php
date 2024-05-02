@@ -1,5 +1,28 @@
 <?php
 
+if (class_exists('BumpCore\EditorPhp\Block\Block')) {
+    class CustomBlockClass extends BumpCore\EditorPhp\Block\Block
+    {
+        public function rules(): array
+        {
+            return [
+                '*' => 'array',
+            ];
+        }
+    	
+        public function render(): string
+        {
+            global $cms;
+        	$data = $this->data->toArray();
+        	
+            ob_start();
+            $cms->block_renderers[$this->type]['render']($data);
+            
+            return ob_get_clean();
+        }
+    }
+}
+
 class cms
 {
     const VERSION = '4.0.16';
@@ -26,6 +49,9 @@ class cms
     public $buttons = [];
 
     public $handlers = [];
+    
+    public $block_tools = [];
+    public $block_renderers = [];
 
     public $file_upload_path = 'uploads/files/';
     
@@ -474,7 +500,7 @@ class cms
                 foreach ($fields as $name => $field) {
                     $type = $field['type'];
                     
-                    if (!in_array($type, ['text', 'textarea', 'editor', 'email', 'mobile', 'select', 'postcode', 'id'])) {
+                    if (!in_array($type, ['text', 'textarea', 'editor', 'email', 'mobile', 'select', 'postcode', 'page_name', 'id'])) {
                         continue;
                     }
     
@@ -1585,7 +1611,7 @@ class cms
     			$where_str
     		LIMIT 1
     		", 1);
-    
+    		
     	$pages = sql_query("SELECT name, page_name, created FROM cms_pages
     		WHERE
     			page_name LIKE '" . escape($base) . "/%'
@@ -1593,7 +1619,10 @@ class cms
     	");
     
     	return [
-    		'page' => $page,
+    		'page' => $page ?: [
+    			'name' => basename($request),
+    			'page_name' => $request,
+    		],
     		'content' => json_decode($page['meta'], true),
     		'pages' => $pages,
     		'request' => $request,
@@ -1610,12 +1639,17 @@ class cms
     	}
     	
     	if ($data) {
+    	    $data['block_tools'] = $this->block_tools;
     	?>
     	<script type="application/json" id="pageData">
     		<?=json_encode($data); ?>
     	</script>
     	<?php
     	}
+
+        foreach($this->block_renderers as $v):
+            $v['setup']();
+        endforeach;
     	?>
     	<script>
         window.addEventListener('DOMContentLoaded', function() {
@@ -1623,6 +1657,25 @@ class cms
         });
     	</script>
     	<?php
-    	load_js('tinymce');
+    	load_js(['tinymce', 'editorjs']);
+    }
+    
+    // register custom block handler
+    function register_block_handler($opts) {
+        $name = $opts['name'];
+        
+        BumpCore\EditorPhp\Parser::register([strtolower($name) => CustomBlockClass::class]);
+        
+        $this->block_tools[] = [
+            'name' => $name,
+            'config' => $opts['config']
+        ];
+        
+        $this->block_renderers[strtolower($name)] = $opts;
+    }
+    
+    // render editorjs blocks
+    function render_blocks ($jsonString) {
+    	return $jsonString ? BumpCore\EditorPhp\EditorPhp::make(json_encode($jsonString))->render() : '';
     }
 }

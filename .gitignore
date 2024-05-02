@@ -1,10 +1,7 @@
-_lib.new/
-_tpl.old/
+/_inc/config.local.php
 /css/
 /images/
-vendor/
-.idea/
-.php_cs.cache
-latest.zip
-shiftedit-proxy.php
-_inc/config.local.php
+/vendor/
+/composer.json
+/composer.lock
+/shiftedit-proxy.php
