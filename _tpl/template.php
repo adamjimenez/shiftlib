@@ -7,13 +7,12 @@
     <meta name="Description" content="<?=$meta_description;?>" />
     <?php } ?>
     
-    <?php load_js(['bootstrap', 'fontawesome', 'shiftlib']); ?>
+    <?php load_js(['bootstrap', 'fontawesome']); ?>
 
 	<style>
     body {
       padding: 30px 0;
-      background-color: #333333;
-      color: #ffffff;
+      background-color: #315668;
     }
 	</style>
 </head>

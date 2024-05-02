@@ -1,24 +1,18 @@
 <?php
-/*
-cancel edit
-*/
-
 $page_data = $cms->get_page();
 
 // set default content
 if ($auth->user['admin'] && !count((array)$page_data['content']['slides'])) {
-	$page_data['content']['slides'] = [
-		[
+	$page_data['content'] = [
+		'heading' => 'test page',
+		'slides' => [[
 			'name' => 'Test',
-			'image' => 'beyonce.jpg',
-		], [
-			'name' => 'It\'s a trap',
-			'image' => 'ackbar.jpg',
-		],
+			'image' => 'test.jpg',
+		]],
 	];
 }
 
-$content = $page_data['content'];
+$meta = $page_data['content'];
 ?>
 
 <div class="container">
@@ -35,30 +29,30 @@ $content = $page_data['content'];
 			<?php if ($page_data['page']): ?>
 			<div>
 				<div sl-name="logo" sl-type="upload">
-					<?=image($content['logo']); ?>
+					<?=image($meta['logo']); ?>
 				</div>
 
 				<h1>
-					<div sl-name="heading" sl-type="text">
-						<?=$content['heading']; ?>
+					<div sl-name="heading" sl-type="heading">
+						<?=$meta['heading']; ?>
 					</div>
 				</h1>
 
 				<div sl-name="copy" sl-type="editor">
-					<?=$content['copy']; ?>
+					<?=$meta['copy']; ?>
 				</div>
 
 				<div class="glide">
 					<div class="glide__track" data-glide-el="track">
 						<ul class="glide__slides">
-							<?php foreach ($content['slides'] as $k => $slide): ?>
+							<?php foreach ($meta['slides'] as $k => $slide): ?>
 							<li class="glide__slide" sl-name="slides[<?=$k; ?>]">
 								<div>
 									<div sl-name="slides[<?=$k;?>].image" sl-type="upload">
 										<img src="/uploads/<?=$slide['image'];?>">
 									</div>
 									<div class="slider__info">
-				                        <h5 sl-name="slides[<?=$k; ?>].name" sl-type="text"><?=$slide['name']; ?></h5>
+				                        <h5 sl-name="slides[<?=$k; ?>].name" sl-type="heading"><?=$slide['name']; ?></h5>
 				                    </div>
 								</div>
 							</li>
@@ -90,4 +84,7 @@ $content = $page_data['content'];
 	new Glide('.glide').mount()
 </script>
 
-<?php $cms->load_page_editor($page_data); ?>
+<?php 
+load_js('shiftlib');
+$cms->load_page_editor($page_data); 
+?>

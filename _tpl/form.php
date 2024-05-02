@@ -33,3 +33,7 @@ if (count($_POST)) {
         Thanks {{ name }}, we will be in touch..
     </p>
 </div>
+
+<?php 
+load_js('shiftlib');
+?>
