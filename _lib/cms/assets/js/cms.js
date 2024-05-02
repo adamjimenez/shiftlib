@@ -74,7 +74,6 @@ function initForms() {
                 console.log('Success:', data);
 
                 if (!data.success && data != 1) {
-
                     // display errors
                     let errors = data.errors ? data.errors: data;
 
@@ -111,6 +110,12 @@ function initForms() {
                             parent.appendChild(div);
                         }
                     })
+                    
+                    // scroll to first error
+                    const elements = document.getElementsByClassName('error');
+                    if (elements && elements.length > 0) {
+                        elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
 
                 } else {
                     // Create the hidden input element
@@ -146,6 +151,7 @@ function initForms() {
                         form.submit();
                     }
                 }
+                
                 // re-enable submit
                 const submitButtons = form.querySelectorAll('*[type="submit"], *[type="image"]');
                 submitButtons.forEach(button => button.disabled = false);
