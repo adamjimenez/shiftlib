@@ -1623,7 +1623,7 @@ class cms
     			'name' => basename($request),
     			'page_name' => $request,
     		],
-    		'content' => json_decode($page['meta'], true),
+    		'meta' => json_decode($page['meta'], true),
     		'pages' => $pages,
     		'request' => $request,
     		'base' => $base,
