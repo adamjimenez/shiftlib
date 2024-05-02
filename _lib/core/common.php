@@ -811,11 +811,11 @@ function error_handler($errno, $errstr, $errfile, $errline, $errcontext = '')
             // check whether to return as json or console log
             if (in_array('Content-Type: application/json, charset=utf-8', headers_list())) {
                 $response = [
-                    'error' => $error
+                    'error' => $errorstring
                 ];
                 print json_encode($response, JSON_PARTIAL_OUTPUT_ON_ERROR);
             } else {
-                echo '<script>console.error(`' . $error . '`);</script>';
+                echo '<script>console.error(`' . $errorstring . '`);</script>';
             }
             
             if (!$admin_email) {
@@ -1272,6 +1272,15 @@ function load_js($libs)
     if ($deps['tinymce']) {
         ?>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.0.1/tinymce.min.js"></script>
+	<?php
+    }
+    
+    if ($deps['editorjs']) {
+        ?>
+        <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
 	<?php
     }
 }
