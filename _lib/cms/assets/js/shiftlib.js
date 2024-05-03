@@ -801,7 +801,7 @@ class PageEditor {
                 this.setSavePoint();
             })
 
-        this.meta = this.pageData.content ? this.pageData.content : {};
+        this.meta = this.pageData.meta ? this.pageData.meta : {};
         this.editData = {};
         this.savePointData = {};
 
