@@ -112,6 +112,13 @@ class File extends Component implements ComponentInterface
         $fileId = (int) $this->cms->content[$fieldName];
         
         $file = $_FILES[$fieldName];
+        
+        if (is_array($file['error'])) {
+            $file['error'] = $file['error'][0];
+            $file['name'] = $file['name'][0];
+            $file['tmp_name'] = $file['tmp_name'][0];
+            $file['type'] = $file['type'][0];
+        }
 
         $upload_id = $this->processUpload($file['error'], $file['name'], $file['tmp_name'], $file['type']);
 
