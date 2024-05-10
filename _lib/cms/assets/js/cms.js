@@ -51,7 +51,7 @@ function initForms() {
 
             let url = form.action ? form.action : location.href;
             
-            const data = new URLSearchParams();
+            let data = new URLSearchParams();
             for (const pair of new FormData(form)) {
                 let value = pair[1] instanceof File ? pair[1].name : pair[1];
                 data.append(pair[0], value);
@@ -59,6 +59,12 @@ function initForms() {
             
             data.append('validate', 1);
             data.append('nospam', 1);
+            
+            //validate
+            if (form.method.toUpperCase() === 'GET') {
+                url += '?' + data;
+                data = null;
+            }
 
             //validate
             fetch(url, {
