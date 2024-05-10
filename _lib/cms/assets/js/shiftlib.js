@@ -197,7 +197,21 @@ class PageEditor {
         Publish
         </button>
 
+        <button type="button" class="icon" sl-pageSettings style="display: none;">
+        &#9881;
+        </button>
+
         <div sl-uploads style="display: none;"></div>
+        <div sl-settings style="display: none;">
+            <label style="width: 100%; padding: 10px; display: block;">
+                <p>Page title</p>
+                <input type="text" name="page_title" placeholder="Page title" style="width: 100%;">
+            </label>
+            <label style="width: 100%; padding: 10px; display: block;">
+                <p>Meta description</p>
+                <input type="text" name="meta_description" placeholder="Meta description" style="width: 100%;">
+            </label>
+        </div>
         `;
         document.body.appendChild(nav);
 
@@ -218,6 +232,7 @@ class PageEditor {
         
         [sl-editing] .sl-nav {
             background: #000;
+            color: #fff;
         }
         
         .sl-nav button {
@@ -269,7 +284,8 @@ class PageEditor {
         }
         
         [sl-editing] [sl-cancelpage],
-        [sl-editing] [sl-savePage]
+        [sl-editing] [sl-savePage],
+        [sl-editing] [sl-pageSettings]
         {
             display: inline-block !important;
         }
@@ -361,6 +377,10 @@ class PageEditor {
         this.deletePageButton = document.querySelector('[sl-deletepage]');
         this.savePageButton = document.querySelector('[sl-savepage]');
         this.publishPageButton = document.querySelector('[sl-publish]');
+        this.pageSettingsButton = document.querySelector('[sl-pageSettings]');
+        this.settingsEl = document.querySelector('[sl-settings]');
+        this.pageTitleEl = document.querySelector('[sl-settings] [name=page_title]');
+        this.metaDescriptionEl = document.querySelector('[sl-settings] [name=meta_description]');
         
         this.editors = [];
         this.blockEditors = [];
@@ -602,9 +622,10 @@ class PageEditor {
                     const chooseButton = document.createElement("button");
                     chooseButton.innerText = 'Choose';
 
-                    chooseButton.addEventListener('click', event => {
+                    chooseButton.addEventListener('click', e => {
                         this.chooseImage(node);
-                        event.stopPropagation();
+                        e.stopPropagation();
+                        e.preventDefault();
                     })
 
                     buttonContainer.appendChild(chooseButton);
@@ -612,7 +633,7 @@ class PageEditor {
                     const clearButton = document.createElement("button");
                     clearButton.innerHTML = '&#10005;';
 
-                    clearButton.addEventListener('click', event => {
+                    clearButton.addEventListener('click', e => {
                         let imgEl = node.querySelector('img');
                         if (!imgEl) {
                             return;
@@ -648,6 +669,9 @@ class PageEditor {
                     }
                 });
                 
+                this.pageTitleEl.value = this.meta.page_title ? this.meta.page_title : '';
+                this.metaDescriptionEl.value = this.meta.meta_description ? this.meta.meta_description : '';
+                
                 document.body.addEventListener('click', e => this.clickHandler(e));
                 
                 window.addEventListener('beforeunload', e => this.checkChanges(e));
@@ -656,6 +680,14 @@ class PageEditor {
                 
                 this.setSavePoint();
             })
+            
+        this.pageTitleEl.addEventListener('change', async (e) => {
+            this.setValue('page_title', e.target.value, this.meta);
+        });
+            
+        this.metaDescriptionEl.addEventListener('change', async (e) => {
+            this.setValue('meta_description', e.target.value, this.meta);
+        });
 
         this.renamePageButton.addEventListener('click',
             async () => {
@@ -758,8 +790,6 @@ class PageEditor {
             
         this.savePageButton.addEventListener('click',
             async () => {
-                console.log(this.editData);
-                
                 let result;
                 
                 for (const [section, value] of Object.entries(this.editData)) {
@@ -776,7 +806,9 @@ class PageEditor {
                     let formData = new FormData();
     
                     for (const [name, value] of Object.entries(this.pageData.page)) {
-                        formData.append(name, value);
+                        if (name !== 'meta') {
+                            formData.append(name, value);
+                        }
                     }
     
                     formData.append('meta', JSON.stringify(this.meta));
@@ -800,6 +832,14 @@ class PageEditor {
                     
                 this.setSavePoint();
             })
+            
+        this.pageSettingsButton.addEventListener('click', () => {
+            if (this.settingsEl.style.display) {
+                this.settingsEl.style.display = '';
+            } else {
+                this.settingsEl.style.display = 'none';
+            }
+        });
 
         this.meta = this.pageData.meta ? this.pageData.meta : {};
         this.editData = {};
@@ -1056,7 +1096,7 @@ class PageEditor {
             
             let data = await result.json();
             
-            this.selectFile(data.file);
+            this.selectFile(data.file.url);
         })
         
         data.items.forEach((item) => {
@@ -1074,7 +1114,7 @@ class PageEditor {
                 node = document.createElement('img');
                 node.src = item.thumb;
                 node.addEventListener('click', () => {
-                    this.selectFile(item.id);
+                    this.selectFile('/uploads/' + item.id);
                 });
             } else {
                 return;
@@ -1089,10 +1129,8 @@ class PageEditor {
     }
     
     selectFile(id) {
-        const filepath = id ? '/uploads/' + id : '';
-        
         if (typeof this.uploadCallback === 'function') {
-            this.uploadCallback(filepath, { title: filepath });
+            this.uploadCallback(id, { title: id });
         } else {
             // change child image
             let imageEl = this.uploadCallback.querySelector('img');
@@ -1102,7 +1140,7 @@ class PageEditor {
                 this.uploadCallback.appendChild(imageEl);
             }
             
-            imageEl.src = filepath;
+            imageEl.src = id;
 
             // change meta value
             let name = this.uploadCallback.getAttribute('sl-name');
@@ -1124,11 +1162,11 @@ class PageEditor {
                 const arrayName = match[1]; // "slides"
                 const key = parseInt(match[2]); // 0 (as a number)
 
-                if (typeof obj[arrayName] === 'undefined') {
+                if (!Array.isArray(obj[arrayName])) {
                     obj[arrayName] = [];
                 }
 
-                if (typeof obj[arrayName][key] === 'undefined') {
+                if (typeof obj[arrayName][key] === 'undefined' || Array.isArray(obj[arrayName][key])) {
                     obj[arrayName][key] = {};
                 }
 
@@ -1146,7 +1184,7 @@ class PageEditor {
                 obj = obj[part];
             }
         })
-
+        
         this.setDirty(true);
     }
 
