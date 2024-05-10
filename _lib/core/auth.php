@@ -112,6 +112,8 @@ class auth
     * @var string
     */
     public $google_secret;
+    
+    public $base_url = '';
 
     /**
     * auth constructor.

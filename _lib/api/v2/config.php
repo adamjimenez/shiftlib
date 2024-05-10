@@ -229,8 +229,8 @@ try {
 			$query = "ALTER TABLE `" . escape($_POST['table']) . "` " . $action . ' `' . underscored($column) . '` ' . $db_field . ' ' . $collation . ' ' . $null . ' ' . $extra . ' ' . $default . " COMMENT '" . $comment . "' " . $after;
 
 			sql_query($query);
-
 			break;
+			
 		case 'delete_field':
 			if (in_array($_POST['column'], ['id'])) {
 				//don't drop id!
@@ -395,7 +395,7 @@ $db_config["pass"] = ' . ($_SERVER["DB_PASS"] ? '$_SERVER["DB_PASS"]' : '"' . $d
 $db_config["name"] = ' . ($_SERVER["DB_NAME"] ? '$_SERVER["DB_NAME"]' : '"' . $db_config['name'] . '"') . ';
 
 #TPL
-// multipage templates
+// multipage templates DEPRECATED
 $tpl_config["catchers"] = ' . var_export($tpl_config['catchers'], true) . ';
 
 // 301 redirects
@@ -403,6 +403,9 @@ $tpl_config["redirects"] = ' . var_export($tpl_config['redirects'], true) . ';
 
 # USER LOGIN
 $auth_config = [];
+
+// table where your users are stored
+$auth_config["base_url"] = "' . $_POST['base_url'] . '";
 
 // table where your users are stored
 $auth_config["table"] = "' . $auth_config['table'] . '";
@@ -508,7 +511,8 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 
 			$response['tables'] = $tables;
 			$response['vars'] = $vars;
-			$response['from_email'] = $from_email;
+			$response['from_email'] = $auth_config['from_email'];
+			$response['base_url'] = $auth_config['base_url'];
 			$response['last_modified'] = $last_modified;
 			
 			$response['version'] = cms::VERSION;

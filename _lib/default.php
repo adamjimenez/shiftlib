@@ -83,6 +83,8 @@ function get_include($request)
     // strip file extension from url
     if (strstr($request, '.php')) {
         redirect('http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '', $_SERVER['REQUEST_URI']));
+    } else if (starts_with($request, 'admin/') && !$_GET['frame']) {
+        require(__DIR__ . '/admin.php');
     // redirect if a folder and missing trailing /
     } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, (array)$tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php') && $request !== 'index') {
         redirect('/' . $request . '/');
@@ -99,12 +101,6 @@ function get_include($request)
     // check catchers
     } elseif ($catcher = get_tpl_catcher($request)) {
         return $root_folder . '/_tpl/' . $catcher . '.php';
-    } else if (starts_with($request, 'admin/')) {
-        if (!$_GET['frame']) {
-            require(__DIR__ . '/admin.php');
-        } else {
-            die('404 not found');
-        }
     } else {
         // check index catcher
         $index_catcher = '_tpl/index.catcher.php';
@@ -117,6 +113,15 @@ function get_include($request)
 $request = parse_request();
 
 require(dirname(__FILE__) . '/base.php');
+
+// check base url
+if ($auth->base_url) {
+    $base_url = 'http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . '/';
+    
+    if ($base_url !== $auth->base_url) {
+        redirect($auth->base_url . preg_replace('/index$/', '', $request));
+    }
+}
 
 // current tab
 $sections = explode('/', $request);
