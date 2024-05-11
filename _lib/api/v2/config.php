@@ -202,7 +202,7 @@ try {
 	
 				$old_field = $_POST['id'] ? get_db_field($_POST['table'], $_POST['id']) : [];
 				
-				$comment = $_POST['type'] . '|' . ($_POST['required'] ? 1 : 0) . '|' . escape($_POST['label']);
+				$comment = $_POST['type'] . '|' . ($_POST['required'] ? 1 : 0) . '|' . escape($_POST['label']) . '|' . escape($_POST['options']);
 				$action = $_POST['id'] ? 'CHANGE `' . underscored($_POST['id']) . '`' : 'ADD';
 				$after = '';
 				
@@ -482,6 +482,7 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 						$type = $parts[0];
 						$required = $parts[1];
 						$label = $parts[2];
+                		$options = $parts[3];
 					} else {
 						$type = $vars["fields"][$section][$name];
 						$required = is_array($vars["required"][$section]) && in_array($name, $vars["required"][$section]);
@@ -493,6 +494,7 @@ $shop_config["include_vat"] = ' . str_to_bool($shop_config['include_vat']) . ';
 						'type' => $type,
 						'required' => $required,
 						'label' => $label,
+                    	'options' => $options,
 					];
 				}
 			}

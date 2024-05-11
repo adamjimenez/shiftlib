@@ -450,6 +450,7 @@ class cms
             $value = $conditions[$field_name];
     
             switch ($type) {
+                // DEPRECATED
                 case 'checkboxes':
                     $joins .= ' LEFT JOIN cms_multiple_select S_' . $field_name . ' ON S_' . $field_name . '.item = T_' . $table . '.id';
     
@@ -534,32 +535,26 @@ class cms
             $having_str = "HAVING \n" . implode(" AND \n", array_filter($having));
         }
     
+        // create joins
         $keys = [];
-        foreach ($fields as $name => $field) {
+        foreach ($fields as $key => $field) {
             if (
-                !in_array($field['type'], ['select', 'combo', 'radio']) ||
-                (is_array($columns) && !in_array(underscored($name), $columns))
+                !in_array($field['type'], ['select', 'combo']) ||
+                (is_array($columns) && !in_array(underscored($key), $columns))
             ) {
                 continue;
             }
             
-            $keys[] = $name;
-        }
-    
-        // create joins
-        if (count($keys)) {
-            foreach ($keys as $key) {
-                if (false === is_array($vars['options'][$key])) {
-                    $option_table = underscored($vars['options'][$key]);
-    
-                    if (!$option_table) {
-                        throw new Exception('missing options array value for: ' . $key);                        
-                    }
-    
-                    $option = $this->get_option_label($vars['options'][$key]);
-    
-                    $cols[] = "(SELECT " . underscored($option) . "  FROM ".$option_table." WHERE id = T_$table." . underscored($key) . ") AS '" . underscored($key) . "_label'";
+            if (false === is_array($vars['options'][$key])) {
+                $option_table = $field['options'] ?: underscored($vars['options'][$key]);
+
+                if (!$option_table) {
+                    throw new Exception('missing options array value for: ' . $key);                        
                 }
+
+                $option = $this->get_option_label($vars['options'][$key]);
+
+                $cols[] = "(SELECT " . underscored($option) . " FROM ".$option_table." WHERE id = T_$table." . underscored($key) . ") AS '" . underscored($key) . "_label'";
             }
         }
     
@@ -1228,6 +1223,7 @@ class cms
                 $type = $parts[0];
                 $required = $parts[1];
                 $label = $parts[2];
+                $options = $parts[3];
             } else {
                 $type = $vars["fields"][$section][$name];
                 $required = in_array($name, (array)$vars["required"][$section]);
@@ -1252,6 +1248,7 @@ class cms
                     'type' => $type,
                     'required' => $required,
                     'label' => $label,
+                    'options' => $options,
                 ];
             }
         }

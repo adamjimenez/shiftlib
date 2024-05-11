@@ -276,7 +276,7 @@ try {
                 $where_str = $_GET['id'] ? "item='" . escape($_GET['id']) . "' AND " : '';
                 $where_str .= "section='" . escape($_GET['section']) . "'";
 
-                $response['data'] = sql_query("SELECT CONCAT(U.name, ' ', U.surname) AS `name`, L.user, L.task, L.date, L.details FROM cms_logs L
+                $response['data'] = sql_query("SELECT U.*, L.user, L.task, L.date, L.details FROM cms_logs L
                 	LEFT JOIN users U ON L.user=U.id
                 	WHERE
                 	    $where_str

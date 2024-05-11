@@ -11,7 +11,7 @@ class Combo extends Select implements ComponentInterface
      */
     public function getFieldSql(): ?string
     {
-        return "VARCHAR(64)";
+        return "INT";
     }
 
     /**
