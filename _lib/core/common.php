@@ -876,6 +876,12 @@ function number_abbr($size, $dp = 1): string
 // format tel number
 function format_tel($tel)
 {
+    $tel = str_replace('+44', '0', $tel);
+    
+    if (strlen($tel) < 11 || strlen($tel) > 12) {
+        return false;
+    }
+    
     $tel = preg_replace('%[^0-9]%', '', $tel);
 
     if ('0' === substr($tel, 0, 1)) {
