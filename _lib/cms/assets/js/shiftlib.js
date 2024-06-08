@@ -884,6 +884,10 @@ class PageEditor {
     
     async saveData(section, id, data) {
         let formData = new FormData();
+        
+        if (!this.pageData.catcher) {
+            formData.append('published', 1);
+        }
 
         let params = new URLSearchParams();
         params.append('cmd', 'save');
