@@ -790,14 +790,15 @@ try {
             if (!$_GET['section']) {
                 break;
             }
+            
+            $cms->section = $_GET['section'];
+            $cms->trigger_event('beforeEdit', [$_POST['id']]);
 
             $response['fields'] = $cms->get_fields($_GET['section']);
 
             // view page
             if (isset($_POST['id'])) {
-                if ($_POST['id']) {
-                    $response['data'] = $cms->get($_GET['section'], $_POST['id']);
-                }
+                $response['data'] = $_POST['id'] ? $cms->get($_GET['section'], $_POST['id']) : $cms->content;
                 break;
             }
 
@@ -851,8 +852,6 @@ try {
             ' . $sql['having_str'], 1);
 
             $response['total'] = (int)$count['count'];
-
-            $response['data'] = [];
 
             // get limit
             $limit = '';
