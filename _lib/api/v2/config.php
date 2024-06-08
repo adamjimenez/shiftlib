@@ -234,7 +234,7 @@ try {
 		case 'delete_field':
 			if (in_array($_POST['column'], ['id'])) {
 				//don't drop id!
-				continue;
+				break;
 			}
 
 			if (!$_POST['table']) {
