@@ -45,37 +45,27 @@ class Integer extends Component implements ComponentInterface
      */
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
-        if (is_array($value)) {
-            $valueStr = '';
-            foreach ($value as $v) {
-                $valueStr .= (int) ($v) . ',';
-            }
-            $valueStr = substr($valueStr, 0, -1);
-
-            $where = $tablePrefix . $fieldName . ' IN (' . escape($valueStr) . ')';
-        } else {
-            // check for range
-            $pos = strrpos($value, '-');
-            
-            if ($pos > 0) {
-                $min = substr($value, 0, $pos);
-                $max = substr($value, $pos + 1);
-    
-                $where = '(' .
-                    $tablePrefix . $fieldName . " >= '" . escape($min) . "' AND " .
-                    $tablePrefix . $fieldName . " <= '" . escape($max) . "'
-                )";
-            } else {
+        $values = is_array($value) ? $value : [$value];
         
-                if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
-                    $func = '=';
-                }
-    
-                $where = $tablePrefix . $fieldName . ' ' . $func . " '" . escape($value) . "'";
+        $conditions = [];
+        
+        foreach ($values as $v) {
+            if (preg_match('/^[<>=!]/', $v, $matches)) {
+                $comparator = $matches[0];
+            } else {
+                $comparator = $func ?: '=';
             }
-        }
+    
+            if (!in_array($func, ['=', '!=', '>', '<', '>=', '<='])) {
+                $comparator = '=';
+            }
+            
+            $v = preg_replace('/[^0-9.]/', '', $v);
 
-        return $where;
+            $conditions[] = $tablePrefix . $fieldName . ' ' . $comparator . " '" . escape($v) . "'";
+        }
+        
+        return '(' . implode(' AND ', $conditions) . ')';
     }
 
     /**
