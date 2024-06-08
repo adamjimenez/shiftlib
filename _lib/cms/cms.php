@@ -50,6 +50,8 @@ class cms
 
     public $handlers = [];
     
+    public $editable_fields = null;
+    
     public $block_tools = [];
     public $block_renderers = [];
 
@@ -1249,6 +1251,7 @@ class cms
                     'required' => $required,
                     'label' => $label,
                     'options' => $options,
+                    'readonly' => is_array($this->editable_fields) && !in_array($name, $this->editable_fields)
                 ];
             }
         }
