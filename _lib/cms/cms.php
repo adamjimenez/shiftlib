@@ -554,7 +554,7 @@ class cms
                     throw new Exception('missing options array value for: ' . $key);                        
                 }
 
-                $option = $this->get_option_label($vars['options'][$key]);
+                $option = $this->get_option_label($option_table);
 
                 $cols[] = "(SELECT " . underscored($option) . " FROM ".$option_table." WHERE id = T_$table." . underscored($key) . ") AS '" . underscored($key) . "_label'";
             }
@@ -1320,7 +1320,7 @@ class cms
                 ($field['required'] && '' == $data[$field_name] && !count((array)$_FILES[$field_name]))
             ) {
                 if ($return_object) {
-                    $errors[$name] = 'invalid';
+                    $errors[$name] = $data[$field_name] ? 'invalid' : 'required';
                 } else {
                     $errors[] = $field_name;
                 }

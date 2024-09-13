@@ -396,7 +396,8 @@ try {
                 }
                 
                 $response['file'] = [
-                    'url' => 'https://' . $_SERVER['HTTP_HOST'] . '/' . $path . $file_name
+                    'path' => substr($dest, strlen('/uploads/')),
+                    'url' => 'https://' . $_SERVER['HTTP_HOST'] . '/' . $dest
                 ];
             } else if ($_POST['delete']) {
                 foreach ((array)$_POST['delete'] as $v) {
@@ -426,7 +427,7 @@ try {
                     $basename = basename($pathname);
                     if ('.' != $basename && '..' != $basename) {
                         $item = [];
-                        $item['id'] = substr($pathname, strlen('uploads/'));
+                        $item['id'] = substr($pathname, strlen('/uploads/'));
                         $item['name'] = $basename;
                         $item['leaf'] = !is_dir($pathname);
 
@@ -776,6 +777,7 @@ try {
                 $table
                 $whereStr
                 ORDER BY `" . underscored($order) . '`
+                LIMIT 20
             ');
 
             $options = [];
@@ -820,7 +822,7 @@ try {
 
                 $cols[] = $name;
 
-                if ($_GET['parentsection'] && $_GET['parentsection'] === $vars['options'][$name]) {
+                if ($_GET['parentsection'] && underscored($_GET['parentsection']) === underscored($vars['options'][$name])) {
                     $_GET['fields'][$name] = $_GET['parentid'];
                 }
             }
