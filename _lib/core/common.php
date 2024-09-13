@@ -650,6 +650,7 @@ function send_mail($opts = []): bool
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
         $mail->isHTML($is_html);
+        $mail->CharSet = "UTF-8";
         
         if ($opts['attachments']) {
             $attachments = $opts['attachments'];
@@ -721,6 +722,8 @@ function email_template($email, $subject = null, $reps = null)
             if (!is_string($v)) {
                 continue;
             }
+            
+            $template['subject'] = str_replace('{$' . $k . '}', $v, $template['subject']);
             
             $body = str_replace('{$' . $k . '}', $v, $body);
             
