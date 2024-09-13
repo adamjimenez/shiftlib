@@ -525,6 +525,10 @@ class auth
             unset($data['admin']);
 
             $errors = $cms->validate($_POST, $options['recaptcha']);
+            
+            if (!is_email($data['email'])) {
+                $errors[] = 'email is invalid';
+            }
 
             if (isset($data['confirm']) && ($data['confirm'] !== $data['password'])) {
                 $errors[] = 'password passwords do not match';
