@@ -190,7 +190,7 @@ class cms
             $conditions[$k] = $v;
         }
     
-        $sql = $this->conditionsToSql($section, $conditions);
+        $sql = $this->conditionsToSql($section, $conditions, null, $columns);
     
         $table = underscored($section);
     
@@ -198,7 +198,7 @@ class cms
             $columns[$k] = "T_$table." . underscored($v);
         }
     
-        $cols = count($columns) ? implode(',', $columns) : "T_$table.* " . ($sql['cols'] ? ', ' . $sql['cols'] : '');
+        $cols = $sql['cols'] ?: '*';
     
         $query = "SELECT " . $cols . "
         FROM `$table` T_$table
