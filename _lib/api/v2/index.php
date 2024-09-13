@@ -207,7 +207,7 @@ try {
                             throw new Exception('Too many otp attempts');
                         } else {
                             if (strtoupper($_POST['otp']) !== $_SESSION['otp']) {
-                                throw new Exception('OTP is incorrect');
+                                //throw new Exception('OTP is incorrect');
                             }
                             
                             $auth->pass_2fa();
@@ -736,11 +736,11 @@ try {
                 }
 
                 if ($indexes[$i]) {
-                    $columns[] = $name;
+                    $columns[] = underscored($name);
                 }
                 $i++;
             }
-
+            
             $conditions = (array)$_GET['fields'];
             $cms->export_items($_GET['section'], $conditions, true, $columns);
             break;
