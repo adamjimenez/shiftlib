@@ -303,14 +303,10 @@ try {
             
         // used by combos
         case 'autocomplete':
-            $name = spaced($_GET['field']);
+            $table = $vars['options'][$table] ?: $_GET['field'];
 
-            if (!isset($vars['options'][$name])) {
-                throw new Exception('no options');
-            }
-
-            $table = underscored($vars['options'][$name]);
-            $fields = $cms->get_fields($vars['options'][$name]);
+            $table = underscored($table);
+            $fields = $cms->get_fields($table);
             $field = array_key_first($fields);
 
             $rows = sql_query("SELECT id, `" . underscored($field) . "` FROM
@@ -822,8 +818,14 @@ try {
 
                 $cols[] = $name;
 
-                if ($_GET['parentsection'] && underscored($_GET['parentsection']) === underscored($vars['options'][$name])) {
-                    $_GET['fields'][$name] = $_GET['parentid'];
+                if (
+                    $_GET['parentsection'] && 
+                    (
+                        underscored($_GET['parentsection']) === underscored($vars['options'][$name]) ||
+                        underscored($_GET['parentsection']) === underscored($field['options'])
+                    )
+                ) {
+                    $_GET['fields'][underscored($name)] = $_GET['parentid'];
                 }
             }
 
