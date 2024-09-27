@@ -1567,6 +1567,7 @@ class cms
         }
 
         sql_query("INSERT INTO cms_logs SET
+            date = NOW(),
             user = '" . $auth->user['id'] . "',
             section = '" . escape($section) . "',
             item = '" . escape($id) . "',
