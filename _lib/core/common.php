@@ -1239,9 +1239,9 @@ function load_js($libs)
     }
 
     if ($deps['bootstrap']) {
-        $version = '4.4.1'; ?>
-	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/css/bootstrap.min.css">
-		<script src="https://stackpath.bootstrapcdn.com/bootstrap/<?=$version; ?>/js/bootstrap.bundle.min.js"></script>
+        $version = '4.6.2'; ?>
+	    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@<?=$version; ?>/dist/css/bootstrap.min.css">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@<?=$version; ?>/dist/js/bootstrap.bundle.min.js"></script>
 	<?php
     }
 
