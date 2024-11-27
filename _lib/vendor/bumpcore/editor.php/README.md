@@ -1,4 +1,4 @@
-<p align="center"><img src="art/banner.svg" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bumpcore/editor.php/1.x/art/banner.png" width="100%"></p>
 
 # Editor.php
 
@@ -6,6 +6,7 @@ Editor.php is a package designed to assist in parsing and manipulating the outpu
 
 ## Table Of Contents
 
+* [Version Table](#version-table)
 * [Quick Start](#quick-start)
 * [EditorPhp](#editorphp)
   + [Creating Instance](#creating-instance)
@@ -32,6 +33,12 @@ Editor.php is a package designed to assist in parsing and manipulating the outpu
   + [Publishing Views and Configuration](#publishing-views-and-configuration)
   + [Commands](#commands)
 * [Contribution](#contribution)
+
+# Version Table
+| Editor.php | Laravel | PHP |
+| --- | --- | --- |
+| 1.x | 10.x ~ 11.x | 8.1 ~ 8.3 |
+
 # Quick Start
 
 Install package by:

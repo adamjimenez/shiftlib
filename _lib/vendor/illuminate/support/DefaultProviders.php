@@ -24,6 +24,7 @@ class DefaultProviders
             \Illuminate\Bus\BusServiceProvider::class,
             \Illuminate\Cache\CacheServiceProvider::class,
             \Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
+            \Illuminate\Concurrency\ConcurrencyServiceProvider::class,
             \Illuminate\Cookie\CookieServiceProvider::class,
             \Illuminate\Database\DatabaseServiceProvider::class,
             \Illuminate\Encryption\EncryptionServiceProvider::class,
@@ -60,7 +61,7 @@ class DefaultProviders
     /**
      * Replace the given providers with other providers.
      *
-     * @param  array  $items
+     * @param  array  $replacements
      * @return static
      */
     public function replace(array $replacements)
