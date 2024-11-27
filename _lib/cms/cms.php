@@ -25,7 +25,7 @@ if (class_exists('BumpCore\EditorPhp\Block\Block')) {
 
 class cms
 {
-    const VERSION = '4.0.20';
+    const VERSION = '4.0.21';
 
     /**
     * @var string
