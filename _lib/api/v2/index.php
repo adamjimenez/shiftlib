@@ -308,13 +308,15 @@ try {
             $table = underscored($table);
             $fields = $cms->get_fields($table);
             $field = array_key_first($fields);
+            
+            $offset = (int)$_GET['offset'] ?: 0;
 
             $rows = sql_query("SELECT id, `" . underscored($field) . "` FROM
                 $table
                 WHERE
                     `$field` LIKE '" . escape($_GET['term']) . "%'
                 ORDER BY `" . underscored($field) . '`
-                LIMIT 10
+                LIMIT '. $offset . ', 50
             ');
 
             $results = [];
@@ -757,23 +759,23 @@ try {
             // filter deleted rows
             $fields = $cms->get_fields($vars['options'][$name]);
             if ($fields['deleted']) {
-                if ($where) {
-                    $where .= ' AND ';
-                }
-
-                $where .= 'deleted = 0';
+                $where[] = 'deleted = 0';
+            }
+            
+            if (is_array($_POST['values'])) {
+                $where[] = 'id IN ('.implode(',', $_POST['values']).')';
             }
 
             $whereStr = '';
             if ($where) {
-                $whereStr = 'WHERE ' . $where;
+                $whereStr = 'WHERE ' . implode(' AND ', $where);
             }
 
             $rows = sql_query("SELECT id, $cols FROM
                 $table
                 $whereStr
                 ORDER BY `" . underscored($order) . '`
-                LIMIT 20
+                LIMIT 50
             ');
 
             $options = [];
