@@ -94,7 +94,7 @@ function get_include($request)
     // check redirects list
     } elseif ($tpl_config['redirects'][$request]) {
         $redirect = $tpl_config['redirects'][$request];
-        if (!starts_with($redirect, '/')) {
+        if (!starts_with($redirect, '/') && !strstr($redirect, '://')) {
             $redirect = '/' . $redirect;
         }
         redirect($redirect, 301);
