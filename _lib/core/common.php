@@ -644,6 +644,10 @@ function send_mail($opts = []): bool
             $mail->AddReplyTo($opts['reply_to']);
         }
         
+        if ($opts['cc']) {
+            $mail->AddCC($opts['cc']);
+        }
+        
         $mail->SetFrom($opts['from_email']);
         $mail->AddAddress($opts['to_email']);
         
@@ -693,7 +697,7 @@ function send_mail($opts = []): bool
 }
 
 // send an email form the CMS - TODO move to cms class
-function email_template($email, $subject = null, $reps = null)
+function email_template($email, $subject = null, $reps = null, $opts = [])
 {
     global $from_email, $email_templates, $cms;
 
@@ -738,7 +742,6 @@ function email_template($email, $subject = null, $reps = null)
     //fix for outlook clipping new lines
     $body = str_replace("\n", "\t\n", $body);
 
-    $opts = [];
     $opts['from_email'] = $from_email;
     $opts['to_email'] = $email;
     $opts['subject'] = $template['subject'];

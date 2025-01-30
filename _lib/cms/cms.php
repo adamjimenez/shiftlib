@@ -25,7 +25,7 @@ if (class_exists('BumpCore\EditorPhp\Block\Block')) {
 
 class cms
 {
-    const VERSION = '4.0.21';
+    const VERSION = '4.0.22';
 
     /**
     * @var string
@@ -1564,6 +1564,10 @@ class cms
 
         if (!table_exists('cms_logs')) {
             return;
+        }
+                
+        if (is_array($details)) {
+            $details = json_encode($details);
         }
 
         sql_query("INSERT INTO cms_logs SET

@@ -362,11 +362,16 @@ try {
                 throw new Exception('access denied');               
             }
             
-            $path = 'uploads/';
+            $base_path = 'uploads';
+            $path = $base_path;
             $subdir = $_GET['path'];
 
             if ($subdir && !starts_with($subdir, '../')) {
-                $path .= $subdir . '/';
+                $path .= $subdir;
+            }
+            
+            if (!ends_with($path, '/')) {
+                $path .= '/';
             }
 
             if ($_POST['createFolder']) {
@@ -419,13 +424,13 @@ try {
                 }
             } else {
                 $paths = glob($path . '*', GLOB_NOSORT);
-
+                
                 $items = [];
                 foreach ($paths as $pathname) {
                     $basename = basename($pathname);
                     if ('.' != $basename && '..' != $basename) {
                         $item = [];
-                        $item['id'] = substr($pathname, strlen('/uploads/'));
+                        $item['id'] = substr($pathname, strlen($base_path));
                         $item['name'] = $basename;
                         $item['leaf'] = !is_dir($pathname);
 
