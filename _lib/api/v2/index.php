@@ -399,7 +399,7 @@ try {
                 }
                 
                 $response['file'] = [
-                    'path' => substr($dest, strlen('/uploads/')),
+                    'path' => substr($dest, strlen($base_path)),
                     'url' => 'https://' . $_SERVER['HTTP_HOST'] . '/' . $dest
                 ];
             } else if ($_POST['delete']) {
