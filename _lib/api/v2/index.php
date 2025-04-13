@@ -303,7 +303,7 @@ try {
             
         // used by combos
         case 'autocomplete':
-            $table = $vars['options'][$table] ?: $_GET['field'];
+            $table = $vars['options'][$_GET['field']] ?: $_GET['field'];
 
             $table = underscored($table);
             $fields = $cms->get_fields($table);
