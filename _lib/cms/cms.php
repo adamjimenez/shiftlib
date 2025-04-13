@@ -25,7 +25,7 @@ if (class_exists('BumpCore\EditorPhp\Block\Block')) {
 
 class cms
 {
-    const VERSION = '4.0.23';
+    const VERSION = '4.0.24';
 
     /**
     * @var string
@@ -776,7 +776,7 @@ class cms
                         WHERE
                             section='" . escape($section) . "' AND
                             field='" . escape($name) . "' AND
-                            item='" . $v['id'] . "'
+                            item='" . (int)$v['id'] . "'
                         ORDER BY id
                     ");
                 }

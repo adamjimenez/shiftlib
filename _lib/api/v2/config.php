@@ -404,7 +404,7 @@ $tpl_config["redirects"] = ' . var_export($tpl_config['redirects'], true) . ';
 # USER LOGIN
 $auth_config = [];
 
-// table where your users are stored
+// base url
 $auth_config["base_url"] = "' . $_POST['base_url'] . '";
 
 // table where your users are stored

@@ -33,6 +33,9 @@ function imagecreatefromfile($path)
         case 'image/gif':
             $img = imagecreatefromgif($path);
         break;
+        case 'image/webp':
+            $img = imagecreatefromwebp($path);
+        break;
         default:
             return false;
             //$img = imagecreatefromstring(file_get_contents($path));
@@ -404,132 +407,83 @@ function array_rorderby()
 }
 
 // return all the bank holidays from a a year
-function bank_holidays($yr): array
+function bank_holidays($yr = null): array
 {
+    if (!$yr) {
+        $yr = date('Y');
+    }
+    
     $bankHols = [];
- 
-    // New year's:
-    switch (date('w', strtotime("$yr-01-01 12:00:00"))) {
-        case 6:
-            $bankHols[] = "$yr-01-03";
-            break;
-        case 0:
-            $bankHols[] = "$yr-01-02";
-            break;
-        default:
-            $bankHols[] = "$yr-01-01";
-    }
- 
-    // Good friday:
-    $bankHols[] = date('Y-m-d', strtotime('+' . (easter_days($yr) - 2) . ' days', strtotime("$yr-03-21 12:00:00")));
- 
-    // Easter Monday:
-    $bankHols[] = date('Y-m-d', strtotime('+' . (easter_days($yr) + 1) . ' days', strtotime("$yr-03-21 12:00:00")));
- 
-    // May Day:
-    if (1995 == $yr) {
-        $bankHols[] = '1995-05-08'; // VE day 50th anniversary year exception
+
+    // New Year's Day (substitute if weekend)
+    $newYears = strtotime("$yr-01-01");
+    $w = date('w', $newYears);
+    if ($w == 6) {
+        $bankHols[] = date('Y-m-d', strtotime("$yr-01-03"));
+    } elseif ($w == 0) {
+        $bankHols[] = date('Y-m-d', strtotime("$yr-01-02"));
     } else {
-        switch (date('w', strtotime("$yr-05-01 12:00:00"))) {
-            case 0:
-                $bankHols[] = "$yr-05-02";
-                break;
-            case 1:
-                $bankHols[] = "$yr-05-01";
-                break;
-            case 2:
-                $bankHols[] = "$yr-05-07";
-                break;
-            case 3:
-                $bankHols[] = "$yr-05-06";
-                break;
-            case 4:
-                $bankHols[] = "$yr-05-05";
-                break;
-            case 5:
-                $bankHols[] = "$yr-05-04";
-                break;
-            case 6:
-                $bankHols[] = "$yr-05-03";
-                break;
-        }
+        $bankHols[] = date('Y-m-d', $newYears);
     }
- 
-    // Whitsun:
-    if (2002 == $yr) { // exception year
+
+    // Good Friday and Easter Monday
+    $easter = strtotime("$yr-03-21 +".easter_days($yr)." days");
+    $bankHols[] = date('Y-m-d', strtotime('-2 days', $easter)); // Good Friday
+    $bankHols[] = date('Y-m-d', strtotime('+1 day', $easter));  // Easter Monday
+
+    // Early May bank holiday
+    if ($yr == 1995) {
+        $bankHols[] = '1995-05-08'; // VE Day exception
+    } elseif ($yr == 2020) {
+        $bankHols[] = '2020-05-08'; // VE Day 75th anniversary
+    } else {
+        $bankHols[] = date('Y-m-d', strtotime("first monday of May $yr"));
+    }
+
+    // Spring bank holiday (last Monday in May)
+    if ($yr == 2002) {
         $bankHols[] = '2002-06-03';
         $bankHols[] = '2002-06-04';
+    } elseif ($yr == 2012) {
+        $bankHols[] = '2012-06-04';
+        $bankHols[] = '2012-06-05';
     } else {
-        switch (date('w', strtotime("$yr-05-31 12:00:00"))) {
-            case 0:
-                $bankHols[] = "$yr-05-25";
-                break;
-            case 1:
-                $bankHols[] = "$yr-05-31";
-                break;
-            case 2:
-                $bankHols[] = "$yr-05-30";
-                break;
-            case 3:
-                $bankHols[] = "$yr-05-29";
-                break;
-            case 4:
-                $bankHols[] = "$yr-05-28";
-                break;
-            case 5:
-                $bankHols[] = "$yr-05-27";
-                break;
-            case 6:
-                $bankHols[] = "$yr-05-26";
-                break;
-        }
+        $bankHols[] = date('Y-m-d', strtotime("last monday of May $yr"));
     }
- 
-    // Summer Bank Holiday:
-    switch (date('w', strtotime("$yr-08-31 12:00:00"))) {
-        case 0:
-            $bankHols[] = "$yr-08-25";
-            break;
-        case 1:
-            $bankHols[] = "$yr-08-31";
-            break;
-        case 2:
-            $bankHols[] = "$yr-08-30";
-            break;
-        case 3:
-            $bankHols[] = "$yr-08-29";
-            break;
-        case 4:
-            $bankHols[] = "$yr-08-28";
-            break;
-        case 5:
-            $bankHols[] = "$yr-08-27";
-            break;
-        case 6:
-            $bankHols[] = "$yr-08-26";
-            break;
+
+    // Summer bank holiday (England/Wales: last Monday in August)
+    $bankHols[] = date('Y-m-d', strtotime("last monday of August $yr"));
+
+    // Christmas Day and Boxing Day with substitutions
+    $xmas = strtotime("$yr-12-25");
+    $boxing = strtotime("$yr-12-26");
+    $xmas_w = date('w', $xmas);
+    $boxing_w = date('w', $boxing);
+
+    if ($xmas_w == 6) {
+        $bankHols[] = date('Y-m-d', strtotime("$yr-12-27")); // Monday
+        $bankHols[] = date('Y-m-d', strtotime("$yr-12-28")); // Tuesday
+    } elseif ($xmas_w == 0) {
+        $bankHols[] = date('Y-m-d', strtotime("$yr-12-26")); // Monday
+        $bankHols[] = date('Y-m-d', strtotime("$yr-12-27")); // Tuesday
+    } elseif ($boxing_w == 6) {
+        $bankHols[] = date('Y-m-d', $xmas); // Friday
+        $bankHols[] = date('Y-m-d', strtotime("$yr-12-28")); // Monday
+    } elseif ($boxing_w == 0) {
+        $bankHols[] = date('Y-m-d', $xmas); // Saturday
+        $bankHols[] = date('Y-m-d', strtotime("$yr-12-27")); // Monday
+    } else {
+        $bankHols[] = date('Y-m-d', $xmas);
+        $bankHols[] = date('Y-m-d', $boxing);
     }
- 
-    // Christmas:
-    switch (date('w', strtotime("$yr-12-25 12:00:00"))) {
-        case 5:
-            $bankHols[] = "$yr-12-25";
-            $bankHols[] = "$yr-12-28";
-            break;
-        case 6:
-            $bankHols[] = "$yr-12-27";
-            $bankHols[] = "$yr-12-28";
-            break;
-        case 0:
-            $bankHols[] = "$yr-12-26";
-            $bankHols[] = "$yr-12-27";
-            break;
-        default:
-            $bankHols[] = "$yr-12-25";
-            $bankHols[] = "$yr-12-26";
-    }
- 
+
+    sort($bankHols);
     return $bankHols;
+}
+
+function is_bank_holiday($date) {
+    $bank_holidays = bank_holidays(dateformat('Y', $date));
+    return in_array(dateformat('Y-m-d', $date), $bank_holidays);
 }
 
 // add active class to the active tab
@@ -1569,6 +1523,10 @@ function print_flush($line) {
     
     if (ob_get_level() !== 0) {
         ob_end_clean();
+    }
+    
+    if (is_array($line)) {
+        $line = implode(',', $line);
     }
     
 	ob_end_clean();
