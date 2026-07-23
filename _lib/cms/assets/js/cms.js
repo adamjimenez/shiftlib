@@ -172,10 +172,6 @@ function initForms() {
     });
 }
 
-window.addEventListener('DOMContentLoaded', function() {
-    initForms();
-});
-
 function clearFile(field)
 {
     inputFile = document.createElement("input");
@@ -191,3 +187,42 @@ function clearFile(field)
 
     cell.appendChild(inputFile);
 }
+
+function initSortables() {
+    // sortable
+    document.querySelectorAll('ul.files').forEach(list => {
+      let draggedItem = null;
+    
+      list.addEventListener('dragstart', e => {
+        const li = e.target.closest('li');
+        if (li && list.contains(li)) {
+          draggedItem = li;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", ""); // required in some browsers
+          li.style.opacity = '0.5';
+        }
+      });
+    
+      list.addEventListener('dragend', e => {
+        if (draggedItem) {
+          draggedItem.style.opacity = '';
+          draggedItem = null;
+        }
+      });
+    
+      list.addEventListener('dragover', e => {
+        e.preventDefault(); // allow drop
+        const li = e.target.closest('li');
+        if (li && draggedItem && li.parentNode === list && li !== draggedItem) {
+          const rect = li.getBoundingClientRect();
+          const next = (e.clientY - rect.top) > rect.height / 2;
+          list.insertBefore(draggedItem, next ? li.nextSibling : li);
+        }
+      });
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    initForms();
+    initSortables();
+});

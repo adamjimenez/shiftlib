@@ -485,7 +485,7 @@ class auth
         $sections,
         $vars;
 
-        if (isset($options['fields'])) {
+        if (!isset($options['fields'])) {
             $options['fields'] = ['email'];
         }
 
@@ -524,8 +524,12 @@ class auth
 
             unset($data['admin']);
 
-            $errors = $cms->validate($_POST, $options['recaptcha']);
+            $errors = $cms->validate($data, $options);
             
+            if ($data['name'] && !is_alphanumeric($data['name'])) {
+                $errors[] = 'name is invalid';
+            }
+
             if (!is_email($data['email'])) {
                 $errors[] = 'email is invalid';
             }
@@ -536,13 +540,13 @@ class auth
 
             if ($errors) {
                 $this->show_error($errors);
-            } elseif ($_POST['validate']) {
+            } elseif ($data['validate']) {
                 print 1;
                 exit;
             }
 
             if ($options['recaptchav3']) {
-                if (!$cms->verifyRecaptcha($_POST['g-recaptcha-response'])) {
+                if (!$cms->verifyRecaptcha($data['g-recaptcha-response'])) {
                     die('failed captcha');
                 }
             }
@@ -850,6 +854,7 @@ class auth
 
                         $result['code'] = 1;
                         $result['message'] = 'User logged in';
+                        $result['request'] = $_SESSION['request'] ?: '/account';
 
                         $cms->save_log('users', $row['id'], 'login', 'Successful login from ' . $_SERVER['REMOTE_ADDR']);
                     } else {

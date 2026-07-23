@@ -131,8 +131,10 @@ class cms
                 $auto_increment = $type === 'id' ? 'AUTO_INCREMENT' : '';
 
                 if ($db_field) {
-                    $query .= '`' . $name . '` ' . $db_field . ' ' . $auto_increment . ' NOT NULL,';
+                    $comment = $type . '|0||';
+                    $query .= '`' . $name . '` ' . $db_field . ' ' . $auto_increment . ' NOT NULL COMMENT "' . $comment . '",';
                 }
+                
             }
 
             sql_query("CREATE TABLE `$table` (
@@ -557,6 +559,8 @@ class cms
                 $option = $this->get_option_label($option_table);
 
                 $cols[] = "(SELECT " . underscored($option) . " FROM ".$option_table." WHERE id = T_$table." . underscored($key) . ") AS '" . underscored($key) . "_label'";
+                //$cols[] = "T_" . underscored($key) . '.' . $option . " AS '" . underscored($key) . "_label'";
+                //$joins .= "LEFT JOIN $option_table T_".underscored($key)." ON T_".underscored($key).".id = T_$table.".underscored($key)."\n";
             }
         }
     
@@ -594,7 +598,7 @@ class cms
             $conditions = $args[1];
             $limit = $args[2];
             $order = $args[3];
-            $asc = $args[4];
+            $asc = is_bool($args[4]) ? $args[4] : true;
             $prefix = $args[5];
             $return_query = $args[6];
             $columns = null;
@@ -687,7 +691,7 @@ class cms
         if (true === $limit) {
             $cols = 'COUNT(*) AS `count`';
         } else if ($fields['id']) {
-            $group_by_str = "GROUP BY T_$table.id";
+            //$group_by_str = "GROUP BY T_$table.id";
         }
     
         $query = "SELECT
@@ -738,11 +742,11 @@ class cms
             
             if (in_array($type, ['upload'])) {
                 foreach ($content as $k=>$v) {
-                     $json = json_decode($content[$k][$field['column']], true);
+                    $json = json_decode($content[$k][$field['column']], true);
                      
-                     if (is_array($json)) {
-                          $content[$k][$field['column']] = $json[0];
-                     }
+                    if (is_array($json)) {
+                        $content[$k][$field['column']] = $json[0];
+                    }
                 }
                 continue;
             }
@@ -868,7 +872,7 @@ class cms
     * @param string $type
     * @return \cms\ComponentInterface
     */
-    private function get_component(string $type): cms\ComponentInterface
+    public function get_component(string $type): cms\ComponentInterface
     {
         global $cms, $auth, $vars;
     
@@ -1067,15 +1071,15 @@ class cms
     // handle ajax form submission
     public function submit($options = [], $other_errors = []) {
         // backcompat
-        if ($options === true) {
-            $options = ['notify' => true];
+        if ($options === true || is_string($options)) {
+            $options = ['notify' => $options];
         }
 
         if (!isset($options['save'])) {
             $options['save'] = true;
         }
 
-        $errors = $this->validate($_POST, $options['recaptcha']);
+        $errors = $this->validate($_POST, $options);
 
         if (is_array($other_errors)) {
             $errors = array_values(array_unique(array_merge($errors, $other_errors)));
@@ -1261,17 +1265,30 @@ class cms
     }
 
     // validate fields before saving
-    public function validate($data = null, $recaptcha = false, $return_object = false) {
+    public function validate($data = null, $options = null, $return_object = false) {
         global $vars, $auth;
-
-        if (false === is_array($data)) {
+        
+        if (!is_array($data)) {
             $data = $_POST;
+        }
+        
+        // backcompat
+        if ($options === true) {
+            $options = [
+                'recaptcha' => true,
+            ];
+        } else if (!is_array($options)) {
+            $options = [];
         }
 
         $errors = $this->trigger_event('beforeValidate', [$data]);
 
-        if (false === is_array($errors)) {
+        if (!is_array($errors)) {
             $errors = [];
+        }
+        
+        if (is_array($options['errors'])) {
+            $errors = array_merge($errors, $options['errors']);
         }
 
         // get table keys
@@ -1286,7 +1303,7 @@ class cms
         $fields = $this->get_fields($this->section);
         
         foreach ($fields as $name => $field) {
-            if (!$field['type']) {
+            if (!$field['type'] || ($options['fields'] && !in_array($field, $options['fields']))) {
                 continue;
             }
 
@@ -1317,7 +1334,16 @@ class cms
             
             if (
                 ('' != $data[$field_name] && $component && !$component->isValid($data[$field_name])) ||
-                ($field['required'] && '' == $data[$field_name] && !count((array)$_FILES[$field_name]))
+                (
+                    $field['required'] && 
+                    (
+                        '' == $data[$field_name] ||
+                        ( // handle files
+                            is_array($data[$field_name]) &&
+                            '' == $data[$field_name][0]
+                        )
+                    ) && 
+                    !count((array)$_FILES[$field_name]))
             ) {
                 if ($return_object) {
                     $errors[$name] = $data[$field_name] ? 'invalid' : 'required';
@@ -1364,7 +1390,7 @@ class cms
             }
         }
         
-        if ($recaptcha) {
+        if ($options['recaptcha']) {
             if (
                 ($data['validate'] && !$data['g-recaptcha-response']) ||
                 (!$data['validate'] && !$this->verifyRecaptcha($data['g-recaptcha-response']))
@@ -1483,6 +1509,10 @@ class cms
         //build query
         $fields = $this->get_fields($this->section);
         $this->query = $this->build_query($fields, $data);
+                
+        if (!$this->query) {
+            return false;
+        }
 
         $details = '';
         $do_update = $this->id ? true : false;
@@ -1600,10 +1630,9 @@ class cms
     
     	$template = get_include($request);
     
-    	$base = $template;
-    	$pos = strpos($base, '_tpl/');
-    	$base = substr($base, $pos + 5);
-    	$pos = strpos($base, '.');
+    	$base = $request;
+    	$base = str_replace('index', '', $base);
+    	$pos = strrpos($base, '/');
     	$base = substr($base, 0, $pos);
     
     	$is_admin = $auth->user['admin'];

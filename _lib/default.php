@@ -79,7 +79,7 @@ function get_include($request)
             redirect('/');
             break;
     }
-
+    
     // strip file extension from url
     if (strstr($request, '.php')) {
         redirect('http' . ($_SERVER['HTTPS'] ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . str_replace('.php', '', $_SERVER['REQUEST_URI']));
@@ -88,16 +88,25 @@ function get_include($request)
     // redirect if a folder and missing trailing /
     } elseif (is_dir($root_folder . '/_tpl/' . $request) || in_array($request, (array)$tpl_config['catchers']) || file_exists($root_folder . '/_tpl/' . $request . '.catcher.php') && $request !== 'index') {
         redirect('/' . $request . '/');
-    // check if template exists
-    } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {
-        return $root_folder . '/_tpl/' . $request . '.php';
     // check redirects list
     } elseif ($tpl_config['redirects'][$request]) {
         $redirect = $tpl_config['redirects'][$request];
         if (!starts_with($redirect, '/') && !strstr($redirect, '://')) {
             $redirect = '/' . $redirect;
         }
+        
         redirect($redirect, 301);
+    // check url redirects
+    } elseif ($tpl_config['redirects']['https://' . $_SERVER['HTTP_HOST'] . '/']) {
+        $redirect = $tpl_config['redirects']['https://' . $_SERVER['HTTP_HOST'] . '/'];
+        if (!starts_with($redirect, '/') && !strstr($redirect, '://')) {
+            $redirect = '/' . $redirect;
+        }
+        
+        redirect($redirect, 301);
+    // check if template exists
+    } elseif (file_exists($root_folder . '/_tpl/' . $request . '.php')) {
+        return $root_folder . '/_tpl/' . $request . '.php';
     // check catchers
     } elseif ($catcher = get_tpl_catcher($request)) {
         return $root_folder . '/_tpl/' . $catcher . '.php';

@@ -2,6 +2,17 @@
 
 // form validation
 window.addEventListener('DOMContentLoaded', function() {
+    // enable file upload
+    document.querySelectorAll('form.validate').forEach(function(form) {
+        /*
+        const fileInputs = form.querySelectorAll('*[type="file"], *[type="files"]');
+        if (fileInputs.length) {
+        }
+        */
+        
+        form.setAttribute('enctype', 'multipart/form-data');
+    });
+    
     const validateForms = document.querySelectorAll('form.validate, form[sl-validate]');
 
     let submitHandler = async function (form, validate) {
@@ -46,6 +57,7 @@ window.addEventListener('DOMContentLoaded', function() {
         if (!data.success && data !== 1) {
             // display errors
             let errors = data.errors ? data.errors: data;
+            let otherErrors = '';
 
             errors?.forEach(function(item) {
                 let pos = item.indexOf(' ');
@@ -68,7 +80,7 @@ window.addEventListener('DOMContentLoaded', function() {
                         parent = fieldInput[0].parentNode.parentNode;
                     }
                 } else {
-                    alert(item);
+                    otherErrors += "\n" + item;
                 }
 
                 if (parent) {
@@ -79,6 +91,10 @@ window.addEventListener('DOMContentLoaded', function() {
                     parent.appendChild(div);
                 }
             })
+            
+            if (otherErrors) {
+                alert('Check the following:' + otherErrors);
+            }
             
             // scroll to first error
             const firstError = document.querySelector('.sl-error');
@@ -411,7 +427,11 @@ class PageEditor {
                         alert(data.error)
                     } else {
                         // redirect to page
-                        location.href = '/' + pageName;
+                        if (pageName[0] != '/') {
+                            pageName = '/' + pageName
+                        }
+                        
+                        location.href = pageName;
                     }
                 }
             })
@@ -868,7 +888,7 @@ class PageEditor {
     
     loadSavePoint() {
         document.querySelectorAll('[sl-type="heading"],[sl-type="editor"],[sl-type="text"]').forEach(node => {
-                node.innerHTML = this.savePointData[this.getFieldName(node)];
+            node.innerHTML = this.savePointData[this.getFieldName(node)];
         });
         
         document.querySelectorAll('[sl-type="upload"]').forEach(node => {
@@ -1215,4 +1235,19 @@ class PageEditor {
 
         return pageName;
     }
+}
+
+/* backcompat*/
+function clearFile(field) {
+    inputFile = document.createElement("input");
+    inputFile.setAttribute('name', field.getAttribute('name'));
+    inputFile.setAttribute('type', 'file');
+
+    let cell = field.parentNode;
+
+    while (cell.childNodes.length >= 1) {
+        cell.removeChild( cell.firstChild );
+    }
+
+    cell.appendChild(inputFile);
 }

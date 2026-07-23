@@ -45,10 +45,12 @@ class blog
         global $cms, $sections, $vars, $from_email, $request;
 
         $this->table_blog = $options['table_blog'] ?: 'blog';
+        $this->blog_page = $options['blog_page'] ?: 'blog';
         $this->blog_index = isset($options['blog_index']) ? $options['blog_index'] : array_search($this->table_blog, $sections);
         $this->table_categories = $options['table_categories'] ?: 'blog categories';
 
-        $this->category_field = array_search($this->table_categories, $vars['options']);
+        $this->category_field = array_search(underscored($this->table_categories), $vars['options']);
+        
         $this->limit = $options['limit'] ?: 10;
         
         $this->conditions = [];
@@ -95,7 +97,7 @@ class blog
             $this->tags = $this->subval_sort($tags, 'size', false);
         }
 
-        if (in_array($this->table_blog, $sections) and $sections[$this->blog_index] == $this->table_blog) {
+        if (in_array($this->blog_page, $sections) && $sections[$this->blog_index] == $this->blog_page) {
             //archive
             if (is_numeric($sections[($this->blog_index + 1)]) and is_numeric($sections[($this->blog_index + 2)])) {
                 $date = $sections[($this->blog_index + 1)] . '/' . $sections[($this->blog_index + 2)] . '/01';
@@ -109,12 +111,12 @@ class blog
                 $this->conditions['func']['date'] = '<';
                 $this->conditions['date'] = date('Y-m-d', strtotime('tomorrow'));
 
-                $category = sql_query('SELECT * FROM ' . underscored($this->table_categories) . " WHERE
+                $this->category = sql_query('SELECT * FROM ' . underscored($this->table_categories) . " WHERE
 				    page_name='" . escape($sections[($this->blog_index + 2)]) . "'
 				", 1);
 
-                if ($category['id']) {
-                    $this->conditions[underscored($this->category_field)][] = $category['id'];
+                if ($this->category['id']) {
+                    $this->conditions[underscored($this->category_field)][] = $this->category['id'];
                 }
             } elseif ('tags' == $sections[($this->blog_index + 1)]) {
                 $this->conditions['tags'] = '*' . $sections[($this->blog_index + 2)] . '*';

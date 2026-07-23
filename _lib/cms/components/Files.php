@@ -39,7 +39,8 @@ class Files extends File implements ComponentInterface
                 $previewUrl = $this->getPreviewUrl($val);
                 
                 $file = sql_query("SELECT * FROM files WHERE id='" . escape($val) . "'", 1);
-                $parts[] = '<li>';
+                $parts[] = '<li draggable="true">';
+                
                 if ($file) {
                     $parts[] = '<input type="hidden" name="' . $fieldName . '[]" value="' . $val . '" ' . ($options['readonly'] ? 'readonly' : '') . '>';
                     $parts[] = '<a href="' . $previewUrl . '">';
@@ -48,6 +49,7 @@ class Files extends File implements ComponentInterface
                     $parts[] = '</a>';
                     $parts[] = '<a href="javascript:" class="link" onClick="this.parentNode.parentNode.removeChild(this.parentNode)">delete</a>';
                 }
+                
                 $parts[] = '</li>';
             }
         }

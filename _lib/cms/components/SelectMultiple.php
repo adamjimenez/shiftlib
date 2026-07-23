@@ -112,7 +112,7 @@ class SelectMultiple extends Select implements ComponentInterface
     public function conditionsToSql(string $fieldName, $value, $func = '', string $tablePrefix = ''): ?string
     {
         $ands = [];
-        
+
         if (!is_array($value)) {
             $value = [$value];
         }

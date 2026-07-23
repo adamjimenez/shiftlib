@@ -52,6 +52,11 @@ function imageorientationfix($path)
     $orientation = $exif['Orientation'];
     
     $img = imagecreatefromfile($path);
+    
+    if ($img === false) {
+        return false;
+    }
+    
     switch ($orientation) {
         case 3:
             $img = imagerotate($img, 180, 0);
@@ -560,6 +565,10 @@ function send_mail($opts = []): bool
         $opts['from_email'] = $from_email;
     }
     
+    if(!$opts['from_name']) {
+        $opts['from_name'] = $_SERVER['HTTP_HOST'];
+    }
+    
     $is_html = ($opts['content'] !== strip_tags($opts['content']));
     
     if (getenv('SENDGRID_API_KEY')) {
@@ -598,17 +607,12 @@ function send_mail($opts = []): bool
             $mail->AddReplyTo($opts['reply_to']);
         }
         
-        if ($opts['cc']) {
-            $mail->AddCC($opts['cc']);
-        }
-        
-        $mail->SetFrom($opts['from_email']);
+        $mail->SetFrom($opts['from_email'], $opts['from_name']);
         $mail->AddAddress($opts['to_email']);
         
         $mail->Subject = $opts['subject'];
         $mail->Body = $opts['content'];
         $mail->isHTML($is_html);
-        $mail->CharSet = "UTF-8";
         
         if ($opts['attachments']) {
             $attachments = $opts['attachments'];
@@ -646,7 +650,7 @@ function send_mail($opts = []): bool
     if ($opts['reply_to']) {
         $headers .= 'Reply-to: ' . $opts['reply_to'] . "\n";
     }
-        
+
     return mail($opts['to_email'], $opts['subject'], $opts['content'], $headers);
 }
 
@@ -1368,6 +1372,12 @@ function parse_links($text)
     return preg_replace_callback($pattern, $callback, $text);
 }
 
+function quoted_implode(array $array, string $separator = ', '): string {
+    return implode($separator, array_map(function($item) {
+        return "'" . $item . "'";
+    }, $array));
+}
+
 function recaptcha() {
     global $auth_config;
     print '<div class="g-recaptcha" data-sitekey="' . $auth_config['recaptcha_key'] . '"></div>';
@@ -1455,7 +1465,7 @@ function cache_query($query, $single = false, $expire = 3600)
     return $single ? $result[0] : $result;
 }
 
-function send_html_email($user, $html, $reps)
+function send_html_email($user, $html, $reps, $from_name = '')
 {
     // get subject
     if (preg_match("/<title>(.*)<\/title>/siU", $html, $title_matches)) {
@@ -1471,13 +1481,6 @@ function send_html_email($user, $html, $reps)
     $pos = strpos($_SERVER['HTTP_HOST'], '.');
     $from = substr($_SERVER['HTTP_HOST'], 9, $pos);
     
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-type: text/html; charset=iso-8859-1',
-        'From: ' . $from . ' <auto@' . $_SERVER['HTTP_HOST'] . '>',
-    ];
-    $headers = implode("\r\n", $headers);
-    
     $hash = md5($user['id'] . 'jhggh6tj^999£$£%k77');
     $reps['unsubscribe'] = 'https://' . $_SERVER['HTTP_HOST'] . '/unsubscribe?u=' . $user['id'] . '&h=' . $hash;
     
@@ -1485,7 +1488,12 @@ function send_html_email($user, $html, $reps)
         $html = str_replace('{$' . $k . '}', $v, $html);
     }
     
-    mail($user['email'], $subject, $html, $headers);
+    send_mail([
+        'from_name' => $from_name,
+        'to_email' => $user['email'],
+        'subject' => $subject, 
+        'content' => $html
+    ]);
 }
 
 // used with server sent events
@@ -1859,7 +1867,7 @@ function wget($url, $post_array = null, $cache_expiration = 0)
             return $result;
         }
     }
-    
+
     global $tmp_fname;
     
     $ch = curl_init();
@@ -1873,7 +1881,7 @@ function wget($url, $post_array = null, $cache_expiration = 0)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    //curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         
     if ($post_array) {
         curl_setopt($ch, CURLOPT_POST, 1); 
@@ -1885,6 +1893,9 @@ function wget($url, $post_array = null, $cache_expiration = 0)
     curl_setopt($ch, CURLOPT_COOKIEFILE, $tmp_fname);
     
     $result = curl_exec($ch);
+    
+    //$info = curl_getinfo($ch); var_dump($info);exit;
+    
     curl_close($ch);
     
     if ($cache_expiration) {
@@ -1977,4 +1988,14 @@ function get_icon($key) {
     ];
     
     return $icons[$key];
+}
+
+function array_find($array, $property, $value) {
+    foreach ($array as $item) {
+        // Check if the item is an array and has the property with the matching value
+        if (is_array($item) && array_key_exists($property, $item) && $item[$property] === $value) {
+            return $item;
+        }
+    }
+    return null; // Return null if no match is found
 }
