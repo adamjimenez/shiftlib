@@ -1990,7 +1990,7 @@ function get_icon($key) {
     return $icons[$key];
 }
 
-function array_find($array, $property, $value) {
+function array_find_by($array, $property, $value) {
     foreach ($array as $item) {
         // Check if the item is an array and has the property with the matching value
         if (is_array($item) && array_key_exists($property, $item) && $item[$property] === $value) {
