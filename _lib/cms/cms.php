@@ -25,7 +25,7 @@ if (class_exists('BumpCore\EditorPhp\Block\Block')) {
 
 class cms
 {
-    const VERSION = '4.0.24';
+    const VERSION = '4.0.25';
 
     /**
     * @var string
@@ -734,7 +734,18 @@ class cms
             if (in_array($type, ['files', 'uploads'])) {
                 foreach ($content as $k=>$v) {
                     if ($v[$field['column']]) {
-                        $content[$k][$field['column']] = explode("\n", str_replace("\r", '', $v[$field['column']]));
+                        try {
+                            $json = json_decode($content[$k][$field['column']], true);
+                            
+                            if ($json === null) {
+                                $content[$k][$field['column']] = explode("\n", str_replace("\r", '', $v[$field['column']]));
+                            } else {
+                                $content[$k][$field['column']] = $json;
+                            }
+                        } catch (Exception $e) {
+                            // handle exception
+                            $content[$k][$field['column']] = explode("\n", str_replace("\r", '', $v[$field['column']]));
+                        }
                     }
                 }
                 continue;
